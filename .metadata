@@ -4,7 +4,7 @@
 # This file should be version controlled and should not be manually edited.
 
 version:
-  revision: cc3ca9a916cb1da851a1f36432154a534787da99
+  revision: 1946fc4da0f80c522d7e3ae7d4f7309908ed86f2
   channel: dev
 
 project_type: plugin

@@ -1,22 +1,22 @@
 PODS:
-  - Flutter (1.0.0)
-  - native_runtime (0.0.1):
+  - dart_objc (0.0.1):
     - Flutter
+  - Flutter (1.0.0)
 
 DEPENDENCIES:
+  - dart_objc (from `.symlinks/plugins/dart_objc/ios`)
   - Flutter (from `.symlinks/flutter/ios`)
-  - native_runtime (from `.symlinks/plugins/native_runtime/ios`)
 
 EXTERNAL SOURCES:
+  dart_objc:
+    :path: ".symlinks/plugins/dart_objc/ios"
   Flutter:
     :path: ".symlinks/flutter/ios"
-  native_runtime:
-    :path: ".symlinks/plugins/native_runtime/ios"
 
 SPEC CHECKSUMS:
+  dart_objc: 70f80ccab72b202fae8fc3c51d80f4a87e4b31eb
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  native_runtime: ac37799532d2f872feaff81f8db27b9935a4d500
 
-PODFILE CHECKSUM: 10ae9c18d12c9ffc2275c9a159a3b1e281990db0
+PODFILE CHECKSUM: dd58435ce9bf15a45658d9a48dd97b721db6e5b5
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.8.3

@@ -1,6 +1,6 @@
-# native_runtime_example
+# dart_objc_example
 
-Demonstrates how to use the native_runtime plugin.
+Demonstrates how to use the dart_objc plugin.
 
 ## Getting Started
 

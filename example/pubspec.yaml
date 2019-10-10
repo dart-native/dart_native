@@ -1,5 +1,5 @@
-name: native_runtime_example
-description: Demonstrates how to use the native_runtime plugin.
+name: dart_objc_example
+description: Demonstrates how to use the dart_objc plugin.
 publish_to: 'none'
 
 environment:
@@ -17,7 +17,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  native_runtime:
+  dart_objc:
     path: ../
 
 # For information on the generic Dart part of this file, see the

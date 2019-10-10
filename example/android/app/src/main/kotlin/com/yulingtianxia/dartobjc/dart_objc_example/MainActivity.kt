@@ -1,7 +1,6 @@
-package com.example.native_runtime_example
+package com.yulingtianxia.dartobjc.dart_objc_example
 
 import android.os.Bundle
-
 import io.flutter.app.FlutterActivity
 import io.flutter.plugins.GeneratedPluginRegistrant
 

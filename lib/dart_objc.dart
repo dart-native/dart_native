@@ -1,16 +1,15 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'dart:io';
 
-final DynamicLibrary nativeRuntimeLib = Platform.isAndroid
-    ? DynamicLibrary.open('libnative_runtime.so')
-    : DynamicLibrary.open('native_runtime.framework/native_runtime');
+final DynamicLibrary nativeRuntimeLib = DynamicLibrary.open('dart_objc.framework/dart_objc');
 final DynamicLibrary nativeLib = DynamicLibrary.process();
 
 // C header typedef:
 typedef MethodIMPC = Pointer<NativeFunction<IMPC>> Function(
     Pointer<Utf8> cls, Pointer<Utf8> selector, Int32 isMethodClass);
-typedef InvokeMethodC = Pointer<Void> Function(
+typedef InvokeMethodC = Pointer<Void> Function(Pointer<Void> instance,
+    Pointer<Utf8> selector, Pointer<Pointer<Void>> args);
+typedef InvokeMethodNoArgsC = Pointer<Void> Function(
     Pointer<Void> instance, Pointer<Utf8> selector);
 // id (*IMP)(id, SEL, ...)
 typedef IMPC = Pointer<Void> Function(Pointer<Void>, Pointer<Utf8> sel);
@@ -18,7 +17,9 @@ typedef IMPC = Pointer<Void> Function(Pointer<Void>, Pointer<Utf8> sel);
 // Dart header typedef
 typedef MethodIMPDart = Pointer<NativeFunction<IMPC>> Function(
     Pointer<Utf8> cls, Pointer<Utf8> selector, int isMethodClass);
-typedef InvokeMethodDart = Pointer<Void> Function(
+typedef InvokeMethodDart = Pointer<Void> Function(Pointer<Void> instance,
+    Pointer<Utf8> selector, Pointer<Pointer<Void>> args);
+typedef InvokeMethodNoArgsDart = Pointer<Void> Function(
     Pointer<Void> instance, Pointer<Utf8> selector);
 typedef IMPDart = Pointer<Void> Function(Pointer<Void>, Pointer<Utf8> sel);
 
@@ -46,12 +47,21 @@ Pointer<Void> getClass(String className) {
   return result;
 }
 
-Pointer<Void> invokeMethod(Pointer<Void> target, String selector, {List args}) {
-  final InvokeMethodDart nativeInvokeMethod =
-      nativeRuntimeLib.lookupFunction<InvokeMethodC, InvokeMethodDart>(
-          'native_instance_invoke');
+Pointer<Void> invokeMethod(Pointer<Void> target, String selector,
+    {Pointer<Pointer<Void>> args}) {
   final selectorP = Utf8.toUtf8(selector);
-  Pointer<Void> result = nativeInvokeMethod(target, selectorP);
+  Pointer<Void> result;
+  if (args != null) {
+    final InvokeMethodDart nativeInvokeMethod =
+        nativeRuntimeLib.lookupFunction<InvokeMethodC, InvokeMethodDart>(
+            'native_instance_invoke');
+    result = nativeInvokeMethod(target, selectorP, args);
+  } else {
+    final InvokeMethodNoArgsDart nativeInvokeMethodNoArgs = nativeRuntimeLib
+        .lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsDart>(
+            'native_instance_invoke');
+    result = nativeInvokeMethodNoArgs(target, selectorP);
+  }
   selectorP.free();
   return result;
 }
@@ -59,5 +69,9 @@ Pointer<Void> invokeMethod(Pointer<Void> target, String selector, {List args}) {
 // test
 void invoke() {
   Pointer<Void> object = invokeMethod(getClass('RuntimeStub'), 'new');
-  invokeMethod(object, 'foo:', args: [1]);
+  final Pointer<Int8> arg = Pointer<Int8>.allocate();
+  arg.store(123);
+  final Pointer<IntPtr> result = Pointer<IntPtr>.allocate();
+  result.store(arg.address);
+  invokeMethod(object, 'foo:', args: result.cast());
 }

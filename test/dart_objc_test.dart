@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:native_runtime/native_runtime.dart';
+import 'package:dart_objc/dart_objc.dart';
 
 void main() {
-  const MethodChannel channel = MethodChannel('native_runtime');
+  const MethodChannel channel = MethodChannel('dart_objc');
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -17,7 +17,7 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await NativeRuntime.platformVersion, '42');
-  });
+  // test('getPlatformVersion', () async {
+  //   expect(await DartObjc.platformVersion, '42');
+  // });
 }

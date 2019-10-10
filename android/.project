@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>native_runtime</name>
-	<comment>Project native_runtime created by Buildship.</comment>
+	<name>dart_objc</name>
+	<comment>Project dart_objc created by Buildship.</comment>
 	<projects>
 	</projects>
 	<buildSpec>

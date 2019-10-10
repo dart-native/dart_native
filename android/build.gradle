@@ -1,4 +1,4 @@
-group 'com.example.native_runtime'
+group 'com.yulingtianxia.dartobjc.dart_objc'
 version '1.0-SNAPSHOT'
 
 buildscript {

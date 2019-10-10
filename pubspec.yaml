@@ -1,5 +1,5 @@
-name: native_runtime
-description: A new flutter plugin project.
+name: dart_objc
+description: Call Objective-C using Dart
 version: 0.0.1
 author:
 homepage:
@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   ffi: ^0.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -25,8 +26,8 @@ flutter:
   # be modified. They are used by the tooling to maintain consistency when
   # adding or updating assets for this project.
   plugin:
-    androidPackage: com.example.native_runtime
-    pluginClass: NativeRuntimePlugin
+    androidPackage: com.yulingtianxia.dartobjc.dart_objc
+    pluginClass: DartObjcPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
