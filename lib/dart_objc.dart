@@ -68,10 +68,21 @@ Pointer<Void> invokeMethod(Pointer<Void> target, String selector,
 
 // test
 void invoke() {
-  Pointer<Void> object = invokeMethod(getClass('RuntimeStub'), 'new');
-  final Pointer<Int8> arg = Pointer<Int8>.allocate();
-  arg.store(123);
-  final Pointer<IntPtr> result = Pointer<IntPtr>.allocate();
-  result.store(arg.address);
-  invokeMethod(object, 'foo:', args: result.cast());
+  final Pointer<Utf8> strPtr = Utf8.toUtf8('test_str:%@');
+  final Pointer<Pointer<Utf8>> strPtrPtr = Pointer<Pointer<Utf8>>.allocate();
+  strPtrPtr.store(strPtr);
+  Pointer<Void> str = invokeMethod(getClass('NSString'), 'stringWithUTF8String:', args: strPtrPtr.cast());
+  // final Pointer<Pointer> args = Pointer<Pointer>.allocate(count: 2);
+  // args.elementAt(0).store(str);
+  // Pointer<Void> object = invokeMethod(getClass('NSObject'), 'new');
+  // args.elementAt(1).store(object);
+  // Pointer<Void> result = invokeMethod(getClass('NSString'), 'stringWithFormat:', args: args.cast());
+  Pointer<Void> stub = invokeMethod(getClass('RuntimeStub'), 'new');
+  // final Pointer<Int8> arg = Pointer<Int8>.allocate();
+  // arg.store(123);
+  // final Pointer<Pointer<Int8>> result = Pointer<Pointer<Int8>>.allocate();
+  // result.store(arg);
+  // invokeMethod(stub, 'foo:', args: Pointer<Pointer>.allocate()..store(result)..cast());
+  Pointer<Pointer<Void>> argsPtrPtr = Pointer<Pointer<Void>>.allocate()..store(str);
+  invokeMethod(stub, 'foo:', args: argsPtrPtr);
 }

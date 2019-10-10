@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RuntimeStub : NSObject
 
-- (void)foo:(int)a;
+- (void)foo:(NSString *)a;
 
 @end
 

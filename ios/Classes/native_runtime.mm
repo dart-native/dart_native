@@ -18,7 +18,7 @@ void *
 native_instance_invoke(void *instance, const char *selector_str, void **args) {
     id object = (__bridge id)instance;
     SEL selector = sel_registerName(selector_str);
-    IMP imp = [object methodForSelector:selector];
+
     NSMethodSignature *signature = [object methodSignatureForSelector:selector];
     if (!signature) {
         return nullptr;
@@ -28,8 +28,12 @@ native_instance_invoke(void *instance, const char *selector_str, void **args) {
     invocation.selector = selector;
     
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
-        [invocation setArgument:args[i - 2] atIndex:i];
+        [invocation setArgument:&args[i - 2] atIndex:i];
     }
     [invocation invoke];
-    return ((void * (*)(id, SEL))imp)(object, selector);
+    void *result = NULL;
+    if (signature.methodReturnLength > 0) {
+        [invocation getReturnValue:&result];
+    }
+    return result;
 }
