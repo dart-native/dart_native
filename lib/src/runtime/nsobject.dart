@@ -1,5 +1,3 @@
-library dart_objc.nsobject;
-
 import 'dart:ffi';
 
 import 'package:dart_objc/src/common/library.dart';
