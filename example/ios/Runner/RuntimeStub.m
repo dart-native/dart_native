@@ -10,10 +10,10 @@
 
 @implementation RuntimeStub
 
-- (void)foo:(NSString *)a
+- (void)foo:(id)a
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"动态调用OC成功!" message:a preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"动态调用OC成功!" message:[NSString stringWithFormat:@"%@", a] preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
         [UIApplication.sharedApplication.delegate.window.rootViewController presentViewController:alert animated:YES completion:nil];
     });
