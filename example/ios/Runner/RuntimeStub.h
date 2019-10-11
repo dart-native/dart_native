@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RuntimeStub : NSObject
 
-- (void)foo:(id)a;
+- (float)foo:(id)a;
 
 @end
 

@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'class.dart';
 
-class Id {
+class id {
   Class isa;
-  Pointer<Void> instance;
+  Pointer<Void> internalPtr;
 }
