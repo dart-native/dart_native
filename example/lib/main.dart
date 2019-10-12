@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ffi';
 import 'package:dart_objc/dart_objc.dart';
 
 void main() => runApp(MyApp());
@@ -14,7 +13,9 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    stub = NSObject(isa: Class('RuntimeStub'));
+    stub = NSObject(className: 'RuntimeStub');
+    String str = Class('RuntimeStub').toString();
+    print(str);
   }
 
   @override
@@ -29,8 +30,10 @@ class _MyAppState extends State<MyApp> {
               child: Text('dialog'),
               onPressed: () {
                 NSObject object = NSObject();
-                var result = stub.performSelector('foo:', [object]);
-                print(result);
+                for (var i = 10; i < 16; i++) {
+                  var result = stub.performSelector(Selector('foo$i:'), [object]);
+                  print('foo$i result:$result');
+                }
               }),
         ),
       ),

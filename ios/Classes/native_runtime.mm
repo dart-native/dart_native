@@ -97,15 +97,14 @@ native_type_encoding(const char *str) {
     INT(int);
     INT(long);
     INT(long long);
+    COND(float, float32);
+    COND(double, float64);
     
-    PTR(id);
-    PTR(Class);
-    PTR(SEL);
+    COND(id, object);
+    COND(Class, class);
+    COND(SEL, selector);
     PTR(void *);
-    PTR(char *);
-    
-    COND(float, float);
-    COND(double, double);
+    COND(char *, char *);
     
     COND(void, void);
     
@@ -126,5 +125,5 @@ native_type_encoding(const char *str) {
 //    }
     
     NSLog(@"Unknown encode string %s", str);
-    return nil;
+    return str;
 }

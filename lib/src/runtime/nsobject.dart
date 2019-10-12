@@ -1,99 +1,38 @@
 import 'dart:ffi';
-import 'dart:typed_data';
 
-import 'package:dart_objc/src/common/library.dart';
 import 'package:dart_objc/src/runtime/class.dart';
+import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/id.dart';
-import 'package:ffi/ffi.dart';
-import 'package:flutter/services.dart';
-
-// C header typedef:
-typedef InvokeMethodC = Pointer<Void> Function(Pointer<Void> instance,
-    Pointer<Utf8> selector, Pointer<Pointer<Utf8>> returnType, Pointer<Pointer<Void>> args);
-typedef InvokeMethodNoArgsC = Pointer<Void> Function(
-    Pointer<Void> instance, Pointer<Utf8> selector, Pointer<Pointer<Utf8>> returnType);
-typedef TypeEncodingC = Pointer<Utf8> Function(Pointer<Utf8>);
-
-// Dart header typedef
-typedef InvokeMethodDart = Pointer<Void> Function(Pointer<Void> instance,
-    Pointer<Utf8> selector, Pointer<Pointer<Utf8>> returnType, Pointer<Pointer<Void>> args);
-typedef InvokeMethodNoArgsDart = Pointer<Void> Function(
-    Pointer<Void> instance, Pointer<Utf8> selector, Pointer<Pointer<Utf8>> returnType);
-typedef TypeEncodingDart = Pointer<Utf8> Function(Pointer<Utf8>);
+import 'package:dart_objc/src/runtime/message.dart';
+import 'package:dart_objc/src/runtime/selector.dart';
+import 'package:dart_objc/src/common/pointer_cache.dart';
 
 class NSObject extends id {
-  NSObject({Class isa}) {
-    if (isa == null) {
-      isa = Class('NSObject');
+  // TODO: remove object from cache when dealloc.
+
+  NSObject({String className}) : super(_new(className).pointer);
+
+  factory NSObject.fromPointer(Pointer<Void> ptr) {
+    int key = ptr.address;
+    if (ptr_cache.containsKey(key)) {
+      return ptr_cache[key];
+    } else {
+      id instance;
+      if (object_isClass(ptr) != 0) {
+        instance = Class.fromPointer(ptr);
+      } else {
+        instance = NSObject._internal(ptr);
+      }
+      ptr_cache[key] = instance;
+      return instance;
     }
-    this.isa = isa;
-    Pointer<Pointer<Utf8>> returnType =  Pointer<Pointer<Utf8>>.allocate();
-    internalPtr = _invokeMethod(isa.internalPtr, 'new', returnType);
-    returnType.free();
   }
 
-  dynamic performSelector(String selector, List args) {
-    Pointer<Pointer<Void>> pointers = Pointer<Pointer<Void>>.allocate(count: args.length);
-    for (var i = 0; i < args.length; i++) {
-      var arg = args[i];
-      if (arg is Pointer) {
-        pointers.elementAt(i).store(arg);
-      }
-      else if (arg is id) {
-        pointers.elementAt(i).store(arg.internalPtr);
-      }
-      // TODO: convert Dart type to native.
-    }
-    Pointer<Pointer<Utf8>> returnTypePtrPtr =  Pointer<Pointer<Utf8>>.allocate();
-    Pointer<Void> resultPtr = _invokeMethod(this.internalPtr, selector, returnTypePtrPtr, args: pointers);
-    final TypeEncodingDart nativeTypeEncoding =
-        nativeRuntimeLib.lookupFunction<TypeEncodingC, TypeEncodingDart>(
-            'native_type_encoding');
-    String returnType = nativeTypeEncoding(returnTypePtrPtr.load()).load().toString();
-    returnTypePtrPtr.free();
-    dynamic result = _nativeValueForEncoding(resultPtr, returnType);
-    pointers.free();
-    return result;
+  NSObject._internal(Pointer<Void> ptr) : super(ptr) {
+    ptr_cache[ptr.address] = this;
   }
 }
 
-dynamic _nativeValueForEncoding(Pointer<Void> ptr, String encoding) {
-  // TODO: convert return value to Dart type.
-  dynamic result;
-  switch (encoding) {
-    case 'int':
-      result = ptr.address;
-      break;
-    case 'float':
-      ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
-      result = ByteData.view(buffer).getFloat32(0, Endian.host);
-      break;
-    case 'double':
-      ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
-      result = ByteData.view(buffer).getFloat64(0, Endian.host);
-      break;
-    case 'pointer':
-      result = ptr;
-      break;
-    default:
-  }
-}
-
-Pointer<Void> _invokeMethod(Pointer<Void> target, String selector, Pointer<Pointer<Utf8>> returnType,
-    {Pointer<Pointer<Void>> args}) {
-  final selectorP = Utf8.toUtf8(selector);
-  Pointer<Void> result;
-  if (args != null) {
-    final InvokeMethodDart nativeInvokeMethod =
-        nativeRuntimeLib.lookupFunction<InvokeMethodC, InvokeMethodDart>(
-            'native_instance_invoke');
-    result = nativeInvokeMethod(target, selectorP, returnType, args);
-  } else {
-    final InvokeMethodNoArgsDart nativeInvokeMethodNoArgs = nativeRuntimeLib
-        .lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsDart>(
-            'native_instance_invoke');
-    result = nativeInvokeMethodNoArgs(target, selectorP, returnType);
-  }
-  selectorP.free();
-  return result;
+NSObject _new(String className) {
+  return msgSend(Class(className), Selector('new'));
 }
