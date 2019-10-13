@@ -29,11 +29,31 @@ class _MyAppState extends State<MyApp> {
           child: MaterialButton(
               child: Text('dialog'),
               onPressed: () {
-                NSObject object = NSObject();
-                for (var i = 10; i < 16; i++) {
-                  var result = stub.performSelector(Selector('foo$i:'), [object]);
+                List args = [
+                  -123,
+                  -12345,
+                  -123456,
+                  -123456,
+                  123,
+                  12345,
+                  123456,
+                  123456,
+                  123.456,
+                  123.456,
+                  '123456',
+                  Class('RuntimeStub'),
+                  Selector('foo12:'),
+                  NSObject(className: 'RuntimeStub'),
+                  NSObject(),
+                ];
+                for (var i = 0; i < 15; i++) {
+                  var result =
+                      stub.performSelector(Selector('foo$i:'), [args[i]]);
                   print('foo$i result:$result');
                 }
+                var result =
+                      stub.performSelector(Selector('foo15'));
+                  print('foo15 result:$result');
               }),
         ),
       ),

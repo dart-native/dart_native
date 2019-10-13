@@ -37,6 +37,10 @@ class Selector {
     _cache[_selPtr.address] = this;
   }
 
+  Pointer<Void> toPointer() {
+    return _selPtr;
+  }
+
   @override
   String toString() {
     return name;

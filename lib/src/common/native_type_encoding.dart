@@ -3,11 +3,70 @@ import 'dart:typed_data';
 
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/runtime/class.dart';
+import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-dynamic nativeValueForEncoding(Pointer<Void> ptr, String encoding) {
-  // TODO: convert return value to Dart type.
+storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding) {
+  if (object is num) {
+    switch (encoding) {
+      case 'sint8':
+        ptr.cast<Int8>().store(object);
+        break;
+      case 'sint16':
+        ptr.cast<Int16>().store(object);
+        break;
+      case 'sint32':
+        ptr.cast<Int32>().store(object);
+        break;
+      case 'sint64':
+        ptr.cast<Int64>().store(object);
+        break;
+      case 'uint8':
+        ptr.cast<Uint8>().store(object);
+        break;
+      case 'uint16':
+        ptr.cast<Uint16>().store(object);
+        break;
+      case 'uint32':
+        ptr.cast<Uint32>().store(object);
+        break;
+      case 'uint64':
+        ptr.cast<Uint64>().store(object);
+        break;
+      case 'float32':
+        ptr.cast<Float>().store(object);
+        break;
+      case 'float64':
+        ptr.cast<Double>().store(object);
+        break;
+      default:
+        throw '$object not match type $encoding!';
+    }
+  } else if (object is Pointer<Void> &&
+      !encoding.contains('int') &&
+      !encoding.contains('float')) {
+    ptr.store(object);
+  } else if (object is id && (encoding == 'object' || encoding == 'class' || encoding == 'pointer')) {
+    ptr.store(object.pointer);
+  } else if (object is Selector && (encoding == 'selector' || encoding == 'pointer')) {
+    ptr.store(object.toPointer());
+  } else if (encoding == 'char *' || encoding == 'pointer') {
+    if (object is String) {
+      Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+      ptr.cast<Pointer<Utf8>>().store(charPtr);
+      charPtr.free();
+    } else if (object is Pointer<Utf8>) {
+      ptr.cast<Pointer<Utf8>>().store(object);
+    } else {
+      ptr.store(object as Pointer<Void>);
+    }
+  } else {
+    throw '$object not match type $encoding!';
+  }
+}
+
+dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
   dynamic result;
   if (encoding.contains('int') || encoding.contains('float')) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;

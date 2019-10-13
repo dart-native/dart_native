@@ -13,14 +13,24 @@ native_method_imp(const char *cls_str, const char *selector_str, bool isClassMet
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))
-void *
-native_instance_invoke(void *instance, const char *selector_str, char **returnType, void **args) {
-    id object = (__bridge id)instance;
-    SEL selector = sel_registerName(selector_str);
-
+NSMethodSignature *
+native_method_signature(id object, SEL selector, const char **typeEncodings) {
+    if (!object || !selector || !typeEncodings) {
+        return NULL;
+    }
     NSMethodSignature *signature = [object methodSignatureForSelector:selector];
-    if (!signature) {
-        return nullptr;
+    for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
+        *(typeEncodings + i - 1) = [signature getArgumentTypeAtIndex:i];
+    }
+    *typeEncodings = signature.methodReturnType;
+    return signature;
+}
+
+extern "C" __attribute__((visibility("default"))) __attribute((used))
+void *
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, void **args) {
+    if (!object || !selector || !signature) {
+        return NULL;
     }
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = object;
@@ -34,13 +44,15 @@ native_instance_invoke(void *instance, const char *selector_str, char **returnTy
     if (signature.methodReturnLength > 0) {
         [invocation getReturnValue:&result];
     }
-    *returnType = (char *)signature.methodReturnType;
     return result;
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))
 const char *
 native_type_encoding(const char *str) {
+    if (!str) {
+        return NULL;
+    }
     #define SINT(type) do { \
         if(str[0] == @encode(type)[0]) \
         { \
