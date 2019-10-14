@@ -1,7 +1,6 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/runtime.dart';
-import 'package:dart_objc/src/common/pointer_cache.dart';
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:ffi/ffi.dart';
@@ -17,30 +16,26 @@ class Class extends id {
     Pointer<Void> ptr = objc_getClass(classNamePtr);
     classNamePtr.free();
     if (ptr == null) {
-      // TODO: create class not exists.
+      // TODO: create class not exists?
       return null;
-    } else if (ptr_cache.containsKey(ptr.address)) {
-      return ptr_cache[ptr.address];
     } else {
       return Class._internal(className, ptr);
     }
   }
 
   factory Class.fromPointer(Pointer<Void> ptr) {
-    int key = ptr.address;
-    if (ptr_cache.containsKey(key)) {
-      return ptr_cache[key];
+    if (object_isClass(ptr) != 0) {
+      String className = Utf8.fromUtf8(class_getName(ptr));
+      return Class._internal(className, ptr);
     } else {
-      if (object_isClass(ptr) != 0) {
-        String className = Utf8.fromUtf8(class_getName(ptr));
-        return Class._internal(className, ptr);
-      } else {
-        return null;
-      }
+      return null;
     }
   }
 
-  Class._internal(this.name, Pointer<Void> ptr) : super(ptr) {
-    ptr_cache[ptr.address] = this;
+  Class._internal(this.name, Pointer<Void> ptr) : super(ptr);
+
+  @override
+  String toString() {
+    return '$name:<${pointer.address}>';
   }
 }

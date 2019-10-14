@@ -1,3 +1,3 @@
-import 'package:dart_objc/src/runtime/id.dart';
+import 'dart:ffi';
 
-final Map<int, id> ptr_cache = <int, id>{};
+// Waiting for this: https://github.com/dart-lang/sdk/issues/35770

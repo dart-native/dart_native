@@ -8,7 +8,22 @@
 #import "RuntimeStub.h"
 #import <UIKit/UIKit.h>
 
+@interface RuntimeStub ()
+
+@property (nonatomic) id stub;
+
+@end
+
 @implementation RuntimeStub
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _stub = [NSObject new];
+    }
+    return self;
+}
 
 - (int8_t)foo0:(int8_t)a
 {
@@ -91,7 +106,10 @@
 - (id)foo13:(id)a
 {
     NSLog(@"arg: %@", a);
-    return self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        self.stub = nil;
+    });
+    return self.stub;
 }
 
 - (void *)foo14:(void *)a

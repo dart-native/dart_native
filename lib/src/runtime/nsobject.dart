@@ -5,32 +5,22 @@ import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/message.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
-import 'package:dart_objc/src/common/pointer_cache.dart';
+
+final Pointer<Void> nil = Pointer.fromAddress(0);
 
 class NSObject extends id {
-  // TODO: remove object from cache when dealloc.
-
   NSObject({String className}) : super(_new(className).pointer);
 
   factory NSObject.fromPointer(Pointer<Void> ptr) {
-    int key = ptr.address;
-    if (ptr_cache.containsKey(key)) {
-      return ptr_cache[key];
+    if (object_isClass(ptr) != 0) {
+      return null;
     } else {
-      id instance;
-      if (object_isClass(ptr) != 0) {
-        instance = Class.fromPointer(ptr);
-      } else {
-        instance = NSObject._internal(ptr);
-      }
-      ptr_cache[key] = instance;
-      return instance;
+      // TODO: convert to subclass.
+      return NSObject._internal(ptr);
     }
   }
 
-  NSObject._internal(Pointer<Void> ptr) : super(ptr) {
-    ptr_cache[ptr.address] = this;
-  }
+  NSObject._internal(Pointer<Void> ptr) : super(ptr);
 }
 
 NSObject _new(String className) {

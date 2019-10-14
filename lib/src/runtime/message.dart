@@ -78,6 +78,8 @@ dynamic msgSend(id target, Selector selector, [List args]) {
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load()).load().toString();
       storeValueToPointer(arg, pointers.elementAt(i), typeEncodings);
     }
+  } else if (selector.name.contains(':')) { //TODO: need check args count.
+    throw 'Arg list not match!';
   }
   Pointer<Void> resultPtr =
       _msgSend(target.pointer, selectorPtr, signature, pointers);

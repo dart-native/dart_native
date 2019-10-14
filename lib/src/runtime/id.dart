@@ -36,4 +36,13 @@ class id implements NSObjectProtocol {
   String toString() {
     return '${isa.name}:<${_ptr.address}>';
   }
+
+  bool operator ==(other) {
+    if (other == null) return false;
+    return pointer == other.pointer;
+  }
+
+  int get hashCode {
+    return pointer.hashCode;
+  }
 }
