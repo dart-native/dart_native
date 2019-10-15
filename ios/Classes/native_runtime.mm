@@ -42,7 +42,18 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
     [invocation invoke];
     void *result = NULL;
     if (signature.methodReturnLength > 0) {
+//        if (signature.methodReturnType[0] == '@') {
+//            NSObject *resultObj = nil;
+//            [invocation getReturnValue:&resultObj];
+//            NSLog(@"Retain count is %ld", CFGetRetainCount((__bridge CFTypeRef)resultObj));
+//            return (__bridge void *)resultObj;
+//        }
         [invocation getReturnValue:&result];
+    }
+    
+//    NSObject *resultObj = (__bridge id)result;
+    if (result) {
+        NSLog(@"instance_invoke Retain count is %ld", CFGetRetainCount((CFTypeRef)result));
     }
     return result;
 }

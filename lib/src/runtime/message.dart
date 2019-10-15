@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:dart_objc/src/common/library.dart';
 import 'package:dart_objc/src/common/native_type_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
+import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
@@ -30,40 +31,43 @@ typedef InvokeMethodNoArgsDart = Pointer<Void> Function(
     Pointer<Void> instance, Pointer<Void> selector, Pointer<Void> signature);
 typedef TypeEncodingDart = Pointer<Utf8> Function(Pointer<Utf8>);
 
+final InvokeMethodDart nativeInvokeMethod = nativeRuntimeLib
+    .lookupFunction<InvokeMethodC, InvokeMethodDart>('native_instance_invoke');
+final InvokeMethodNoArgsDart nativeInvokeMethodNoArgs = nativeRuntimeLib
+    .lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsDart>(
+        'native_instance_invoke');
+
 Pointer<Void> _msgSend(
     Pointer<Void> target, Pointer<Void> selector, Pointer<Void> signature,
     [Pointer<Pointer<Void>> args]) {
   Pointer<Void> result;
   if (args != null) {
-    final InvokeMethodDart nativeInvokeMethod =
-        nativeRuntimeLib.lookupFunction<InvokeMethodC, InvokeMethodDart>(
-            'native_instance_invoke');
     result = nativeInvokeMethod(target, selector, signature, args);
   } else {
-    final InvokeMethodNoArgsDart nativeInvokeMethodNoArgs = nativeRuntimeLib
-        .lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsDart>(
-            'native_instance_invoke');
     result = nativeInvokeMethodNoArgs(target, selector, signature);
   }
   return result;
 }
 
-dynamic msgSend(id target, Selector selector, [List args]) {
+final MethodSignatureDart nativeMethodSignature =
+    nativeRuntimeLib.lookupFunction<MethodSignatureC, MethodSignatureDart>(
+        'native_method_signature');
+final TypeEncodingDart nativeTypeEncoding = nativeRuntimeLib
+    .lookupFunction<TypeEncodingC, TypeEncodingDart>('native_type_encoding');
 
+dynamic msgSend(id target, Selector selector, [List args]) {
+  if (target == nil) {
+    return null;
+  }
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
       Pointer<Pointer<Utf8>>.allocate(count: args?.length ?? 0 + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
 
-  final MethodSignatureDart nativeMethodSignature =
-      nativeRuntimeLib.lookupFunction<MethodSignatureC, MethodSignatureDart>(
-          'native_method_signature');
   Pointer<Void> signature =
       nativeMethodSignature(target.pointer, selectorPtr, typeEncodingsPtrPtr);
   if (signature.address == 0) {
     throw 'signature for [$target $selector] is NULL.';
   }
-  final TypeEncodingDart nativeTypeEncoding = nativeRuntimeLib
-      .lookupFunction<TypeEncodingC, TypeEncodingDart>('native_type_encoding');
 
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
@@ -75,10 +79,13 @@ dynamic msgSend(id target, Selector selector, [List args]) {
         continue;
       }
       String typeEncodings =
-          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load()).load().toString();
+          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load())
+              .load()
+              .toString();
       storeValueToPointer(arg, pointers.elementAt(i), typeEncodings);
     }
-  } else if (selector.name.contains(':')) { //TODO: need check args count.
+  } else if (selector.name.contains(':')) {
+    //TODO: need check args count.
     throw 'Arg list not match!';
   }
   Pointer<Void> resultPtr =
@@ -90,6 +97,13 @@ dynamic msgSend(id target, Selector selector, [List args]) {
   dynamic result = loadValueFromPointer(resultPtr, typeEncodings);
   if (pointers != null) {
     pointers.free();
+  }
+  if (result is NSObject &&
+      (selector.name.startsWith('alloc') ||
+          selector.name.startsWith('new') ||
+          selector.name.startsWith('copy') ||
+          selector.name.startsWith('mutableCopy'))) {
+    result.retainCount = 1;
   }
   return result;
 }

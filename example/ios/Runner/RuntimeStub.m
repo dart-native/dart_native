@@ -106,9 +106,14 @@
 - (id)foo13:(id)a
 {
     NSLog(@"arg: %@", a);
+    CFTypeRef stub = (__bridge CFTypeRef)self.stub;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSLog(@"%@, Retain count is %ld", stub, CFGetRetainCount(stub));
+//        id temp = self.stub;
 //        self.stub = nil;
+//        NSLog(@"Retain count is %ld", CFGetRetainCount((__bridge CFTypeRef)temp));
     });
+    NSLog(@"%@, Retain count is %ld", stub, CFGetRetainCount(stub));
     return self.stub;
 }
 

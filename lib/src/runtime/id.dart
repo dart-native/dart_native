@@ -12,10 +12,11 @@ class id implements NSObjectProtocol {
     Pointer<Void> isaPtr = object_getClass(_ptr);
     return Class.fromPointer(isaPtr);
   }
-  Pointer<Void> get pointer {
-    return _ptr;
-  }
-  Pointer<Void> _ptr;
+
+  Pointer<Void> _ptr = nullptr;
+  Pointer<Void> get pointer => _ptr;
+
+  int retainCount;
 
   id(this._ptr);
 
@@ -27,8 +28,18 @@ class id implements NSObjectProtocol {
     }
   }
 
+  release() {
+    if (retainCount > 0) {
+      retainCount--;
+      performSelector(Selector('release'));
+    }
+    if (retainCount == 0) {
+      _ptr = nullptr;
+    }
+  }
+
   @override
-  performSelector(Selector selector, [List args]) {
+  dynamic performSelector(Selector selector, [List args]) {
     return msgSend(this, selector, args);
   }
 

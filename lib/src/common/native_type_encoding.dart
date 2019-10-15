@@ -118,7 +118,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
         break;
       case 'char *':
         Pointer<Utf8> temp = ptr.cast();
-        result = temp;
+        result = Utf8.fromUtf8(temp);
         break;
       case 'void':
         break;

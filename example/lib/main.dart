@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:dart_objc/dart_objc.dart';
 
@@ -11,11 +9,22 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  NSObject stub;
+  NSObject stubNew;
+  NSObject obj;
   @override
   void initState() {
     super.initState();
-    stub = NSObject(className: 'RuntimeStub').performSelector(Selector('foo13:'), [nil]);
+    // final start = DateTime.now().millisecondsSinceEpoch;
+    // String version;
+    // for (var i = 0; i < 100000; i++) {
+      // NSObject device = Class('UIDevice').performSelector(Selector('currentDevice'));
+      // NSObject nsstring = device.performSelector(Selector('systemVersion'));
+      // version = nsstring.performSelector(Selector('UTF8String'));
+    // }
+    // final cost = DateTime.now().millisecondsSinceEpoch - start;
+    // print(cost);
+    stubNew = NSObject(className: 'RuntimeStub');
+    obj = stubNew.performSelector(Selector('foo13:'), [nil]);
   }
 
   @override
@@ -53,9 +62,9 @@ class _MyAppState extends State<MyApp> {
                 // }
                 // var result = stub.performSelector(Selector('foo15'));
                 // print('foo15 result:$result');
-                
-                Class cls = stub.performSelector(Selector('class'));
-                print(cls);
+                stubNew.release();
+                print(stubNew.performSelector(Selector('class')));
+                print(obj.performSelector(Selector('class')));
               }),
         ),
       ),

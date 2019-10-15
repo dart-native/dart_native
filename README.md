@@ -1,14 +1,19 @@
 # dart_objc
 
-Call Objective-C using Dart
+Call Objective-C using Dart.
 
 ## Getting Started
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+Developing!!!
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+```
+stubNew = NSObject(className: 'RuntimeStub');
+obj = stubNew.performSelector(Selector('foo13:'), [nil]);
+```
+
+## TODO List
+
+- [ ] Memory Management
+- [ ] Generate Dart code from ObjectiveC/C++ Headers.
+- [ ] Type support:Block
+- [ ] Type support:Struct

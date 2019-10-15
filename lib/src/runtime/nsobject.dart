@@ -3,14 +3,15 @@ import 'dart:ffi';
 import 'package:dart_objc/src/runtime/class.dart';
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/id.dart';
-import 'package:dart_objc/src/runtime/message.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 
-final Pointer<Void> nil = Pointer.fromAddress(0);
+final NSObject nil = NSObject.fromPointer(nullptr);
 
 class NSObject extends id {
-  NSObject({String className}) : super(_new(className).pointer);
-
+  factory NSObject({String className}) {
+    return Class(className).performSelector(Selector('new'));
+  }
+  
   factory NSObject.fromPointer(Pointer<Void> ptr) {
     if (object_isClass(ptr) != 0) {
       return null;
@@ -23,6 +24,3 @@ class NSObject extends id {
   NSObject._internal(Pointer<Void> ptr) : super(ptr);
 }
 
-NSObject _new(String className) {
-  return msgSend(Class(className), Selector('new'));
-}
