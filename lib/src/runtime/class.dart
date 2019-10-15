@@ -36,6 +36,6 @@ class Class extends id {
 
   @override
   String toString() {
-    return '$name:<${pointer.address}>';
+    return '<${name}: 0x${pointer.address.toRadixString(16).padLeft(16, '0')}>';
   }
 }

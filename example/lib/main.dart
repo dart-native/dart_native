@@ -27,6 +27,17 @@ class _MyAppState extends State<MyApp> {
     obj = stubNew.performSelector(Selector('foo13:'), [nil]);
   }
 
+  Future<void> press() async {
+    final stubNewPtr = stubNew.pointer;
+    stubNew.release();
+    final objPtr = obj.pointer;
+    // obj.release();
+    // NSObject.fromPointer(stubNewPtr);
+    NSObject oo = NSObject.fromPointer(objPtr);
+    Class cls = oo.performSelector(Selector('class'));
+    print(cls);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,33 +49,7 @@ class _MyAppState extends State<MyApp> {
           child: MaterialButton(
               child: Text('dialog'),
               onPressed: () {
-                // List args = [
-                //   -123,
-                //   -12345,
-                //   -123456,
-                //   -123456,
-                //   123,
-                //   12345,
-                //   123456,
-                //   123456,
-                //   123.456,
-                //   123.456,
-                //   '123456',
-                //   Class('RuntimeStub'),
-                //   Selector('foo12:'),
-                //   NSObject(className: 'RuntimeStub'),
-                //   NSObject(),
-                // ];
-                // for (var i = 0; i < 15; i++) {
-                //   var result =
-                //       stub.performSelector(Selector('foo$i:'), [args[i]]);
-                //   print('foo$i result:$result');
-                // }
-                // var result = stub.performSelector(Selector('foo15'));
-                // print('foo15 result:$result');
-                stubNew.release();
-                print(stubNew.performSelector(Selector('class')));
-                print(obj.performSelector(Selector('class')));
+                press();
               }),
         ),
       ),

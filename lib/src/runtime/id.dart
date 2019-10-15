@@ -16,7 +16,7 @@ class id implements NSObjectProtocol {
   Pointer<Void> _ptr = nullptr;
   Pointer<Void> get pointer => _ptr;
 
-  int retainCount;
+  int retainCount = 1;
 
   id(this._ptr);
 
@@ -29,7 +29,7 @@ class id implements NSObjectProtocol {
   }
 
   release() {
-    if (retainCount > 0) {
+    if (this is NSObject && retainCount > 0) {
       retainCount--;
       performSelector(Selector('release'));
     }
@@ -45,7 +45,8 @@ class id implements NSObjectProtocol {
 
   @override
   String toString() {
-    return '${isa.name}:<${_ptr.address}>';
+    // TODO: description
+    return '<${isa.name}: 0x${_ptr.address.toRadixString(16).padLeft(16, '0')}>';
   }
 
   bool operator ==(other) {

@@ -98,12 +98,5 @@ dynamic msgSend(id target, Selector selector, [List args]) {
   if (pointers != null) {
     pointers.free();
   }
-  if (result is NSObject &&
-      (selector.name.startsWith('alloc') ||
-          selector.name.startsWith('new') ||
-          selector.name.startsWith('copy') ||
-          selector.name.startsWith('mutableCopy'))) {
-    result.retainCount = 1;
-  }
   return result;
 }
