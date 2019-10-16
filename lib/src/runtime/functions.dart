@@ -37,3 +37,13 @@ final Pointer<Void> Function(Pointer<Utf8>) sel_registerName = nativeLib
     .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
         'sel_registerName')
     .asFunction();
+
+final Pointer<Void> Function(Pointer<Utf8>) objc_getProtocol = nativeLib
+    .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
+        'objc_getProtocol')
+    .asFunction();
+
+final Pointer<Utf8> Function(Pointer<Void>) protocol_getName = nativeLib
+    .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Void>)>>(
+        'protocol_getName')
+    .asFunction();

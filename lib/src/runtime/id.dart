@@ -7,7 +7,7 @@ import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/nsobject_protocol.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 
-class id implements NSObjectProtocol {
+class id with NSObjectProtocol {
   Class get isa {
     Pointer<Void> isaPtr = object_getClass(_ptr);
     return Class.fromPointer(isaPtr);
@@ -39,13 +39,8 @@ class id implements NSObjectProtocol {
   release() {
     if (this is NSObject && retainCount > 0) {
       retainCount--;
-      performSelector(Selector('release'));
+      super.release();
     }
-  }
-
-  @override
-  dynamic performSelector(Selector selector, [List args]) {
-    return msgSend(this, selector, args);
   }
 
   @override

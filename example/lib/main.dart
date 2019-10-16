@@ -11,6 +11,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   NSObject stubNew;
   NSObject obj;
+  
   @override
   void initState() {
     super.initState();
@@ -24,7 +25,7 @@ class _MyAppState extends State<MyApp> {
     // final cost = DateTime.now().millisecondsSinceEpoch - start;
     // print(cost);
     stubNew = NSObject(className: 'RuntimeStub');
-    obj = stubNew.performSelector(Selector('foo13:'), [nil]);
+    obj = stubNew.perform(Selector('foo13:'), args: [nil]);
   }
 
   Future<void> press() async {
@@ -34,7 +35,7 @@ class _MyAppState extends State<MyApp> {
     // obj.release();
     // NSObject.fromPointer(stubNewPtr);
     NSObject oo = NSObject.fromPointer(objPtr);
-    Class cls = oo.performSelector(Selector('class'));
+    Class cls = oo.perform(Selector('class'));
     print(cls);
   }
 

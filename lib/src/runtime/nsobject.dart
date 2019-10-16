@@ -9,7 +9,7 @@ final NSObject nil = NSObject.fromPointer(nullptr);
 
 class NSObject extends id {
   factory NSObject({String className}) {
-    return Class(className).performSelector(Selector('new'));
+    return Class(className).perform(Selector('new'));
   }
   
   factory NSObject.fromPointer(Pointer<Void> ptr) {
