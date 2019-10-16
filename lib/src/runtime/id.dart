@@ -14,9 +14,16 @@ class id implements NSObjectProtocol {
   }
 
   Pointer<Void> _ptr = nullptr;
-  Pointer<Void> get pointer => _ptr;
+  Pointer<Void> get pointer {
+    if (retainCount == 0) {
+      _ptr = nullptr;
+    }
+    return _ptr;
+  }
 
   int retainCount = 1;
+
+  String get address => '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
   id(this._ptr);
 
@@ -27,14 +34,12 @@ class id implements NSObjectProtocol {
       return NSObject.fromPointer(ptr);
     }
   }
-
+  /// Release NSObject instance.
+  /// Subclass can override this method and call release on its dart properties. 
   release() {
     if (this is NSObject && retainCount > 0) {
       retainCount--;
       performSelector(Selector('release'));
-    }
-    if (retainCount == 0) {
-      _ptr = nullptr;
     }
   }
 
@@ -46,7 +51,7 @@ class id implements NSObjectProtocol {
   @override
   String toString() {
     // TODO: description
-    return '<${isa.name}: 0x${_ptr.address.toRadixString(16).padLeft(16, '0')}>';
+    return '<${isa.name}: $address>';
   }
 
   bool operator ==(other) {

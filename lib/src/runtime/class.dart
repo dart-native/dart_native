@@ -16,7 +16,7 @@ class Class extends id {
     Pointer<Void> ptr = objc_getClass(classNamePtr);
     classNamePtr.free();
     if (ptr == null) {
-      // TODO: create class not exists?
+      // TODO: create class not exists? I prefer NOT.
       return null;
     } else {
       return Class._internal(className, ptr);
@@ -36,6 +36,6 @@ class Class extends id {
 
   @override
   String toString() {
-    return '<${name}: 0x${pointer.address.toRadixString(16).padLeft(16, '0')}>';
+    return '<$name: $address>';
   }
 }
