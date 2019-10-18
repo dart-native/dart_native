@@ -9,16 +9,23 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Call Objective-C using Dart
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'http://yulingtianxia.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'yulingtianxia' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'Classes/**/*', 'libffi/*.h'
+  mrc_files = 'Classes/native_runtime.mm'
+  s.exclude_files = mrc_files
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
-  s.requires_arc = false
-
+  s.requires_arc = true
+  s.vendored_libraries = "libffi/libffi.a"
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
+  
+  s.subspec 'Runtime' do |ss|
+    ss.requires_arc = false
+    ss.source_files = mrc_files
+  end
 end

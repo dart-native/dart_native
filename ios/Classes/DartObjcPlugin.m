@@ -7,7 +7,6 @@
             binaryMessenger:[registrar messenger]];
   DartObjcPlugin* instance = [[DartObjcPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:channel];
-  [instance release];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {

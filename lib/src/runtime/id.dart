@@ -2,10 +2,8 @@ import 'dart:ffi';
 
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/class.dart';
-import 'package:dart_objc/src/runtime/message.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/nsobject_protocol.dart';
-import 'package:dart_objc/src/runtime/selector.dart';
 
 class id with NSObjectProtocol {
   Class get isa {
