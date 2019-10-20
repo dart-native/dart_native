@@ -2,12 +2,14 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:dart_objc/runtime.dart';
+import 'package:dart_objc/src/runtime/block.dart';
 import 'package:dart_objc/src/runtime/class.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding) {
+storeValueToPointer(
+    dynamic object, Pointer<Pointer<Void>> ptr, String encoding) {
   if (object is num) {
     switch (encoding) {
       case 'sint8':
@@ -47,10 +49,18 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding)
       !encoding.contains('int') &&
       !encoding.contains('float')) {
     ptr.store(object);
-  } else if (object is id && (encoding == 'object' || encoding == 'class' || encoding == 'pointer')) {
+  } else if (object is id &&
+      (encoding == 'object' ||
+          encoding == 'class' ||
+          encoding == 'block' ||
+          encoding == 'pointer')) {
     ptr.store(object.pointer);
-  } else if (object is Selector && (encoding == 'selector' || encoding == 'pointer')) {
+  } else if (object is Selector &&
+      (encoding == 'selector' || encoding == 'pointer')) {
     ptr.store(object.toPointer());
+  } else if (object is Function &&
+      (encoding == 'block' || encoding == 'pointer')) {
+    ptr.store(Block(object).pointer);
   } else if (encoding == 'char *' || encoding == 'pointer') {
     if (object is String) {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
@@ -115,6 +125,9 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
         break;
       case 'selector':
         result = Selector.fromPointer(ptr);
+        break;
+      case 'block':
+        result = Block.fromPointer(ptr);
         break;
       case 'char *':
         Pointer<Utf8> temp = ptr.cast();

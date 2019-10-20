@@ -17,7 +17,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/flutter/ios"
 
 SPEC CHECKSUMS:
-  dart_objc: 487bf5db4861a91d111d94a24fd2d95392d05045
+  dart_objc: 51235b35c6f3c12fabf0df85b147c6134b16792f
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
 
 PODFILE CHECKSUM: dd58435ce9bf15a45658d9a48dd97b721db6e5b5

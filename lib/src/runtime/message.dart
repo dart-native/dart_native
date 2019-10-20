@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/src/common/library.dart';
-import 'package:dart_objc/src/common/native_type_encoding.dart';
+import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/selector.dart';

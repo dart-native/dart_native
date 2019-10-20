@@ -16,7 +16,7 @@ Call Objective-C using Dart
   s.source_files = 'Classes/**/*', 'libffi/*.h'
   mrc_files = 'Classes/native_runtime.mm'
   s.exclude_files = mrc_files
-  s.public_header_files = 'Classes/**/*.h'
+  s.public_header_files = 'Classes/DartObjcPlugin.h'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
   s.requires_arc = true

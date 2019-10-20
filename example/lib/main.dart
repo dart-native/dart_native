@@ -25,7 +25,11 @@ class _MyAppState extends State<MyApp> {
     // final cost = DateTime.now().millisecondsSinceEpoch - start;
     // print(cost);
     stubNew = NSObject(className: 'RuntimeStub');
-    obj = stubNew.perform(Selector('foo13:'), args: [nil]);
+    Function testFunc = () {
+      print('hello block!');
+      return 1;
+    };
+    obj = stubNew.perform(Selector('fooBlock:'), args: [testFunc]);
   }
 
   Future<void> press() async {

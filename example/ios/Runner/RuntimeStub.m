@@ -124,4 +124,10 @@
     return;
 }
 
+- (void)fooBlock:(int(^)(void))block
+{
+    int result = block();
+    NSLog(@"%d", result);
+}
+
 @end

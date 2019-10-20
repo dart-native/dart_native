@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
+#import "DOBlockWrapper.h"
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))
 void *
@@ -54,6 +55,13 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
         }
     }
     return result;
+}
+
+extern "C" __attribute__((visibility("default"))) __attribute((used))
+void *
+block_create(char *types) {
+    DOBlockWrapper *wrapper = [[DOBlockWrapper alloc] initWithTypeString:types];
+    return wrapper.block;
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))
@@ -121,12 +129,15 @@ native_type_encoding(const char *str) {
     COND(float, float32);
     COND(double, float64);
     
+    if (strcmp(str, "@?") == 0) {
+        return "block";
+    }
+    
     COND(id, object);
     COND(Class, class);
     COND(SEL, selector);
     PTR(void *);
     COND(char *, char *);
-    
     COND(void, void);
     
     // Ignore Method Encodings
