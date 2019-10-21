@@ -60,8 +60,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
 extern "C" __attribute__((visibility("default"))) __attribute((used))
 void *
 block_create(char *types) {
-    DOBlockWrapper *wrapper = [[DOBlockWrapper alloc] initWithTypeString:types];
-    return wrapper.block;
+    return [[DOBlockWrapper alloc] initWithTypeString:types];
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))
@@ -118,7 +117,7 @@ native_type_encoding(const char *str) {
         return #name; \
     } while(0)
     
-    #define PTR(type) COND(type, pointer)
+    #define PTR(type) COND(type, ptr)
     
     SINT(_Bool);
     INT(char);

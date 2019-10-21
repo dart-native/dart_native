@@ -53,15 +53,14 @@ storeValueToPointer(
       (encoding == 'object' ||
           encoding == 'class' ||
           encoding == 'block' ||
-          encoding == 'pointer')) {
+          encoding == 'ptr')) {
     ptr.store(object.pointer);
   } else if (object is Selector &&
-      (encoding == 'selector' || encoding == 'pointer')) {
+      (encoding == 'selector' || encoding == 'ptr')) {
     ptr.store(object.toPointer());
-  } else if (object is Function &&
-      (encoding == 'block' || encoding == 'pointer')) {
+  } else if (object is Function && (encoding == 'block' || encoding == 'ptr')) {
     ptr.store(Block(object).pointer);
-  } else if (encoding == 'char *' || encoding == 'pointer') {
+  } else if (encoding == 'char *' || encoding == 'ptr') {
     if (object is String) {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
       ptr.cast<Pointer<Utf8>>().store(charPtr);
@@ -135,7 +134,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
         break;
       case 'void':
         break;
-      case 'pointer':
+      case 'ptr':
       default:
         result = ptr;
     }

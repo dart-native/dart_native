@@ -182,35 +182,6 @@ static NSString *trim(NSString *string)
     return [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
-static NSString *parseTypeNames(NSString *typeNames)
-{
-    NSMutableString *encodeStr = [[NSMutableString alloc] init];
-    NSArray *typeArr = [typeNames componentsSeparatedByString:@","];
-    for (NSInteger i = 0; i < typeArr.count; i++) {
-        NSString *typeStr = trim([typeArr objectAtIndex:i]);
-        NSString *encode = typeEncodeWithTypeName(typeStr);
-        if (!encode) {
-            NSString *argClassName = trim([typeStr stringByReplacingOccurrencesOfString:@"*" withString:@""]);
-            if (NSClassFromString(argClassName) != NULL) {
-                encode = @"@";
-            } else {
-                NSCAssert(NO, @"unreconized type %@", typeStr);
-                return nil;
-            }
-        }
-        [encodeStr appendString:encode];
-        int length = typeLengthWithTypeName(typeStr);
-        // TODO: fix length issue
-        [encodeStr appendString:[NSString stringWithFormat:@"%d", length]];
-        
-        if (i == 0) {
-            // Blocks are passed one implicit argument - the block, of type "@?".
-            [encodeStr appendString:@"@?0"];
-        }
-    }
-    return encodeStr;
-}
-
 void copy_helper(struct _DOBlock *dst, struct _DOBlock *src)
 {
     // do not copy anything is this funcion! just retain if need.
@@ -233,6 +204,7 @@ void dispose_helper(struct _DOBlock *src)
 @property (nonatomic) NSMutableArray *allocations;
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
+@property (nonatomic) const char **typeEncodings;
 
 @end
 
@@ -243,7 +215,8 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
     // TODO: call channel with args and invoke function address
     int64_t blockAddr = (int64_t)blockWrapper.block;
     int64_t argsAddr = (int64_t)args;
-    [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(blockWrapper.numberOfArguments)] result:^(id  _Nullable result) {
+    // Use (numberOfArguments - 1) exclude block itself.
+    [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(blockWrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
         NSLog(@"block_invoke result:%@", result);
     }];
 }
@@ -256,7 +229,7 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
     self = [super init];
     if (self) {
         _allocations = [[NSMutableArray alloc] init];
-        _typeString = parseTypeNames([NSString stringWithUTF8String:typeString]);
+        _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
     }
     return self;
 }
@@ -265,6 +238,7 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
 {
     ffi_closure_free(_closure);
     free(_descriptor);
+    free(_typeEncodings);
     return;
 }
 
@@ -280,6 +254,7 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
         return nil;
     }
     self.numberOfArguments = numberOfArguments;
+    
     void *blockImp = NULL;
     _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&blockImp);
     
@@ -517,6 +492,39 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
         abort();
     }
     return argCount;
+}
+
+- (NSString *)_parseTypeNames:(NSString *)typeNames
+{
+    NSMutableString *encodeStr = [[NSMutableString alloc] init];
+    NSArray *typeArr = [typeNames componentsSeparatedByString:@","];
+    if (!_typeEncodings) {
+        _typeEncodings = malloc(sizeof(char *) * typeArr.count);
+    }
+    for (NSInteger i = 0; i < typeArr.count; i++) {
+        NSString *typeStr = trim([typeArr objectAtIndex:i]);
+        NSString *encode = typeEncodeWithTypeName(typeStr);
+        if (!encode) {
+            NSString *argClassName = trim([typeStr stringByReplacingOccurrencesOfString:@"*" withString:@""]);
+            if (NSClassFromString(argClassName) != NULL) {
+                encode = @"@";
+            } else {
+                NSCAssert(NO, @"unreconized type %@", typeStr);
+                return nil;
+            }
+        }
+        [encodeStr appendString:encode];
+        *(self.typeEncodings + i) = encode.UTF8String;
+        int length = typeLengthWithTypeName(typeStr);
+        // TODO: fix length issue
+        [encodeStr appendString:[NSString stringWithFormat:@"%d", length]];
+        
+        if (i == 0) {
+            // Blocks are passed one implicit argument - the block, of type "@?".
+            [encodeStr appendString:@"@?0"];
+        }
+    }
+    return encodeStr;
 }
 
 @end

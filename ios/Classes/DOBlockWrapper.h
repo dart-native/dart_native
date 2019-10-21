@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DOBlockWrapper : NSObject
 
 @property (nonatomic, readonly) id block;
+
 - (instancetype)initWithTypeString:(char *)typeString;
 
 @end

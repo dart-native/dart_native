@@ -1,10 +1,12 @@
 import 'dart:ffi';
 
+import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/common/channel_dispatch.dart';
 import 'package:dart_objc/src/common/library.dart';
-import 'package:dart_objc/src/common/native_types.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
+import 'package:dart_objc/src/runtime/message.dart';
+import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings);
@@ -13,19 +15,21 @@ typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings);
 final BlockCreateD blockCreate =
     nativeRuntimeLib.lookupFunction<BlockCreateC, BlockCreateD>('block_create');
 
-Map<int, Function> _blockForAddress = {};
+Map<int, Block> _blockForAddress = {};
 
 class Block extends id {
-  Function _function;
+  Function function;
+  NSObject _blockWrapper;
 
   factory Block(Function function) {
     String typeString = _typeStringForFunction(function);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(typeString);
-    Pointer<Void> blockPtr = blockCreate(typeStringPtr);
+    NSObject blockWrapper = NSObject.fromPointer(blockCreate(typeStringPtr));
+    Block result = Block._internal(blockWrapper.perform(Selector('block')).pointer);
     typeStringPtr.free();
-    Block result = Block._internal(blockPtr);
-    _blockForAddress[blockPtr.address] = function;
-    result._function = function;
+    result._blockWrapper = blockWrapper;
+    result.function = function;
+    _blockForAddress[result.pointer.address] = result;
     return result;
   }
 
@@ -44,16 +48,20 @@ class Block extends id {
 }
 
 dynamic _callback(int blockAddr, int argsAddr, int argCount) {
-  Function function = _blockForAddress[blockAddr];
+  Block block = _blockForAddress[blockAddr];
   Pointer<Pointer<Void>> argsPtrPtr = Pointer.fromAddress(argsAddr);
   List args = [];
+  Pointer pointer = block._blockWrapper.perform(Selector('typeEncodings'));
+  Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
-    // TODO: get block args encoding.
-    // loadValueFromPointer(argsPtrPtr.elementAt(i).load(), encoding);
-    
+    // Get block args encoding. First is return type.
+    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 1).load());
+    dynamic arg = loadValueFromPointer(argsPtrPtr.elementAt(i).load(), encoding);
+    args.add(arg);
   }
-  dynamic result = Function.apply(function, args);
+  dynamic result = Function.apply(block.function, args);
   _blockForAddress.remove(blockAddr);
+  block.release();
   return result;
 }
 
