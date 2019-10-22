@@ -60,7 +60,8 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
 extern "C" __attribute__((visibility("default"))) __attribute((used))
 void *
 block_create(char *types) {
-    return [[DOBlockWrapper alloc] initWithTypeString:types];
+    DOBlockWrapper *wrapper = [[[DOBlockWrapper alloc] initWithTypeString:types] autorelease];
+    return wrapper;
 }
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))

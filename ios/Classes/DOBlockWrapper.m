@@ -24,9 +24,9 @@ enum {
     BLOCK_HAS_SIGNATURE =     (1 << 30),
 };
 
-typedef void(*BHBlockCopyFunction)(void *, const void *);
-typedef void(*BHBlockDisposeFunction)(const void *);
-typedef void(*BHBlockInvokeFunction)(void *, ...);
+typedef void(*DOBlockCopyFunction)(void *, const void *);
+typedef void(*DOBlockDisposeFunction)(const void *);
+typedef void(*DOBlockInvokeFunction)(void *, ...);
 
 struct _DOBlockDescriptor1
 {
@@ -36,8 +36,8 @@ struct _DOBlockDescriptor1
 
 struct _DOBlockDescriptor2 {
     // requires BLOCK_HAS_COPY_DISPOSE
-    BHBlockCopyFunction copy;
-    BHBlockDisposeFunction dispose;
+    DOBlockCopyFunction copy;
+    DOBlockDisposeFunction dispose;
 };
 
 struct _DOBlockDescriptor3 {
@@ -56,12 +56,12 @@ struct _DOBlock
     void *isa;
     volatile int32_t flags; // contains ref count
     int32_t reserved;
-    BHBlockInvokeFunction invoke;
+    DOBlockInvokeFunction invoke;
     struct _DOBlockDescriptor *descriptor;
     void *wrapper;
 };
 
-static const char *BHSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp)
+static const char *DOSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp)
 {
     const char *out = NSGetSizeAndAlignment(str, sizep, alignp);
     if (lenp) {
@@ -76,18 +76,18 @@ static const char *BHSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInt
     return out;
 }
 
-static int BHTypeCount(const char *str)
+static int DOTypeCount(const char *str)
 {
     int typeCount = 0;
     while(str && *str)
     {
-        str = BHSizeAndAlignment(str, NULL, NULL, NULL);
+        str = DOSizeAndAlignment(str, NULL, NULL, NULL);
         typeCount++;
     }
     return typeCount;
 }
 
-static void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
+static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
 static int typeLengthWithTypeName(NSString *typeName)
 {
@@ -201,9 +201,9 @@ void dispose_helper(struct _DOBlock *src)
     ffi_closure *_closure;
     struct _DOBlockDescriptor *_descriptor;
     void *_blockIMP;
+    void *_block;
 }
 
-@property (nonatomic, readwrite) id block;
 @property (nonatomic) NSMutableArray *allocations;
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
@@ -215,7 +215,7 @@ void dispose_helper(struct _DOBlock *src)
 
 @end
 
-@interface BHInvocation : NSObject
+@interface DOInvocation : NSObject
 
 /**
  YES if the receiver has retained its arguments, NO otherwise.
@@ -282,7 +282,7 @@ void dispose_helper(struct _DOBlock *src)
 
 @end
 
-@implementation BHInvocation
+@implementation DOInvocation
 
 @synthesize argumentsRetained = _argumentsRetained;
 
@@ -482,7 +482,7 @@ void dispose_helper(struct _DOBlock *src)
 - (id)block
 {
     if (_block) {
-        return _block;
+        return (__bridge id _Nonnull)(_block);
     }
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
@@ -495,7 +495,7 @@ void dispose_helper(struct _DOBlock *src)
     
     _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&_blockIMP);
     
-    ffi_status status = ffi_prep_closure_loc(_closure, &_cif, BHFFIClosureFunc, (__bridge void *)(self), _blockIMP);
+    ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DOFFIClosureFunc, (__bridge void *)(self), _blockIMP);
     if (status != FFI_OK) {
         NSLog(@"ffi_prep_closure returned %d", (int)status);
         abort();
@@ -521,8 +521,8 @@ void dispose_helper(struct _DOBlock *src)
         (__bridge void*)self
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
-    _block = (__bridge id)Block_copy(&simulateBlock);
-    return _block;
+    _block = Block_copy(&simulateBlock);
+    return (__bridge id _Nonnull)(_block);
 }
 
 - (void)invokeWithArgs:(void **)args retValue:(void *)retValue
@@ -543,7 +543,7 @@ void dispose_helper(struct _DOBlock *src)
 {
     NSUInteger size, align;
     long length;
-    BHSizeAndAlignment(str, &size, &align, &length);
+    DOSizeAndAlignment(str, &size, &align, &length);
     ffi_type *structType = [self _allocate:sizeof(*structType)];
     structType->type = FFI_TYPE_STRUCT;
     
@@ -668,13 +668,13 @@ void dispose_helper(struct _DOBlock *src)
 
 - (ffi_type **)_typesWithEncodeString:(const char *)str getCount:(int *)outCount startIndex:(int)start nullAtEnd:(BOOL)nullAtEnd
 {
-    int argCount = BHTypeCount(str) - start;
+    int argCount = DOTypeCount(str) - start;
     ffi_type **argTypes = [self _allocate:(argCount + (nullAtEnd ? 1 : 0)) * sizeof(*argTypes)];
     
     int i = -start;
     while(str && *str)
     {
-        const char *next = BHSizeAndAlignment(str, NULL, NULL, NULL);
+        const char *next = DOSizeAndAlignment(str, NULL, NULL, NULL);
         if (i >= 0 && i < argCount) {
             ffi_type *argType = [self _ffiTypeForEncode:str];
             if (argType) {
@@ -775,31 +775,33 @@ void dispose_helper(struct _DOBlock *src)
 
 @end
 
-static void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
+static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
 {
-    DOBlockWrapper *wrapper = (__bridge DOBlockWrapper*)userdata;
-    FlutterMethodChannel *channel = DartObjcPlugin.channel;
-    // TODO: call channel with args and invoke function address
-    int64_t blockAddr = (int64_t)wrapper.block;
-    void *userRet = ret;
-    void **userArgs = args;
-    if (wrapper.hasStret) {
-        // The first arg contains address of a pointer of returned struct.
-        userRet = *((void **)args[0]);
-        // Other args move backwards.
-        userArgs = args + 1;
+    @autoreleasepool {
+        DOBlockWrapper *wrapper = (__bridge DOBlockWrapper*)userdata;
+        FlutterMethodChannel *channel = DartObjcPlugin.channel;
+        // TODO: call channel with args and invoke function address
+        int64_t blockAddr = (int64_t)wrapper.block;
+        void *userRet = ret;
+        void **userArgs = args;
+        if (wrapper.hasStret) {
+            // The first arg contains address of a pointer of returned struct.
+            userRet = *((void **)args[0]);
+            // Other args move backwards.
+            userArgs = args + 1;
+        }
+        *(void **)userRet = NULL;
+        __block DOInvocation *invocation = [[DOInvocation alloc] initWithWrapper:wrapper];
+        invocation.args = userArgs;
+        invocation.retValue = userRet;
+        invocation.realArgs = args;
+        invocation.realRetValue = ret;
+        [invocation retainArguments];
+        // Use (numberOfArguments - 1) exclude block itself.
+        int64_t argsAddr = (int64_t)(invocation.args + 1);
+        [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
+            NSLog(@"block_invoke result:%@", result);
+            invocation = nil;
+        }];
     }
-    *(void **)userRet = NULL;
-    __block BHInvocation *invocation = [[BHInvocation alloc] initWithWrapper:wrapper];
-    invocation.args = userArgs;
-    invocation.retValue = userRet;
-    invocation.realArgs = args;
-    invocation.realRetValue = ret;
-    [invocation retainArguments];
-    // Use (numberOfArguments - 1) exclude block itself.
-    int64_t argsAddr = (int64_t)(invocation.args + 1);
-    [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
-        NSLog(@"block_invoke result:%@", result);
-        invocation = nil;
-    }];
 }

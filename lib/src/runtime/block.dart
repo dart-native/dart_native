@@ -20,7 +20,7 @@ Map<int, Block> _blockForAddress = {};
 
 class Block extends id {
   Function function;
-  NSObject _blockWrapper;
+  NSObject _wrapper;
   List<String> types = [];
 
   factory Block(Function function) {
@@ -30,8 +30,9 @@ class Block extends id {
     Block result = Block._internal(blockWrapper.perform(Selector('block')).pointer);
     typeStringPtr.free();
     result.types = types;
-    result._blockWrapper = blockWrapper;
+    result._wrapper = blockWrapper;
     result.function = function;
+    // blockWrapper.release(); // blockCreate and [DOBlockWrapper alloc] make retainCount = 2, release once.
     _blockForAddress[result.pointer.address] = result;
     return result;
   }
@@ -44,9 +45,25 @@ class Block extends id {
     ChannelDispatch().registerChannelCallback('block_invoke', _callback);
   }
 
+  Block copy() {
+    Pointer<Void> newPtr = Block_copy(this.pointer);
+    Block result = Block._internal(newPtr);
+    result._wrapper = _wrapper;
+    if (function != null) {
+      result.function = function;
+      _blockForAddress[newPtr.address] = result;
+    }
+    result.types = types;
+    return result;
+  }
+
+  dealloc() {
+    _wrapper.release();
+    super.dealloc();
+  }
+
   dynamic invoke([List args]) {
     // TODO: invoke native block
-
   }
 }
 
@@ -54,7 +71,7 @@ dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   Block block = _blockForAddress[blockAddr];
   Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
   List args = [];
-  Pointer pointer = block._blockWrapper.perform(Selector('typeEncodings'));
+  Pointer pointer = block._wrapper.perform(Selector('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.

@@ -47,3 +47,13 @@ final Pointer<Utf8> Function(Pointer<Void>) protocol_getName = nativeLib
     .lookup<NativeFunction<Pointer<Utf8> Function(Pointer<Void>)>>(
         'protocol_getName')
     .asFunction();
+
+final Pointer<Void> Function(Pointer<Void>) Block_copy = nativeLib
+    .lookup<NativeFunction<Pointer<Void> Function(Pointer<Void>)>>(
+        '_Block_copy')
+    .asFunction();
+
+final void Function(Pointer<Void>) Block_release = nativeLib
+    .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
+        '_Block_release')
+    .asFunction();

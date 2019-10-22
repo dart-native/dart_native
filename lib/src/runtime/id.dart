@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/class.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';
@@ -13,13 +14,21 @@ class id with NSObjectProtocol {
 
   Pointer<Void> _ptr = nullptr;
   Pointer<Void> get pointer {
-    if (retainCount == 0) {
-      _ptr = nullptr;
-    }
     return _ptr;
   }
 
-  int retainCount = 1;
+  int _retainCount = 1;
+
+  int get retainCount {
+    return _retainCount;
+  }
+
+  set retainCount(int count) {
+    _retainCount = count;
+    if (_retainCount == 0) {
+      dealloc();
+    }
+  }
 
   String get address => '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
@@ -32,13 +41,30 @@ class id with NSObjectProtocol {
       return NSObject.fromPointer(ptr);
     }
   }
+
+  id retain() {
+    if (this is NSObject) {
+      retainCount ++;
+      return super.retain();
+    }
+    return this;
+  }
+
   /// Release NSObject instance.
   /// Subclass can override this method and call release on its dart properties. 
   release() {
-    if (this is NSObject && retainCount > 0) {
+    if (retainCount > 0) {
+      if (this is NSObject) {
+        super.release();
+      } else if (this is Block) {
+        Block_release(this.pointer);
+      }
       retainCount--;
-      super.release();
     }
+  }
+
+  dealloc() {
+    _ptr = nullptr;
   }
 
   @override
