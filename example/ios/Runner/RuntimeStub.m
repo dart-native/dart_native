@@ -124,9 +124,10 @@
     return;
 }
 
-- (void)fooBlock:(int(^)(void))block
+- (void)fooBlock:(int(^)(NSInteger a))block
 {
-    int result = block();
+    NSInteger a = 5;
+    int result = block(a);
     NSLog(@"%d", result);
 }
 

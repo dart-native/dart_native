@@ -87,6 +87,8 @@ static int BHTypeCount(const char *str)
     return typeCount;
 }
 
+static void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
+
 static int typeLengthWithTypeName(NSString *typeName)
 {
     if (!typeName) return 0;
@@ -198,6 +200,7 @@ void dispose_helper(struct _DOBlock *src)
     ffi_cif _cif;
     ffi_closure *_closure;
     struct _DOBlockDescriptor *_descriptor;
+    void *_blockIMP;
 }
 
 @property (nonatomic, readwrite) id block;
@@ -205,22 +208,256 @@ void dispose_helper(struct _DOBlock *src)
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) const char **typeEncodings;
+@property (nonatomic, getter=hasStret) BOOL stret;
+@property (nonatomic) NSMethodSignature *signature;
+
+- (void)invokeWithArgs:(void **)args retValue:(void *)retValue;
 
 @end
 
-void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
+@interface BHInvocation : NSObject
+
+/**
+ YES if the receiver has retained its arguments, NO otherwise.
+ */
+@property (nonatomic, getter=isArgumentsRetained, readwrite) BOOL argumentsRetained;
+
+/**
+ The block's method signature.
+ */
+@property (nonatomic, strong, readonly) NSMethodSignature *methodSignature;
+
+@property (nonatomic, readwrite, weak) DOBlockWrapper *wrapper;
+@property (nonatomic, readwrite) void *_Nullable *_Null_unspecified args;
+@property (nonatomic, nullable, readwrite) void *retValue;
+@property (nonatomic) void *_Nullable *_Null_unspecified realArgs;
+@property (nonatomic, nullable) void *realRetValue;
+@property (nonatomic) NSMutableData *dataArgs;
+@property (nonatomic) NSMutableDictionary *mallocMap;
+@property (nonatomic) NSMutableDictionary *retainMap;
+@property (nonatomic) dispatch_queue_t argumentsRetainedQueue;
+@property (nonatomic) NSUInteger numberOfRealArgs;
+
+/**
+ Invoke original implementation of the block.
+ */
+- (void)invokeOriginalBlock;
+
+/**
+ If the receiver hasn’t already done so, retains the target and all object arguments of the receiver and copies all of its C-string arguments and blocks. If a returnvalue has been set, this is also retained or copied.
+ */
+- (void)retainArguments;
+
+/**
+ Gets the receiver's return value.
+ If the NSInvocation object has never been invoked, the result of this method is undefined.
+
+ @param retLoc An untyped buffer into which the receiver copies its return value. It should be large enough to accommodate the value. See the discussion in NSInvocation for more information about buffer.
+ */
+- (void)getReturnValue:(void *)retLoc;
+
+/**
+ Sets the receiver’s return value.
+
+ @param retLoc An untyped buffer whose contents are copied as the receiver's return value.
+ @discussion This value is normally set when you send an invokeOriginalBlock message.
+ */
+- (void)setReturnValue:(void *)retLoc;
+
+/**
+ Sets an argument of the receiver.
+
+ @param argumentLocation An untyped buffer containing an argument to be assigned to the receiver. See the discussion in NSInvocation relating to argument values that are objects.
+ @param idx An integer specifying the index of the argument. Indices 0 indicates self, use indices 1 and greater for the arguments normally passed in an invocation.
+ */
+- (void)getArgument:(void *)argumentLocation atIndex:(NSInteger)idx;
+
+/**
+ Sets an argument of the receiver.
+
+ @param argumentLocation An untyped buffer containing an argument to be assigned to the receiver. See the discussion in NSInvocation relating to argument values that are objects.
+ @param idx An integer specifying the index of the argument. Indices 0 indicates self, use indices 1 and greater for the arguments normally passed in an invocation.
+ */
+- (void)setArgument:(void *)argumentLocation atIndex:(NSInteger)idx;
+
+@end
+
+@implementation BHInvocation
+
+@synthesize argumentsRetained = _argumentsRetained;
+
+- (instancetype)initWithWrapper:(DOBlockWrapper *)wrapper
 {
-    DOBlockWrapper *blockWrapper = (__bridge DOBlockWrapper*)userdata;
-    FlutterMethodChannel *channel = DartObjcPlugin.channel;
-    // TODO: call channel with args and invoke function address
-    int64_t blockAddr = (int64_t)blockWrapper.block;
-    int64_t argsAddr = (int64_t)args;
-    // Use (numberOfArguments - 1) exclude block itself.
-    [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(blockWrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
-        NSLog(@"block_invoke result:%@", result);
-    }];
+    self = [super init];
+    if (self) {
+        _wrapper = wrapper;
+        _argumentsRetainedQueue = dispatch_queue_create("com.blockhook.argumentsRetained", DISPATCH_QUEUE_CONCURRENT);
+        NSUInteger numberOfArguments = wrapper.signature.numberOfArguments;
+        if (self.wrapper.hasStret) {
+            numberOfArguments++;
+        }
+        _numberOfRealArgs = numberOfArguments;
+    }
+    return self;
 }
 
+#pragma mark - getter&setter
+
+- (BOOL)isArgumentsRetained
+{
+    __block BOOL temp;
+    dispatch_sync(self.argumentsRetainedQueue, ^{
+        temp = self->_argumentsRetained;
+    });
+    return temp;
+}
+
+- (void)setArgumentsRetained:(BOOL)argumentsRetained
+{
+    dispatch_barrier_async(self.argumentsRetainedQueue, ^{
+        self->_argumentsRetained = argumentsRetained;
+    });
+}
+
+#pragma mark - Public Method
+
+- (void)invokeOriginalBlock
+{
+    [self.wrapper invokeWithArgs:self.realArgs retValue:self.realRetValue];
+}
+
+- (NSMethodSignature *)methodSignature
+{
+    return self.wrapper.signature;
+}
+
+- (void)retainArguments
+{
+    if (!self.isArgumentsRetained) {
+        self.dataArgs = [NSMutableData dataWithLength:self.numberOfRealArgs * sizeof(void *)];
+        self.retainMap = [NSMutableDictionary dictionaryWithCapacity:self.numberOfRealArgs + 1];
+        self.mallocMap = [NSMutableDictionary dictionaryWithCapacity:self.numberOfRealArgs + 1];
+        void **args = self.dataArgs.mutableBytes;
+        for (NSUInteger idx = 0; idx < self.numberOfRealArgs; idx++) {
+            const char *type = NULL;
+            if (self.wrapper.hasStret) {
+                if (idx == 0) {
+                    type = self.methodSignature.methodReturnType;
+                }
+                else {
+                    type = [self.methodSignature getArgumentTypeAtIndex:idx - 1];
+                }
+            }
+            else {
+                type = [self.methodSignature getArgumentTypeAtIndex:idx];
+            }
+            args[idx] = [self _copyPointer:self.realArgs[idx] encode:type key:@(idx)];
+            [self _retainPointer:args[idx] encode:type key:@(idx)];
+        }
+        self.realArgs = args;
+        if (self.wrapper.hasStret) {
+            self.args = args + 1;
+            self.retValue = *((void **)args[0]);
+        }
+        else {
+            void *ret = [self _copyPointer:self.retValue encode:self.methodSignature.methodReturnType key:@-1];
+            [self _retainPointer:ret encode:self.methodSignature.methodReturnType key:@-1];
+            self.args = args;
+            self.retValue = ret;
+            self.realRetValue = ret;
+        }
+        
+        self.argumentsRetained = YES;
+    }
+}
+
+- (void)getReturnValue:(void *)retLoc
+{
+    if (!retLoc || !self.retValue) {
+        return;
+    }
+    NSUInteger retSize = self.methodSignature.methodReturnLength;
+    memcpy(retLoc, self.retValue, retSize);
+}
+
+- (void)setReturnValue:(void *)retLoc
+{
+    if (!retLoc || !self.retValue) {
+        return;
+    }
+    NSUInteger retSize = self.methodSignature.methodReturnLength;
+    if (self.isArgumentsRetained) {
+        [self _retainPointer:retLoc encode:self.methodSignature.methodReturnType key:@-1];
+    }
+    memcpy(self.retValue, retLoc, retSize);
+}
+
+- (void)getArgument:(void *)argumentLocation atIndex:(NSInteger)idx
+{
+    if (!argumentLocation || !self.args || !self.args[idx]) {
+        return;
+    }
+    void *arg = self.args[idx];
+    const char *type = [self.methodSignature getArgumentTypeAtIndex:idx];
+    NSUInteger argSize;
+    NSGetSizeAndAlignment(type, &argSize, NULL);
+    memcpy(argumentLocation, arg, argSize);
+}
+
+- (void)setArgument:(void *)argumentLocation atIndex:(NSInteger)idx
+{
+    if (!argumentLocation || !self.args || !self.args[idx]) {
+        return;
+    }
+    void *arg = self.args[idx];
+    const char *type = [self.methodSignature getArgumentTypeAtIndex:idx];
+    NSUInteger argSize;
+    NSGetSizeAndAlignment(type, &argSize, NULL);
+    if (self.isArgumentsRetained) {
+        [self _retainPointer:argumentLocation encode:type key:@(idx)];
+    }
+    memcpy(arg, argumentLocation, argSize);
+}
+
+#pragma mark - Private Helper
+
+- (void *)_copyPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key
+{
+    NSUInteger pointerSize;
+    NSGetSizeAndAlignment(encode, &pointerSize, NULL);
+    NSMutableData *pointerData = [NSMutableData dataWithLength:pointerSize];
+    self.mallocMap[key] = pointerData;
+    void *pointerBuf = pointerData.mutableBytes;
+    memcpy(pointerBuf, pointer, pointerSize);
+    return pointerBuf;
+}
+
+- (void)_retainPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key
+{
+    void *p = *pointer;
+    if (!p) {
+        return;
+    }
+    if (encode[0] == '@') {
+        id arg = (__bridge id)p;
+        if (strcmp(encode, "@?") == 0) {
+            self.retainMap[key] = [arg copy];
+        }
+        else {
+            self.retainMap[key] = arg;
+        }
+    }
+    else if (encode[0] == '*') {
+        char *arg = p;
+        NSMutableData *data = [NSMutableData dataWithLength:sizeof(char) * strlen(arg)];
+        self.retainMap[key] = data;
+        char *str = data.mutableBytes;
+        strcpy(str, arg);
+        *pointer = str;
+    }
+}
+
+@end
 
 @implementation DOBlockWrapper
 
@@ -248,17 +485,17 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
         return _block;
     }
     const char *typeString = self.typeString.UTF8String;
+    int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
     // Check block encoding types valid.
-    NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:typeString];
+    NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:typeString flags:flags];
     if (numberOfArguments == -1) { // Unknown encode.
         return nil;
     }
     self.numberOfArguments = numberOfArguments;
     
-    void *blockImp = NULL;
-    _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&blockImp);
+    _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&_blockIMP);
     
-    ffi_status status = ffi_prep_closure_loc(_closure, &_cif, BHFFIClosureFunc, (__bridge void *)(self), blockImp);
+    ffi_status status = ffi_prep_closure_loc(_closure, &_cif, BHFFIClosureFunc, (__bridge void *)(self), _blockIMP);
     if (status != FFI_OK) {
         NSLog(@"ffi_prep_closure returned %d", (int)status);
         abort();
@@ -274,18 +511,23 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
     
     _descriptor = malloc(sizeof(struct _DOBlockDescriptor));
     memcpy(_descriptor, &descriptor, sizeof(struct _DOBlockDescriptor));
-
+//    TODO: handle x86 stret
     struct _DOBlock simulateBlock = {
         &_NSConcreteStackBlock,
-        (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE),
+        flags,
         0,
-        blockImp,
+        _blockIMP,
         _descriptor,
         (__bridge void*)self
     };
-
+    _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     _block = (__bridge id)Block_copy(&simulateBlock);
     return _block;
+}
+
+- (void)invokeWithArgs:(void **)args retValue:(void *)retValue
+{
+    ffi_call(&_cif, _blockIMP, retValue, args);
 }
 
 #pragma mark - Private Method
@@ -460,29 +702,27 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
     return argTypes;
 }
 
-- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str
+- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str flags:(int32_t)flags
 {
     int argCount;
     ffi_type **argTypes;
     ffi_type *returnType;
-//    TODO: handle x86 stret
-//    struct _BHBlock *bh_block = (__bridge void *)self.block;
-//    if ((bh_block->flags & BLOCK_HAS_STRET)) {
-//        argTypes = [self _typesWithEncodeString:str getCount:&argCount startIndex:0];
-//        if (!argTypes) { // Error!
-//            return -1;
-//        }
-//        argTypes[0] = &ffi_type_pointer;
-//        returnType = &ffi_type_void;
-//        self.stret = YES;
-//    }
-//    else {
+    if ((flags & BLOCK_HAS_STRET)) {
+        argTypes = [self _typesWithEncodeString:str getCount:&argCount startIndex:0];
+        if (!argTypes) { // Error!
+            return -1;
+        }
+        argTypes[0] = &ffi_type_pointer;
+        returnType = &ffi_type_void;
+        self.stret = YES;
+    }
+    else {
         argTypes = [self _argsWithEncodeString:str getCount:&argCount];
         if (!argTypes) { // Error!
             return -1;
         }
         returnType = [self _ffiTypeForEncode:str];
-//    }
+    }
     if (!returnType) { // Error!
         return -1;
     }
@@ -501,6 +741,8 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
     if (!_typeEncodings) {
         _typeEncodings = malloc(sizeof(char *) * typeArr.count);
     }
+    NSString *retEncodeStr = @"";
+    int currentLength = sizeof(void *); // Init length for block pointer
     for (NSInteger i = 0; i < typeArr.count; i++) {
         NSString *typeStr = trim([typeArr objectAtIndex:i]);
         NSString *encode = typeEncodeWithTypeName(typeStr);
@@ -513,19 +755,51 @@ void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
                 return nil;
             }
         }
-        [encodeStr appendString:encode];
+        
         *(self.typeEncodings + i) = encode.UTF8String;
         int length = typeLengthWithTypeName(typeStr);
-        // TODO: fix length issue
-        [encodeStr appendString:[NSString stringWithFormat:@"%d", length]];
         
         if (i == 0) {
             // Blocks are passed one implicit argument - the block, of type "@?".
             [encodeStr appendString:@"@?0"];
+            retEncodeStr = encode;
+        }
+        else {
+            [encodeStr appendString:encode];
+            [encodeStr appendString:[NSString stringWithFormat:@"%d", currentLength]];
+            currentLength += length;
         }
     }
-    return encodeStr;
+    return [NSString stringWithFormat:@"%@%d%@", retEncodeStr, currentLength, encodeStr];
 }
 
 @end
 
+static void BHFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
+{
+    DOBlockWrapper *wrapper = (__bridge DOBlockWrapper*)userdata;
+    FlutterMethodChannel *channel = DartObjcPlugin.channel;
+    // TODO: call channel with args and invoke function address
+    int64_t blockAddr = (int64_t)wrapper.block;
+    void *userRet = ret;
+    void **userArgs = args;
+    if (wrapper.hasStret) {
+        // The first arg contains address of a pointer of returned struct.
+        userRet = *((void **)args[0]);
+        // Other args move backwards.
+        userArgs = args + 1;
+    }
+    *(void **)userRet = NULL;
+    __block BHInvocation *invocation = [[BHInvocation alloc] initWithWrapper:wrapper];
+    invocation.args = userArgs;
+    invocation.retValue = userRet;
+    invocation.realArgs = args;
+    invocation.realRetValue = ret;
+    [invocation retainArguments];
+    // Use (numberOfArguments - 1) exclude block itself.
+    int64_t argsAddr = (int64_t)(invocation.args + 1);
+    [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
+        NSLog(@"block_invoke result:%@", result);
+        invocation = nil;
+    }];
+}

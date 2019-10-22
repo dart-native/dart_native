@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/common/channel_dispatch.dart';
 import 'package:dart_objc/src/common/library.dart';
+import 'package:dart_objc/src/common/native_types.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/message.dart';
@@ -20,13 +21,15 @@ Map<int, Block> _blockForAddress = {};
 class Block extends id {
   Function function;
   NSObject _blockWrapper;
+  List<String> types = [];
 
   factory Block(Function function) {
-    String typeString = _typeStringForFunction(function);
-    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(typeString);
+    List<String> types = _typeStringForFunction(function);
+    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper = NSObject.fromPointer(blockCreate(typeStringPtr));
     Block result = Block._internal(blockWrapper.perform(Selector('block')).pointer);
     typeStringPtr.free();
+    result.types = types;
     result._blockWrapper = blockWrapper;
     result.function = function;
     _blockForAddress[result.pointer.address] = result;
@@ -49,14 +52,15 @@ class Block extends id {
 
 dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   Block block = _blockForAddress[blockAddr];
-  Pointer<Pointer<Void>> argsPtrPtr = Pointer.fromAddress(argsAddr);
+  Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
   List args = [];
   Pointer pointer = block._blockWrapper.perform(Selector('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
-    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 1).load());
-    dynamic arg = loadValueFromPointer(argsPtrPtr.elementAt(i).load(), encoding);
+    String encoding = nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).load()).load().toString();
+    dynamic value = loadValueFromPointer(argsPtrPtr.elementAt(i).load().load(), encoding);
+    dynamic arg = loadValueForNativeType(block.types[i + 1], value);
     args.add(arg);
   }
   dynamic result = Function.apply(block.function, args);
@@ -65,7 +69,7 @@ dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   return result;
 }
 
-String _typeStringForFunction(Function function) {
+List<String> _typeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
   if (argsAndRet.length == 2) {
@@ -73,10 +77,10 @@ String _typeStringForFunction(Function function) {
     String ret = argsAndRet.last;
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      return '$ret, $args';
+      return '$ret, $args'.split(', ');
     } else {
-      return '$ret';
+      return [ret];
     }
   }
-  return '';
+  return [];
 }

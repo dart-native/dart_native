@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/runtime/block.dart';
 import 'package:dart_objc/src/runtime/class.dart';
