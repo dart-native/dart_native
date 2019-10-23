@@ -76,7 +76,10 @@ dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
     String encoding = nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).load()).load().toString();
-    dynamic value = loadValueFromPointer(argsPtrPtr.elementAt(i).load().load(), encoding);
+    dynamic value = loadStructFromPointer(argsPtrPtr.elementAt(i).load(), encoding);
+    if (value == null) {
+      value = loadValueFromPointer(argsPtrPtr.elementAt(i).load().load(), encoding);
+    }
     dynamic arg = loadValueForNativeType(block.types[i + 1], value);
     args.add(arg);
   }

@@ -124,9 +124,9 @@
     return;
 }
 
-- (void)fooBlock:(int(^)(NSInteger a))block
+- (void)fooBlock:(int(^)(CGSize a))block
 {
-    NSInteger a = 5;
+    CGSize a = (CGSize){12.345, 54.321};
     int result = block(a);
     NSLog(@"%d", result);
 }

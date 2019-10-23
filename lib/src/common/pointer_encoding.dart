@@ -76,6 +76,20 @@ storeValueToPointer(
   }
 }
 
+dynamic loadStructFromPointer(Pointer<Pointer<Void>> ptr, String encoding) {
+  dynamic result;
+  if (encoding.contains('=')) { // struct
+    String structName = encoding.split('=').first;
+    switch (structName) {
+      case 'CGSize':
+        result = CGSize.fromPointer(ptr.cast());
+        break;
+      default:
+    }
+  }
+  return result;
+}
+
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
   dynamic result;
   if (encoding.contains('int') || encoding.contains('float')) {

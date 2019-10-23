@@ -2,6 +2,7 @@
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
 #import "DOBlockWrapper.h"
+#import "Wrapper-Interface.h"
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))
 void *
@@ -63,6 +64,10 @@ block_create(char *types) {
     DOBlockWrapper *wrapper = [[[DOBlockWrapper alloc] initWithTypeString:types] autorelease];
     return wrapper;
 }
+
+extern "C" __attribute__((visibility("default"))) __attribute((used))
+const char *
+native_struct_encoding(const char *encoding);
 
 extern "C" __attribute__((visibility("default"))) __attribute((used))
 const char *
@@ -153,9 +158,72 @@ native_type_encoding(const char *str) {
     }
     
     // Struct Type Encodings
-//    if (*str == '{') {
-//    }
+    if (*str == '{') {
+        return native_struct_encoding(str);
+    }
     
     NSLog(@"Unknown encode string %s", str);
     return str;
 }
+
+extern "C" __attribute__((visibility("default"))) __attribute((used))
+const char **
+native_types_encoding(const char *str, int *count, int startIndex)
+{
+    int argCount = DOTypeCount(str) - startIndex;
+    const char **argTypes = (const char **)malloc(sizeof(char *) * argCount);
+    
+    int i = -startIndex;
+    while(str && *str)
+    {
+        const char *next = DOSizeAndAlignment(str, NULL, NULL, NULL);
+        if (i >= 0 && i < argCount) {
+            const char *argType = native_type_encoding(str);
+            if (argType) {
+                argTypes[i] = argType;
+            }
+            else {
+                if (count) {
+                    *count = -1;
+                }
+                return nil;
+            }
+        }
+        i++;
+        str = next;
+    }
+    
+    if (count) {
+        *count = argCount;
+    }
+    
+    return argTypes;
+}
+
+const char *
+native_struct_encoding(const char *encoding)
+{
+    NSUInteger size, align;
+    long length;
+    DOSizeAndAlignment(encoding, &size, &align, &length);
+    NSString *str = [NSString stringWithUTF8String:encoding];
+    const char *temp = [str substringWithRange:NSMakeRange(0, length)].UTF8String;
+    int structNameLength = 0;
+    // cut "struct="
+    while (temp && *temp && *temp != '=') {
+        temp++;
+        structNameLength++;
+    }
+    int elementCount = 0;
+    const char **elements = native_types_encoding(temp + 1, &elementCount, 0);
+    if (!elements) {
+        return nil;
+    }
+    NSMutableString *structType = [NSMutableString stringWithString:[str substringWithRange:NSMakeRange(1, structNameLength)]];
+    for (int i = 0; i < elementCount; i++) {
+        [structType appendFormat:@" %@", [NSString stringWithUTF8String:elements[i]]];
+    }
+    return structType.UTF8String;
+}
+
+

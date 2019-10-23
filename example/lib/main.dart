@@ -11,22 +11,22 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   NSObject stubNew;
   NSObject obj;
-  
+
   @override
   void initState() {
     super.initState();
     // final start = DateTime.now().millisecondsSinceEpoch;
     // String version;
     // for (var i = 0; i < 100000; i++) {
-      // NSObject device = Class('UIDevice').performSelector(Selector('currentDevice'));
-      // NSObject nsstring = device.performSelector(Selector('systemVersion'));
-      // version = nsstring.performSelector(Selector('UTF8String'));
+    // NSObject device = Class('UIDevice').performSelector(Selector('currentDevice'));
+    // NSObject nsstring = device.performSelector(Selector('systemVersion'));
+    // version = nsstring.performSelector(Selector('UTF8String'));
     // }
     // final cost = DateTime.now().millisecondsSinceEpoch - start;
     // print(cost);
     stubNew = NSObject(className: 'RuntimeStub');
-    Function testFunc = (NSInteger a) {
-      print('hello block! ${a.value}');
+    Function testFunc = (CGSize a) {
+      print('hello block! ${a.toString()}');
       return 1;
     };
     obj = stubNew.perform(Selector('fooBlock:'), args: [testFunc]);

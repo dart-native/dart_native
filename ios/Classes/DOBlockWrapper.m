@@ -61,7 +61,7 @@ struct _DOBlock
     void *wrapper;
 };
 
-static const char *DOSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp)
+const char *DOSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp)
 {
     const char *out = NSGetSizeAndAlignment(str, sizep, alignp);
     if (lenp) {
@@ -76,7 +76,7 @@ static const char *DOSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInt
     return out;
 }
 
-static int DOTypeCount(const char *str)
+int DOTypeCount(const char *str)
 {
     int typeCount = 0;
     while(str && *str)
