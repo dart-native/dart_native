@@ -109,7 +109,9 @@ class _NSUInteger2_Wrapper {
     }
   }
 
-  free() => _is64bit ? _value64.addressOf.free() : _value32.addressOf.free();
+  Pointer get addressOf => _is64bit ? _value64.addressOf : _value32.addressOf;
+
+  free() => addressOf.free();
 
   _NSUInteger2_Wrapper.fromPointer(Pointer<Void> ptr) {
     if (_is64bit) {
@@ -210,7 +212,9 @@ class _CGFloat2_Wrapper {
     }
   }
 
-  free() => LP64 ? _value64.addressOf.free() : _value32.addressOf.free();
+  Pointer get addressOf => LP64 ? _value64.addressOf : _value32.addressOf;
+
+  free() => addressOf.free();
 
   _CGFloat2_Wrapper.fromPointer(Pointer<Void> ptr) {
     if (LP64) {
@@ -371,7 +375,9 @@ class _CGFloat4_Wrapper {
     }
   }
 
-  free() => LP64 ? _value64.addressOf.free() : _value32.addressOf.free();
+  Pointer get addressOf => LP64 ? _value64.addressOf : _value32.addressOf;
+
+  free() => addressOf.free();
 
   _CGFloat4_Wrapper.fromPointer(Pointer<Void> ptr) {
     if (LP64) {

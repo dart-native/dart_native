@@ -29,7 +29,8 @@ class Block extends id {
     List<String> types = _typeStringForFunction(function);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper = NSObject.fromPointer(blockCreate(typeStringPtr));
-    Block result = Block._internal(blockWrapper.perform(Selector('block')).pointer);
+    Block result =
+        Block._internal(blockWrapper.perform(Selector('block')).pointer);
     typeStringPtr.free();
     result.types = types;
     result._wrapper = blockWrapper;
@@ -68,6 +69,11 @@ class Block extends id {
   }
 }
 
+// typedef CallbackC = Pointer<Void> Function(Pointer<Void> block, Pointer<Pointer<Pointer<Void>>> args, Pointer<Pointer<Void>> ret, Int32 argCount);
+// typedef CallbackD = Pointer<Void> Function(Pointer<Void> block, Pointer<Pointer<Pointer<Void>>> args, Pointer<Pointer<Void>> ret, Int32 argCount);
+
+// Pointer<NativeFunction<CallbackC>> callbackPtr = Pointer.fromFunction(_callback);
+
 dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   Block block = _blockForAddress[blockAddr];
   Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
@@ -76,10 +82,14 @@ dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
-    String encoding = nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).load()).load().toString();
-    dynamic value = loadStructFromPointer(argsPtrPtr.elementAt(i).load(), encoding);
+    String encoding = nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).load())
+        .load()
+        .toString();
+    dynamic value =
+        loadStructFromPointer(argsPtrPtr.elementAt(i).load(), encoding);
     if (value == null) {
-      value = loadValueFromPointer(argsPtrPtr.elementAt(i).load().load(), encoding);
+      value =
+          loadValueFromPointer(argsPtrPtr.elementAt(i).load().load(), encoding);
     }
     dynamic arg = loadValueForNativeType(block.types[i + 1], value);
     args.add(arg);
@@ -91,12 +101,14 @@ dynamic _callback(int blockAddr, int argsAddr, int argCount) {
 }
 
 Map<String, String> _nativeTypeNameMap = {
-  'unsigned_short' : 'unsigned short',
-  'unsigned_int' : 'unsigned int',
-  'unsigned_long' : 'unsigned long',
-  'long_long' : 'long long',
-  'unsigned_long_long' : 'unsigned long long',
+  'unsigned_short': 'unsigned short',
+  'unsigned_int': 'unsigned int',
+  'unsigned_long': 'unsigned long',
+  'long_long': 'long long',
+  'unsigned_long_long': 'unsigned long long',
 };
+
+List<String> _nativeTypeNames = ['id', 'BOOL', 'int', 'void', 'char', 'char', 'short', 'unsigned short', 'unsigned int', 'long', 'unsigned long', 'long long', 'unsigned long long', 'float', 'double', 'bool', 'size_t', 'CGFloat', 'CGSize', 'CGRect', 'CGPoint', 'CGVector', 'NSRange', 'NSInteger', 'NSUInteger', 'Class', 'SEL', 'Selector'];
 
 List<String> _typeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
@@ -109,7 +121,17 @@ List<String> _typeStringForFunction(Function function) {
       _nativeTypeNameMap.forEach((String dartTypeName, String nativeTypeName) {
         args = args.replaceAll(dartTypeName, nativeTypeName);
       });
-      return '$ret, $args'.split(', ');
+      return '$ret, $args'.split(', ').map((String s) {
+        // TODO: handle NSObject **
+        if (s.contains('Pointer')) {
+          return 'ptr';
+        } else if (s.contains('Function')) {
+          return 'block';
+        } else if (!_nativeTypeNames.contains(s)) {
+          return 'NSObject';
+        }
+        return s;
+      }).toList();
     } else {
       return [ret];
     }

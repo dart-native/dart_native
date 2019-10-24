@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:dart_objc/dart_objc.dart';
 
@@ -25,7 +27,8 @@ class _MyAppState extends State<MyApp> {
     // final cost = DateTime.now().millisecondsSinceEpoch - start;
     // print(cost);
     stubNew = NSObject(className: 'RuntimeStub');
-    Function testFunc = (long_long a) {
+    Function testFunc = (NSObject a) {
+      
       print('hello block! ${a.toString()}');
       // return 1;
     };

@@ -124,11 +124,11 @@
     return;
 }
 
-- (void)fooBlock:(void(^)(long long a))block
+- (void)fooBlock:(void(^)(NSObject *a))block
 {
 //    CGRect a = (CGRect){12.345, 54.321, 11.11, 22.33};
 //    char a = '1';
-    block(101);
+    block([NSObject new]);
 //    NSLog(@"%d", result);
 }
 

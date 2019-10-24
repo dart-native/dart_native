@@ -125,11 +125,10 @@ static int typeLengthWithTypeName(NSString *typeName)
         DO_DEFINE_TYPE_LENGTH(NSUInteger);
         DO_DEFINE_TYPE_LENGTH(Class);
         DO_DEFINE_TYPE_LENGTH(SEL);
-        DO_DEFINE_TYPE_LENGTH(void*);
-        DO_DEFINE_TYPE_LENGTH(void *);
-        DO_DEFINE_TYPE_LENGTH(id *);
+        [_typeLengthDict setObject:@(sizeof(SEL)) forKey:@"Selector"];
+        [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"ptr"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"block"];
-        [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"id*"];
+        [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"NSObject*"];
         [_typeLengthDict setObject:@(sizeof(NSObject *)) forKey:@"NSObject"];
     }
     return [_typeLengthDict[typeName] intValue];
@@ -170,10 +169,10 @@ static NSString *typeEncodeWithTypeName(NSString *typeName)
         DO_DEFINE_TYPE_ENCODE_CASE(NSUInteger);
         DO_DEFINE_TYPE_ENCODE_CASE(Class);
         DO_DEFINE_TYPE_ENCODE_CASE(SEL);
-        DO_DEFINE_TYPE_ENCODE_CASE(void*);
-        DO_DEFINE_TYPE_ENCODE_CASE(void *);
+        [_typeEncodeDict setObject:@"Selector" forKey:@"Selector"];
+        [_typeEncodeDict setObject:@"^v" forKey:@"ptr"];
         [_typeEncodeDict setObject:@"@?" forKey:@"block"];
-        [_typeEncodeDict setObject:@"^@" forKey:@"id*"];
+        [_typeEncodeDict setObject:@"^@" forKey:@"NSObject*"];
         [_typeEncodeDict setObject:@"@" forKey:@"NSObject"];
     }
     return _typeEncodeDict[typeName];
