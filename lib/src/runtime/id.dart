@@ -69,7 +69,6 @@ class id with NSObjectProtocol {
 
   @override
   String toString() {
-    // TODO: description
     return '<${isa.name}: $address>';
   }
 

@@ -124,11 +124,12 @@
     return;
 }
 
-- (void)fooBlock:(int(^)(CGRect a))block
+- (void)fooBlock:(void(^)(long long a))block
 {
-    CGRect a = (CGRect){12.345, 54.321, 11.11, 22.33};
-    int result = block(a);
-    NSLog(@"%d", result);
+//    CGRect a = (CGRect){12.345, 54.321, 11.11, 22.33};
+//    char a = '1';
+    block(101);
+//    NSLog(@"%d", result);
 }
 
 @end

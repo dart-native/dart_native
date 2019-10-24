@@ -24,6 +24,8 @@ class Block extends id {
   List<String> types = [];
 
   factory Block(Function function) {
+    // dart:ffi only supports calling static Dart functions from native code.
+    // I choose libffi, Flutter channel and ObjC runtime.
     List<String> types = _typeStringForFunction(function);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper = NSObject.fromPointer(blockCreate(typeStringPtr));
@@ -32,7 +34,6 @@ class Block extends id {
     result.types = types;
     result._wrapper = blockWrapper;
     result.function = function;
-    // blockWrapper.release(); // blockCreate and [DOBlockWrapper alloc] make retainCount = 2, release once.
     _blockForAddress[result.pointer.address] = result;
     return result;
   }
@@ -89,14 +90,25 @@ dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   return result;
 }
 
+Map<String, String> _nativeTypeNameMap = {
+  'unsigned_short' : 'unsigned short',
+  'unsigned_int' : 'unsigned int',
+  'unsigned_long' : 'unsigned long',
+  'long_long' : 'long long',
+  'unsigned_long_long' : 'unsigned long long',
+};
+
 List<String> _typeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
   if (argsAndRet.length == 2) {
     String args = argsAndRet.first;
-    String ret = argsAndRet.last;
+    String ret = argsAndRet.last.replaceAll('Null', 'void');
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
+      _nativeTypeNameMap.forEach((String dartTypeName, String nativeTypeName) {
+        args = args.replaceAll(dartTypeName, nativeTypeName);
+      });
       return '$ret, $args'.split(', ');
     } else {
       return [ret];

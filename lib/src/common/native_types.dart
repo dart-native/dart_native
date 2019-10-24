@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:dart_objc/src/common/precompile_macro.dart';
@@ -24,9 +25,128 @@ class Box<T> {
 }
 
 class BOOL = Box<bool> with _ToAlias;
+class char extends Box<int> with _ToAlias {
+  char(int value) : super(value);
+
+  @override
+  String toString() {
+    return utf8.decode([value]);
+  }
+}
+class short = Box<int> with _ToAlias;
+class unsigned_short = Box<int> with _ToAlias;
+class unsigned_int = Box<int> with _ToAlias;
+class long = Box<int> with _ToAlias;
+class unsigned_long = Box<int> with _ToAlias;
+class long_long = Box<int> with _ToAlias;
+class unsigned_long_long = Box<int> with _ToAlias;
+class size_t = Box<int> with _ToAlias;
 class NSInteger = Box<int> with _ToAlias;
 class NSUInteger = Box<int> with _ToAlias;
+class float = Box<double> with _ToAlias;
 class CGFloat = Box<double> with _ToAlias;
+
+class _NSUInteger2_32 extends Struct<_NSUInteger2_32> {
+  @Uint32()
+  int a;
+  @Uint32()
+  int b;
+
+  factory _NSUInteger2_32.allocate(int a, int b) =>
+      Pointer<_NSUInteger2_32>.allocate().load<_NSUInteger2_32>()
+        ..a = a
+        ..b = b;
+
+  factory _NSUInteger2_32.fromPointer(Pointer<_NSUInteger2_32> ptr) {
+    return ptr.load<_NSUInteger2_32>();
+  }
+}
+
+class _NSUInteger2_64 extends Struct<_NSUInteger2_64> {
+  @Uint64()
+  int a;
+  @Uint64()
+  int b;
+
+  factory _NSUInteger2_64.allocate(int a, int b) =>
+      Pointer<_NSUInteger2_64>.allocate().load<_NSUInteger2_64>()
+        ..a = a
+        ..b = b;
+
+  factory _NSUInteger2_64.fromPointer(Pointer<_NSUInteger2_64> ptr) {
+    return ptr.load<_NSUInteger2_64>();
+  }
+}
+class _NSUInteger2_Wrapper {
+  _NSUInteger2_32 _value32;
+  _NSUInteger2_64 _value64;
+
+  bool get _is64bit => LP64 || NS_BUILD_32_LIKE_64;
+
+  int get a => _is64bit ? _value64.a : _value32.a;
+  set a(int a) {
+    if (_is64bit) {
+      _value64.a = a;
+    } else {
+      _value32.a = a;
+    }
+  }
+
+  int get b => _is64bit ? _value64.b : _value32.b;
+  set b(int b) {
+    if (_is64bit) {
+      _value64.b = b;
+    } else {
+      _value32.b = b;
+    }
+  }
+
+  _NSUInteger2_Wrapper.allocate(int a, int b) {
+    if (_is64bit) {
+      _value64 = _NSUInteger2_64.allocate(a, b);
+    } else {
+      _value32 = _NSUInteger2_32.allocate(a, b);
+    }
+  }
+
+  free() => _is64bit ? _value64.addressOf.free() : _value32.addressOf.free();
+
+  _NSUInteger2_Wrapper.fromPointer(Pointer<Void> ptr) {
+    if (_is64bit) {
+      _value64 = _NSUInteger2_64.fromPointer(ptr.cast());
+    } else {
+      _value32 = _NSUInteger2_32.fromPointer(ptr.cast());
+    }
+  }
+
+  bool operator ==(other) {
+    if (other == null) return false;
+    return a == other.a && b == other.b;
+  }
+
+  @override
+  int get hashCode => a.hashCode^b.hashCode;
+
+  @override
+  String toString() {
+    return '$runtimeType=($a, $b)';
+  }
+}
+
+class NSRange extends _NSUInteger2_Wrapper {
+  int get location => a;
+  set location(int location) {
+    a = location;
+  }
+
+  int get length => b;
+  set length(int length) {
+    b = length;
+  }
+
+  NSRange.allocate(int width, int length) : super.allocate(width, length);
+  NSRange.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+}
 
 class _CGFloat2_32 extends Struct<_CGFloat2_32> {
   @Float()
@@ -100,9 +220,17 @@ class _CGFloat2_Wrapper {
     }
   }
 
+  bool operator ==(other) {
+    if (other == null) return false;
+    return a == other.a && b == other.b;
+  }
+
+  @override
+  int get hashCode => a.hashCode^b.hashCode;
+
   @override
   String toString() {
-    return '{$a, $b}';
+    return '$runtimeType=($a, $b)';
   }
 }
 
@@ -253,9 +381,16 @@ class _CGFloat4_Wrapper {
     }
   }
 
+  bool operator ==(other) {
+    if (other == null) return false;
+    return a == other.a && b == other.b && c == other.c && d == other.d;
+  }
+
+  @override
+  int get hashCode => a.hashCode^b.hashCode^c.hashCode^d.hashCode;
   @override
   String toString() {
-    return '{$a, $b, $c, $d}';
+    return '$runtimeType=($a, $b, $c, $d)';
   }
 }
 
@@ -280,13 +415,14 @@ class CGRect extends _CGFloat4_Wrapper {
     d = height;
   }
 
-  CGRect.allocate(double x, double y, double width, double height) : super.allocate(x, y, width, height);
+  CGRect.allocate(double x, double y, double width, double height)
+      : super.allocate(x, y, width, height);
   CGRect.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
 dynamic loadValueForNativeType(String type, dynamic value) {
   switch (type) {
-    case 'BOOL':// TODO: BOOL is signed char on 32bit; bool on 64bit.
+    case 'BOOL':
       return BOOL(value);
     case 'NSInteger':
       return NSInteger(value);
@@ -294,6 +430,26 @@ dynamic loadValueForNativeType(String type, dynamic value) {
       return NSUInteger(value);
     case 'CGFloat':
       return CGFloat(value);
+    case 'char':
+      return char(value);
+    case 'short':
+      return short(value);
+    case 'unsigned short':
+      return unsigned_short(value);
+    case 'unsigned int':
+      return unsigned_int(value);
+    case 'long':
+      return long(value);
+    case 'unsigned long':
+      return unsigned_long(value);
+    case 'long long':
+      return long_long(value);
+    case 'unsigned long long':
+      return unsigned_long_long(value);
+    case 'size_t':
+      return size_t(value);
+    case 'float':
+      return float(value);
     default:
       return value;
   }

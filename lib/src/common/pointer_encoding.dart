@@ -84,8 +84,17 @@ dynamic loadStructFromPointer(Pointer<Pointer<Void>> ptr, String encoding) {
       case 'CGSize':
         result = CGSize.fromPointer(ptr.cast());
         break;
+      case 'CGPoint':
+        result = CGPoint.fromPointer(ptr.cast());
+        break;
+      case 'CGVector':
+        result = CGVector.fromPointer(ptr.cast());
+        break;
       case 'CGRect':
         result = CGRect.fromPointer(ptr.cast());
+        break;
+      case 'NSRange':
+        result = NSRange.fromPointer(ptr.cast());
         break;
       default:
     }
