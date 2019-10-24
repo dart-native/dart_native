@@ -1,20 +1,18 @@
+#import "native_runtime.h"
 #include <stdlib.h>
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
 #import "DOBlockWrapper.h"
 #import "Wrapper-Interface.h"
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
 void *
-native_method_imp(const char *cls_str, const char *selector_str, bool isClassMethod)
-{
+native_method_imp(const char *cls_str, const char *selector_str, bool isClassMethod) {
     Class cls = isClassMethod ? objc_getMetaClass(cls_str) : objc_getClass(cls_str);
     SEL selector = sel_registerName(selector_str);
     IMP imp = class_getMethodImplementation(cls, selector);
     return (void *)imp;
 }
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
 NSMethodSignature *
 native_method_signature(id object, SEL selector, const char **typeEncodings) {
     if (!object || !selector || !typeEncodings) {
@@ -28,7 +26,6 @@ native_method_signature(id object, SEL selector, const char **typeEncodings) {
     return signature;
 }
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
 void *
 native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, void **args) {
     if (!object || !selector || !signature) {
@@ -58,18 +55,12 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
     return result;
 }
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
 void *
 block_create(char *types) {
     DOBlockWrapper *wrapper = [[[DOBlockWrapper alloc] initWithTypeString:types] autorelease];
     return wrapper;
 }
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
-const char *
-native_struct_encoding(const char *encoding);
-
-extern "C" __attribute__((visibility("default"))) __attribute((used))
 const char *
 native_type_encoding(const char *str) {
     if (!str) {
@@ -166,10 +157,8 @@ native_type_encoding(const char *str) {
     return str;
 }
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
 const char **
-native_types_encoding(const char *str, int *count, int startIndex)
-{
+native_types_encoding(const char *str, int *count, int startIndex) {
     int argCount = DOTypeCount(str) - startIndex;
     const char **argTypes = (const char **)malloc(sizeof(char *) * argCount);
     
@@ -226,4 +215,20 @@ native_struct_encoding(const char *encoding)
     return structType.UTF8String;
 }
 
+bool
+LP64() {
+#if defined(__LP64__) && __LP64__
+    return true;
+#else
+    return false;
+#endif
+}
 
+bool
+NS_BUILD_32_LIKE_64() {
+#if defined(NS_BUILD_32_LIKE_64) && NS_BUILD_32_LIKE_64
+    return true;
+#else
+    return false;
+#endif
+}

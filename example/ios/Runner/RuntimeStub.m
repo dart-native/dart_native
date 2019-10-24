@@ -124,9 +124,9 @@
     return;
 }
 
-- (void)fooBlock:(int(^)(CGSize a))block
+- (void)fooBlock:(int(^)(CGRect a))block
 {
-    CGSize a = (CGSize){12.345, 54.321};
+    CGRect a = (CGRect){12.345, 54.321, 11.11, 22.33};
     int result = block(a);
     NSLog(@"%d", result);
 }

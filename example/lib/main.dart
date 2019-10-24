@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
     // final cost = DateTime.now().millisecondsSinceEpoch - start;
     // print(cost);
     stubNew = NSObject(className: 'RuntimeStub');
-    Function testFunc = (CGSize a) {
+    Function testFunc = (CGRect a) {
       print('hello block! ${a.toString()}');
       return 1;
     };
