@@ -56,8 +56,8 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
 }
 
 void *
-block_create(char *types) {
-    DOBlockWrapper *wrapper = [[[DOBlockWrapper alloc] initWithTypeString:types] autorelease];
+block_create(char *types, void *callback) {
+    DOBlockWrapper *wrapper = [[[DOBlockWrapper alloc] initWithTypeString:types callback:callback] autorelease];
     return wrapper;
 }
 

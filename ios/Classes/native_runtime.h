@@ -28,7 +28,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
 
 DO_EXTERN
 void *
-block_create(char *types);
+block_create(char *types, void *callback);
 
 DO_EXTERN
 const char *

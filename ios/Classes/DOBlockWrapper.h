@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) id block;
 
-- (instancetype)initWithTypeString:(char *)typeString;
+- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback;;
 
 @end
 

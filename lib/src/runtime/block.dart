@@ -10,8 +10,10 @@ import 'package:dart_objc/src/runtime/message.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings);
-typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings);
+typedef BlockCreateC = Pointer<Void> Function(
+    Pointer<Utf8> typeEncodings, Pointer<NativeFunction<_CallbackC>> callback);
+typedef BlockCreateD = Pointer<Void> Function(
+    Pointer<Utf8> typeEncodings, Pointer<NativeFunction<_CallbackC>> callback);
 
 final BlockCreateD blockCreate =
     nativeRuntimeLib.lookupFunction<BlockCreateC, BlockCreateD>('block_create');
@@ -28,7 +30,8 @@ class Block extends id {
     // I choose libffi, Flutter channel and ObjC runtime.
     List<String> types = _typeStringForFunction(function);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
-    NSObject blockWrapper = NSObject.fromPointer(blockCreate(typeStringPtr));
+    NSObject blockWrapper =
+        NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
     Block result =
         Block._internal(blockWrapper.perform(Selector('block')).pointer);
     typeStringPtr.free();
@@ -44,7 +47,7 @@ class Block extends id {
   }
 
   Block._internal(Pointer<Void> ptr) : super(ptr) {
-    ChannelDispatch().registerChannelCallback('block_invoke', _callback);
+    ChannelDispatch().registerChannelCallback('block_invoke', _asyncCallback);
   }
 
   Block copy() {
@@ -69,9 +72,18 @@ class Block extends id {
   }
 }
 
-dynamic _callback(int blockAddr, int argsAddr, int argCount) {
-  Block block = _blockForAddress[blockAddr];
-  Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
+typedef _CallbackC = Void Function(
+    Pointer<Void> blockPtr,
+    Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
+    Pointer<Pointer<Void>> retPtr,
+    Int32 argCount);
+
+Pointer<NativeFunction<_CallbackC>> _callbackPtr =
+    Pointer.fromFunction(_syncCallback);
+
+_callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
+    Pointer<Pointer<Void>> retPtr, int argCount) {
+  Block block = _blockForAddress[blockPtr.address];
   List args = [];
   Pointer pointer = block._wrapper.perform(Selector('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
@@ -90,9 +102,30 @@ dynamic _callback(int blockAddr, int argsAddr, int argCount) {
     args.add(arg);
   }
   dynamic result = Function.apply(block.function, args);
-  _blockForAddress.remove(blockAddr);
+
+  if (retPtr != null) {
+    String encoding =
+        nativeTypeEncoding(typesPtrPtr.elementAt(0).load()).load().toString();
+    storeValueToPointer(result, retPtr, encoding);
+  }
+
+  _blockForAddress.remove(blockPtr.address);
   block.release();
   return result;
+}
+
+_syncCallback(
+    Pointer<Void> blockPtr,
+    Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
+    Pointer<Pointer<Void>> retPtr,
+    int argCount) {
+  _callback(blockPtr, argsPtrPtr, retPtr, argCount);
+}
+
+dynamic _asyncCallback(int blockAddr, int argsAddr, int argCount) {
+  Pointer<Void> blockPtr = Pointer.fromAddress(blockAddr);
+  Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
+  return _callback(blockPtr, argsPtrPtr, null, argCount);
 }
 
 Map<String, String> _nativeTypeNameMap = {
@@ -103,7 +136,36 @@ Map<String, String> _nativeTypeNameMap = {
   'unsigned_long_long': 'unsigned long long',
 };
 
-List<String> _nativeTypeNames = ['id', 'BOOL', 'int', 'void', 'char', 'char', 'short', 'unsigned short', 'unsigned int', 'long', 'unsigned long', 'long long', 'unsigned long long', 'float', 'double', 'bool', 'size_t', 'CGFloat', 'CGSize', 'CGRect', 'CGPoint', 'CGVector', 'NSRange', 'NSInteger', 'NSUInteger', 'Class', 'SEL', 'Selector'];
+List<String> _nativeTypeNames = [
+  'id',
+  'BOOL',
+  'int',
+  'void',
+  'char',
+  'char',
+  'short',
+  'unsigned short',
+  'unsigned int',
+  'long',
+  'unsigned long',
+  'long long',
+  'unsigned long long',
+  'float',
+  'double',
+  'bool',
+  'size_t',
+  'CGFloat',
+  'CGSize',
+  'CGRect',
+  'CGPoint',
+  'CGVector',
+  'NSRange',
+  'NSInteger',
+  'NSUInteger',
+  'Class',
+  'SEL',
+  'Selector'
+];
 
 List<String> _typeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();

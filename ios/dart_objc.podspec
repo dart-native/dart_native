@@ -14,7 +14,7 @@ Call Objective-C using Dart
   s.author           = { 'yulingtianxia' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*', 'libffi/*.h'
-  mrc_files = 'Classes/native_runtime.mm'
+  mrc_files = 'Classes/native_runtime.*'
   s.exclude_files = mrc_files
   s.public_header_files = 'Classes/DartObjcPlugin.h'
   s.dependency 'Flutter'

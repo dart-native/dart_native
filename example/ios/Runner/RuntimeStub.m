@@ -128,10 +128,10 @@
 {
 //    CGRect a = (CGRect){12.345, 54.321, 11.11, 22.33};
 //    char a = '1';
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+//    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         int result = block([NSObject new]);
-        NSLog(@"%d", result);
-    });
+        NSLog(@"---result: %d", result);
+//    });
 }
 
 @end

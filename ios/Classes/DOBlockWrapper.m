@@ -209,6 +209,7 @@ void dispose_helper(struct _DOBlock *src)
 @property (nonatomic) const char **typeEncodings;
 @property (nonatomic, getter=hasStret) BOOL stret;
 @property (nonatomic) NSMethodSignature *signature;
+@property (nonatomic) void *callback;
 @property (nonatomic) NSThread *thread;
 
 - (void)invokeWithArgs:(void **)args retValue:(void *)retValue;
@@ -461,12 +462,13 @@ void dispose_helper(struct _DOBlock *src)
 
 @implementation DOBlockWrapper
 
-- (instancetype)initWithTypeString:(char *)typeString
+- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback
 {
     self = [super init];
     if (self) {
         _allocations = [[NSMutableArray alloc] init];
         _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
+        _callback = callback;
         _thread = NSThread.currentThread;
     }
     return self;
@@ -868,8 +870,9 @@ static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdat
         }
         *(void **)userRet = NULL;
         
-        if (wrapper.thread == NSThread.currentThread) {
-            // TODO: sync use ffi callback
+        if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
+            void(*callback)(void *block, void **args, void *ret, int argCount) = wrapper.callback;
+            callback((__bridge void *)(wrapper.block), args + 1, ret, (int)wrapper.numberOfArguments - 1);
         }
         else {
             __block DOInvocation *invocation = [[DOInvocation alloc] initWithWrapper:wrapper];
@@ -887,8 +890,6 @@ static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdat
             }
             dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
                 [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
-                    NSLog(@"block_invoke result:%@", result);
-                    // TODO: convert result
                     const char *retType = wrapper.typeEncodings[0];
                     storeValueToPointer(result, ret, retType);
                     invocation = nil;
