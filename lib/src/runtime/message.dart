@@ -3,39 +3,10 @@ import 'dart:ffi';
 import 'package:dart_objc/src/common/library.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
+import 'package:dart_objc/src/runtime/native_runtime.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
-
-// C header typedef:
-typedef MethodSignatureC = Pointer<Void> Function(Pointer<Void> instance,
-    Pointer<Void> selector, Pointer<Pointer<Utf8>> typeEncodings);
-typedef InvokeMethodC = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Pointer<Void>> args);
-typedef InvokeMethodNoArgsC = Pointer<Void> Function(
-    Pointer<Void> instance, Pointer<Void> selector, Pointer<Void> signature);
-typedef TypeEncodingC = Pointer<Utf8> Function(Pointer<Utf8>);
-
-// Dart header typedef
-typedef MethodSignatureDart = Pointer<Void> Function(Pointer<Void> instance,
-    Pointer<Void> selector, Pointer<Pointer<Utf8>> typeEncodings);
-typedef InvokeMethodDart = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Pointer<Void>> args);
-typedef InvokeMethodNoArgsDart = Pointer<Void> Function(
-    Pointer<Void> instance, Pointer<Void> selector, Pointer<Void> signature);
-typedef TypeEncodingDart = Pointer<Utf8> Function(Pointer<Utf8>);
-
-final InvokeMethodDart nativeInvokeMethod = nativeRuntimeLib
-    .lookupFunction<InvokeMethodC, InvokeMethodDart>('native_instance_invoke');
-final InvokeMethodNoArgsDart nativeInvokeMethodNoArgs = nativeRuntimeLib
-    .lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsDart>(
-        'native_instance_invoke');
 
 Pointer<Void> _msgSend(
     Pointer<Void> target, Pointer<Void> selector, Pointer<Void> signature,
@@ -48,12 +19,6 @@ Pointer<Void> _msgSend(
   }
   return result;
 }
-
-final MethodSignatureDart nativeMethodSignature =
-    nativeRuntimeLib.lookupFunction<MethodSignatureC, MethodSignatureDart>(
-        'native_method_signature');
-final TypeEncodingDart nativeTypeEncoding = nativeRuntimeLib
-    .lookupFunction<TypeEncodingC, TypeEncodingDart>('native_type_encoding');
 
 dynamic msgSend(id target, Selector selector, [List args]) {
   if (target == nil) {

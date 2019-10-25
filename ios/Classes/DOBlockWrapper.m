@@ -87,6 +87,23 @@ int DOTypeCount(const char *str)
     return typeCount;
 }
 
+struct _DOBlockDescriptor3 * _do_Block_descriptor_3(struct _DOBlock *aBlock)
+{
+    if (! (aBlock->flags & BLOCK_HAS_SIGNATURE)) return nil;
+    uint8_t *desc = (uint8_t *)aBlock->descriptor;
+    desc += sizeof(struct _DOBlockDescriptor1);
+    if (aBlock->flags & BLOCK_HAS_COPY_DISPOSE) {
+        desc += sizeof(struct _DOBlockDescriptor2);
+    }
+    return (struct _DOBlockDescriptor3 *)desc;
+}
+
+const char *DOBlockTypeEncodeString(id blockObj)
+{
+    struct _DOBlock *block = (__bridge void *)blockObj;
+    return _do_Block_descriptor_3(block)->signature;
+}
+
 static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
 static int typeLengthWithTypeName(NSString *typeName)
@@ -858,7 +875,6 @@ static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdat
     @autoreleasepool {
         DOBlockWrapper *wrapper = (__bridge DOBlockWrapper*)userdata;
         FlutterMethodChannel *channel = DartObjcPlugin.channel;
-        // TODO: call channel with args and invoke function address
         int64_t blockAddr = (int64_t)wrapper.block;
         void *userRet = ret;
         void **userArgs = args;

@@ -8,10 +8,13 @@
 #ifndef Wrapper_Interface_h
 #define Wrapper_Interface_h
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
+DO_EXTERN
 int DOTypeCount(const char *str);
 
-extern "C" __attribute__((visibility("default"))) __attribute((used))
+DO_EXTERN
 const char *DOSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp);
+
+DO_EXTERN
+const char *DOBlockTypeEncodeString(id blockObj);
 
 #endif /* Wrapper_Interface_h */

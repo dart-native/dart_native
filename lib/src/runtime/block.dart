@@ -6,17 +6,15 @@ import 'package:dart_objc/src/common/library.dart';
 import 'package:dart_objc/src/common/native_types.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
-import 'package:dart_objc/src/runtime/message.dart';
+import 'package:dart_objc/src/runtime/native_runtime.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-typedef BlockCreateC = Pointer<Void> Function(
-    Pointer<Utf8> typeEncodings, Pointer<NativeFunction<_CallbackC>> callback);
-typedef BlockCreateD = Pointer<Void> Function(
-    Pointer<Utf8> typeEncodings, Pointer<NativeFunction<_CallbackC>> callback);
-
-final BlockCreateD blockCreate =
-    nativeRuntimeLib.lookupFunction<BlockCreateC, BlockCreateD>('block_create');
+typedef DOBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
+typedef DOBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
+final DOBlockTypeEncodeStringD blockTypeEncodeString = nativeRuntimeLib
+    .lookupFunction<DOBlockTypeEncodeStringC, DOBlockTypeEncodeStringD>(
+        'DOBlockTypeEncodeString');
 
 Map<int, Block> _blockForAddress = {};
 
@@ -26,8 +24,6 @@ class Block extends id {
   List<String> types = [];
 
   factory Block(Function function) {
-    // dart:ffi only supports calling static Dart functions from native code.
-    // I choose libffi, Flutter channel and ObjC runtime.
     List<String> types = _typeStringForFunction(function);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper =
@@ -68,17 +64,34 @@ class Block extends id {
   }
 
   dynamic invoke([List args]) {
-    // TODO: invoke native block
+    Pointer<Utf8> typesEncodingsPtr = blockTypeEncodeString(pointer);
+    Pointer<Int32> countPtr = Pointer<Int32>.allocate();
+    Pointer<Pointer<Utf8>> typesPtrPtr =
+        nativeTypesEncoding(typesEncodingsPtr, countPtr, 0);
+    int count = countPtr.load();
+    countPtr.free();
+    // typesPtrPtr contains return type and block itself.
+    if (count != args?.length ?? 0 + 2) {
+      throw 'Args Count NOT match';
+    }
+    if (args != null) {
+      Pointer<Pointer<Void>> argsPtrPtr = Pointer<Pointer<Void>>.allocate(count: args.length);
+      for (var i = 0; i < args.length; i++) {
+        if (args[i] == null) {
+          throw 'One of args list is null';
+        }
+        String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).load());
+        storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
+      }
+      // TODO: invoke native block
+      argsPtrPtr.free();
+    } else {
+
+    }
   }
 }
 
-typedef _CallbackC = Void Function(
-    Pointer<Void> blockPtr,
-    Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr,
-    Int32 argCount);
-
-Pointer<NativeFunction<_CallbackC>> _callbackPtr =
+Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =
     Pointer.fromFunction(_syncCallback);
 
 _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,

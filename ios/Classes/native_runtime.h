@@ -44,10 +44,10 @@ native_struct_encoding(const char *encoding);
 
 DO_EXTERN
 bool
-LP64();
+LP64(void);
 
 DO_EXTERN
 bool
-NS_BUILD_32_LIKE_64();
+NS_BUILD_32_LIKE_64(void);
 
 #endif /* native_runtime_h */
