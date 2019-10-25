@@ -209,6 +209,7 @@ void dispose_helper(struct _DOBlock *src)
 @property (nonatomic) const char **typeEncodings;
 @property (nonatomic, getter=hasStret) BOOL stret;
 @property (nonatomic) NSMethodSignature *signature;
+@property (nonatomic) NSThread *thread;
 
 - (void)invokeWithArgs:(void **)args retValue:(void *)retValue;
 
@@ -466,6 +467,7 @@ void dispose_helper(struct _DOBlock *src)
     if (self) {
         _allocations = [[NSMutableArray alloc] init];
         _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
+        _thread = NSThread.currentThread;
     }
     return self;
 }
@@ -774,6 +776,81 @@ void dispose_helper(struct _DOBlock *src)
 
 @end
 
+static void storeValueToPointer(id _Nullable result, void *pointer, const char *encoding) {
+    if (result) {
+        if ([result isKindOfClass:NSNumber.class]) {
+            NSNumber *num = result;
+            switch (encoding[0]) {
+                case 'c':
+                    *(char *)pointer = num.charValue;
+                    break;
+                case 'i':
+                    *(int *)pointer = num.intValue;
+                    break;
+                case 's':
+                    *(short *)pointer = num.shortValue;
+                    break;
+                case 'l':
+                    *(long *)pointer = num.longValue;
+                    break;
+                case 'q':
+                    *(long long *)pointer = num.longLongValue;
+                    break;
+                case 'C':
+                    *(unsigned char *)pointer = num.unsignedCharValue;
+                    break;
+                case 'I':
+                    *(unsigned int *)pointer = num.unsignedIntValue;
+                    break;
+                case 'S':
+                    *(unsigned short *)pointer = num.unsignedShortValue;
+                    break;
+                case 'L':
+                    *(unsigned long *)pointer = num.unsignedLongValue;
+                    break;
+                case 'Q':
+                    *(unsigned long long *)pointer = num.unsignedLongLongValue;
+                    break;
+                case 'f':
+                    *(float *)pointer = num.floatValue;
+                    break;
+                case 'd':
+                    *(double *)pointer = num.doubleValue;
+                    break;
+                case 'B':
+                    *(_Bool *)pointer = num.boolValue;
+                    break;
+                case '^':
+                case '@':
+                    *(void **)pointer = (__bridge void *)(num);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else if ([result isKindOfClass:NSString.class]) {
+            NSString *string = result;
+            switch (encoding[0]) {
+                case 'c':
+                    *(char *)pointer = string.UTF8String[0];
+                    break;
+                case '*':
+                    *(char **)pointer = (char *)string.UTF8String;
+                    break;
+                case '^':
+                case '@':
+                    *(void **)pointer = (__bridge void *)(string);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else {
+            *(void **)pointer = (__bridge void *)(result);
+        }
+    }
+}
+
 static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
 {
     @autoreleasepool {
@@ -790,17 +867,39 @@ static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdat
             userArgs = args + 1;
         }
         *(void **)userRet = NULL;
-        __block DOInvocation *invocation = [[DOInvocation alloc] initWithWrapper:wrapper];
-        invocation.args = userArgs;
-        invocation.retValue = userRet;
-        invocation.realArgs = args;
-        invocation.realRetValue = ret;
-        [invocation retainArguments];
-        // Use (numberOfArguments - 1) exclude block itself.
-        int64_t argsAddr = (int64_t)(invocation.args + 1);
-        [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
-            NSLog(@"block_invoke result:%@", result);
-            invocation = nil;
-        }];
+        
+        if (wrapper.thread == NSThread.currentThread) {
+            // TODO: sync use ffi callback
+        }
+        else {
+            __block DOInvocation *invocation = [[DOInvocation alloc] initWithWrapper:wrapper];
+            invocation.args = userArgs;
+            invocation.retValue = userRet;
+            invocation.realArgs = args;
+            invocation.realRetValue = ret;
+            [invocation retainArguments];
+            
+            // Use (numberOfArguments - 1) exclude block itself.
+            int64_t argsAddr = (int64_t)(invocation.args + 1);
+            dispatch_semaphore_t sema;
+            if (!NSThread.isMainThread) {
+                sema = dispatch_semaphore_create(0);
+            }
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+                [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
+                    NSLog(@"block_invoke result:%@", result);
+                    // TODO: convert result
+                    const char *retType = wrapper.typeEncodings[0];
+                    storeValueToPointer(result, ret, retType);
+                    invocation = nil;
+                    if (sema) {
+                        dispatch_semaphore_signal(sema);
+                    }
+                }];
+            });
+            if (sema) {
+                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+            }
+        }
     }
 }

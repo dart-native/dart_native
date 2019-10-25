@@ -28,9 +28,8 @@ class _MyAppState extends State<MyApp> {
     // print(cost);
     stubNew = NSObject(className: 'RuntimeStub');
     Function testFunc = (NSObject a) {
-      
       print('hello block! ${a.toString()}');
-      // return 1;
+      return 1;
     };
     obj = stubNew.perform(Selector('fooBlock:'), args: [testFunc]);
   }

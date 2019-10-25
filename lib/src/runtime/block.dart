@@ -69,11 +69,6 @@ class Block extends id {
   }
 }
 
-// typedef CallbackC = Pointer<Void> Function(Pointer<Void> block, Pointer<Pointer<Pointer<Void>>> args, Pointer<Pointer<Void>> ret, Int32 argCount);
-// typedef CallbackD = Pointer<Void> Function(Pointer<Void> block, Pointer<Pointer<Pointer<Void>>> args, Pointer<Pointer<Void>> ret, Int32 argCount);
-
-// Pointer<NativeFunction<CallbackC>> callbackPtr = Pointer.fromFunction(_callback);
-
 dynamic _callback(int blockAddr, int argsAddr, int argCount) {
   Block block = _blockForAddress[blockAddr];
   Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);

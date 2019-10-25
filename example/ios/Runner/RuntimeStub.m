@@ -124,12 +124,14 @@
     return;
 }
 
-- (void)fooBlock:(void(^)(NSObject *a))block
+- (void)fooBlock:(int(^)(NSObject *a))block
 {
 //    CGRect a = (CGRect){12.345, 54.321, 11.11, 22.33};
 //    char a = '1';
-    block([NSObject new]);
-//    NSLog(@"%d", result);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        int result = block([NSObject new]);
+        NSLog(@"%d", result);
+    });
 }
 
 @end
