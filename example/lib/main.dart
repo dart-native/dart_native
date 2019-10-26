@@ -1,5 +1,4 @@
-import 'dart:ffi';
-
+import 'package:dart_objc_example/runtimestub.dart';
 import 'package:flutter/material.dart';
 import 'package:dart_objc/dart_objc.dart';
 
@@ -11,35 +10,30 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  NSObject stubNew;
+  RuntimeStub stub = RuntimeStub();
   NSObject obj;
   Block block;
 
   @override
   void initState() {
     super.initState();
-    // final start = DateTime.now().millisecondsSinceEpoch;
-    // String version;
-    // for (var i = 0; i < 100000; i++) {
-    // NSObject device = Class('UIDevice').performSelector(Selector('currentDevice'));
-    // NSObject nsstring = device.performSelector(Selector('systemVersion'));
-    // version = nsstring.performSelector(Selector('UTF8String'));
-    // }
-    // final cost = DateTime.now().millisecondsSinceEpoch - start;
-    // print(cost);
-    stubNew = NSObject(className: 'RuntimeStub');
-    Function testFunc = (NSObject a) {
-      print('hello block! ${a.toString()}');
-      return 1;
-    };
-    block = stubNew.perform(Selector('fooBlock:'), args: [testFunc]);
-    int result = block.invoke([stubNew]);
+
+    block = stub.fooBlock(testFunc);
+    int result = block.invoke([stub]);
     print(result);
+
+    CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
+    print(rect);
   }
 
+  Function testFunc = (NSObject a) {
+    print('hello block! ${a.toString()}');
+    return 101;
+  };
+
   Future<void> press() async {
-    final stubNewPtr = stubNew.pointer;
-    stubNew.release();
+    final stubNewPtr = stub.pointer;
+    stub.release();
     final objPtr = obj.pointer;
     // obj.release();
     // NSObject.fromPointer(stubNewPtr);

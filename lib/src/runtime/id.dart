@@ -8,6 +8,9 @@ import 'package:dart_objc/src/runtime/nsobject_protocol.dart';
 
 class id with NSObjectProtocol {
   Class get isa {
+    if (_ptr == null) {
+      return null;
+    }
     Pointer<Void> isaPtr = object_getClass(_ptr);
     return Class.fromPointer(isaPtr);
   }

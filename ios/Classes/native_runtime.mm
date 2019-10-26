@@ -36,13 +36,20 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
     invocation.selector = selector;
     
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
-        [invocation setArgument:&args[i - 2] atIndex:i];
+        const char *argType = [signature getArgumentTypeAtIndex:i];
+        if (argType[0] == '{') {
+            [invocation setArgument:args[i - 2] atIndex:i];
+        }
+        else {
+            [invocation setArgument:&args[i - 2] atIndex:i];
+        }
     }
     [invocation invoke];
     void *result = NULL;
     if (signature.methodReturnLength > 0) {
         [invocation getReturnValue:&result];
-        if (result && signature.methodReturnType[0] == '@') {
+        const char returnType = signature.methodReturnType[0];
+        if (result && returnType == '@') {
             NSString *selString = NSStringFromSelector(selector);
             if (!([selString hasPrefix:@"new"] ||
                 [selString hasPrefix:@"alloc"] ||
@@ -50,6 +57,28 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
                 [selString hasPrefix:@"mutableCopy"])) {
                 [(id)result retain];
             }
+        }
+        else if (returnType == '{') {
+            const char *temp = signature.methodReturnType;
+            int index = 0;
+            while (temp && *temp && *temp != '=') {
+                temp++;
+                index++;
+            }
+            NSString *structTypeEncoding = [NSString stringWithUTF8String:signature.methodReturnType];
+            NSString *structName = [structTypeEncoding substringWithRange:NSMakeRange(1, index - 1)];
+            #define HandleStruct(struct) \
+            if ([structName isEqualToString:@#struct]) { \
+                void *structAddr = malloc(sizeof(struct)); \
+                memcpy(structAddr, &result, sizeof(struct)); \
+                return structAddr; \
+            }
+            HandleStruct(CGSize)
+            HandleStruct(CGPoint)
+            HandleStruct(CGVector)
+            HandleStruct(CGRect)
+            HandleStruct(NSRange)
+            NSCAssert(NO, @"Can't handle struct type:%@", structName);
         }
     }
     return result;
@@ -227,10 +256,14 @@ native_struct_encoding(const char *encoding)
     if (!elements) {
         return nil;
     }
-    NSMutableString *structType = [NSMutableString stringWithString:[str substringWithRange:NSMakeRange(1, structNameLength)]];
+    NSMutableString *structType = [NSMutableString stringWithFormat:@"%@", [str substringToIndex:structNameLength + 1]];
     for (int i = 0; i < elementCount; i++) {
-        [structType appendFormat:@" %@", [NSString stringWithUTF8String:elements[i]]];
+        if (i != 0) {
+            [structType appendString:@","];
+        }
+        [structType appendFormat:@"%@", [NSString stringWithUTF8String:elements[i]]];
     }
+    [structType appendString:@"}"];
     return structType.UTF8String;
 }
 

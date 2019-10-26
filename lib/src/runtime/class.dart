@@ -8,34 +8,33 @@ import 'package:ffi/ffi.dart';
 class Class extends id {
   String name;
 
-  factory Class(String className) {
-    if (className == null) {
-      className = 'NSObject';
-    }
-    final classNamePtr = Utf8.toUtf8(className);
-    Pointer<Void> ptr = objc_getClass(classNamePtr);
-    classNamePtr.free();
-    if (ptr == null) {
+  Class(this.name) : super(_getClass(name)) {
+    if (pointer == null) {
       // TODO: create class not exists? I prefer NOT.
-      return null;
-    } else {
-      return Class._internal(className, ptr);
+      throw 'class $name is not exists!';
     }
   }
 
-  factory Class.fromPointer(Pointer<Void> ptr) {
+  Class.fromPointer(Pointer<Void> ptr) : super(ptr) {
     if (object_isClass(ptr) != 0) {
-      String className = Utf8.fromUtf8(class_getName(ptr));
-      return Class._internal(className, ptr);
+      name = Utf8.fromUtf8(class_getName(ptr));
     } else {
-      return null;
+      throw 'Pointer $ptr is not for Class!';
     }
   }
-
-  Class._internal(this.name, Pointer<Void> ptr) : super(ptr);
 
   @override
   String toString() {
     return name;
   }
+}
+
+Pointer<Void> _getClass(String className) {
+  if (className == null) {
+    className = 'NSObject';
+  }
+  final classNamePtr = Utf8.toUtf8(className);
+  Pointer<Void> ptr = objc_getClass(classNamePtr);
+  classNamePtr.free();
+  return ptr;
 }

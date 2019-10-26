@@ -61,6 +61,8 @@ storeValueToPointer(
     ptr.store(object.toPointer());
   } else if (object is Function && (encoding == 'block' || encoding == 'ptr')) {
     ptr.store(Block(object).pointer);
+  } else if (object is Block && (encoding == 'block' || encoding == 'ptr')) {
+    ptr.store(object.pointer);
   } else if (encoding == 'char *' || encoding == 'ptr') {
     if (object is String) {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
@@ -71,30 +73,53 @@ storeValueToPointer(
     } else {
       ptr.store(object as Pointer<Void>);
     }
+  } else if (encoding.startsWith('{')) {
+    // ptr is struct pointer
+    storeStructToPointer(object, ptr);
   } else {
     throw '$object not match type $encoding!';
   }
 }
 
-dynamic loadStructFromPointer(Pointer<Pointer<Void>> ptr, String encoding) {
+storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
+  if (object is CGSize ||
+      object is CGPoint ||
+      object is CGVector ||
+      object is CGRect ||
+      object is NSRange) {
+    Pointer<Void> result = object.addressOf.cast<Void>();
+    ptr.store(result);
+  }
+}
+
+String structNameForEncoding(String encoding) {
+  int index = encoding.indexOf('=');
+  if (index != -1) {
+    return encoding.substring(1, index);
+  }
+  return null;
+}
+
+dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
   dynamic result;
-  if (encoding.contains('=')) { // struct
-    String structName = encoding.split('=').first;
+  String structName = structNameForEncoding(encoding);
+  if (structName != null) {
+    // struct
     switch (structName) {
       case 'CGSize':
-        result = CGSize.fromPointer(ptr.cast());
+        result = CGSize.fromPointer(ptr);
         break;
       case 'CGPoint':
-        result = CGPoint.fromPointer(ptr.cast());
+        result = CGPoint.fromPointer(ptr);
         break;
       case 'CGVector':
-        result = CGVector.fromPointer(ptr.cast());
+        result = CGVector.fromPointer(ptr);
         break;
       case 'CGRect':
-        result = CGRect.fromPointer(ptr.cast());
+        result = CGRect.fromPointer(ptr);
         break;
       case 'NSRange':
-        result = NSRange.fromPointer(ptr.cast());
+        result = NSRange.fromPointer(ptr);
         break;
       default:
     }
@@ -104,7 +129,10 @@ dynamic loadStructFromPointer(Pointer<Pointer<Void>> ptr, String encoding) {
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
   dynamic result;
-  if (encoding.contains('int') || encoding.contains('float')) {
+  if (encoding.startsWith('{')) {
+    // ptr is struct pointer
+    result =loadStructFromPointer(ptr, encoding);
+  } else if (encoding.contains('int') || encoding.contains('float')) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
     switch (encoding) {

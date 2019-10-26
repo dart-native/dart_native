@@ -8,19 +8,16 @@ import 'package:dart_objc/src/runtime/selector.dart';
 final NSObject nil = NSObject.fromPointer(nullptr);
 
 class NSObject extends id {
-  factory NSObject({String className}) {
-    return Class(className).perform(Selector('new'));
-  }
-  
-  factory NSObject.fromPointer(Pointer<Void> ptr) {
-    if (object_isClass(ptr) != 0) {
-      return null;
-    } else {
-      // TODO: convert to subclass.
-      return NSObject._internal(ptr);
+  NSObject([String className]) : super(_new(className));
+
+  NSObject.fromPointer(Pointer<Void> ptr) : super(ptr) {
+    if (ptr == null || object_isClass(ptr) != 0) {
+      throw 'Pointer $ptr is not for NSObject!';
     }
   }
-
-  NSObject._internal(Pointer<Void> ptr) : super(ptr);
 }
 
+Pointer<Void> _new(String className) {
+  NSObject result = Class(className).perform(Selector('new'));
+  return result.pointer;
+}

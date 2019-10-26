@@ -109,12 +109,12 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     String encoding = nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).load())
         .load()
         .toString();
+    Pointer ptr = argsPtrPtr.elementAt(i).load();
+    if (!encoding.startsWith('{')) {
+      ptr = ptr.cast<Pointer<Void>>().load();
+    } 
     dynamic value =
-        loadStructFromPointer(argsPtrPtr.elementAt(i).load(), encoding);
-    if (value == null) {
-      value =
-          loadValueFromPointer(argsPtrPtr.elementAt(i).load().load(), encoding);
-    }
+          loadValueFromPointer(ptr, encoding);
     dynamic arg = loadValueForNativeType(block.types[i + 1], value);
     args.add(arg);
   }
