@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-import 'package:dart_objc/src/common/library.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/native_runtime.dart';
@@ -25,7 +24,7 @@ dynamic msgSend(id target, Selector selector, [List args]) {
     return null;
   }
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
-      Pointer<Pointer<Utf8>>.allocate(count: args?.length ?? 0 + 1);
+      Pointer<Pointer<Utf8>>.allocate(count: (args?.length ?? 0) + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
 
   Pointer<Void> signature =
@@ -40,8 +39,7 @@ dynamic msgSend(id target, Selector selector, [List args]) {
     for (var i = 0; i < args.length; i++) {
       var arg = args[i];
       if (arg == null) {
-        // TODO: throw error.
-        continue;
+        throw 'One of args list is null';
       }
       String typeEncodings =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load())

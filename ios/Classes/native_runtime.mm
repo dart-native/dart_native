@@ -61,6 +61,25 @@ block_create(char *types, void *callback) {
     return wrapper;
 }
 
+void *
+block_invoke(void *block, void **args) {
+    const char *typeString = DOBlockTypeEncodeString((id)block);
+    NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    for (NSUInteger idx = 1; idx < signature.numberOfArguments; idx++) {
+        [invocation setArgument:&args[idx - 1] atIndex:idx];
+    }
+    [invocation invokeWithTarget:(id)block];
+    void *result = NULL;
+    if (signature.methodReturnLength > 0) {
+        [invocation getReturnValue:&result];
+        if (result && signature.methodReturnType[0] == '@') {
+            [(id)result retain];
+        }
+    }
+    return result;
+}
+
 const char *
 native_type_encoding(const char *str) {
     if (!str) {

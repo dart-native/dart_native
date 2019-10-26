@@ -36,6 +36,6 @@ class Class extends id {
 
   @override
   String toString() {
-    return '<$name: $address>';
+    return name;
   }
 }

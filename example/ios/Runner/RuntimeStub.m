@@ -124,7 +124,9 @@
     return;
 }
 
-- (void)fooBlock:(int(^)(NSObject *a))block
+typedef int(^BarBlock)(NSObject *a);
+
+- (BarBlock)fooBlock:(BarBlock)block
 {
 //    CGRect a = (CGRect){12.345, 54.321, 11.11, 22.33};
 //    char a = '1';
@@ -132,6 +134,11 @@
         int result = block([NSObject new]);
         NSLog(@"---result: %d", result);
 //    });
+    BarBlock bar = ^(NSObject *a) {
+        NSLog(@"bar block arg: %@", a);
+        return 404;
+    };
+    return bar;
 }
 
 @end

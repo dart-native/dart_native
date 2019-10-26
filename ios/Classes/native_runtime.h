@@ -31,6 +31,10 @@ void *
 block_create(char *types, void *callback);
 
 DO_EXTERN
+void *
+block_invoke(void *block, void **args);
+
+DO_EXTERN
 const char *
 native_type_encoding(const char *str);
 

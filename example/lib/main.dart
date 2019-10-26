@@ -13,6 +13,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   NSObject stubNew;
   NSObject obj;
+  Block block;
 
   @override
   void initState() {
@@ -31,7 +32,9 @@ class _MyAppState extends State<MyApp> {
       print('hello block! ${a.toString()}');
       return 1;
     };
-    obj = stubNew.perform(Selector('fooBlock:'), args: [testFunc]);
+    block = stubNew.perform(Selector('fooBlock:'), args: [testFunc]);
+    int result = block.invoke([stubNew]);
+    print(result);
   }
 
   Future<void> press() async {

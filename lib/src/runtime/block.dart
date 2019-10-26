@@ -71,11 +71,12 @@ class Block extends id {
     int count = countPtr.load();
     countPtr.free();
     // typesPtrPtr contains return type and block itself.
-    if (count != args?.length ?? 0 + 2) {
+    if (count != (args?.length ?? 0) + 2) {
       throw 'Args Count NOT match';
     }
+    Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
     if (args != null) {
-      Pointer<Pointer<Void>> argsPtrPtr = Pointer<Pointer<Void>>.allocate(count: args.length);
+      argsPtrPtr = Pointer<Pointer<Void>>.allocate(count: args.length);
       for (var i = 0; i < args.length; i++) {
         if (args[i] == null) {
           throw 'One of args list is null';
@@ -83,11 +84,14 @@ class Block extends id {
         String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).load());
         storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
       }
-      // TODO: invoke native block
-      argsPtrPtr.free();
-    } else {
-
     }
+    Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
+    if (argsPtrPtr != nullptr.cast()) {
+      argsPtrPtr.free();
+    }
+    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).load());
+    dynamic result = loadValueFromPointer(resultPtr, encoding);
+    return result;
   }
 }
 

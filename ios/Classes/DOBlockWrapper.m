@@ -257,11 +257,6 @@ void dispose_helper(struct _DOBlock *src)
 @property (nonatomic) NSUInteger numberOfRealArgs;
 
 /**
- Invoke original implementation of the block.
- */
-- (void)invokeOriginalBlock;
-
-/**
  If the receiver hasn’t already done so, retains the target and all object arguments of the receiver and copies all of its C-string arguments and blocks. If a returnvalue has been set, this is also retained or copied.
  */
 - (void)retainArguments;
@@ -278,7 +273,7 @@ void dispose_helper(struct _DOBlock *src)
  Sets the receiver’s return value.
 
  @param retLoc An untyped buffer whose contents are copied as the receiver's return value.
- @discussion This value is normally set when you send an invokeOriginalBlock message.
+ @discussion This value is normally set when you invoke block.
  */
 - (void)setReturnValue:(void *)retLoc;
 
@@ -309,7 +304,7 @@ void dispose_helper(struct _DOBlock *src)
     self = [super init];
     if (self) {
         _wrapper = wrapper;
-        _argumentsRetainedQueue = dispatch_queue_create("com.blockhook.argumentsRetained", DISPATCH_QUEUE_CONCURRENT);
+        _argumentsRetainedQueue = dispatch_queue_create("com.dartobjc.argumentsRetained", DISPATCH_QUEUE_CONCURRENT);
         NSUInteger numberOfArguments = wrapper.signature.numberOfArguments;
         if (self.wrapper.hasStret) {
             numberOfArguments++;
@@ -338,11 +333,6 @@ void dispose_helper(struct _DOBlock *src)
 }
 
 #pragma mark - Public Method
-
-- (void)invokeOriginalBlock
-{
-    [self.wrapper invokeWithArgs:self.realArgs retValue:self.realRetValue];
-}
 
 - (NSMethodSignature *)methodSignature
 {
@@ -920,3 +910,5 @@ static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdat
         }
     }
 }
+
+
