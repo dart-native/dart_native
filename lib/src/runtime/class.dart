@@ -8,6 +8,7 @@ import 'package:ffi/ffi.dart';
 class Class extends id {
   String name;
 
+  /// An opaque type that represents an Objective-C class.
   Class(this.name) : super(_getClass(name)) {
     if (pointer == null) {
       // TODO: create class not exists? I prefer NOT.

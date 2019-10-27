@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/common/channel_dispatch.dart';
 import 'package:dart_objc/src/common/library.dart';
-import 'package:dart_objc/src/common/native_types.dart';
+import 'package:dart_objc/src/common/native_type_box.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/native_runtime.dart';
@@ -115,7 +115,7 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     } 
     dynamic value =
           loadValueFromPointer(ptr, encoding);
-    dynamic arg = loadValueForNativeType(block.types[i + 1], value);
+    dynamic arg = boxForValue(block.types[i + 1], value);
     args.add(arg);
   }
   dynamic result = Function.apply(block.function, args);

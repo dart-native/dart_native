@@ -3,10 +3,8 @@ import 'dart:typed_data';
 
 import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/runtime.dart';
-import 'package:dart_objc/src/runtime/block.dart';
-import 'package:dart_objc/src/runtime/class.dart';
+import 'package:dart_objc/src/common/native_struct.dart';
 import 'package:dart_objc/src/runtime/id.dart';
-import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 storeValueToPointer(
@@ -81,52 +79,6 @@ storeValueToPointer(
   }
 }
 
-storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
-  if (object is CGSize ||
-      object is CGPoint ||
-      object is CGVector ||
-      object is CGRect ||
-      object is NSRange) {
-    Pointer<Void> result = object.addressOf.cast<Void>();
-    ptr.store(result);
-  }
-}
-
-String structNameForEncoding(String encoding) {
-  int index = encoding.indexOf('=');
-  if (index != -1) {
-    return encoding.substring(1, index);
-  }
-  return null;
-}
-
-dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
-  dynamic result;
-  String structName = structNameForEncoding(encoding);
-  if (structName != null) {
-    // struct
-    switch (structName) {
-      case 'CGSize':
-        result = CGSize.fromPointer(ptr);
-        break;
-      case 'CGPoint':
-        result = CGPoint.fromPointer(ptr);
-        break;
-      case 'CGVector':
-        result = CGVector.fromPointer(ptr);
-        break;
-      case 'CGRect':
-        result = CGRect.fromPointer(ptr);
-        break;
-      case 'NSRange':
-        result = NSRange.fromPointer(ptr);
-        break;
-      default:
-    }
-  }
-  return result;
-}
-
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
   dynamic result;
   if (encoding.startsWith('{')) {
@@ -195,5 +147,51 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
     }
   }
 
+  return result;
+}
+
+storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
+  if (object is CGSize ||
+      object is CGPoint ||
+      object is CGVector ||
+      object is CGRect ||
+      object is NSRange) {
+    Pointer<Void> result = object.addressOf.cast<Void>();
+    ptr.store(result);
+  }
+}
+
+String structNameForEncoding(String encoding) {
+  int index = encoding.indexOf('=');
+  if (index != -1) {
+    return encoding.substring(1, index);
+  }
+  return null;
+}
+
+dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
+  dynamic result;
+  String structName = structNameForEncoding(encoding);
+  if (structName != null) {
+    // struct
+    switch (structName) {
+      case 'CGSize':
+        result = CGSize.fromPointer(ptr);
+        break;
+      case 'CGPoint':
+        result = CGPoint.fromPointer(ptr);
+        break;
+      case 'CGVector':
+        result = CGVector.fromPointer(ptr);
+        break;
+      case 'CGRect':
+        result = CGRect.fromPointer(ptr);
+        break;
+      case 'NSRange':
+        result = NSRange.fromPointer(ptr);
+        break;
+      default:
+    }
+  }
   return result;
 }
