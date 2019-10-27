@@ -37,8 +37,10 @@ typedef TypeEncodingD = Pointer<Utf8> Function(Pointer<Utf8> str);
 final TypeEncodingD nativeTypeEncoding = nativeRuntimeLib
     .lookupFunction<TypeEncodingC, TypeEncodingD>('native_type_encoding');
 
-typedef TypesEncodingC = Pointer<Pointer<Utf8>> Function(Pointer<Utf8> str, Pointer<Int32> count, Int32 startIndex);
-typedef TypesEncodingD = Pointer<Pointer<Utf8>> Function(Pointer<Utf8> str, Pointer<Int32> count, int startIndex);
+typedef TypesEncodingC = Pointer<Pointer<Utf8>> Function(
+    Pointer<Utf8> str, Pointer<Int32> count, Int32 startIndex);
+typedef TypesEncodingD = Pointer<Pointer<Utf8>> Function(
+    Pointer<Utf8> str, Pointer<Int32> count, int startIndex);
 final TypesEncodingD nativeTypesEncoding = nativeRuntimeLib
     .lookupFunction<TypesEncodingC, TypesEncodingD>('native_types_encoding');
 

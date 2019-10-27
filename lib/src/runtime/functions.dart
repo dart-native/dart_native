@@ -19,8 +19,7 @@ final Pointer<Void> Function(Pointer<Void>) object_getClass = nativeLib
     .asFunction();
 
 final int Function(Pointer<Void>) object_isClass = nativeLib
-    .lookup<NativeFunction<Int8 Function(Pointer<Void>)>>(
-        'object_isClass')
+    .lookup<NativeFunction<Int8 Function(Pointer<Void>)>>('object_isClass')
     .asFunction();
 
 final Pointer<Utf8> Function(Pointer<Void>) class_getName = nativeLib
@@ -54,6 +53,5 @@ final Pointer<Void> Function(Pointer<Void>) Block_copy = nativeLib
     .asFunction();
 
 final void Function(Pointer<Void>) Block_release = nativeLib
-    .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
-        '_Block_release')
+    .lookup<NativeFunction<Void Function(Pointer<Void>)>>('_Block_release')
     .asFunction();

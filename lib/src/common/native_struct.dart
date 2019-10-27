@@ -33,6 +33,7 @@ class _NSUInteger64x2 extends Struct<_NSUInteger64x2> {
     return ptr.load<_NSUInteger64x2>();
   }
 }
+
 class _NSUIntegerx2Wrapper {
   _NSUInteger32x2 _value32;
   _NSUInteger64x2 _value64;
@@ -83,7 +84,7 @@ class _NSUIntegerx2Wrapper {
   }
 
   @override
-  int get hashCode => a.hashCode^b.hashCode;
+  int get hashCode => a.hashCode ^ b.hashCode;
 
   @override
   String toString() {
@@ -186,7 +187,7 @@ class _CGFloatx2Wrapper {
   }
 
   @override
-  int get hashCode => a.hashCode^b.hashCode;
+  int get hashCode => a.hashCode ^ b.hashCode;
 
   @override
   String toString() {
@@ -349,7 +350,7 @@ class _CGFloatx4Wrapper {
   }
 
   @override
-  int get hashCode => a.hashCode^b.hashCode^c.hashCode^d.hashCode;
+  int get hashCode => a.hashCode ^ b.hashCode ^ c.hashCode ^ d.hashCode;
   @override
   String toString() {
     return '$runtimeType=($a, $b, $c, $d)';
@@ -381,4 +382,3 @@ class CGRect extends _CGFloatx4Wrapper {
       : super.allocate(x, y, width, height);
   CGRect.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
-

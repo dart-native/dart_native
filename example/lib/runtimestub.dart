@@ -6,7 +6,7 @@ class RuntimeStub extends NSObject {
   Block fooBlock(Function func) {
     return perform(Selector('fooBlock:'), args: [func]);
   }
-  
+
   CGRect fooCGRect(CGRect rect) {
     return perform(Selector('fooCGRect:'), args: [rect]);
   }

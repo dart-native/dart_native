@@ -112,9 +112,8 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer ptr = argsPtrPtr.elementAt(i).load();
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().load();
-    } 
-    dynamic value =
-          loadValueFromPointer(ptr, encoding);
+    }
+    dynamic value = loadValueFromPointer(ptr, encoding);
     dynamic arg = boxForValue(block.types[i + 1], value);
     args.add(arg);
   }

@@ -1,6 +1,6 @@
 # dart_objc
 
-Write Objective-C Code using Dart.
+Write Objective-C Code using Dart. This package liberates you from native code and low performance channel.
 
 Still under development!!! 
 

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 
 /// The group of methods that are fundamental to all Objective-C objects.
 mixin NSObjectProtocol {
-
   /// Returns the class object for the receiver’s class.
   static Class type({@required NSObjectProtocol of}) {
     return of.perform(Selector('class'));

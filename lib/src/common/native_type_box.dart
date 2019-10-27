@@ -22,6 +22,7 @@ class Box<T> {
 }
 
 class BOOL = Box<bool> with _ToAlias;
+
 class char extends Box<int> with _ToAlias {
   char(int value) : super(value);
 
@@ -30,6 +31,7 @@ class char extends Box<int> with _ToAlias {
     return utf8.decode([value]);
   }
 }
+
 class short = Box<int> with _ToAlias;
 class unsigned_short = Box<int> with _ToAlias;
 class unsigned_int = Box<int> with _ToAlias;

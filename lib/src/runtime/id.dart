@@ -33,7 +33,8 @@ class id with NSObjectProtocol {
     }
   }
 
-  String get address => '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
+  String get address =>
+      '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
   id(this._ptr);
 
@@ -47,14 +48,14 @@ class id with NSObjectProtocol {
 
   id retain() {
     if (this is NSObject) {
-      retainCount ++;
+      retainCount++;
       return super.retain();
     }
     return this;
   }
 
   /// Release NSObject instance.
-  /// Subclass can override this method and call release on its dart properties. 
+  /// Subclass can override this method and call release on its dart properties.
   release() {
     if (retainCount > 0) {
       if (this is NSObject) {

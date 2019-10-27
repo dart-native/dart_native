@@ -7,9 +7,9 @@ Pod::Spec.new do |s|
   s.version          = '0.0.1'
   s.summary          = 'Write Objective-C Code using Dart'
   s.description      = <<-DESC
-Write Objective-C Code using Dart.
+Write Objective-C Code using Dart. This package liberates you from native code and low performance channel.
                        DESC
-  s.homepage         = 'https://github.com/yulingtianxia/dart_objc'
+  s.homepage         = 'http://yulingtianxia.com'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'yulingtianxia' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }
