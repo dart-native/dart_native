@@ -1,11 +1,11 @@
 name: dart_objc
 description: Call Objective-C using Dart
 version: 0.0.1
-author:
-homepage:
+author: yulingtianxia
+homepage: yulingtianxia.com
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.6.0-dev.1.0 <3.0.0"
 
 dependencies:
   flutter:

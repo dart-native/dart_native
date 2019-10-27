@@ -4,6 +4,10 @@ Write Objective-C Code using Dart.
 
 Still under development!!! 
 
+## Requirements
+
+Flutter 1.10.14 (channel dev, using 2.6.0-dev.1.0)
+
 ## Getting Started
 
 Dart code:
@@ -63,7 +67,8 @@ typedef int(^BarBlock)(NSObject *a);
 
 - [x] Type support:Block
 - [x] Type support:Struct
-- [ ] delegate Callback
-- [ ] Memory Management
+- [ ] Delegate callback
+- [ ] Memory management
 - [ ] Generate Dart code from ObjectiveC/C++ Headers.
+- [ ] Unit test.
 
