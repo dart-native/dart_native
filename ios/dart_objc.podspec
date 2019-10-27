@@ -5,11 +5,11 @@
 Pod::Spec.new do |s|
   s.name             = 'dart_objc'
   s.version          = '0.0.1'
-  s.summary          = 'Call Objective-C using Dart'
+  s.summary          = 'Write Objective-C Code using Dart'
   s.description      = <<-DESC
-Call Objective-C using Dart
+Write Objective-C Code using Dart.
                        DESC
-  s.homepage         = 'http://yulingtianxia.com'
+  s.homepage         = 'https://github.com/yulingtianxia/dart_objc'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'yulingtianxia' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }

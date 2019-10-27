@@ -1,8 +1,8 @@
 name: dart_objc
-description: Call Objective-C using Dart
+description: Write Objective-C Code using Dart.
 version: 0.0.1
-author: yulingtianxia
-homepage: yulingtianxia.com
+author: yulingtianxia <yulingtianxia@gmail.com>
+homepage: http://yulingtianxia.com
 
 environment:
   sdk: ">=2.6.0-dev.1.0 <3.0.0"
