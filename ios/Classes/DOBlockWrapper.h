@@ -6,10 +6,12 @@
 //
 
 #import <Foundation/Foundation.h>
-
-@class FlutterMethodChannel;
+#import "DOMacro.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+DO_EXTERN
+const char *DOBlockTypeEncodeString(id blockObj);
 
 @interface DOBlockWrapper : NSObject
 

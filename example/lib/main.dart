@@ -18,7 +18,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    block = stub.fooBlock(testFunc);
+    Block block = stub.fooBlock(testFunc);
     int result = block.invoke([stub]);
     print(result);
 

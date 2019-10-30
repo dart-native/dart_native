@@ -2,7 +2,7 @@ import 'package:dart_objc/src/runtime/class.dart';
 import 'package:dart_objc/src/runtime/message.dart';
 import 'package:dart_objc/src/runtime/protocol.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 /// The group of methods that are fundamental to all Objective-C objects.
 mixin NSObjectProtocol {

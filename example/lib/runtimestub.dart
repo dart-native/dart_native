@@ -10,4 +10,9 @@ class RuntimeStub extends NSObject {
   CGRect fooCGRect(CGRect rect) {
     return perform(Selector('fooCGRect:'), args: [rect]);
   }
+
+  
+  testDelegate() {
+
+  }
 }

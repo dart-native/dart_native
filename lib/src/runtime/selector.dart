@@ -41,6 +41,15 @@ class Selector {
     return _selPtr;
   }
 
+  bool operator ==(other) {
+    if (other == null) return false;
+    return _selPtr == other._selPtr;
+  }
+
+  int get hashCode {
+    return _selPtr.hashCode;
+  }
+
   @override
   String toString() {
     return name;

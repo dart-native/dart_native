@@ -27,5 +27,7 @@ Write Objective-C Code using Dart. This package liberates you from native code a
   s.subspec 'Runtime' do |ss|
     ss.requires_arc = false
     ss.source_files = mrc_files
+    ss.public_header_files = ''
+    ss.private_header_files = 'Classes/native_runtime.h'
   end
 end

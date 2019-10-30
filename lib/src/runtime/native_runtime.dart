@@ -54,11 +54,11 @@ typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
 typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
     Pointer<NativeFunction<BlockCallbackC>> callback);
 final BlockCreateD blockCreate =
-    nativeRuntimeLib.lookupFunction<BlockCreateC, BlockCreateD>('block_create');
+    nativeRuntimeLib.lookupFunction<BlockCreateC, BlockCreateD>('native_block_create');
 
 typedef BlockInvokeC = Pointer<Void> Function(
     Pointer<Void> block, Pointer<Pointer<Void>> args);
 typedef BlockInvokeD = Pointer<Void> Function(
     Pointer<Void> block, Pointer<Pointer<Void>> args);
 final BlockInvokeD blockInvoke =
-    nativeRuntimeLib.lookupFunction<BlockInvokeC, BlockInvokeD>('block_invoke');
+    nativeRuntimeLib.lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');

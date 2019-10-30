@@ -3,7 +3,7 @@
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
 #import "DOBlockWrapper.h"
-#import "Wrapper-Interface.h"
+#import "DOFFIHelper.h"
 
 void *
 native_method_imp(const char *cls_str, const char *selector_str, bool isClassMethod) {
@@ -24,6 +24,18 @@ native_method_signature(id object, SEL selector, const char **typeEncodings) {
     }
     *typeEncodings = signature.methodReturnType;
     return signature;
+}
+
+id emptyIMP(id target, SEL sel, ...) {
+    return nil;
+}
+
+void
+native_replace_method(id target, SEL selector) {
+    Class cls = object_getClass(target);
+    Method method = class_getInstanceMethod(cls, selector);
+    class_replaceMethod(cls, selector, (IMP)&emptyIMP, method_getTypeEncoding(method));
+    
 }
 
 void *
@@ -85,13 +97,13 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
 }
 
 void *
-block_create(char *types, void *callback) {
+native_block_create(char *types, void *callback) {
     DOBlockWrapper *wrapper = [[[DOBlockWrapper alloc] initWithTypeString:types callback:callback] autorelease];
     return wrapper;
 }
 
 void *
-block_invoke(void *block, void **args) {
+native_block_invoke(void *block, void **args) {
     const char *typeString = DOBlockTypeEncodeString((id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];

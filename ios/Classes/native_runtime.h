@@ -5,14 +5,10 @@
 //  Created by 杨萧玉 on 2019/10/24.
 //
 
+#import "DOMacro.h"
+
 #ifndef native_runtime_h
 #define native_runtime_h
-
-#ifdef __cplusplus
-#define DO_EXTERN        extern "C" __attribute__((visibility("default"))) __attribute((used))
-#else
-#define DO_EXTERN            extern __attribute__((visibility("default"))) __attribute((used))
-#endif
 
 DO_EXTERN
 void *
@@ -28,11 +24,11 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
 
 DO_EXTERN
 void *
-block_create(char *types, void *callback);
+native_block_create(char *types, void *callback);
 
 DO_EXTERN
 void *
-block_invoke(void *block, void **args);
+native_block_invoke(void *block, void **args);
 
 DO_EXTERN
 const char *
