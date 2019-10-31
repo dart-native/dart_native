@@ -1,7 +1,12 @@
-## 0.0.1
+## 0.0.3
 
-* Initial release.
+* Support delegate callback.
 
 ## 0.0.2
 
 * Format code.
+
+## 0.0.1
+
+* Initial release.
+
