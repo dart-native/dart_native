@@ -9,6 +9,7 @@
 #import "DOFFIHelper.h"
 #import "DartObjcPlugin.h"
 #import "native_runtime.h"
+#import "DOInvocation.h"
 
 static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
@@ -94,14 +95,57 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     DOMethodIMP *methodIMP = (__bridge DOMethodIMP *)userdata;
     FlutterMethodChannel *channel = DartObjcPlugin.channel;
     
+    void *userRet = ret;
+    void **userArgs = args;
+//    TODO: handle stret on x86
+//    if (hasStret) {
+//        // The first arg contains address of a pointer of returned struct.
+//        userRet = *((void **)args[0]);
+//        // Other args move backwards.
+//        userArgs = args + 1;
+//    }
+    *(void **)userRet = NULL;
+    
+    int argCount = (int)methodIMP.numberOfArguments - 2;
+    const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
     if (methodIMP.thread == NSThread.currentThread && methodIMP.callback) {
         void(*callback)(void *target, SEL selector, void **args, void *ret, int argCount, const char **types) = methodIMP.callback;
-        const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
         // args: target, selector, realArgs...
-        callback(*(void **)args[0], *(void **)args[1], args + 2, ret, (int)methodIMP.numberOfArguments - 2, types);
+        callback(*(void **)args[0], *(void **)args[1], args + 2, ret, argCount, types);
         free(types);
     }
     else {
+        NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:methodIMP.typeEncoding];
+        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:signature hasStret:NO];
+        invocation.args = userArgs;
+        invocation.retValue = userRet;
+        invocation.realArgs = args;
+        invocation.realRetValue = ret;
+        [invocation retainArguments];
         
+        [invocation retainArguments];
+        int64_t targetAddr = (int64_t)(*(void **)invocation.args[0]);
+        int64_t selectorAddr = (int64_t)(*(void **)invocation.args[1]);
+        int64_t argsAddr = (int64_t)(invocation.args + 2);
+        int64_t typesAddr = (int64_t)types;
+        dispatch_semaphore_t sema;
+        if (!NSThread.isMainThread) {
+            sema = dispatch_semaphore_create(0);
+        }
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+            [channel invokeMethod:@"method_delegate" arguments:@[@(targetAddr), @(selectorAddr), @(argsAddr), @(argCount), @(typesAddr)] result:^(id  _Nullable result) {
+                const char *retType = types[0];
+                if (result) {
+                    DOStoreValueToPointer(result, ret, retType);
+                }
+                invocation = nil;
+                if (sema) {
+                    dispatch_semaphore_signal(sema);
+                }
+            }];
+        });
+        if (sema) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+        }
     }
 }

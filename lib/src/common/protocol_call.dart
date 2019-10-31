@@ -75,9 +75,11 @@ _syncCallback(
   _callback(targetPtr, selPtr, argsPtrPtr, retPtr, argCount, typesPtrPtr);
 }
 
-dynamic _asyncCallback(int targetAddr, Pointer<Void> selPtr, int argsAddr,
-    int argCount, Pointer<Pointer<Utf8>> typesPtrPtr) {
+dynamic _asyncCallback(
+    int targetAddr, int selAddr, int argsAddr, int argCount, int typesAddr) {
   Pointer<Void> targetPtr = Pointer.fromAddress(targetAddr);
+  Pointer<Void> selPtr = Pointer.fromAddress(selAddr);
   Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
+  Pointer<Pointer<Utf8>> typesPtrPtr = Pointer.fromAddress(typesAddr);
   return _callback(targetPtr, selPtr, argsPtrPtr, null, argCount, typesPtrPtr);
 }

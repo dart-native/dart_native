@@ -9,6 +9,9 @@ import 'package:ffi/ffi.dart';
 
 storeValueToPointer(
     dynamic object, Pointer<Pointer<Void>> ptr, String encoding) {
+  if (object == null && encoding == 'void') {
+    return;
+  }
   if (object is num) {
     switch (encoding) {
       case 'sint8':

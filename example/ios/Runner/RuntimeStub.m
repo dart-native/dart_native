@@ -154,7 +154,9 @@ typedef int(^BarBlock)(NSObject *a);
 
 - (void)fooDelegate:(id<StubDelegate>)delegate
 {
-    [delegate callback];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        [delegate callback];
+    });
 }
 
 @end
