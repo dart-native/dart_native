@@ -8,7 +8,7 @@ import 'package:dart_objc/src/runtime/nsobject_protocol.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dart_objc/src/runtime/message.dart';
 
-class id with NSObjectProtocol {
+class id implements NSObjectProtocol {
   Class get isa {
     if (_ptr == null) {
       return null;
@@ -159,7 +159,4 @@ class id with NSObjectProtocol {
   int get hashCode {
     return pointer.hashCode;
   }
-
-  @override
-  Map<Protocol, Map<Selector, Function>> get protocols => null;
 }
