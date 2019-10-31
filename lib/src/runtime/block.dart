@@ -59,7 +59,8 @@ class Block extends id {
   }
 
   dealloc() {
-    _wrapper.release();
+    _wrapper?.release();
+    _blockForAddress.remove(this.pointer.address);
     super.dealloc();
   }
 
@@ -124,9 +125,6 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
         nativeTypeEncoding(typesPtrPtr.elementAt(0).load()).load().toString();
     storeValueToPointer(result, retPtr, encoding);
   }
-  // TODO: should not remove block here.
-  _blockForAddress.remove(blockPtr.address);
-  block.release();
   return result;
 }
 

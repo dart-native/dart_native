@@ -20,11 +20,11 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    stub.fooDelegate(delegate);
-    // Block block = stub.fooBlock(testFunc);
-    // int result = block.invoke([stub]);
+    // stub.fooDelegate(delegate);
+    Block block = stub.fooBlock(testFunc);
+    int result = block.invoke([stub]);
     // print(result);
-
+    block.release();
     // CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
     // print(rect);
   }
