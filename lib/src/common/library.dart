@@ -1,5 +1,16 @@
 import 'dart:ffi';
 
-final DynamicLibrary nativeRuntimeLib =
-    DynamicLibrary.open('dart_objc.framework/dart_objc');
-final DynamicLibrary nativeLib = DynamicLibrary.process();
+DynamicLibrary _runtimeLib;
+DynamicLibrary get runtimeLib {
+  if (_runtimeLib != null) {
+    return _runtimeLib;
+  }
+  try {
+    _runtimeLib = DynamicLibrary.open('dart_objc.framework/dart_objc');
+  } catch (e) { // static linking
+    _runtimeLib = nativeDylib;
+  }
+  return _runtimeLib;
+}
+
+final DynamicLibrary nativeDylib = DynamicLibrary.process();

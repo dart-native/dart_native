@@ -12,7 +12,7 @@ import 'package:ffi/ffi.dart';
 
 typedef DOBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
 typedef DOBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
-final DOBlockTypeEncodeStringD blockTypeEncodeString = nativeRuntimeLib
+final DOBlockTypeEncodeStringD blockTypeEncodeString = runtimeLib
     .lookupFunction<DOBlockTypeEncodeStringC, DOBlockTypeEncodeStringD>(
         'DOBlockTypeEncodeString');
 
