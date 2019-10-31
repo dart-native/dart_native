@@ -14,5 +14,5 @@ class RuntimeStub extends NSObject {
 
   fooDelegate(DelegateStub delegate) {
     return perform(Selector('fooDelegate:'), args: [delegate]);
-  }  
+  }
 }

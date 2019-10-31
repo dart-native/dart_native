@@ -19,7 +19,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    
+
     stub.fooDelegate(delegate);
     // Block block = stub.fooBlock(testFunc);
     // int result = block.invoke([stub]);

@@ -9,7 +9,8 @@ final NSObject nil = NSObject.fromPointer(nullptr);
 
 /// The root class of most Objective-C class hierarchies, from which subclasses inherit a basic interface to the runtime system and the ability to behave as Objective-C objects.
 class NSObject extends id {
-  NSObject([String className, Class superclass]) : super(_new(className, superclass));
+  NSObject([String className, Class superclass])
+      : super(_new(className, superclass));
 
   NSObject.fromPointer(Pointer<Void> ptr) : super(ptr) {
     if (ptr == null || object_isClass(ptr) != 0) {

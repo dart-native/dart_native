@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 
 /// The group of methods that are fundamental to all Objective-C objects.
 abstract class NSObjectProtocol {
-
   /// Returns the class object for the receiver’s superclass.
   Class get superclass;
 

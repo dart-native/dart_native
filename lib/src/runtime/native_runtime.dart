@@ -21,8 +21,8 @@ typedef AddMethodD = int Function(
     Pointer<Void> selector,
     Pointer<Void> protocol,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback);
-final AddMethodD nativeAddMethod = runtimeLib
-    .lookupFunction<AddMethodC, AddMethodD>('native_add_method');
+final AddMethodD nativeAddMethod =
+    runtimeLib.lookupFunction<AddMethodC, AddMethodD>('native_add_method');
 
 typedef GetClassC = Pointer<Void> Function(
     Pointer<Utf8> className, Pointer<Void> baseClass);
