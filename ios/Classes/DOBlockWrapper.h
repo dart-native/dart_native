@@ -17,7 +17,7 @@ const char *DOBlockTypeEncodeString(id blockObj);
 
 @property (nonatomic, readonly) id block;
 
-- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback;;
+- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback;
 
 @end
 

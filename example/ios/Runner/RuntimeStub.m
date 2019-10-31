@@ -8,7 +8,14 @@
 #import "RuntimeStub.h"
 #import <UIKit/UIKit.h>
 
-@interface RuntimeStub ()
+
+@protocol StubDelegate <NSObject>
+
+- (void)callback;
+
+@end
+
+@interface RuntimeStub ()<StubDelegate>
 
 @property (nonatomic) id object;
 
@@ -145,4 +152,11 @@ typedef int(^BarBlock)(NSObject *a);
     return bar;
 }
 
+- (void)fooDelegate:(id<StubDelegate>)delegate
+{
+    [delegate callback];
+}
+
 @end
+
+

@@ -6,10 +6,6 @@ import 'package:flutter/foundation.dart';
 
 /// The group of methods that are fundamental to all Objective-C objects.
 mixin NSObjectProtocol {
-  /// Returns the class object for the receiver’s class.
-  static Class type({@required NSObjectProtocol of}) {
-    return of.perform(Selector('class'));
-  }
 
   /// Returns the class object for the receiver’s superclass.
   Class get superclass {
@@ -77,5 +73,16 @@ mixin NSObjectProtocol {
 
   release() {
     perform(Selector('release'));
+  }
+}
+
+/// Returns the class object for the receiver’s class.
+Class type({@required dynamic of}) {
+  if (of is NSObjectProtocol) {
+    return of.perform(Selector('class'));
+  } else if (of is Type) {
+    return Class(of.toString());
+  } else {
+    return Class(of.runtimeType.toString());
   }
 }

@@ -11,12 +11,16 @@
 #define native_runtime_h
 
 DO_EXTERN
-void *
-native_method_imp(const char *cls_str, const char *selector_str, bool isClassMethod);
-
-DO_EXTERN
 NSMethodSignature *
 native_method_signature(id object, SEL selector, const char **typeEncodings);
+
+DO_EXTERN
+BOOL
+native_add_method(id target, SEL selector, Protocol *proto, void *callback);
+
+DO_EXTERN
+Class
+native_get_class(const char *className, Class baseClass);
 
 DO_EXTERN
 void *

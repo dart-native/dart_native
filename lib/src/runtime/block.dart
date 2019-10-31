@@ -124,7 +124,7 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
         nativeTypeEncoding(typesPtrPtr.elementAt(0).load()).load().toString();
     storeValueToPointer(result, retPtr, encoding);
   }
-
+  // TODO: should not remove block here.
   _blockForAddress.remove(blockPtr.address);
   block.release();
   return result;

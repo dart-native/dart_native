@@ -1,3 +1,4 @@
+import 'package:dart_objc_example/delegatestub.dart';
 import 'package:dart_objc_example/runtimestub.dart';
 import 'package:flutter/material.dart';
 import 'package:dart_objc/dart_objc.dart';
@@ -11,19 +12,21 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   RuntimeStub stub = RuntimeStub();
+  DelegateStub delegate = DelegateStub();
   NSObject obj;
   Block block;
 
   @override
   void initState() {
     super.initState();
+    
+    stub.fooDelegate(delegate);
+    // Block block = stub.fooBlock(testFunc);
+    // int result = block.invoke([stub]);
+    // print(result);
 
-    Block block = stub.fooBlock(testFunc);
-    int result = block.invoke([stub]);
-    print(result);
-
-    CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
-    print(rect);
+    // CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
+    // print(rect);
   }
 
   Function testFunc = (NSObject a) {

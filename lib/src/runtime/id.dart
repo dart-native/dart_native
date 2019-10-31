@@ -68,6 +68,7 @@ class id with NSObjectProtocol {
   }
 
   dealloc() {
+    removeDelegate(this);
     _ptr = nullptr;
   }
 

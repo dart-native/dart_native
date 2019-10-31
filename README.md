@@ -69,6 +69,7 @@ typedef int(^BarBlock)(NSObject *a);
 - [x] Type support:Struct
 - [ ] Delegate callback
 - [ ] Memory management
+- [ ] Main Thread Check
 - [ ] Generate Dart code from ObjectiveC/C++ Headers.
 - [ ] Unit test.
 - [ ] Documents.

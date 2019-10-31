@@ -4,14 +4,7 @@
 #import <Foundation/Foundation.h>
 #import "DOBlockWrapper.h"
 #import "DOFFIHelper.h"
-
-void *
-native_method_imp(const char *cls_str, const char *selector_str, bool isClassMethod) {
-    Class cls = isClassMethod ? objc_getMetaClass(cls_str) : objc_getClass(cls_str);
-    SEL selector = sel_registerName(selector_str);
-    IMP imp = class_getMethodImplementation(cls, selector);
-    return (void *)imp;
-}
+#import "DOMethodIMP.h"
 
 NSMethodSignature *
 native_method_signature(id object, SEL selector, const char **typeEncodings) {
@@ -26,16 +19,35 @@ native_method_signature(id object, SEL selector, const char **typeEncodings) {
     return signature;
 }
 
-id emptyIMP(id target, SEL sel, ...) {
-    return nil;
+BOOL
+native_add_method(id target, SEL selector, Protocol *proto, void *callback) {
+    Class cls = object_getClass(target);
+    if ([target respondsToSelector:selector]) {
+        return NO;
+    }
+    struct objc_method_description description = protocol_getMethodDescription(proto, selector, YES, YES);
+    if (description.types == NULL) {
+        description = protocol_getMethodDescription(proto, selector, NO, YES);
+    }
+    if (description.types != NULL) {
+        DOMethodIMP *methodIMP = [[DOMethodIMP alloc] initWithTypeEncoding:description.types callback:callback]; // DOMethodIMP always exists.
+        class_replaceMethod(cls, selector, [methodIMP imp], description.types);
+        return YES;
+    }
+    return NO;
 }
 
-void
-native_replace_method(id target, SEL selector) {
-    Class cls = object_getClass(target);
-    Method method = class_getInstanceMethod(cls, selector);
-    class_replaceMethod(cls, selector, (IMP)&emptyIMP, method_getTypeEncoding(method));
-    
+Class
+native_get_class(const char *className, Class baseClass) {
+    Class result = objc_getClass(className);
+    if (result) {
+        return result;
+    }
+    else if (baseClass) {
+        result = objc_allocateClassPair(baseClass, className, 0);
+        objc_registerClassPair(result);
+    }
+    return result;
 }
 
 void *
@@ -276,6 +288,7 @@ native_struct_encoding(const char *encoding)
         [structType appendFormat:@"%@", [NSString stringWithUTF8String:elements[i]]];
     }
     [structType appendString:@"}"];
+    free(elements);
     return structType.UTF8String;
 }
 

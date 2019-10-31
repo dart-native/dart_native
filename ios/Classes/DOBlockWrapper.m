@@ -79,7 +79,7 @@ const char *DOBlockTypeEncodeString(id blockObj)
     return _do_Block_descriptor_3(block)->signature;
 }
 
-static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
+static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
 static NSString *trim(NSString *string)
 {
@@ -372,7 +372,6 @@ void dispose_helper(struct _DOBlock *src)
     ffi_closure_free(_closure);
     free(_descriptor);
     free(_typeEncodings);
-    return;
 }
 
 - (id)block
@@ -391,7 +390,7 @@ void dispose_helper(struct _DOBlock *src)
     
     _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&_blockIMP);
     
-    ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DOFFIClosureFunc, (__bridge void *)(self), _blockIMP);
+    ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DOFFIBlockClosureFunc, (__bridge void *)(self), _blockIMP);
     if (status != FFI_OK) {
         NSLog(@"ffi_prep_closure returned %d", (int)status);
         abort();
@@ -499,10 +498,9 @@ void dispose_helper(struct _DOBlock *src)
 
 @end
 
-static void DOFFIClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata)
-{
+static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     @autoreleasepool {
-        DOBlockWrapper *wrapper = (__bridge DOBlockWrapper*)userdata;
+        DOBlockWrapper *wrapper = (__bridge DOBlockWrapper *)userdata;
         FlutterMethodChannel *channel = DartObjcPlugin.channel;
         int64_t blockAddr = (int64_t)wrapper.block;
         void *userRet = ret;
