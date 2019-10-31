@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/src/runtime/functions.dart';
+import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 class Protocol {
