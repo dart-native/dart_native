@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:dart_objc_example/delegatestub.dart';
 import 'package:dart_objc_example/runtimestub.dart';
 import 'package:flutter/material.dart';
@@ -30,10 +28,9 @@ class _MyAppState extends State<MyApp> {
     print(rect);
     rect.free();
     stub.release();
-    delegate.release();
   }
 
-  Function testFunc = (Pointer a) {
+  Function testFunc = (NSObject a) {
     print('hello block! ${a.toString()}');
     return 101;
   };

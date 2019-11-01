@@ -7,7 +7,7 @@ class RuntimeStub extends NSObject {
   Block fooBlock(Function func) {
     Block block = Block(func);
     Block result = perform(Selector('fooBlock:'), args: [block]);
-    block.release();
+    // block.release();
     return result;
   }
 

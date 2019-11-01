@@ -46,6 +46,22 @@ class Block extends id {
     ChannelDispatch().registerChannelCallback('block_invoke', _asyncCallback);
   }
 
+  Class get superclass {
+    return isa.perform(Selector('superclass'));
+  }
+
+  String get description {
+    return toString();
+  }
+
+  String get debugDescription {
+    return toString();
+  }
+
+  int get hash {
+    return hashCode;
+  }
+
   Block copy() {
     Pointer<Void> newPtr = Block_copy(this.pointer);
     Block result = Block._internal(newPtr);

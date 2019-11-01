@@ -55,10 +55,10 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
     if (!object || !selector || !signature) {
         return NULL;
     }
+    
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = object;
     invocation.selector = selector;
-    
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
         const char *argType = [signature getArgumentTypeAtIndex:i];
         if (argType[0] == '{') {
@@ -74,12 +74,17 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
         [invocation getReturnValue:&result];
         const char returnType = signature.methodReturnType[0];
         if (result && returnType == '@') {
-            NSString *selString = NSStringFromSelector(selector);
-            if (!([selString hasPrefix:@"new"] ||
-                [selString hasPrefix:@"alloc"] ||
-                [selString hasPrefix:@"copy"] ||
-                [selString hasPrefix:@"mutableCopy"])) {
-                [(id)result retain];
+            if (strcmp(signature.methodReturnType, "@?") == 0) {
+                result = [(id)result copy];
+            }
+            else {
+                NSString *selString = NSStringFromSelector(selector);
+                if (!([selString hasPrefix:@"new"] ||
+                    [selString hasPrefix:@"alloc"] ||
+                    [selString hasPrefix:@"copy"] ||
+                    [selString hasPrefix:@"mutableCopy"])) {
+                    [(id)result retain];
+                }
             }
         }
         else if (returnType == '{') {
