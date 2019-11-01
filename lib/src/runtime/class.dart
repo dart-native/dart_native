@@ -12,7 +12,6 @@ class Class extends id {
   /// An opaque type that represents an Objective-C class.
   Class(this.name, [Class base]) : super(_getClass(name, base)) {
     if (pointer == nullptr) {
-      // TODO: create class not exists? I prefer NOT.
       throw 'class $name is not exists!';
     }
   }

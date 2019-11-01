@@ -60,8 +60,6 @@ storeValueToPointer(
   } else if (object is Selector &&
       (encoding == 'selector' || encoding == 'ptr')) {
     ptr.store(object.toPointer());
-  } else if (object is Function && (encoding == 'block' || encoding == 'ptr')) {
-    ptr.store(Block(object).pointer);
   } else if (object is Block && (encoding == 'block' || encoding == 'ptr')) {
     ptr.store(object.pointer);
   } else if (encoding == 'char *' || encoding == 'ptr') {
@@ -71,8 +69,9 @@ storeValueToPointer(
       charPtr.free();
     } else if (object is Pointer<Utf8>) {
       ptr.cast<Pointer<Utf8>>().store(object);
-    } else {
-      ptr.store(object as Pointer<Void>);
+    } else if (object is Pointer) {
+      Pointer<Void> tempPtr = object.cast<Void>();
+      ptr.store(tempPtr);
     }
   } else if (encoding.startsWith('{')) {
     // ptr is struct pointer

@@ -193,7 +193,6 @@ List<String> _typeStringForFunction(Function function) {
         args = args.replaceAll(dartTypeName, nativeTypeName);
       });
       return '$ret, $args'.split(', ').map((String s) {
-        // TODO: handle NSObject **
         if (s.contains('Pointer')) {
           return 'ptr';
         } else if (s.contains('Function')) {

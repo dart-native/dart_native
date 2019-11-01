@@ -5,7 +5,10 @@ class RuntimeStub extends NSObject {
   RuntimeStub() : super('RuntimeStub');
 
   Block fooBlock(Function func) {
-    return perform(Selector('fooBlock:'), args: [func]);
+    Block block = Block(func);
+    Block result = perform(Selector('fooBlock:'), args: [block]);
+    block.release();
+    return result;
   }
 
   CGRect fooCGRect(CGRect rect) {
