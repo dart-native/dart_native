@@ -20,7 +20,7 @@ Map<int, Block> _blockForAddress = {};
 
 class Block extends id {
   Function function;
-  NSObject _wrapper;
+  NSObject _wrapper; // Block hold wrapper
   List<String> types = [];
 
   factory Block(Function function) {
@@ -28,9 +28,10 @@ class Block extends id {
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
-    blockWrapper.retainCount = 2; // BlockWrapper retainCount should be two because block also retains wrapper.
-    Block result =
-        Block._internal(blockWrapper.perform(Selector('block')).pointer);
+    // BlockWrapper retainCount should be two because block also retains wrapper.
+    blockWrapper.retainCount = 2;
+    int blockAddr = blockWrapper.perform(Selector('blockAddress'));
+    Block result = Block._internal(Pointer.fromAddress(blockAddr));
     typeStringPtr.free();
     result.types = types;
     result._wrapper = blockWrapper;
@@ -46,6 +47,8 @@ class Block extends id {
 
   Block._internal(Pointer<Void> ptr) : super(ptr) {
     ChannelDispatch().registerChannelCallback('block_invoke', _asyncCallback);
+    // When block and wrapper die, block addr is passed through callback.
+    ChannelDispatch().registerChannelCallback('block_dealloc', _dealloc);
   }
 
   Class get superclass {
@@ -77,12 +80,16 @@ class Block extends id {
   }
 
   dealloc() {
-    _wrapper?.release();
-    _blockForAddress.remove(this.pointer.address);
-    super.dealloc();
+    if (_wrapper == null) {
+      _blockForAddress.remove(pointer.address);
+      super.dealloc();
+    }
   }
 
   dynamic invoke([List args]) {
+    if (pointer == nullptr) {
+      return null;
+    }
     Pointer<Utf8> typesEncodingsPtr = blockTypeEncodeString(pointer);
     Pointer<Int32> countPtr = Pointer<Int32>.allocate();
     Pointer<Pointer<Utf8>> typesPtrPtr =
@@ -114,12 +121,23 @@ class Block extends id {
   }
 }
 
+_dealloc(int blockAddr) {
+  Block block = _blockForAddress[blockAddr];
+  if (block != null) {
+    block._wrapper = null;
+    block.dealloc();
+  }
+}
+
 Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =
     Pointer.fromFunction(_syncCallback);
 
 _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr, int argCount) {
   Block block = _blockForAddress[blockPtr.address];
+  if (block == null) {
+    return null;
+  }
   List args = [];
   Pointer pointer = block._wrapper.perform(Selector('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();

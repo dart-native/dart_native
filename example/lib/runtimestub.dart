@@ -3,11 +3,11 @@ import 'package:dart_objc_example/delegatestub.dart';
 
 class RuntimeStub extends NSObject {
   RuntimeStub() : super('RuntimeStub');
-
+  
   Block fooBlock(Function func) {
     Block block = Block(func);
     Block result = perform(Selector('fooBlock:'), args: [block]);
-    // block.release();
+    block.release();
     return result;
   }
 

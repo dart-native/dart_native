@@ -36,7 +36,7 @@ class _MyAppState extends State<MyApp> {
   };
 
   Future<void> press() async {
-    
+    delegate.release();
   }
 
   @override

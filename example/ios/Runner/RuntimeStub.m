@@ -139,18 +139,19 @@
 
 typedef int(^BarBlock)(NSObject *a);
 
-BarBlock bar = ^(NSObject *a) {
-    NSLog(@"bar block arg: %@", a);
-    return 404;
-};
-
 - (BarBlock)fooBlock:(BarBlock)block
 {
+    NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        NSObject *arg = [NSObject new];
         int result = block(arg);
         NSLog(@"---result: %d", result);
     });
+    
+    BarBlock bar = ^(NSObject *a) {
+        NSLog(@"bar block arg: %@ %@", a, arg);
+        return 404;
+    };
+    
     return bar;
 }
 

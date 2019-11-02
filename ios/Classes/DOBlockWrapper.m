@@ -108,6 +108,7 @@ void dispose_helper(struct _DOBlock *src)
 }
 
 @property (nonatomic, readwrite, weak) id block;
+@property (nonatomic) int64_t blockAddress;
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) const char **typeEncodings;
@@ -138,6 +139,15 @@ void dispose_helper(struct _DOBlock *src)
     ffi_closure_free(_closure);
     free(_descriptor);
     free(_typeEncodings);
+    [DartObjcPlugin.channel invokeMethod:@"block_dealloc" arguments:@[@([self blockAddress])]];
+}
+
+- (int64_t)blockAddress
+{
+    if (!_blockAddress) {
+        _blockAddress = (int64_t)self.block;
+    }
+    return _blockAddress;
 }
 
 - (id)block
@@ -183,7 +193,6 @@ void dispose_helper(struct _DOBlock *src)
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     _block = (__bridge id)Block_copy(&simulateBlock);
-    objc_setAssociatedObject(_block, _blockIMP, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return _block;
 }
 
