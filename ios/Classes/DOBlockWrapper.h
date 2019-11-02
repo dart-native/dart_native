@@ -15,7 +15,7 @@ const char *DOBlockTypeEncodeString(id blockObj);
 
 @interface DOBlockWrapper : NSObject
 
-@property (nonatomic, readonly) id block;
+@property (nonatomic, readonly, weak) id block;
 
 - (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback;
 

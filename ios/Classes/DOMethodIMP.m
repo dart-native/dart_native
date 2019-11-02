@@ -20,7 +20,6 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     void *_methodIMP;
 }
 
-@property (nonatomic) DOFFIHelper *helper;
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) const char *typeEncoding;
 @property (nonatomic) NSThread *thread;
@@ -34,7 +33,6 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 {
     self = [super init];
     if (self) {
-        _helper = [DOFFIHelper new];
         _typeEncoding = typeEncoding;
         _callback = callback;
         _thread = NSThread.currentThread;
@@ -71,12 +69,14 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     int argCount;
     ffi_type **argTypes;
     ffi_type *returnType;
+    
+    DOFFIHelper *helper = [DOFFIHelper new];
     // TODO: handle struct return on x86
-    argTypes = [self.helper argsWithEncodeString:str getCount:&argCount];
+    argTypes = [helper argsWithEncodeString:str getCount:&argCount];
     if (!argTypes) { // Error!
         return -1;
     }
-    returnType = [self.helper ffiTypeForEncode:str];
+    returnType = [helper ffiTypeForEncode:str];
     
     if (!returnType) { // Error!
         return -1;

@@ -11,6 +11,7 @@
 #import "DartObjcPlugin.h"
 #import "DOFFIHelper.h"
 #import "DOInvocation.h"
+#import <objc/runtime.h>
 
 #if !__has_feature(objc_arc)
 #error
@@ -104,10 +105,9 @@ void dispose_helper(struct _DOBlock *src)
     ffi_closure *_closure;
     struct _DOBlockDescriptor *_descriptor;
     void *_blockIMP;
-    void *_block;
 }
 
-@property (nonatomic) DOFFIHelper *helper;
+@property (nonatomic, readwrite, weak) id block;
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) const char **typeEncodings;
@@ -126,7 +126,6 @@ void dispose_helper(struct _DOBlock *src)
 {
     self = [super init];
     if (self) {
-        _helper = [DOFFIHelper new];
         _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
         _callback = callback;
         _thread = NSThread.currentThread;
@@ -144,7 +143,7 @@ void dispose_helper(struct _DOBlock *src)
 - (id)block
 {
     if (_block) {
-        return (__bridge id _Nonnull)(_block);
+        return _block;
     }
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
@@ -183,8 +182,9 @@ void dispose_helper(struct _DOBlock *src)
         (__bridge void*)self
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
-    _block = Block_copy(&simulateBlock);
-    return (__bridge id _Nonnull)(_block);
+    _block = (__bridge id)Block_copy(&simulateBlock);
+    objc_setAssociatedObject(_block, _blockIMP, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    return _block;
 }
 
 - (void)invokeWithArgs:(void **)args retValue:(void *)retValue
@@ -197,8 +197,9 @@ void dispose_helper(struct _DOBlock *src)
     int argCount;
     ffi_type **argTypes;
     ffi_type *returnType;
+    DOFFIHelper *helper = [DOFFIHelper new];
     if ((flags & BLOCK_HAS_STRET)) {
-        argTypes = [self.helper typesWithEncodeString:str getCount:&argCount startIndex:0];
+        argTypes = [helper typesWithEncodeString:str getCount:&argCount startIndex:0];
         if (!argTypes) { // Error!
             return -1;
         }
@@ -207,11 +208,11 @@ void dispose_helper(struct _DOBlock *src)
         self.stret = YES;
     }
     else {
-        argTypes = [self.helper argsWithEncodeString:str getCount:&argCount];
+        argTypes = [helper argsWithEncodeString:str getCount:&argCount];
         if (!argTypes) { // Error!
             return -1;
         }
-        returnType = [self.helper ffiTypeForEncode:str];
+        returnType = [helper ffiTypeForEncode:str];
     }
     if (!returnType) { // Error!
         return -1;
@@ -266,53 +267,51 @@ void dispose_helper(struct _DOBlock *src)
 @end
 
 static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
-    @autoreleasepool {
-        DOBlockWrapper *wrapper = (__bridge DOBlockWrapper *)userdata;
-        FlutterMethodChannel *channel = DartObjcPlugin.channel;
-        int64_t blockAddr = (int64_t)wrapper.block;
-        void *userRet = ret;
-        void **userArgs = args;
-        if (wrapper.hasStret) {
-            // The first arg contains address of a pointer of returned struct.
-            userRet = *((void **)args[0]);
-            // Other args move backwards.
-            userArgs = args + 1;
-        }
-        *(void **)userRet = NULL;
+    DOBlockWrapper *wrapper = (__bridge DOBlockWrapper *)userdata;
+    FlutterMethodChannel *channel = DartObjcPlugin.channel;
+    int64_t blockAddr = (int64_t)wrapper.block;
+    void *userRet = ret;
+    void **userArgs = args;
+    if (wrapper.hasStret) {
+        // The first arg contains address of a pointer of returned struct.
+        userRet = *((void **)args[0]);
+        // Other args move backwards.
+        userArgs = args + 1;
+    }
+    *(void **)userRet = NULL;
+    
+    if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
+        void(*callback)(void *block, void **args, void *ret, int argCount) = wrapper.callback;
+        callback((__bridge void *)(wrapper.block), args + 1, ret, (int)wrapper.numberOfArguments - 1);
+    }
+    else {
+        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature hasStret:wrapper.hasStret];
+        invocation.args = userArgs;
+        invocation.retValue = userRet;
+        invocation.realArgs = args;
+        invocation.realRetValue = ret;
+        [invocation retainArguments];
         
-        if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
-            void(*callback)(void *block, void **args, void *ret, int argCount) = wrapper.callback;
-            callback((__bridge void *)(wrapper.block), args + 1, ret, (int)wrapper.numberOfArguments - 1);
+        // Use (numberOfArguments - 1) exclude block itself.
+        int64_t argsAddr = (int64_t)(invocation.args + 1);
+        dispatch_semaphore_t sema;
+        if (!NSThread.isMainThread) {
+            sema = dispatch_semaphore_create(0);
         }
-        else {
-            __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature hasStret:wrapper.hasStret];
-            invocation.args = userArgs;
-            invocation.retValue = userRet;
-            invocation.realArgs = args;
-            invocation.realRetValue = ret;
-            [invocation retainArguments];
-            
-            // Use (numberOfArguments - 1) exclude block itself.
-            int64_t argsAddr = (int64_t)(invocation.args + 1);
-            dispatch_semaphore_t sema;
-            if (!NSThread.isMainThread) {
-                sema = dispatch_semaphore_create(0);
-            }
-            dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-                [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
-                    const char *retType = wrapper.typeEncodings[0];
-                    if (result) {
-                        DOStoreValueToPointer(result, ret, retType);
-                    }
-                    invocation = nil;
-                    if (sema) {
-                        dispatch_semaphore_signal(sema);
-                    }
-                }];
-            });
-            if (sema) {
-                dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-            }
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+            [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
+                const char *retType = wrapper.typeEncodings[0];
+                if (result) {
+                    DOStoreValueToPointer(result, ret, retType);
+                }
+                invocation = nil;
+                if (sema) {
+                    dispatch_semaphore_signal(sema);
+                }
+            }];
+        });
+        if (sema) {
+            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         }
     }
 }

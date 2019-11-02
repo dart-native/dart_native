@@ -28,6 +28,7 @@ class Block extends id {
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
+    blockWrapper.retainCount = 2; // BlockWrapper retainCount should be two because block also retains wrapper.
     Block result =
         Block._internal(blockWrapper.perform(Selector('block')).pointer);
     typeStringPtr.free();
@@ -35,6 +36,7 @@ class Block extends id {
     result._wrapper = blockWrapper;
     result.function = function;
     _blockForAddress[result.pointer.address] = result;
+    blockWrapper.release(); // Release for alloc.
     return result;
   }
 
