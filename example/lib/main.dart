@@ -21,13 +21,15 @@ class _MyAppState extends State<MyApp> {
 
     int int8 = 0;
     int start = DateTime.now().millisecondsSinceEpoch;
-    for (var i = 0; i < 100000; i++) {
-      int8 = stub.fooInt8();
+    String sysver;
+    // UIDevice.currentDevice.systemVersion
+    for (var i = 0; i < 1000000; i++) {
+      NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
+      NSObject version = device.perform(Selector('systemVersion'));
+      sysver = NSString.fromPointer(version.pointer).value;
     }
     int duration = DateTime.now().millisecondsSinceEpoch - start;
     print('duration:$duration, selectorDuration:${stub.selectorDuration}');
-    print(
-        'message duration1:$msg_duration1, duration2:$msg_duration2, duration3:$msg_duration3, duration4:$msg_duration4, duration5:$msg_duration5');
     // stub.fooDelegate(delegate);
     // Block block = stub.fooBlock(testFunc);
     // int result = block.invoke([stub]);

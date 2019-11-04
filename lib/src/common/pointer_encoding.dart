@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/runtime.dart';
-import 'package:dart_objc/src/common/native_struct.dart';
+import 'package:dart_objc/src/foundation/native_struct.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:ffi/ffi.dart';
 

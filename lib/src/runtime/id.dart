@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/dart_objc.dart';
+import 'package:dart_objc/src/common/protocol_call.dart';
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/class.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';

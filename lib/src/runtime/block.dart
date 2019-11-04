@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/common/channel_dispatch.dart';
 import 'package:dart_objc/src/common/library.dart';
-import 'package:dart_objc/src/common/native_type_box.dart';
+import 'package:dart_objc/src/foundation/native_type_box.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/native_runtime.dart';
