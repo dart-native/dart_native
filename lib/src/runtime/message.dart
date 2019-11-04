@@ -23,7 +23,7 @@ dynamic msgSend(id target, Selector selector, [List args]) {
   if (target == nil) {
     return null;
   }
-  int start1 = DateTime.now().millisecondsSinceEpoch;
+  // int start1 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
       Pointer<Pointer<Utf8>>.allocate(count: (args?.length ?? 0) + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
@@ -33,9 +33,9 @@ dynamic msgSend(id target, Selector selector, [List args]) {
   if (signature.address == 0) {
     throw 'signature for [$target $selector] is NULL.';
   }
-  msg_duration1 += DateTime.now().millisecondsSinceEpoch - start1;
+  // msg_duration1 += DateTime.now().millisecondsSinceEpoch - start1;
 
-  int start2 = DateTime.now().millisecondsSinceEpoch;
+  // int start2 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
     pointers = Pointer<Pointer<Void>>.allocate(count: args.length);
@@ -52,23 +52,23 @@ dynamic msgSend(id target, Selector selector, [List args]) {
     //TODO: need check args count.
     throw 'Arg list not match!';
   }
-  msg_duration2 += DateTime.now().millisecondsSinceEpoch - start2;
+  // msg_duration2 += DateTime.now().millisecondsSinceEpoch - start2;
 
-  int start3 = DateTime.now().millisecondsSinceEpoch;
+  // int start3 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Void> resultPtr =
       _msgSend(target.pointer, selectorPtr, signature, pointers);
-  msg_duration3 += DateTime.now().millisecondsSinceEpoch - start3;
-  int start4 = DateTime.now().millisecondsSinceEpoch;
+  // msg_duration3 += DateTime.now().millisecondsSinceEpoch - start3;
+  // int start4 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.load());
   String typeEncodings = convertEncode(resultTypePtr);
   typeEncodingsPtrPtr.free();
-  msg_duration4 += DateTime.now().millisecondsSinceEpoch - start4;
-  int start5 = DateTime.now().millisecondsSinceEpoch;
+  // msg_duration4 += DateTime.now().millisecondsSinceEpoch - start4;
+  // int start5 = DateTime.now().millisecondsSinceEpoch;
   dynamic result = loadValueFromPointer(resultPtr, typeEncodings);
   if (pointers != null) {
     pointers.free();
   }
-  msg_duration5 += DateTime.now().millisecondsSinceEpoch - start5;
+  // msg_duration5 += DateTime.now().millisecondsSinceEpoch - start5;
   return result;
 }
 
