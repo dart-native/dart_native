@@ -143,17 +143,20 @@ native_type_encoding(const char *str) {
     if (!str) {
         return NULL;
     }
+    static const char *typeList[17] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr"};
+    
     #define SINT(type) do { \
         if(str[0] == @encode(type)[0]) \
         { \
-            if(sizeof(type) == 1) \
-                return "sint8"; \
-            else if(sizeof(type) == 2) \
-                return "sint16"; \
-            else if(sizeof(type) == 4) \
-                return "sint32"; \
-            else if(sizeof(type) == 8) \
-                return "sint64"; \
+            size_t size = sizeof(type); \
+            if(size == 1) \
+                return typeList[0]; \
+            else if(size == 2) \
+                return typeList[1]; \
+            else if(size == 4) \
+                return typeList[2]; \
+            else if(size == 8) \
+                return typeList[3]; \
             else \
             { \
                 NSLog(@"Unknown size for type %s", #type); \
@@ -165,14 +168,15 @@ native_type_encoding(const char *str) {
     #define UINT(type) do { \
         if(str[0] == @encode(type)[0]) \
         { \
-            if(sizeof(type) == 1) \
-                return "uint8"; \
-            else if(sizeof(type) == 2) \
-                return "uint16"; \
-            else if(sizeof(type) == 4) \
-                return "uint32"; \
-            else if(sizeof(type) == 8) \
-                return "uint64"; \
+            size_t size = sizeof(type); \
+            if(size == 1) \
+                return typeList[4]; \
+            else if(size == 2) \
+                return typeList[5]; \
+            else if(size == 4) \
+                return typeList[6]; \
+            else if(size == 8) \
+                return typeList[7]; \
             else \
             { \
                 NSLog(@"Unknown size for type %s", #type); \
@@ -188,10 +192,10 @@ native_type_encoding(const char *str) {
     
     #define COND(type, name) do { \
         if(str[0] == @encode(type)[0]) \
-        return #name; \
+        return name; \
     } while(0)
     
-    #define PTR(type) COND(type, ptr)
+    #define PTR(type) COND(type, typeList[16])
     
     SINT(_Bool);
     INT(char);
@@ -199,19 +203,19 @@ native_type_encoding(const char *str) {
     INT(int);
     INT(long);
     INT(long long);
-    COND(float, float32);
-    COND(double, float64);
+    COND(float, typeList[8]);
+    COND(double, typeList[9]);
     
     if (strcmp(str, "@?") == 0) {
-        return "block";
+        return typeList[13];
     }
     
-    COND(id, object);
-    COND(Class, class);
-    COND(SEL, selector);
+    COND(id, typeList[10]);
+    COND(Class, typeList[11]);
+    COND(SEL, typeList[12]);
     PTR(void *);
-    COND(char *, char *);
-    COND(void, void);
+    COND(char *, typeList[14]);
+    COND(void, typeList[15]);
     
     // Ignore Method Encodings
     switch (*str) {

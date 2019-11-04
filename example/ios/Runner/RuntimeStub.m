@@ -34,7 +34,7 @@
 
 - (int8_t)fooInt8:(int8_t)a
 {
-    NSLog(@"arg: %d", a);
+//    NSLog(@"arg: %d", a);
     return -123;
 }
 

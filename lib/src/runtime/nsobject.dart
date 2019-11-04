@@ -23,3 +23,9 @@ Pointer<Void> _new(String className, [Class superclass]) {
   NSObject result = Class(className, superclass).perform(Selector('new'));
   return result.pointer;
 }
+
+int msg_duration1 = 0;
+int msg_duration2 = 0;
+int msg_duration3 = 0;
+int msg_duration4 = 0;
+int msg_duration5 = 0;

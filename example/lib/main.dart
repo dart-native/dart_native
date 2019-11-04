@@ -19,15 +19,24 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    stub.fooDelegate(delegate);
-    Block block = stub.fooBlock(testFunc);
-    int result = block.invoke([stub]);
-    print(result);
-    block.release();
-    CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
-    print(rect);
-    rect.free();
-    stub.release();
+    int int8 = 0;
+    int start = DateTime.now().millisecondsSinceEpoch;
+    for (var i = 0; i < 100000; i++) {
+      int8 = stub.fooInt8();
+    }
+    int duration = DateTime.now().millisecondsSinceEpoch - start;
+    print('duration:$duration, selectorDuration:${stub.selectorDuration}');
+    print(
+        'message duration1:$msg_duration1, duration2:$msg_duration2, duration3:$msg_duration3, duration4:$msg_duration4, duration5:$msg_duration5');
+    // stub.fooDelegate(delegate);
+    // Block block = stub.fooBlock(testFunc);
+    // int result = block.invoke([stub]);
+    // print(result);
+    // block.release();
+    // CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
+    // print(rect);
+    // rect.free();
+    // stub.release();
   }
 
   Function testFunc = (NSObject a) {
