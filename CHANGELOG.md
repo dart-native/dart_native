@@ -1,3 +1,8 @@
+## 0.0.4
+
+* Support `NSString`.
+* Fix some memory issue.
+
 ## 0.0.3
 
 * Support delegate callback.
