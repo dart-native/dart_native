@@ -22,9 +22,7 @@ class _MyAppState extends State<MyApp> {
     int start = DateTime.now().millisecondsSinceEpoch;
     String sysver;
 
-    NSString str = NSString('i');
-
-    NSString resultStr = stub.fooNSString('str');
+    NSString resultStr = stub.fooNSString('strsfadsfad');
     print(resultStr);
     // UIDevice.currentDevice.systemVersion
     // for (var i = 0; i < 1000000; i++) {
@@ -34,6 +32,7 @@ class _MyAppState extends State<MyApp> {
     // }
     int duration = DateTime.now().millisecondsSinceEpoch - start;
     // print('duration:$duration, selectorDuration:${stub.selectorDuration}');
+    String resultCharPtr = stub.fooCharPtr('test char *');
     NSObject obj = stub.fooObject(delegate);
     print(obj);
     stub.fooDelegate(delegate);

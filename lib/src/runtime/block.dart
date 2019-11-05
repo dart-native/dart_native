@@ -99,7 +99,6 @@ class Block extends id {
       throw 'Args Count NOT match';
     }
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
-    List<Function> closures = [];
     if (args != null) {
       argsPtrPtr = Pointer<Pointer<Void>>.allocate(count: args.length);
       for (var i = 0; i < args.length; i++) {
@@ -107,11 +106,7 @@ class Block extends id {
           throw 'One of args list is null';
         }
         String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).load());
-        Function closure =
-            storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
-        if (closure != null) {
-          closures.add(closure);
-        }
+        storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
       }
     }
     Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
@@ -120,10 +115,6 @@ class Block extends id {
     }
     String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).load());
     dynamic result = loadValueFromPointer(resultPtr, encoding);
-
-    for (Function function in closures) {
-      Function.apply(function, []);
-    }
     return result;
   }
 }
@@ -158,10 +149,7 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
   if (retPtr != null) {
     String encoding =
         nativeTypeEncoding(typesPtrPtr.elementAt(0).load()).load().toString();
-    Function closure = storeValueToPointer(result, retPtr, encoding);
-    if (closure != null) {
-      throw 'Return value of callback may leak.';
-    }
+    storeValueToPointer(result, retPtr, encoding);
   }
   return result;
 }

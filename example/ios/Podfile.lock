@@ -1,8 +1,5 @@
 PODS:
   - dart_objc (0.0.1):
-    - dart_objc/Runtime (= 0.0.1)
-    - Flutter
-  - dart_objc/Runtime (0.0.1):
     - Flutter
   - Flutter (1.0.0)
 
@@ -17,7 +14,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/flutter/ios"
 
 SPEC CHECKSUMS:
-  dart_objc: 26f6abeac092a83f189162f2ce043477a83c55c4
+  dart_objc: d3d4c7c4ed9ca49bd2ff152b0201aa2f0afd15a6
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
 
 PODFILE CHECKSUM: dd58435ce9bf15a45658d9a48dd97b721db6e5b5

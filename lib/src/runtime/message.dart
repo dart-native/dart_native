@@ -19,7 +19,7 @@ Pointer<Void> _msgSend(
   return result;
 }
 
-dynamic msgSend(id target, Selector selector, [List args]) {
+dynamic msgSend(id target, Selector selector, [List args, bool auto = true]) {
   if (target == nil) {
     return null;
   }
@@ -37,7 +37,6 @@ dynamic msgSend(id target, Selector selector, [List args]) {
 
   // int start2 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Void>> pointers;
-  List<Function> closures = [];
   if (args != null) {
     pointers = Pointer<Pointer<Void>>.allocate(count: args.length);
     for (var i = 0; i < args.length; i++) {
@@ -48,11 +47,7 @@ dynamic msgSend(id target, Selector selector, [List args]) {
       Pointer<Utf8> argTypePtr =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load());
       String typeEncodings = convertEncode(argTypePtr);
-      Function closure =
-          storeValueToPointer(arg, pointers.elementAt(i), typeEncodings);
-      if (closure != null) {
-        closures.add(closure);
-      }
+      storeValueToPointer(arg, pointers.elementAt(i), typeEncodings, auto);
     }
   } else if (selector.name.contains(':')) {
     //TODO: need check args count.
@@ -70,14 +65,11 @@ dynamic msgSend(id target, Selector selector, [List args]) {
   typeEncodingsPtrPtr.free();
   // msg_duration4 += DateTime.now().millisecondsSinceEpoch - start4;
   // int start5 = DateTime.now().millisecondsSinceEpoch;
-  dynamic result = loadValueFromPointer(resultPtr, typeEncodings);
+  dynamic result = loadValueFromPointer(resultPtr, typeEncodings, auto);
   if (pointers != null) {
     pointers.free();
   }
   // msg_duration5 += DateTime.now().millisecondsSinceEpoch - start5;
-  for (Function function in closures) {
-    Function.apply(function, []);
-  }
   return result;
 }
 

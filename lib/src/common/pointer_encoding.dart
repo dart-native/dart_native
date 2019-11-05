@@ -5,13 +5,15 @@ import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/foundation/native_struct.dart';
 import 'package:dart_objc/src/runtime/id.dart';
+import 'package:dart_objc/src/runtime/message.dart';
 import 'package:ffi/ffi.dart';
 
 /// return complete closure to clear memory etc.
-Function storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr, String encoding) {
+storeValueToPointer(
+    dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
+    [bool auto = true]) {
   if (object == null && encoding == 'void') {
-    return null;
+    return;
   }
   if (object is num) {
     switch (encoding) {
@@ -61,21 +63,21 @@ Function storeValueToPointer(
   } else if (object is Selector &&
       (encoding == 'selector' || encoding == 'ptr')) {
     ptr.store(object.toPointer());
-  } else if (object is Block && (encoding == 'block' || encoding == 'ptr')) {
+  } else if (object is Block &&
+      (encoding == 'block' || encoding == 'ptr' || encoding == 'object')) {
     ptr.store(object.pointer);
-  } else if (object is Function && (encoding == 'block' || encoding == 'ptr')) {
+  } else if (object is Function &&
+      (encoding == 'block' || encoding == 'ptr' || encoding == 'object')) {
     Block block = Block(object);
     ptr.store(block.pointer);
-    return () => block.release();
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+      NSObject('DOCharPtrWrapper').autorelease().perform(Selector('setCString:'), args:[charPtr]);
       ptr.cast<Pointer<Utf8>>().store(charPtr);
-      return () => charPtr.free();
     } else if (encoding == 'object') {
       NSString string = NSString(object);
       ptr.store(string.pointer);
-      return () => string.release();
     }
   } else if (encoding == 'char *' || encoding == 'ptr') {
     if (object is Pointer<Utf8>) {
@@ -90,10 +92,10 @@ Function storeValueToPointer(
   } else {
     throw '$object not match type $encoding!';
   }
-  return null;
 }
 
-dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
+dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
+    [bool auto = true]) {
   dynamic result;
   if (encoding.startsWith('{')) {
     // ptr is struct pointer
@@ -150,8 +152,10 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
         result = Block.fromPointer(ptr);
         break;
       case 'char *':
-        Pointer<Utf8> temp = ptr.cast();
-        result = Utf8.fromUtf8(temp);
+        if (auto) {
+          Pointer<Utf8> temp = ptr.cast();
+          result = Utf8.fromUtf8(temp);
+        }
         break;
       case 'void':
         break;

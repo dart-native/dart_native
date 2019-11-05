@@ -63,8 +63,6 @@ class id implements NSObjectProtocol {
     return this;
   }
 
-  /// Release NSObject instance.
-  /// Subclass can override this method and call release on its dart properties.
   release() {
     if (_retainCount > 0) {
       if (this is NSObject) {
@@ -76,6 +74,12 @@ class id implements NSObjectProtocol {
     }
   }
 
+  id autorelease() {
+    return perform(Selector('autorelease'));
+  }
+
+  /// Clean NSObject instance.
+  /// Subclass can override this method and call release on its dart properties.
   dealloc() {
     _objects.remove(pointer.address);
     removeDelegate(this);

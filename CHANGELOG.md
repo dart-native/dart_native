@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Fix memory leak.
+
 ## 0.0.4
 
 * Support `NSString`.

@@ -141,7 +141,7 @@ void dispose_helper(struct _DOBlock *src)
     free(_descriptor);
     free(_typeEncodings);
     // TODO: replace with ffi callback.
-    [DartObjcPlugin.channel invokeMethod:@"block_dealloc" arguments:@[@([self blockAddress])]];
+    [DartObjcPlugin.channel invokeMethod:@"object_dealloc" arguments:@[@([self blockAddress])]];
 }
 
 - (void)initBlock
@@ -184,6 +184,11 @@ void dispose_helper(struct _DOBlock *src)
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     _block = (__bridge id)Block_copy(&simulateBlock);
+    SEL selector = NSSelectorFromString(@"autorelease");
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    _block = [_block performSelector:selector];
+    #pragma clang diagnostic pop
 }
 
 - (int64_t)blockAddress

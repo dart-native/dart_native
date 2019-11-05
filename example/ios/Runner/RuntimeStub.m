@@ -92,7 +92,13 @@
     return 123.456;
 }
 
-- (char *)fooChar:(char *)a
+- (char)fooChar:(char)a
+{
+    NSLog(@"arg: %c", a);
+    return 'c';
+}
+
+- (char *)fooCharPtr:(char *)a
 {
     NSLog(@"arg: %s", a);
     return "123456";
