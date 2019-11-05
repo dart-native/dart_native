@@ -159,6 +159,12 @@ typedef int(^BarBlock)(NSObject *a);
     });
 }
 
+- (NSString *)fooNSString:(NSString *)str
+{
+    NSLog(@"%@", str);
+    return @"test nsstring";
+}
+
 @end
 
 

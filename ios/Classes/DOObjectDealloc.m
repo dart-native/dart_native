@@ -32,6 +32,7 @@ _objc_isTaggedPointer(const void *ptr)
 @interface DOObjectDealloc ()
 
 @property (nonatomic, weak) NSObject *host;
+@property (nonatomic) int64_t hostAddress;
 
 @end
 
@@ -39,7 +40,7 @@ _objc_isTaggedPointer(const void *ptr)
 
 + (void)attachHost:(NSObject *)host
 {
-    if (!_objc_isTaggedPointer((__bridge const void *)(host))) {
+    if (!_objc_isTaggedPointer((__bridge const void *)(host)) || [host isKindOfClass:NSClassFromString(@"__NSMallocBlock")]) {
         __unused DOObjectDealloc *dealloc = [[self alloc] initWithHost:host];
     }
 }
@@ -49,6 +50,7 @@ _objc_isTaggedPointer(const void *ptr)
     self = [super init];
     if (self) {
         _host = host;
+        _hostAddress = (int64_t)host;
         objc_setAssociatedObject(host, _cmd, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return self;
@@ -57,8 +59,7 @@ _objc_isTaggedPointer(const void *ptr)
 - (void)dealloc
 {
     // TODO: replace with ffi callback.
-    int64_t address = (int64_t)_host;
-    [DartObjcPlugin.channel invokeMethod:@"object_dealloc" arguments:@[@(address)]];
+    [DartObjcPlugin.channel invokeMethod:@"object_dealloc" arguments:@[@(_hostAddress)]];
 }
 
 @end

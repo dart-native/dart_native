@@ -24,7 +24,7 @@ class id implements NSObjectProtocol {
     return _ptr;
   }
 
-  int retainCount = 1;
+  int _retainCount = 1;
 
   String get address =>
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
@@ -40,7 +40,10 @@ class id implements NSObjectProtocol {
   }
 
   id(this._ptr) {
-    _objects[_ptr.address] = this;
+    if (_ptr != null && _ptr != nullptr) {
+      _objects[_ptr.address] = this;
+    }
+    // TODO: only invoke once.
     ChannelDispatch().registerChannelCallback('object_dealloc', _dealloc);
   }
 
@@ -54,7 +57,7 @@ class id implements NSObjectProtocol {
 
   id retain() {
     if (this is NSObject) {
-      retainCount++;
+      _retainCount++;
       return perform(Selector('retain'));
     }
     return this;
@@ -63,13 +66,13 @@ class id implements NSObjectProtocol {
   /// Release NSObject instance.
   /// Subclass can override this method and call release on its dart properties.
   release() {
-    if (retainCount > 0) {
+    if (_retainCount > 0) {
       if (this is NSObject) {
         perform(Selector('release'));
       } else if (this is Block) {
         Block_release(this.pointer);
       }
-      retainCount--;
+      _retainCount--;
     }
   }
 
@@ -160,5 +163,7 @@ Map<int, id> _objects = {};
 
 _dealloc(int addr) {
   id object = _objects[addr];
-  object.dealloc();
+  if (object != null) {
+    object.dealloc();
+  }
 }

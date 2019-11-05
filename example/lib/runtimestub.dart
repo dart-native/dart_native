@@ -24,6 +24,11 @@ class RuntimeStub extends NSObject {
     return perform(Selector('fooCGRect:'), args: [rect]);
   }
 
+  NSString fooNSString(String string) {
+    NSObject result = perform(Selector('fooNSString:'), args: [string]);
+    return NSString.fromPointer(result.pointer);
+  }
+
   fooDelegate(DelegateStub delegate) {
     perform(Selector('fooDelegate:'), args: [delegate]);
   }

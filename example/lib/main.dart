@@ -13,7 +13,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   RuntimeStub stub = RuntimeStub();
   DelegateStub delegate = DelegateStub();
-  Block block;
 
   @override
   void initState() {
@@ -24,7 +23,9 @@ class _MyAppState extends State<MyApp> {
     String sysver;
 
     NSString str = NSString('i');
-    print(str.pointer);
+
+    NSString resultStr = stub.fooNSString('str');
+    print(resultStr);
     // UIDevice.currentDevice.systemVersion
     // for (var i = 0; i < 1000000; i++) {
     //   NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
@@ -36,7 +37,7 @@ class _MyAppState extends State<MyApp> {
     NSObject obj = stub.fooObject(delegate);
     print(obj);
     stub.fooDelegate(delegate);
-    block = stub.fooBlock(testFunc).copy();
+    Block block = stub.fooBlock(testFunc);
     int result = block.invoke([stub]);
     print(result);
     CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));

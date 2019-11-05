@@ -14,8 +14,6 @@ Write Objective-C Code using Dart. This package liberates you from native code a
   s.author           = { 'yulingtianxia' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*', 'libffi/*.h'
-  mrc_files = ''#'Classes/native_runtime.*'
-  s.exclude_files = mrc_files
   s.public_header_files = 'Classes/DartObjcPlugin.h'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
@@ -23,11 +21,4 @@ Write Objective-C Code using Dart. This package liberates you from native code a
   s.vendored_libraries = "libffi/libffi.a"
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
-  
-  s.subspec 'Runtime' do |ss|
-    ss.requires_arc = false
-    ss.source_files = mrc_files
-    ss.public_header_files = ''
-    ss.private_header_files = 'Classes/native_runtime.h'
-  end
 end

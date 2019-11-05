@@ -44,8 +44,6 @@ class Block extends id {
 
   Block._internal(Pointer<Void> ptr) : super(ptr) {
     ChannelDispatch().registerChannelCallback('block_invoke', _asyncCallback);
-    // When block and wrapper die, block addr is passed through callback.
-    ChannelDispatch().registerChannelCallback('block_dealloc', _dealloc);
   }
 
   Class get superclass {
@@ -71,7 +69,7 @@ class Block extends id {
     }
     Block result = Block._internal(newPtr);
     // Block created by function.
-    if (function != null) { 
+    if (function != null) {
       result._wrapper = _wrapper;
       result.function = function;
       _blockForAddress[newPtr.address] = result;
@@ -128,11 +126,6 @@ class Block extends id {
     }
     return result;
   }
-}
-
-_dealloc(int blockAddr) {
-  Block block = _blockForAddress[blockAddr];
-  block.dealloc();
 }
 
 Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =

@@ -5,7 +5,7 @@ import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 
-final NSObject nil = NSObject.fromPointer(nullptr);
+final id nil = id(nullptr);
 
 /// The root class of most Objective-C class hierarchies, from which subclasses inherit a basic interface to the runtime system and the ability to behave as Objective-C objects.
 class NSObject extends id {

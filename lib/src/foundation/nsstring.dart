@@ -27,6 +27,7 @@ class NSString extends NSObject {
 }
 
 Pointer<Void> _new(String value) {
-  NSObject result = Class('NSString').perform(Selector('stringWithUTF8String:'), args: [value]);
+  NSObject result = Class('NSString')
+      .perform(Selector('stringWithUTF8String:'), args: [value]);
   return result.pointer;
 }
