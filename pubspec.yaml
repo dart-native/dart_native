@@ -1,6 +1,6 @@
 name: dart_objc
 description: Write Objective-C Code using Dart. This package liberates you from native code and low performance channel.
-version: 0.0.3
+version: 0.0.4
 author: yulingtianxia <yulingtianxia@gmail.com>
 homepage: https://github.com/yulingtianxia/dart_objc
 
