@@ -130,6 +130,7 @@ void dispose_helper(struct _DOBlock *src)
         _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
         _callback = callback;
         _thread = NSThread.currentThread;
+        [self initBlock];
     }
     return self;
 }
@@ -139,28 +140,18 @@ void dispose_helper(struct _DOBlock *src)
     ffi_closure_free(_closure);
     free(_descriptor);
     free(_typeEncodings);
+    // TODO: replace with ffi callback.
     [DartObjcPlugin.channel invokeMethod:@"block_dealloc" arguments:@[@([self blockAddress])]];
 }
 
-- (int64_t)blockAddress
+- (void)initBlock
 {
-    if (!_blockAddress) {
-        _blockAddress = (int64_t)self.block;
-    }
-    return _blockAddress;
-}
-
-- (id)block
-{
-    if (_block) {
-        return _block;
-    }
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
     // Check block encoding types valid.
     NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:typeString flags:flags];
     if (numberOfArguments == -1) { // Unknown encode.
-        return nil;
+        return;
     }
     self.numberOfArguments = numberOfArguments;
     
@@ -193,7 +184,14 @@ void dispose_helper(struct _DOBlock *src)
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     _block = (__bridge id)Block_copy(&simulateBlock);
-    return _block;
+}
+
+- (int64_t)blockAddress
+{
+    if (!_blockAddress) {
+        _blockAddress = (int64_t)self.block;
+    }
+    return _blockAddress;
 }
 
 - (void)invokeWithArgs:(void **)args retValue:(void *)retValue
