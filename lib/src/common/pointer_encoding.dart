@@ -9,8 +9,7 @@ import 'package:dart_objc/src/runtime/message.dart';
 import 'package:ffi/ffi.dart';
 
 /// return complete closure to clear memory etc.
-storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
+storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     [bool auto = true]) {
   if (object == null && encoding == 'void') {
     return;
@@ -73,7 +72,9 @@ storeValueToPointer(
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-      NSObject('DOCharPtrWrapper').autorelease().perform(Selector('setCString:'), args:[charPtr]);
+      NSObject('DOCharPtrWrapper')
+          .autorelease()
+          .perform(Selector('setCString:'), args: [charPtr]);
       ptr.cast<Pointer<Utf8>>().store(charPtr);
     } else if (encoding == 'object') {
       NSString string = NSString(object);
