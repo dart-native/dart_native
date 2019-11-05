@@ -22,23 +22,27 @@ class _MyAppState extends State<MyApp> {
     int int8 = 0;
     int start = DateTime.now().millisecondsSinceEpoch;
     String sysver;
+
+    NSString str = NSString('i');
+    print(str.pointer);
     // UIDevice.currentDevice.systemVersion
-    for (var i = 0; i < 1000000; i++) {
-      NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
-      NSObject version = device.perform(Selector('systemVersion'));
-      sysver = NSString.fromPointer(version.pointer).value;
-    }
+    // for (var i = 0; i < 1000000; i++) {
+    //   NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
+    //   NSObject version = device.perform(Selector('systemVersion'));
+    //   sysver = NSString.fromPointer(version.pointer).value;
+    // }
     int duration = DateTime.now().millisecondsSinceEpoch - start;
-    print('duration:$duration, selectorDuration:${stub.selectorDuration}');
-    // stub.fooDelegate(delegate);
-    // Block block = stub.fooBlock(testFunc);
-    // int result = block.invoke([stub]);
-    // print(result);
-    // block.release();
-    // CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
-    // print(rect);
-    // rect.free();
-    // stub.release();
+    // print('duration:$duration, selectorDuration:${stub.selectorDuration}');
+    NSObject obj = stub.fooObject(delegate);
+    print(obj);
+    stub.fooDelegate(delegate);
+    block = stub.fooBlock(testFunc).copy();
+    int result = block.invoke([stub]);
+    print(result);
+    CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
+    print(rect);
+    rect.free();
+    stub.release();
   }
 
   Function testFunc = (NSObject a) {

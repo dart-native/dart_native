@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/dart_objc.dart';
+import 'package:dart_objc/src/common/channel_dispatch.dart';
 import 'package:dart_objc/src/common/protocol_call.dart';
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/class.dart';
@@ -23,18 +24,7 @@ class id implements NSObjectProtocol {
     return _ptr;
   }
 
-  int _retainCount = 1;
-
-  int get retainCount {
-    return _retainCount;
-  }
-
-  set retainCount(int count) {
-    _retainCount = count;
-    if (_retainCount == 0) {
-      dealloc();
-    }
-  }
+  int retainCount = 1;
 
   String get address =>
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
@@ -49,7 +39,10 @@ class id implements NSObjectProtocol {
     return registerDelegate(this, selector, callback, protocol);
   }
 
-  id(this._ptr);
+  id(this._ptr) {
+    _objects[_ptr.address] = this;
+    ChannelDispatch().registerChannelCallback('object_dealloc', _dealloc);
+  }
 
   factory id.fromPointer(Pointer<Void> ptr) {
     if (object_isClass(ptr) != 0) {
@@ -81,6 +74,7 @@ class id implements NSObjectProtocol {
   }
 
   dealloc() {
+    _objects.remove(pointer.address);
     removeDelegate(this);
     _ptr = nullptr;
   }
@@ -160,4 +154,11 @@ class id implements NSObjectProtocol {
   int get hashCode {
     return pointer.hashCode;
   }
+}
+
+Map<int, id> _objects = {};
+
+_dealloc(int addr) {
+  id object = _objects[addr];
+  object.dealloc();
 }

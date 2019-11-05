@@ -11,10 +11,12 @@ class RuntimeStub extends NSObject {
     return perform(sel, args: [-123]);
   }
 
+  NSObject fooObject(NSObject object) {
+    return perform(Selector('fooObject:'), args: [object]);
+  }
+
   Block fooBlock(Function func) {
-    Block block = Block(func);
-    Block result = perform(Selector('fooBlock:'), args: [block]);
-    block.release();
+    Block result = perform(Selector('fooBlock:'), args: [func]);
     return result;
   }
 
@@ -23,6 +25,6 @@ class RuntimeStub extends NSObject {
   }
 
   fooDelegate(DelegateStub delegate) {
-    return perform(Selector('fooDelegate:'), args: [delegate]);
+    perform(Selector('fooDelegate:'), args: [delegate]);
   }
 }

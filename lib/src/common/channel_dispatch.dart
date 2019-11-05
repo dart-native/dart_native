@@ -20,6 +20,8 @@ class ChannelDispatch {
   Future<dynamic> _handler(MethodCall call) async {
     final args = call.arguments;
     Function function = _callbacks[call.method];
-    return Function.apply(function, args);
+    if (function != null) {
+      return Function.apply(function, args);
+    }
   }
 }

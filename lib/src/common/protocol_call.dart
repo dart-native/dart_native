@@ -60,7 +60,10 @@ _callback(
 
   if (retPtr != null) {
     String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).load());
-    storeValueToPointer(result, retPtr, encoding);
+    Function closure = storeValueToPointer(result, retPtr, encoding);
+    if (closure != null) {
+      throw 'Return value of callback may leak.';
+    }
   }
   return result;
 }

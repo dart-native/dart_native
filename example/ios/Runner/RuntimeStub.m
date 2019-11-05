@@ -34,7 +34,7 @@
 
 - (int8_t)fooInt8:(int8_t)a
 {
-//    NSLog(@"arg: %d", a);
+    NSLog(@"arg: %d", a);
     return -123;
 }
 
@@ -113,9 +113,6 @@
 - (id)fooObject:(id)a
 {
     NSLog(@"arg: %@", a);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//        NSLog(@"%@, Retain count is %ld", stub, CFGetRetainCount(stub));
-    });
     return self.object;
 }
 

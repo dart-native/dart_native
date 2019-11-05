@@ -7,10 +7,11 @@ import 'package:dart_objc/src/foundation/native_struct.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:ffi/ffi.dart';
 
-storeValueToPointer(
+/// return complete closure to clear memory etc.
+Function storeValueToPointer(
     dynamic object, Pointer<Pointer<Void>> ptr, String encoding) {
   if (object == null && encoding == 'void') {
-    return;
+    return null;
   }
   if (object is num) {
     switch (encoding) {
@@ -62,12 +63,22 @@ storeValueToPointer(
     ptr.store(object.toPointer());
   } else if (object is Block && (encoding == 'block' || encoding == 'ptr')) {
     ptr.store(object.pointer);
-  } else if (encoding == 'char *' || encoding == 'ptr') {
-    if (object is String) {
+  } else if (object is Function && (encoding == 'block' || encoding == 'ptr')) {
+    Block block = Block(object);
+    ptr.store(block.pointer);
+    return () => block.release();
+  } else if (object is String) {
+    if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
       ptr.cast<Pointer<Utf8>>().store(charPtr);
-      charPtr.free();
-    } else if (object is Pointer<Utf8>) {
+      return () => charPtr.free();
+    } else if (encoding == 'object') {
+      NSString string = NSString(object);
+      ptr.store(string.pointer);
+      return () => string.release();
+    }
+  } else if (encoding == 'char *' || encoding == 'ptr') {
+    if (object is Pointer<Utf8>) {
       ptr.cast<Pointer<Utf8>>().store(object);
     } else if (object is Pointer) {
       Pointer<Void> tempPtr = object.cast<Void>();
@@ -79,6 +90,7 @@ storeValueToPointer(
   } else {
     throw '$object not match type $encoding!';
   }
+  return null;
 }
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {

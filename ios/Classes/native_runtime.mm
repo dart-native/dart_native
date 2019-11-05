@@ -5,6 +5,7 @@
 #import "DOBlockWrapper.h"
 #import "DOFFIHelper.h"
 #import "DOMethodIMP.h"
+#import "DOObjectDealloc.h"
 
 NSMethodSignature *
 native_method_signature(id object, SEL selector, const char **typeEncodings) {
@@ -19,6 +20,8 @@ native_method_signature(id object, SEL selector, const char **typeEncodings) {
     return signature;
 }
 
+NSMutableArray<DOMethodIMP *> *_methodIMPList = [NSMutableArray array];
+
 BOOL
 native_add_method(id target, SEL selector, Protocol *proto, void *callback) {
     Class cls = object_getClass(target);
@@ -31,6 +34,7 @@ native_add_method(id target, SEL selector, Protocol *proto, void *callback) {
     }
     if (description.types != NULL) {
         DOMethodIMP *methodIMP = [[DOMethodIMP alloc] initWithTypeEncoding:description.types callback:callback]; // DOMethodIMP always exists.
+        [_methodIMPList addObject:methodIMP];
         class_replaceMethod(cls, selector, [methodIMP imp], description.types);
         return YES;
     }
@@ -75,7 +79,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
         const char returnType = signature.methodReturnType[0];
         if (result && returnType == '@') {
             if (strcmp(signature.methodReturnType, "@?") == 0) {
-                result = [(id)result copy];
+//                result = [(id)result copy];
             }
             else {
                 NSString *selString = NSStringFromSelector(selector);
@@ -83,8 +87,9 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
                     [selString hasPrefix:@"alloc"] ||
                     [selString hasPrefix:@"copy"] ||
                     [selString hasPrefix:@"mutableCopy"])) {
-                    [(id)result retain];
+                    [DOObjectDealloc attachHost:(__bridge id)result];
                 }
+                
             }
         }
         else if (returnType == '{') {
@@ -116,23 +121,23 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
 void *
 native_block_create(char *types, void *callback) {
     DOBlockWrapper *wrapper = [[DOBlockWrapper alloc] initWithTypeString:types callback:callback];
-    return wrapper;
+    return (__bridge void *)wrapper;
 }
 
 void *
 native_block_invoke(void *block, void **args) {
-    const char *typeString = DOBlockTypeEncodeString((id)block);
+    const char *typeString = DOBlockTypeEncodeString((__bridge id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     for (NSUInteger idx = 1; idx < signature.numberOfArguments; idx++) {
         [invocation setArgument:&args[idx - 1] atIndex:idx];
     }
-    [invocation invokeWithTarget:(id)block];
+    [invocation invokeWithTarget:(__bridge id)block];
     void *result = NULL;
     if (signature.methodReturnLength > 0) {
         [invocation getReturnValue:&result];
         if (result && signature.methodReturnType[0] == '@') {
-            [(id)result retain];
+//            [(id)result retain];
         }
     }
     return result;

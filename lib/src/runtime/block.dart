@@ -28,8 +28,6 @@ class Block extends id {
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
-    // BlockWrapper retainCount should be two because block also retains wrapper.
-    blockWrapper.retainCount = 2;
     int blockAddr = blockWrapper.perform(Selector('blockAddress'));
     Block result = Block._internal(Pointer.fromAddress(blockAddr));
     typeStringPtr.free();
@@ -37,7 +35,6 @@ class Block extends id {
     result._wrapper = blockWrapper;
     result.function = function;
     _blockForAddress[result.pointer.address] = result;
-    blockWrapper.release(); // Release for alloc.
     return result;
   }
 
@@ -68,22 +65,25 @@ class Block extends id {
   }
 
   Block copy() {
-    Pointer<Void> newPtr = Block_copy(this.pointer);
+    Pointer<Void> newPtr = Block_copy(pointer);
+    if (newPtr == pointer) {
+      return this;
+    }
     Block result = Block._internal(newPtr);
-    result._wrapper = _wrapper;
-    if (function != null) {
+    // Block created by function.
+    if (function != null) { 
+      result._wrapper = _wrapper;
       result.function = function;
       _blockForAddress[newPtr.address] = result;
+      result.types = types;
     }
-    result.types = types;
     return result;
   }
 
   dealloc() {
-    if (_wrapper == null) {
-      _blockForAddress.remove(pointer.address);
-      super.dealloc();
-    }
+    _wrapper = null;
+    _blockForAddress.remove(pointer.address);
+    super.dealloc();
   }
 
   dynamic invoke([List args]) {
@@ -101,6 +101,7 @@ class Block extends id {
       throw 'Args Count NOT match';
     }
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
+    List<Function> closures = [];
     if (args != null) {
       argsPtrPtr = Pointer<Pointer<Void>>.allocate(count: args.length);
       for (var i = 0; i < args.length; i++) {
@@ -108,7 +109,11 @@ class Block extends id {
           throw 'One of args list is null';
         }
         String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).load());
-        storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
+        Function closure =
+            storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
+        if (closure != null) {
+          closures.add(closure);
+        }
       }
     }
     Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
@@ -117,16 +122,17 @@ class Block extends id {
     }
     String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).load());
     dynamic result = loadValueFromPointer(resultPtr, encoding);
+
+    for (Function function in closures) {
+      Function.apply(function, []);
+    }
     return result;
   }
 }
 
 _dealloc(int blockAddr) {
   Block block = _blockForAddress[blockAddr];
-  if (block != null) {
-    block._wrapper = null;
-    block.dealloc();
-  }
+  block.dealloc();
 }
 
 Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =
@@ -159,7 +165,10 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
   if (retPtr != null) {
     String encoding =
         nativeTypeEncoding(typesPtrPtr.elementAt(0).load()).load().toString();
-    storeValueToPointer(result, retPtr, encoding);
+    Function closure = storeValueToPointer(result, retPtr, encoding);
+    if (closure != null) {
+      throw 'Return value of callback may leak.';
+    }
   }
   return result;
 }

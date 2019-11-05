@@ -37,6 +37,7 @@ dynamic msgSend(id target, Selector selector, [List args]) {
 
   // int start2 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Void>> pointers;
+  List<Function> closures = [];
   if (args != null) {
     pointers = Pointer<Pointer<Void>>.allocate(count: args.length);
     for (var i = 0; i < args.length; i++) {
@@ -44,9 +45,14 @@ dynamic msgSend(id target, Selector selector, [List args]) {
       if (arg == null) {
         throw 'One of args list is null';
       }
-      Pointer<Utf8> argTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load());
+      Pointer<Utf8> argTypePtr =
+          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load());
       String typeEncodings = convertEncode(argTypePtr);
-      storeValueToPointer(arg, pointers.elementAt(i), typeEncodings);
+      Function closure =
+          storeValueToPointer(arg, pointers.elementAt(i), typeEncodings);
+      if (closure != null) {
+        closures.add(closure);
+      }
     }
   } else if (selector.name.contains(':')) {
     //TODO: need check args count.
@@ -69,6 +75,9 @@ dynamic msgSend(id target, Selector selector, [List args]) {
     pointers.free();
   }
   // msg_duration5 += DateTime.now().millisecondsSinceEpoch - start5;
+  for (Function function in closures) {
+    Function.apply(function, []);
+  }
   return result;
 }
 

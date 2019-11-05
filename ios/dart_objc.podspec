@@ -14,7 +14,7 @@ Write Objective-C Code using Dart. This package liberates you from native code a
   s.author           = { 'yulingtianxia' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*', 'libffi/*.h'
-  mrc_files = 'Classes/native_runtime.*'
+  mrc_files = ''#'Classes/native_runtime.*'
   s.exclude_files = mrc_files
   s.public_header_files = 'Classes/DartObjcPlugin.h'
   s.dependency 'Flutter'
