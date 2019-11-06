@@ -46,3 +46,7 @@ class Protocol {
     return name;
   }
 }
+
+extension ToProtocol on String {
+  Protocol toProtocol() => Protocol(this);
+}

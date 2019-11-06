@@ -4,11 +4,13 @@ import 'package:dart_objc_example/delegatestub.dart';
 class RuntimeStub extends NSObject {
   RuntimeStub() : super('RuntimeStub');
   int selectorDuration = 0;
-  int fooInt8() {
-    int start1 = DateTime.now().millisecondsSinceEpoch;
-    Selector sel = Selector('fooInt8:');
-    selectorDuration += DateTime.now().millisecondsSinceEpoch - start1;
-    return perform(sel, args: [-123]);
+
+  bool fooBool(bool b) {
+    return perform('fooBOOL:'.toSelector(), args: [b]);
+  }
+
+  int fooInt8(int int8) {
+    return perform(Selector('fooInt8:'), args: [int8]);
   }
 
   String fooCharPtr(String charPtr) {

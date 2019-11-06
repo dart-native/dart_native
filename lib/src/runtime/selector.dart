@@ -60,3 +60,7 @@ class SEL extends Selector {
   factory SEL(String selectorName) => Selector(selectorName);
   factory SEL.fromPointer(Pointer<Void> ptr) => Selector.fromPointer(ptr);
 }
+
+extension ToSelector on String {
+  Selector toSelector() => Selector(this);
+}

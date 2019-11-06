@@ -31,3 +31,7 @@ Pointer<Void> _new(String value) {
       .perform(Selector('stringWithUTF8String:'), args: [value]);
   return result.pointer;
 }
+
+extension ConvertToNSString on String {
+  NSString toNSString() => NSString(this);
+}

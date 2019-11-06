@@ -5,7 +5,6 @@ import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/foundation/native_struct.dart';
 import 'package:dart_objc/src/runtime/id.dart';
-import 'package:dart_objc/src/runtime/message.dart';
 import 'package:ffi/ffi.dart';
 
 /// return complete closure to clear memory etc.
@@ -14,8 +13,16 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
   if (object == null && encoding == 'void') {
     return;
   }
-  if (object is num) {
+  if (object is num || object is bool || object is Box) {
+    if (object is Box) {
+      object = object.value;
+    }
+    if (object is bool) {
+      // TODO: waiting for ffi bool type support.
+      object = object ? 1 : 0;
+    }
     switch (encoding) {
+      case 'bool':
       case 'sint8':
         ptr.cast<Int8>().store(object);
         break;
@@ -101,10 +108,13 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
   if (encoding.startsWith('{')) {
     // ptr is struct pointer
     result = loadStructFromPointer(ptr, encoding);
-  } else if (encoding.contains('int') || encoding.contains('float')) {
+  } else if (encoding.contains('int') || encoding.contains('float') || encoding == 'bool') {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
     switch (encoding) {
+      case 'bool':
+        result = data.getInt8(0) != 0;
+        break;
       case 'sint8':
         result = data.getInt8(0);
         break;

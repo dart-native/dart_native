@@ -32,6 +32,12 @@
     return self;
 }
 
+- (BOOL)fooBOOL:(BOOL)a
+{
+    NSLog(@"%d", a);
+    return a;
+}
+
 - (int8_t)fooInt8:(int8_t)a
 {
     NSLog(@"arg: %d", a);

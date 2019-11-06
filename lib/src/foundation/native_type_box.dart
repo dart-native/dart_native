@@ -48,7 +48,7 @@ class CGFloat = Box<double> with _ToAlias;
 dynamic boxForValue(String type, dynamic value) {
   switch (type) {
     case 'BOOL':
-      return BOOL(value);
+      return BOOL(value != 0);
     case 'NSInteger':
       return NSInteger(value);
     case 'NSUInteger':

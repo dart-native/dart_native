@@ -17,21 +17,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-
-    int int8 = 0;
-    int start = DateTime.now().millisecondsSinceEpoch;
-    String sysver;
-
+    print('fooBool result:${stub.fooBool(false)}');
     NSString resultStr = stub.fooNSString('strsfadsfad');
     print(resultStr);
-    // UIDevice.currentDevice.systemVersion
-    // for (var i = 0; i < 1000000; i++) {
-    //   NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
-    //   NSObject version = device.perform(Selector('systemVersion'));
-    //   sysver = NSString.fromPointer(version.pointer).value;
-    // }
-    int duration = DateTime.now().millisecondsSinceEpoch - start;
-    // print('duration:$duration, selectorDuration:${stub.selectorDuration}');
+    
     String resultCharPtr = stub.fooCharPtr('test char *');
     NSObject obj = stub.fooObject(delegate);
     print(obj);
@@ -43,6 +32,16 @@ class _MyAppState extends State<MyApp> {
     print(rect);
     rect.free();
     stub.release();
+
+    int start = DateTime.now().millisecondsSinceEpoch;
+    // UIDevice.currentDevice.systemVersion
+    // for (var i = 0; i < 1000000; i++) {
+    //   NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
+    //   NSObject version = device.perform(Selector('systemVersion'));
+    //   sysver = NSString.fromPointer(version.pointer).value;
+    // }
+    int duration = DateTime.now().millisecondsSinceEpoch - start;
+    // print('duration:$duration, selectorDuration:${stub.selectorDuration}');
   }
 
   Function testFunc = (NSObject a) {

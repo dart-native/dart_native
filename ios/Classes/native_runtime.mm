@@ -142,7 +142,7 @@ native_type_encoding(const char *str) {
     if (!str) {
         return NULL;
     }
-    static const char *typeList[17] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr"};
+    static const char *typeList[18] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool"};
     
     #define SINT(type) do { \
         if(str[0] == @encode(type)[0]) \
@@ -196,7 +196,7 @@ native_type_encoding(const char *str) {
     
     #define PTR(type) COND(type, typeList[16])
     
-    SINT(_Bool);
+    COND(_Bool, typeList[17]);
     INT(char);
     INT(short);
     INT(int);
