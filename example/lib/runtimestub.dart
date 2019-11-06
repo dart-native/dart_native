@@ -17,6 +17,14 @@ class RuntimeStub extends NSObject {
     return perform(Selector('fooCharPtr:'), args: [charPtr]);
   }
 
+  String fooChar(String char) {
+    return perform(Selector('fooChar:'), args: [char]);
+  }
+
+  String fooUChar(String char) {
+    return perform(Selector('fooUChar:'), args: [char]);
+  }
+
   NSObject fooObject(NSObject object) {
     return perform(Selector('fooObject:'), args: [object]);
   }

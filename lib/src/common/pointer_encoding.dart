@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
@@ -86,6 +87,17 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     } else if (encoding == 'object') {
       NSString string = NSString(object);
       ptr.store(string.pointer);
+    } else if (encoding.contains('char')) {
+      if (object.length > 1) {
+        throw '$object: Invalid String argument for native char type!';
+      }
+      int char = utf8.encode(object).first;
+      if (encoding == 'uchar') {
+        ptr.cast<Uint8>().store(char);
+      }
+      else if (encoding == 'char') {
+        ptr.cast<Int8>().store(char);
+      }
     }
   } else if (encoding == 'char *' || encoding == 'ptr') {
     if (object is Pointer<Utf8>) {
@@ -110,12 +122,20 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
     result = loadStructFromPointer(ptr, encoding);
   } else if (encoding.contains('int') ||
       encoding.contains('float') ||
-      encoding == 'bool') {
+      encoding == 'bool' ||
+      encoding == 'char' ||
+      encoding == 'uchar') {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
     switch (encoding) {
       case 'bool':
         result = data.getInt8(0) != 0;
+        break;
+      case 'char':
+        result = utf8.decode([data.getInt8(0)]);
+        break;
+      case 'uchar':
+        result = utf8.decode([data.getUint8(0)]);
         break;
       case 'sint8':
         result = data.getInt8(0);

@@ -101,7 +101,13 @@
 - (char)fooChar:(char)a
 {
     NSLog(@"arg: %c", a);
-    return 'c';
+    return a;
+}
+
+- (unsigned char)fooUChar:(unsigned char)a
+{
+    NSLog(@"arg: %c", a);
+    return a;
 }
 
 - (char *)fooCharPtr:(char *)a

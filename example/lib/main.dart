@@ -17,17 +17,31 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    print('fooBool result:${stub.fooBool(false)}');
-    NSString resultStr = stub.fooNSString('strsfadsfad');
-    print(resultStr);
 
-    String resultCharPtr = stub.fooCharPtr('test char *');
-    NSObject obj = stub.fooObject(delegate);
-    print(obj);
+    bool resultBool = stub.fooBool(false);
+    print('fooBool result:$resultBool');
+
+    NSString resultNSString = stub.fooNSString('This is NSString');
+    print('fooNSString result:$resultNSString');
+
+    String resultChar = stub.fooChar('A');
+    print('fooChar result:$resultChar');
+
+    String resultUChar = stub.fooUChar('A');
+    print('fooUChar result:$resultUChar');
+
+    String resultCharPtr = stub.fooCharPtr('test CString');
+    print('fooCharPtr result:$resultCharPtr');
+
+    NSObject resultObj = stub.fooObject(delegate);
+    print('fooObject result:$resultObj');
+
     stub.fooDelegate(delegate);
+
     Block block = stub.fooBlock(testFunc);
     int result = block.invoke([stub]);
     print(result);
+    
     CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
     print(rect);
     rect.free();
