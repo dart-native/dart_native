@@ -1,3 +1,7 @@
+## 0.0.6
+
+* Convert Bool Automatically.
+
 ## 0.0.5
 
 * Fix memory leak.
