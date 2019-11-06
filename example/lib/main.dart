@@ -20,7 +20,7 @@ class _MyAppState extends State<MyApp> {
     print('fooBool result:${stub.fooBool(false)}');
     NSString resultStr = stub.fooNSString('strsfadsfad');
     print(resultStr);
-    
+
     String resultCharPtr = stub.fooCharPtr('test char *');
     NSObject obj = stub.fooObject(delegate);
     print(obj);

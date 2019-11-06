@@ -108,7 +108,9 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
   if (encoding.startsWith('{')) {
     // ptr is struct pointer
     result = loadStructFromPointer(ptr, encoding);
-  } else if (encoding.contains('int') || encoding.contains('float') || encoding == 'bool') {
+  } else if (encoding.contains('int') ||
+      encoding.contains('float') ||
+      encoding == 'bool') {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
     switch (encoding) {
