@@ -80,9 +80,9 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-      NSObject('DOCharPtrWrapper')
+      NSObject('DOPointerWrapper')
           .autorelease()
-          .perform(Selector('setCString:'), args: [charPtr]);
+          .perform(Selector('setPointer:'), args: [charPtr]);
       ptr.cast<Pointer<Utf8>>().value = charPtr;
     } else if (encoding == 'object') {
       NSString string = NSString(object);
@@ -207,6 +207,9 @@ storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
       object is CGRect ||
       object is NSRange) {
     Pointer<Void> result = object.addressOf.cast<Void>();
+    NSObject('DOPointerWrapper')
+          .autorelease()
+          .perform(Selector('setPointer:'), args: [result]);
     ptr.value = result;
   }
 }

@@ -1,5 +1,5 @@
 //
-//  DOCharPtrWrapper.h
+//  DOPointerWrapper.h
 //  dart_objc
 //
 //  Created by 杨萧玉 on 2019/11/5.
@@ -9,9 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DOCharPtrWrapper : NSObject
+@interface DOPointerWrapper : NSObject
 
-- (void)setCString:(const char *)cString;
+- (void)setPointer:(void *)pointer;
 
 @end
 
