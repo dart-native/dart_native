@@ -208,8 +208,8 @@ storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
       object is NSRange) {
     Pointer<Void> result = object.addressOf.cast<Void>();
     NSObject('DOPointerWrapper')
-          .autorelease()
-          .perform(Selector('setPointer:'), args: [result]);
+        .autorelease()
+        .perform(Selector('setPointer:'), args: [result]);
     ptr.value = result;
   }
 }
