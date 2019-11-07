@@ -6,7 +6,7 @@ Still under development!!!
 
 ## Requirements
 
-Flutter 1.10.14 (channel dev, using 2.6.0-dev.1.0)
+Flutter 1.10.15 (channel dev, using 2.6.0-dev.8.2)
 
 ## Getting Started
 
@@ -29,7 +29,7 @@ int result = block.invoke([stub]);
 print(result); 
 
 // support built-in structs.
-CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
+CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
 print(rect);
 
 ```
