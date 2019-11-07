@@ -46,10 +46,10 @@ _callback(
   List args = [];
 
   for (var i = 0; i < argCount; i++) {
-    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).load());
-    Pointer ptr = argsPtrPtr.elementAt(i).load();
+    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).value);
+    Pointer ptr = argsPtrPtr.elementAt(i).value;
     if (!encoding.startsWith('{')) {
-      ptr = ptr.cast<Pointer<Void>>().load();
+      ptr = ptr.cast<Pointer<Void>>().value;
     }
     dynamic value = loadValueFromPointer(ptr, encoding);
     args.add(value);
@@ -59,7 +59,7 @@ _callback(
   dynamic result = Function.apply(function, args);
 
   if (retPtr != null) {
-    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).load());
+    String encoding = convertEncode(typesPtrPtr.elementAt(0).value);
     storeValueToPointer(result, retPtr, encoding);
   }
   return result;

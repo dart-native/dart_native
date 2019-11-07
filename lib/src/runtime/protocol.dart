@@ -15,7 +15,7 @@ class Protocol {
     }
     final protocolNamePtr = Utf8.toUtf8(protocolName);
     Pointer<Void> ptr = objc_getProtocol(protocolNamePtr);
-    protocolNamePtr.free();
+    free(protocolNamePtr);
     if (_cache.containsKey(ptr.address)) {
       return _cache[ptr.address];
     } else {

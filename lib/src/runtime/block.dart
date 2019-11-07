@@ -30,7 +30,7 @@ class Block extends id {
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
     int blockAddr = blockWrapper.perform(Selector('blockAddress'));
     Block result = Block._internal(Pointer.fromAddress(blockAddr));
-    typeStringPtr.free();
+    free(typeStringPtr);
     result.types = types;
     result._wrapper = blockWrapper;
     result.function = function;
@@ -89,31 +89,31 @@ class Block extends id {
       return null;
     }
     Pointer<Utf8> typesEncodingsPtr = blockTypeEncodeString(pointer);
-    Pointer<Int32> countPtr = Pointer<Int32>.allocate();
+    Pointer<Int32> countPtr = allocate<Int32>();
     Pointer<Pointer<Utf8>> typesPtrPtr =
         nativeTypesEncoding(typesEncodingsPtr, countPtr, 0);
-    int count = countPtr.load();
-    countPtr.free();
+    int count = countPtr.value;
+    free(countPtr);
     // typesPtrPtr contains return type and block itself.
     if (count != (args?.length ?? 0) + 2) {
       throw 'Args Count NOT match';
     }
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
     if (args != null) {
-      argsPtrPtr = Pointer<Pointer<Void>>.allocate(count: args.length);
+      argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
       for (var i = 0; i < args.length; i++) {
         if (args[i] == null) {
           throw 'One of args list is null';
         }
-        String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).load());
+        String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).value);
         storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
       }
     }
     Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
     if (argsPtrPtr != nullptr.cast()) {
-      argsPtrPtr.free();
+      free(argsPtrPtr);
     }
-    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).load());
+    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).value);
     dynamic result = loadValueFromPointer(resultPtr, encoding);
     return result;
   }
@@ -133,12 +133,12 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
-    String encoding = nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).load())
-        .load()
-        .toString();
-    Pointer ptr = argsPtrPtr.elementAt(i).load();
+    Pointer<Utf8> argTypePtr =
+        nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).value);
+    String encoding = convertEncode(argTypePtr);
+    Pointer ptr = argsPtrPtr.elementAt(i).value;
     if (!encoding.startsWith('{')) {
-      ptr = ptr.cast<Pointer<Void>>().load();
+      ptr = ptr.cast<Pointer<Void>>().value;
     }
     dynamic value = loadValueFromPointer(ptr, encoding);
     dynamic arg = boxForValue(block.types[i + 1], value);
@@ -147,8 +147,9 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
   dynamic result = Function.apply(block.function, args);
 
   if (retPtr != null) {
-    String encoding =
-        nativeTypeEncoding(typesPtrPtr.elementAt(0).load()).load().toString();
+    Pointer<Utf8> resultTypePtr =
+        nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
+    String encoding = convertEncode(resultTypePtr);
     storeValueToPointer(result, retPtr, encoding);
   }
   return result;

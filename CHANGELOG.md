@@ -1,3 +1,7 @@
+## 0.1.0-dev.1
+
+* Update SDK constraint to 2.6.0-dev.8.2
+
 ## 0.0.6
 
 * Convert Bool Automatically.

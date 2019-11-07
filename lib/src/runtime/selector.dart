@@ -15,7 +15,7 @@ class Selector {
     }
     final selectorNamePtr = Utf8.toUtf8(selectorName);
     Pointer<Void> ptr = sel_registerName(selectorNamePtr);
-    selectorNamePtr.free();
+    free(selectorNamePtr);
     if (_cache.containsKey(ptr.address)) {
       return _cache[ptr.address];
     } else {

@@ -25,7 +25,7 @@ dynamic msgSend(id target, Selector selector, [List args, bool auto = true]) {
   }
   // int start1 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
-      Pointer<Pointer<Utf8>>.allocate(count: (args?.length ?? 0) + 1);
+      allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
 
   Pointer<Void> signature =
@@ -38,14 +38,14 @@ dynamic msgSend(id target, Selector selector, [List args, bool auto = true]) {
   // int start2 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
-    pointers = Pointer<Pointer<Void>>.allocate(count: args.length);
+    pointers = allocate<Pointer<Void>>(count: args.length);
     for (var i = 0; i < args.length; i++) {
       var arg = args[i];
       if (arg == null) {
         throw 'One of args list is null';
       }
       Pointer<Utf8> argTypePtr =
-          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).load());
+          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
       String typeEncodings = convertEncode(argTypePtr);
       storeValueToPointer(arg, pointers.elementAt(i), typeEncodings, auto);
     }
@@ -60,26 +60,15 @@ dynamic msgSend(id target, Selector selector, [List args, bool auto = true]) {
       _msgSend(target.pointer, selectorPtr, signature, pointers);
   // msg_duration3 += DateTime.now().millisecondsSinceEpoch - start3;
   // int start4 = DateTime.now().millisecondsSinceEpoch;
-  Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.load());
+  Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);
   String typeEncodings = convertEncode(resultTypePtr);
-  typeEncodingsPtrPtr.free();
+  free(typeEncodingsPtrPtr);
   // msg_duration4 += DateTime.now().millisecondsSinceEpoch - start4;
   // int start5 = DateTime.now().millisecondsSinceEpoch;
   dynamic result = loadValueFromPointer(resultPtr, typeEncodings, auto);
   if (pointers != null) {
-    pointers.free();
+    free(pointers);
   }
   // msg_duration5 += DateTime.now().millisecondsSinceEpoch - start5;
   return result;
 }
-
-String convertEncode(Pointer<Utf8> ptr) {
-  if (_encodeCache.containsKey(ptr)) {
-    return _encodeCache[ptr];
-  }
-  String result = Utf8.fromUtf8(ptr);
-  _encodeCache[ptr] = result;
-  return result;
-}
-
-Map<Pointer<Utf8>, String> _encodeCache = {};

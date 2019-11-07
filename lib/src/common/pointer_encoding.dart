@@ -25,34 +25,34 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     switch (encoding) {
       case 'bool':
       case 'sint8':
-        ptr.cast<Int8>().store(object);
+        ptr.cast<Int8>().value = object;
         break;
       case 'sint16':
-        ptr.cast<Int16>().store(object);
+        ptr.cast<Int16>().value = object;
         break;
       case 'sint32':
-        ptr.cast<Int32>().store(object);
+        ptr.cast<Int32>().value = object;
         break;
       case 'sint64':
-        ptr.cast<Int64>().store(object);
+        ptr.cast<Int64>().value = object;
         break;
       case 'uint8':
-        ptr.cast<Uint8>().store(object);
+        ptr.cast<Uint8>().value = object;
         break;
       case 'uint16':
-        ptr.cast<Uint16>().store(object);
+        ptr.cast<Uint16>().value = object;
         break;
       case 'uint32':
-        ptr.cast<Uint32>().store(object);
+        ptr.cast<Uint32>().value = object;
         break;
       case 'uint64':
-        ptr.cast<Uint64>().store(object);
+        ptr.cast<Uint64>().value = object;
         break;
       case 'float32':
-        ptr.cast<Float>().store(object);
+        ptr.cast<Float>().value = object;
         break;
       case 'float64':
-        ptr.cast<Double>().store(object);
+        ptr.cast<Double>().value = object;
         break;
       default:
         throw '$object not match type $encoding!';
@@ -60,51 +60,50 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
   } else if (object is Pointer<Void> &&
       !encoding.contains('int') &&
       !encoding.contains('float')) {
-    ptr.store(object);
+    ptr.value = object;
   } else if (object is id &&
       (encoding == 'object' ||
           encoding == 'class' ||
           encoding == 'block' ||
           encoding == 'ptr')) {
-    ptr.store(object.pointer);
+    ptr.value = object.pointer;
   } else if (object is Selector &&
       (encoding == 'selector' || encoding == 'ptr')) {
-    ptr.store(object.toPointer());
+    ptr.value = object.toPointer();
   } else if (object is Block &&
       (encoding == 'block' || encoding == 'ptr' || encoding == 'object')) {
-    ptr.store(object.pointer);
+    ptr.value = object.pointer;
   } else if (object is Function &&
       (encoding == 'block' || encoding == 'ptr' || encoding == 'object')) {
     Block block = Block(object);
-    ptr.store(block.pointer);
+    ptr.value = block.pointer;
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
       NSObject('DOCharPtrWrapper')
           .autorelease()
           .perform(Selector('setCString:'), args: [charPtr]);
-      ptr.cast<Pointer<Utf8>>().store(charPtr);
+      ptr.cast<Pointer<Utf8>>().value = charPtr;
     } else if (encoding == 'object') {
       NSString string = NSString(object);
-      ptr.store(string.pointer);
+      ptr.value = string.pointer;
     } else if (encoding.contains('char')) {
       if (object.length > 1) {
         throw '$object: Invalid String argument for native char type!';
       }
       int char = utf8.encode(object).first;
       if (encoding == 'uchar') {
-        ptr.cast<Uint8>().store(char);
-      }
-      else if (encoding == 'char') {
-        ptr.cast<Int8>().store(char);
+        ptr.cast<Uint8>().value = char;
+      } else if (encoding == 'char') {
+        ptr.cast<Int8>().value = char;
       }
     }
   } else if (encoding == 'char *' || encoding == 'ptr') {
     if (object is Pointer<Utf8>) {
-      ptr.cast<Pointer<Utf8>>().store(object);
+      ptr.cast<Pointer<Utf8>>().value = object;
     } else if (object is Pointer) {
       Pointer<Void> tempPtr = object.cast<Void>();
-      ptr.store(tempPtr);
+      ptr.value = (tempPtr);
     }
   } else if (encoding.startsWith('{')) {
     // ptr is struct pointer
@@ -208,7 +207,7 @@ storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
       object is CGRect ||
       object is NSRange) {
     Pointer<Void> result = object.addressOf.cast<Void>();
-    ptr.store(result);
+    ptr.value = result;
   }
 }
 
@@ -246,3 +245,14 @@ dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
   }
   return result;
 }
+
+String convertEncode(Pointer<Utf8> ptr) {
+  if (_encodeCache.containsKey(ptr)) {
+    return _encodeCache[ptr];
+  }
+  String result = Utf8.fromUtf8(ptr);
+  _encodeCache[ptr] = result;
+  return result;
+}
+
+Map<Pointer<Utf8>, String> _encodeCache = {};

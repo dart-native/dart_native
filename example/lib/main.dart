@@ -41,10 +41,9 @@ class _MyAppState extends State<MyApp> {
     Block block = stub.fooBlock(testFunc);
     int result = block.invoke([stub]);
     print(result);
-    
-    CGRect rect = stub.fooCGRect(CGRect.allocate(4, 3, 2, 1));
+
+    CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
     print(rect);
-    rect.free();
     stub.release();
 
     int start = DateTime.now().millisecondsSinceEpoch;

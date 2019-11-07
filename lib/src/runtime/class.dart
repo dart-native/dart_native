@@ -36,6 +36,6 @@ Pointer<Void> _getClass(String className, [Class base]) {
   }
   final classNamePtr = Utf8.toUtf8(className);
   Pointer<Void> ptr = nativeGetClass(classNamePtr, base?.pointer ?? nullptr);
-  classNamePtr.free();
+  free(classNamePtr);
   return ptr;
 }

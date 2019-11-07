@@ -1,36 +1,35 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/src/common/precompile_macro.dart';
+import 'package:ffi/ffi.dart';
 
-class _NSUInteger32x2 extends Struct<_NSUInteger32x2> {
+class _NSUInteger32x2 extends Struct {
   @Uint32()
   int a;
   @Uint32()
   int b;
 
-  factory _NSUInteger32x2.allocate(int a, int b) =>
-      Pointer<_NSUInteger32x2>.allocate().load<_NSUInteger32x2>()
-        ..a = a
-        ..b = b;
+  factory _NSUInteger32x2(int a, int b) => allocate<_NSUInteger32x2>().ref
+    ..a = a
+    ..b = b;
 
   factory _NSUInteger32x2.fromPointer(Pointer<_NSUInteger32x2> ptr) {
-    return ptr.load<_NSUInteger32x2>();
+    return ptr.ref;
   }
 }
 
-class _NSUInteger64x2 extends Struct<_NSUInteger64x2> {
+class _NSUInteger64x2 extends Struct {
   @Uint64()
   int a;
   @Uint64()
   int b;
 
-  factory _NSUInteger64x2.allocate(int a, int b) =>
-      Pointer<_NSUInteger64x2>.allocate().load<_NSUInteger64x2>()
-        ..a = a
-        ..b = b;
+  factory _NSUInteger64x2(int a, int b) => allocate<_NSUInteger64x2>().ref
+    ..a = a
+    ..b = b;
 
   factory _NSUInteger64x2.fromPointer(Pointer<_NSUInteger64x2> ptr) {
-    return ptr.load<_NSUInteger64x2>();
+    return ptr.ref;
   }
 }
 
@@ -58,17 +57,15 @@ class _NSUIntegerx2Wrapper {
     }
   }
 
-  _NSUIntegerx2Wrapper.allocate(int a, int b) {
+  _NSUIntegerx2Wrapper(int a, int b) {
     if (_is64bit) {
-      _value64 = _NSUInteger64x2.allocate(a, b);
+      _value64 = _NSUInteger64x2(a, b);
     } else {
-      _value32 = _NSUInteger32x2.allocate(a, b);
+      _value32 = _NSUInteger32x2(a, b);
     }
   }
 
   Pointer get addressOf => _is64bit ? _value64.addressOf : _value32.addressOf;
-
-  free() => addressOf.free();
 
   _NSUIntegerx2Wrapper.fromPointer(Pointer<Void> ptr) {
     if (_is64bit) {
@@ -103,39 +100,37 @@ class NSRange extends _NSUIntegerx2Wrapper {
     b = length;
   }
 
-  NSRange.allocate(int width, int length) : super.allocate(width, length);
+  NSRange(int width, int length) : super(width, length);
   NSRange.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
-class _CGFloat32x2 extends Struct<_CGFloat32x2> {
+class _CGFloat32x2 extends Struct {
   @Float()
   double a;
   @Float()
   double b;
 
-  factory _CGFloat32x2.allocate(double a, double b) =>
-      Pointer<_CGFloat32x2>.allocate().load<_CGFloat32x2>()
-        ..a = a
-        ..b = b;
+  factory _CGFloat32x2(double a, double b) => allocate<_CGFloat32x2>().ref
+    ..a = a
+    ..b = b;
 
   factory _CGFloat32x2.fromPointer(Pointer<_CGFloat32x2> ptr) {
-    return ptr.load<_CGFloat32x2>();
+    return ptr.ref;
   }
 }
 
-class _CGFloat64x2 extends Struct<_CGFloat64x2> {
+class _CGFloat64x2 extends Struct {
   @Double()
   double a;
   @Double()
   double b;
 
-  factory _CGFloat64x2.allocate(double a, double b) =>
-      Pointer<_CGFloat64x2>.allocate().load<_CGFloat64x2>()
-        ..a = a
-        ..b = b;
+  factory _CGFloat64x2(double a, double b) => allocate<_CGFloat64x2>().ref
+    ..a = a
+    ..b = b;
 
   factory _CGFloat64x2.fromPointer(Pointer<_CGFloat64x2> ptr) {
-    return ptr.load<_CGFloat64x2>();
+    return ptr.ref;
   }
 }
 
@@ -161,17 +156,15 @@ class _CGFloatx2Wrapper {
     }
   }
 
-  _CGFloatx2Wrapper.allocate(double a, double b) {
+  _CGFloatx2Wrapper(double a, double b) {
     if (LP64) {
-      _value64 = _CGFloat64x2.allocate(a, b);
+      _value64 = _CGFloat64x2(a, b);
     } else {
-      _value32 = _CGFloat32x2.allocate(a, b);
+      _value32 = _CGFloat32x2(a, b);
     }
   }
 
   Pointer get addressOf => LP64 ? _value64.addressOf : _value32.addressOf;
-
-  free() => addressOf.free();
 
   _CGFloatx2Wrapper.fromPointer(Pointer<Void> ptr) {
     if (LP64) {
@@ -206,7 +199,7 @@ class CGSize extends _CGFloatx2Wrapper {
     b = height;
   }
 
-  CGSize.allocate(double width, double height) : super.allocate(width, height);
+  CGSize(double width, double height) : super(width, height);
   CGSize.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
@@ -221,7 +214,7 @@ class CGPoint extends _CGFloatx2Wrapper {
     b = y;
   }
 
-  CGPoint.allocate(double x, double y) : super.allocate(x, y);
+  CGPoint(double x, double y) : super(x, y);
   CGPoint.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
@@ -236,11 +229,11 @@ class CGVector extends _CGFloatx2Wrapper {
     b = dy;
   }
 
-  CGVector.allocate(double dx, double dy) : super.allocate(dx, dy);
+  CGVector(double dx, double dy) : super(dx, dy);
   CGVector.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
-class _CGFloat32x4 extends Struct<_CGFloat32x4> {
+class _CGFloat32x4 extends Struct {
   @Float()
   double a;
   @Float()
@@ -250,19 +243,19 @@ class _CGFloat32x4 extends Struct<_CGFloat32x4> {
   @Float()
   double d;
 
-  factory _CGFloat32x4.allocate(double a, double b, double c, double d) =>
-      Pointer<_CGFloat32x4>.allocate().load<_CGFloat32x4>()
+  factory _CGFloat32x4(double a, double b, double c, double d) =>
+      allocate<_CGFloat32x4>().ref
         ..a = a
         ..b = b
         ..c = c
         ..d = d;
 
   factory _CGFloat32x4.fromPointer(Pointer<_CGFloat32x4> ptr) {
-    return ptr.load<_CGFloat32x4>();
+    return ptr.ref;
   }
 }
 
-class _CGFloat64x4 extends Struct<_CGFloat64x4> {
+class _CGFloat64x4 extends Struct {
   @Double()
   double a;
   @Double()
@@ -272,15 +265,15 @@ class _CGFloat64x4 extends Struct<_CGFloat64x4> {
   @Double()
   double d;
 
-  factory _CGFloat64x4.allocate(double a, double b, double c, double d) =>
-      Pointer<_CGFloat64x4>.allocate().load<_CGFloat64x4>()
+  factory _CGFloat64x4(double a, double b, double c, double d) =>
+      allocate<_CGFloat64x4>().ref
         ..a = a
         ..b = b
         ..c = c
         ..d = d;
 
   factory _CGFloat64x4.fromPointer(Pointer<_CGFloat64x4> ptr) {
-    return ptr.load<_CGFloat64x4>();
+    return ptr.ref;
   }
 }
 
@@ -324,17 +317,15 @@ class _CGFloatx4Wrapper {
     }
   }
 
-  _CGFloatx4Wrapper.allocate(double a, double b, double c, double d) {
+  _CGFloatx4Wrapper(double a, double b, double c, double d) {
     if (LP64) {
-      _value64 = _CGFloat64x4.allocate(a, b, c, d);
+      _value64 = _CGFloat64x4(a, b, c, d);
     } else {
-      _value32 = _CGFloat32x4.allocate(a, b, c, d);
+      _value32 = _CGFloat32x4(a, b, c, d);
     }
   }
 
   Pointer get addressOf => LP64 ? _value64.addressOf : _value32.addressOf;
-
-  free() => addressOf.free();
 
   _CGFloatx4Wrapper.fromPointer(Pointer<Void> ptr) {
     if (LP64) {
@@ -357,6 +348,7 @@ class _CGFloatx4Wrapper {
   }
 }
 
+// TODO: autorelease CGRect, lifecycle
 class CGRect extends _CGFloatx4Wrapper {
   double get x => a;
   set x(double x) {
@@ -378,7 +370,7 @@ class CGRect extends _CGFloatx4Wrapper {
     d = height;
   }
 
-  CGRect.allocate(double x, double y, double width, double height)
-      : super.allocate(x, y, width, height);
+  CGRect(double x, double y, double width, double height)
+      : super(x, y, width, height);
   CGRect.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
