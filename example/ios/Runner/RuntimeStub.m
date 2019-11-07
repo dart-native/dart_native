@@ -113,7 +113,7 @@
 - (char *)fooCharPtr:(char *)a
 {
     NSLog(@"arg: %s", a);
-    return "123456";
+    return a;
 }
 
 - (Class)fooClass:(Class)a

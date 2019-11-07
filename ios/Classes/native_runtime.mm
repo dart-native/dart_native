@@ -65,6 +65,13 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
     invocation.selector = selector;
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
         const char *argType = [signature getArgumentTypeAtIndex:i];
+        if (argType[0] == '*') {
+            // Copy CString to NSTaggedPointerString and transfer it's lifecycle to ARC. Orginal pointer will be freed after function returning.
+            const char *temp = [NSString stringWithUTF8String:(const char *)args[i - 2]].UTF8String;
+            if (temp) {
+                args[i - 2] = (void *)temp;
+            }
+        }
         if (argType[0] == '{') {
             [invocation setArgument:args[i - 2] atIndex:i];
         }
