@@ -138,7 +138,7 @@ native_block_invoke(void *block, void **args) {
     if (signature.methodReturnLength > 0) {
         [invocation getReturnValue:&result];
         if (result && signature.methodReturnType[0] == '@') {
-//            [(id)result retain];
+            [DOObjectDealloc attachHost:(__bridge id)result];
         }
     }
     return result;

@@ -7,5 +7,6 @@ class DelegateStub extends NSObject {
 
   callback() {
     print('callback succeed!');
+    return NSObject();
   }
 }

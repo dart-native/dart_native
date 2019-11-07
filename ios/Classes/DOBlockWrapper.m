@@ -302,20 +302,17 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         invocation.retValue = userRet;
         invocation.realArgs = args;
         invocation.realRetValue = ret;
-        [invocation retainArguments];
         
         // Use (numberOfArguments - 1) exclude block itself.
         int64_t argsAddr = (int64_t)(invocation.args + 1);
+        int64_t retAddr = (int64_t)(invocation.retValue);
+        [invocation retainArguments];
         dispatch_semaphore_t sema;
         if (!NSThread.isMainThread) {
             sema = dispatch_semaphore_create(0);
         }
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-            [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
-                const char *retType = wrapper.typeEncodings[0];
-                if (result) {
-                    DOStoreValueToPointer(result, ret, retType);
-                }
+            [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(retAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);

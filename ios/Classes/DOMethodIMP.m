@@ -121,23 +121,21 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         invocation.retValue = userRet;
         invocation.realArgs = args;
         invocation.realRetValue = ret;
-        [invocation retainArguments];
         
-        [invocation retainArguments];
         int64_t targetAddr = (int64_t)(*(void **)invocation.args[0]);
         int64_t selectorAddr = (int64_t)(*(void **)invocation.args[1]);
         int64_t argsAddr = (int64_t)(invocation.args + 2);
+        int64_t retAddr = (int64_t)(invocation.retValue);
         int64_t typesAddr = (int64_t)types;
+        
+        [invocation retainArguments];
+        
         dispatch_semaphore_t sema;
         if (!NSThread.isMainThread) {
             sema = dispatch_semaphore_create(0);
         }
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-            [channel invokeMethod:@"method_delegate" arguments:@[@(targetAddr), @(selectorAddr), @(argsAddr), @(argCount), @(typesAddr)] result:^(id  _Nullable result) {
-                const char *retType = types[0];
-                if (result) {
-                    DOStoreValueToPointer(result, ret, retType);
-                }
+            [channel invokeMethod:@"method_delegate" arguments:@[@(targetAddr), @(selectorAddr), @(argsAddr), @(retAddr), @(argCount), @(typesAddr)] result:^(id  _Nullable result) {
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);

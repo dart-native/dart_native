@@ -348,7 +348,6 @@ class _CGFloatx4Wrapper {
   }
 }
 
-// TODO: autorelease CGRect, lifecycle
 class CGRect extends _CGFloatx4Wrapper {
   double get x => a;
   set x(double x) {

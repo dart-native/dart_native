@@ -146,13 +146,12 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
   }
   dynamic result = Function.apply(block.function, args);
 
-  if (retPtr != null) {
-    Pointer<Utf8> resultTypePtr =
-        nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
+  Pointer<Utf8> resultTypePtr =
+      nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
+  if (retPtr != nullptr && result != null) {
     String encoding = convertEncode(resultTypePtr);
     storeValueToPointer(result, retPtr, encoding);
   }
-  return result;
 }
 
 _syncCallback(
@@ -163,10 +162,11 @@ _syncCallback(
   _callback(blockPtr, argsPtrPtr, retPtr, argCount);
 }
 
-dynamic _asyncCallback(int blockAddr, int argsAddr, int argCount) {
+_asyncCallback(int blockAddr, int argsAddr, int retAddr, int argCount) {
   Pointer<Void> blockPtr = Pointer.fromAddress(blockAddr);
-  Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
-  return _callback(blockPtr, argsPtrPtr, null, argCount);
+  Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr = Pointer.fromAddress(argsAddr);
+  Pointer<Pointer<Void>> retPtrPtr = Pointer.fromAddress(retAddr);
+  _callback(blockPtr, argsPtrPtrPtr, retPtrPtr, argCount);
 }
 
 Map<String, String> _nativeTypeNameMap = {

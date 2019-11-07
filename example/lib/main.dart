@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
     stub.fooDelegate(delegate);
 
     Block block = stub.fooBlock(testFunc);
-    int result = block.invoke([stub]);
+    NSObject result = block.invoke([stub]);
     print(result);
 
     CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
@@ -59,7 +59,7 @@ class _MyAppState extends State<MyApp> {
 
   Function testFunc = (NSObject a) {
     print('hello block! ${a.toString()}');
-    return 101;
+    return a;
   };
 
   Future<void> press() async {

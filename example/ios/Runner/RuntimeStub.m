@@ -11,7 +11,7 @@
 
 @protocol StubDelegate <NSObject>
 
-- (void)callback;
+- (NSObject *)callback;
 
 @end
 
@@ -151,19 +151,19 @@
     return (CGRect){1, 2, 3, 4};
 }
 
-typedef int(^BarBlock)(NSObject *a);
+typedef NSObject *(^BarBlock)(NSObject *a);
 
 - (BarBlock)fooBlock:(BarBlock)block
 {
     NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        int result = block(arg);
-        NSLog(@"%s result: %d", __FUNCTION__, result);
+        NSObject *result = block(arg);
+        NSLog(@"%s result: %@", __FUNCTION__, result);
     });
     
     BarBlock bar = ^(NSObject *a) {
         NSLog(@"bar block arg: %@ %@", a, arg);
-        return 404;
+        return a;
     };
     
     return bar;
@@ -173,8 +173,8 @@ typedef int(^BarBlock)(NSObject *a);
 {
     NSLog(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        [delegate callback];
-        NSLog(@"%s callback", __FUNCTION__);
+        NSObject *result = [delegate callback];
+        NSLog(@"%s callback result:%@", __FUNCTION__, result);
     });
 }
 

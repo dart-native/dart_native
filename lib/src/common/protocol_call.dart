@@ -57,12 +57,10 @@ _callback(
 
   Function function = methodsMap[selPtr];
   dynamic result = Function.apply(function, args);
-
-  if (retPtr != null) {
+  if (retPtr != nullptr && result != null) {
     String encoding = convertEncode(typesPtrPtr.elementAt(0).value);
     storeValueToPointer(result, retPtr, encoding);
   }
-  return result;
 }
 
 _syncCallback(
@@ -75,11 +73,13 @@ _syncCallback(
   _callback(targetPtr, selPtr, argsPtrPtr, retPtr, argCount, typesPtrPtr);
 }
 
-dynamic _asyncCallback(
-    int targetAddr, int selAddr, int argsAddr, int argCount, int typesAddr) {
+dynamic _asyncCallback(int targetAddr, int selAddr, int argsAddr, int retAddr,
+    int argCount, int typesAddr) {
   Pointer<Void> targetPtr = Pointer.fromAddress(targetAddr);
   Pointer<Void> selPtr = Pointer.fromAddress(selAddr);
   Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
   Pointer<Pointer<Utf8>> typesPtrPtr = Pointer.fromAddress(typesAddr);
-  return _callback(targetPtr, selPtr, argsPtrPtr, null, argCount, typesPtrPtr);
+  Pointer<Pointer<Void>> retPtrPtr = Pointer.fromAddress(retAddr);
+  return _callback(
+      targetPtr, selPtr, argsPtrPtr, retPtrPtr, argCount, typesPtrPtr);
 }

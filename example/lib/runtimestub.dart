@@ -1,4 +1,3 @@
-import 'package:ffi/ffi.dart';
 import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc_example/delegatestub.dart';
 
