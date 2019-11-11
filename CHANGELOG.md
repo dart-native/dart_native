@@ -1,3 +1,7 @@
+## 0.1.1
+
+* Fix issue for block and delegate callback when returning an object.
+
 ## 0.1.0
 
 * Fix CString and Struct memory issue.
