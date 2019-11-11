@@ -55,7 +55,7 @@ native_get_class(const char *className, Class baseClass) {
 }
 
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, void **args) {
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args) {
     if (!object || !selector || !signature) {
         return NULL;
     }
@@ -79,7 +79,18 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, vo
             [invocation setArgument:&args[i - 2] atIndex:i];
         }
     }
-    [invocation invoke];
+    if (queue) {
+        if (strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(queue)) == 0) {
+            [invocation invoke];
+        } else {
+            dispatch_sync(queue, ^{
+                [invocation invoke];
+            });
+        }
+    }
+    else {
+        [invocation invoke];
+    }
     void *result = NULL;
     if (signature.methodReturnLength > 0) {
         [invocation getReturnValue:&result];
@@ -325,4 +336,9 @@ NS_BUILD_32_LIKE_64() {
 #else
     return false;
 #endif
+}
+
+dispatch_queue_main_t
+_dispatch_get_main_queue(void) {
+    return dispatch_get_main_queue();
 }

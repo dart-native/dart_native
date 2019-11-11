@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/src/common/pointer_encoding.dart';
+import 'package:dart_objc/src/foundation/gcd.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/native_runtime.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';
@@ -9,17 +10,18 @@ import 'package:ffi/ffi.dart';
 
 Pointer<Void> _msgSend(
     Pointer<Void> target, Pointer<Void> selector, Pointer<Void> signature,
-    [Pointer<Pointer<Void>> args]) {
+    Pointer<Pointer<Void>> args, DispatchQueue queue) {
   Pointer<Void> result;
+  Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr;
   if (args != null) {
-    result = nativeInvokeMethod(target, selector, signature, args);
+    result = nativeInvokeMethod(target, selector, signature, queuePtr, args);
   } else {
-    result = nativeInvokeMethodNoArgs(target, selector, signature);
+    result = nativeInvokeMethodNoArgs(target, selector, signature, queuePtr);
   }
   return result;
 }
 
-dynamic msgSend(id target, Selector selector, [List args, bool auto = true]) {
+dynamic msgSend(id target, Selector selector, [List args, bool auto = true, DispatchQueue queue]) {
   if (target == nil) {
     return null;
   }
@@ -57,7 +59,7 @@ dynamic msgSend(id target, Selector selector, [List args, bool auto = true]) {
 
   // int start3 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Void> resultPtr =
-      _msgSend(target.pointer, selectorPtr, signature, pointers);
+      _msgSend(target.pointer, selectorPtr, signature, pointers, queue);
   // msg_duration3 += DateTime.now().millisecondsSinceEpoch - start3;
   // int start4 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);

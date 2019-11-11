@@ -35,19 +35,21 @@ typedef InvokeMethodC = Pointer<Void> Function(
     Pointer<Void> instance,
     Pointer<Void> selector,
     Pointer<Void> signature,
+    Pointer<Void> queue,
     Pointer<Pointer<Void>> args);
 typedef InvokeMethodD = Pointer<Void> Function(
     Pointer<Void> instance,
     Pointer<Void> selector,
     Pointer<Void> signature,
+    Pointer<Void> queue,
     Pointer<Pointer<Void>> args);
 final InvokeMethodD nativeInvokeMethod = runtimeLib
     .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
 
-typedef InvokeMethodNoArgsC = Pointer<Void> Function(
-    Pointer<Void> instance, Pointer<Void> selector, Pointer<Void> signature);
-typedef InvokeMethodNoArgsD = Pointer<Void> Function(
-    Pointer<Void> instance, Pointer<Void> selector, Pointer<Void> signature);
+typedef InvokeMethodNoArgsC = Pointer<Void> Function(Pointer<Void> instance,
+    Pointer<Void> selector, Pointer<Void> signature, Pointer<Void> queue);
+typedef InvokeMethodNoArgsD = Pointer<Void> Function(Pointer<Void> instance,
+    Pointer<Void> selector, Pointer<Void> signature, Pointer<Void> queue);
 final InvokeMethodNoArgsD nativeInvokeMethodNoArgs =
     runtimeLib.lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsD>(
         'native_instance_invoke');

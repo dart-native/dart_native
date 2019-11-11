@@ -24,7 +24,7 @@ native_get_class(const char *className, Class baseClass);
 
 DO_EXTERN
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, void **args);
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args);
 
 DO_EXTERN
 void *
@@ -53,5 +53,9 @@ LP64(void);
 DO_EXTERN
 bool
 NS_BUILD_32_LIKE_64(void);
+
+DO_EXTERN
+dispatch_queue_main_t
+_dispatch_get_main_queue(void);
 
 #endif /* native_runtime_h */

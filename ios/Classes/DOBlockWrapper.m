@@ -116,6 +116,7 @@ void dispose_helper(struct _DOBlock *src)
 @property (nonatomic) NSMethodSignature *signature;
 @property (nonatomic) void *callback;
 @property (nonatomic) NSThread *thread;
+@property (nonatomic, nullable) dispatch_queue_t queue;
 
 - (void)invokeWithArgs:(void **)args retValue:(void *)retValue;
 
@@ -311,7 +312,12 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         if (!NSThread.isMainThread) {
             sema = dispatch_semaphore_create(0);
         }
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        // TODO: Queue is ignored cause we use channel. We need replace it with ffi async callback.
+        dispatch_queue_t queue = wrapper.queue;
+        if (!queue) {
+            queue = dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0);
+        }
+        dispatch_async(queue, ^{
             [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(retAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
                 invocation = nil;
                 if (sema) {

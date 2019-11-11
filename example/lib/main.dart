@@ -46,6 +46,18 @@ class _MyAppState extends State<MyApp> {
     print(rect);
     stub.release();
 
+    NSObject currentThread = Class('NSThread').perform(Selector('currentThread'), onQueue: DispatchQueue.main);
+    NSObject description = currentThread.perform(Selector('description'));
+    String threadResult = NSString.fromPointer(description.pointer).value;
+    print('currentThread: $threadResult');
+
+    // DispatchQueue.main.async(() {
+    //   NSObject currentThread = Class('NSThread').perform(Selector('currentThread'));
+    //   NSObject description = currentThread.perform(Selector('description'));
+    //   String result = NSString.fromPointer(description.pointer).value;
+    //   print('currentThread: $result');
+    // });
+
     int start = DateTime.now().millisecondsSinceEpoch;
     // UIDevice.currentDevice.systemVersion
     // for (var i = 0; i < 1000000; i++) {
