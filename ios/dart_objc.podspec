@@ -18,7 +18,8 @@ Write Objective-C Code using Dart. This package liberates you from native code a
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
   s.requires_arc = true
-  s.vendored_libraries = "libffi/libffi.a"
+  s.libraries = 'c++'
+  s.vendored_libraries = 'libffi/libffi.a'
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
 end

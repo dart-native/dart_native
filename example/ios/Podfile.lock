@@ -5,18 +5,18 @@ PODS:
 
 DEPENDENCIES:
   - dart_objc (from `.symlinks/plugins/dart_objc/ios`)
-  - Flutter (from `.symlinks/flutter/ios`)
+  - Flutter (from `Flutter`)
 
 EXTERNAL SOURCES:
   dart_objc:
     :path: ".symlinks/plugins/dart_objc/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios"
+    :path: Flutter
 
 SPEC CHECKSUMS:
-  dart_objc: d3d4c7c4ed9ca49bd2ff152b0201aa2f0afd15a6
+  dart_objc: ff2d7ad2763bd50fc9215f981f332b791e04fdb3
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
 
-PODFILE CHECKSUM: dd58435ce9bf15a45658d9a48dd97b721db6e5b5
+PODFILE CHECKSUM: 3dbe063e9c90a5d7c9e4e76e70a821b9e2c1d271
 
 COCOAPODS: 1.8.3
