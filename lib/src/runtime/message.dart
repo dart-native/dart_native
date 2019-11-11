@@ -8,9 +8,8 @@ import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-Pointer<Void> _msgSend(
-    Pointer<Void> target, Pointer<Void> selector, Pointer<Void> signature,
-    Pointer<Pointer<Void>> args, DispatchQueue queue) {
+Pointer<Void> _msgSend(Pointer<Void> target, Pointer<Void> selector,
+    Pointer<Void> signature, Pointer<Pointer<Void>> args, DispatchQueue queue) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr;
   if (args != null) {
@@ -21,7 +20,8 @@ Pointer<Void> _msgSend(
   return result;
 }
 
-dynamic msgSend(id target, Selector selector, [List args, bool auto = true, DispatchQueue queue]) {
+dynamic msgSend(id target, Selector selector,
+    [List args, bool auto = true, DispatchQueue queue]) {
   if (target == nil) {
     return null;
   }
