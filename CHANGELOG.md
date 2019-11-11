@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Perform method on main/global queue.
+
 ## 0.1.1
 
 * Fix issue for block and delegate callback when returning an object.
