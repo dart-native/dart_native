@@ -63,7 +63,7 @@ _callback(
   }
 }
 
-_syncCallback(
+void _syncCallback(
     Pointer<Void> targetPtr,
     Pointer<Void> selPtr,
     Pointer<Pointer<Pointer<Void>>> argsPtrPtr,

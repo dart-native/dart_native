@@ -159,7 +159,7 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
   }
 }
 
-_syncCallback(
+void _syncCallback(
     Pointer<Void> blockPtr,
     Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr,
