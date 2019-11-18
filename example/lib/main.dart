@@ -42,8 +42,30 @@ class _MyAppState extends State<MyApp> {
     NSObject result = block.invoke([stub]);
     print(result);
 
+    CGSize size = stub.fooCGSize(CGSize(2, 1));
+    print(size);
+
+    CGPoint point = stub.fooCGPoint(CGPoint(2, 1));
+    print(point);
+
+    CGVector vector = stub.fooCGVector(CGVector(2, 1));
+    print(vector);
+
     CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
     print(rect);
+
+    NSRange range = stub.fooNSRange(NSRange(2, 1));
+    print(range);
+
+    UIEdgeInsets insets = stub.fooUIEdgeInsets(UIEdgeInsets(4, 3, 2, 1));
+    print(insets);
+
+    NSDirectionalEdgeInsets dInsets = stub.fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets(4, 3, 2, 1));
+    print(dInsets);
+
+    CGAffineTransform transform = stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
+    print(transform);
+
     stub.release();
 
     NSObject currentThread = Class('NSThread')

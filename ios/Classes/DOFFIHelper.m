@@ -134,6 +134,12 @@ int DOTypeLengthWithTypeName(NSString *typeName) {
         DO_DEFINE_TYPE_LENGTH(CGRect);
         DO_DEFINE_TYPE_LENGTH(CGPoint);
         DO_DEFINE_TYPE_LENGTH(CGVector);
+        DO_DEFINE_TYPE_LENGTH(UIOffset);
+        DO_DEFINE_TYPE_LENGTH(UIEdgeInsets);
+        if (@available(iOS 11.0, *)) {
+            DO_DEFINE_TYPE_LENGTH(NSDirectionalEdgeInsets);
+        }
+        DO_DEFINE_TYPE_LENGTH(CGAffineTransform);
         DO_DEFINE_TYPE_LENGTH(NSRange);
         DO_DEFINE_TYPE_LENGTH(NSInteger);
         DO_DEFINE_TYPE_LENGTH(NSUInteger);
@@ -178,6 +184,12 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
         DO_DEFINE_TYPE_ENCODE_CASE(CGPoint);
         DO_DEFINE_TYPE_ENCODE_CASE(CGVector);
         DO_DEFINE_TYPE_ENCODE_CASE(NSRange);
+        DO_DEFINE_TYPE_ENCODE_CASE(UIOffset);
+        DO_DEFINE_TYPE_ENCODE_CASE(UIEdgeInsets);
+        if (@available(iOS 11.0, *)) {
+            DO_DEFINE_TYPE_ENCODE_CASE(NSDirectionalEdgeInsets);
+        }
+        DO_DEFINE_TYPE_ENCODE_CASE(CGAffineTransform);
         DO_DEFINE_TYPE_ENCODE_CASE(NSInteger);
         DO_DEFINE_TYPE_ENCODE_CASE(NSUInteger);
         DO_DEFINE_TYPE_ENCODE_CASE(Class);

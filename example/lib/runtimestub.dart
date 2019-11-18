@@ -34,8 +34,40 @@ class RuntimeStub extends NSObject {
     return result;
   }
 
+  CGSize fooCGSize(CGSize size) {
+    return perform(Selector('fooCGSize:'), args: [size]);
+  }
+
+  CGPoint fooCGPoint(CGPoint point) {
+    return perform(Selector('fooCGPoint:'), args: [point]);
+  }
+
+  CGVector fooCGVector(CGVector vector) {
+    return perform(Selector('fooCGVector:'), args: [vector]);
+  }
+
   CGRect fooCGRect(CGRect rect) {
     return perform(Selector('fooCGRect:'), args: [rect]);
+  }
+
+  NSRange fooNSRange(NSRange range) {
+    return perform(Selector('fooNSRange:'), args: [range]);
+  }
+
+  UIOffset fooUIOffset(UIOffset offset) {
+    return perform(Selector('fooUIOffset:'), args: [offset]);
+  }
+
+  UIEdgeInsets fooUIEdgeInsets(UIEdgeInsets insets) {
+    return perform(Selector('fooUIEdgeInsets:'), args: [insets]);
+  }
+
+  NSDirectionalEdgeInsets fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets insets) {
+    return perform(Selector('fooNSDirectionalEdgeInsets:'), args: [insets]);
+  }
+
+  CGAffineTransform fooCGAffineTransform(CGAffineTransform transform) {
+    return perform(Selector('fooCGAffineTransform:'), args: [transform]);
   }
 
   NSString fooNSString(String string) {

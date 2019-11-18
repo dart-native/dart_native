@@ -244,7 +244,7 @@ dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
       case 'CGRect':
         result = CGRect.fromPointer(ptr);
         break;
-      case 'NSRange':
+      case '_NSRange':
         result = NSRange.fromPointer(ptr);
         break;
       case 'UIOffset':

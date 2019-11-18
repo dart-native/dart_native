@@ -145,10 +145,58 @@
     NSLog(@"%s called", __FUNCTION__);
 }
 
+- (CGSize)fooCGSize:(CGSize)size
+{
+    NSLog(@"%s %f, %f", __FUNCTION__, size.width, size.height);
+    return (CGSize){1.2345, 2.3456};
+}
+
+- (CGPoint)fooCGPoint:(CGPoint)point
+{
+    NSLog(@"%s %f, %f", __FUNCTION__, point.x, point.y);
+    return (CGPoint){1.2345, 2.3456};
+}
+
+- (CGVector)fooCGVector:(CGVector)vector
+{
+    NSLog(@"%s %f, %f", __FUNCTION__, vector.dx, vector.dy);
+    return (CGVector){1.2345, 2.3456};
+}
+
 - (CGRect)fooCGRect:(CGRect)rect
 {
     NSLog(@"%s %f, %f, %f, %f", __FUNCTION__, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
     return (CGRect){1, 2, 3, 4};
+}
+
+- (NSRange)fooNSRange:(NSRange)range
+{
+    NSLog(@"%s %lu, %lu", __FUNCTION__, (unsigned long)range.location, (unsigned long)range.length);
+    return (NSRange){12345, 23456};
+}
+
+- (UIOffset)fooUIOffset:(UIOffset)offset
+{
+    NSLog(@"%s %f, %f", __FUNCTION__, offset.horizontal, offset.vertical);
+    return (UIOffset){1.2345, 2.3456};
+}
+
+- (UIEdgeInsets)fooUIEdgeInsets:(UIEdgeInsets)insets
+{
+    NSLog(@"%s %f, %f, %f, %f", __FUNCTION__, insets.top, insets.left, insets.bottom, insets.right);
+    return (UIEdgeInsets){1, 2, 3, 4};
+}
+
+- (NSDirectionalEdgeInsets)fooNSDirectionalEdgeInsets:(NSDirectionalEdgeInsets)insets
+API_AVAILABLE(ios(11.0)){
+    NSLog(@"%s %f, %f, %f, %f", __FUNCTION__, insets.top, insets.leading, insets.bottom, insets.trailing);
+    return (NSDirectionalEdgeInsets){1, 2, 3, 4};
+}
+
+- (CGAffineTransform)fooCGAffineTransform:(CGAffineTransform)transform
+{
+    NSLog(@"%s %f, %f, %f, %f, %f, %f", __FUNCTION__, transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
+    return (CGAffineTransform){1.1, 2.2, 3.3, 4.4, 5.5, 6.6};
 }
 
 typedef NSObject *(^BarBlock)(NSObject *a);
