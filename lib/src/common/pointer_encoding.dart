@@ -205,7 +205,11 @@ storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
       object is CGPoint ||
       object is CGVector ||
       object is CGRect ||
-      object is NSRange) {
+      object is NSRange ||
+      object is UIOffset ||
+      object is UIEdgeInsets ||
+      object is NSDirectionalEdgeInsets ||
+      object is CGAffineTransform) {
     Pointer<Void> result = object.addressOf.cast<Void>();
     NSObject('DOPointerWrapper')
         .autorelease()
@@ -242,6 +246,18 @@ dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
         break;
       case 'NSRange':
         result = NSRange.fromPointer(ptr);
+        break;
+      case 'UIOffset':
+        result = UIOffset.fromPointer(ptr);
+        break;
+      case 'UIEdgeInsets':
+        result = UIEdgeInsets.fromPointer(ptr);
+        break;
+      case 'NSDirectionalEdgeInsets':
+        result = NSDirectionalEdgeInsets.fromPointer(ptr);
+        break;
+      case 'CGAffineTransform':
+        result = CGAffineTransform.fromPointer(ptr);
         break;
       default:
     }

@@ -124,6 +124,10 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
             HandleStruct(CGVector)
             HandleStruct(CGRect)
             HandleStruct(NSRange)
+            HandleStruct(UIOffset);
+            HandleStruct(UIEdgeInsets);
+            HandleStruct(NSDirectionalEdgeInsets);
+            HandleStruct(CGAffineTransform);
             NSCAssert(NO, @"Can't handle struct type:%@", structName);
         }
     }

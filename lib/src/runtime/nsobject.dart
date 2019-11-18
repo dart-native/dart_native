@@ -17,9 +17,9 @@ class NSObject extends id {
       throw 'Pointer $ptr is not for NSObject!';
     }
   }
-}
 
-Pointer<Void> _new(String className, [Class superclass]) {
-  NSObject result = Class(className, superclass).perform(Selector('new'));
-  return result.pointer;
+  static Pointer<Void> _new(String className, [Class superclass]) {
+    NSObject result = Class(className, superclass).perform(Selector('new'));
+    return result.pointer;
+  }
 }
