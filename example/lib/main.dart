@@ -66,6 +66,9 @@ class _MyAppState extends State<MyApp> {
     CGAffineTransform transform = stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
     print(transform);
 
+    NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String']);
+    print(array);
+
     stub.release();
 
     NSObject currentThread = Class('NSThread')

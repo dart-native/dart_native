@@ -175,6 +175,7 @@ _asyncCallback(int blockAddr, int argsAddr, int retAddr, int argCount) {
 }
 
 Map<String, String> _nativeTypeNameMap = {
+  'unsigned_char': 'unsigned char',
   'unsigned_short': 'unsigned short',
   'unsigned_int': 'unsigned int',
   'unsigned_long': 'unsigned long',
@@ -186,12 +187,12 @@ List<String> _nativeTypeNames = [
   'id',
   'BOOL',
   'int',
+  'unsigned int',
   'void',
   'char',
-  'char',
+  'unsigned char',
   'short',
   'unsigned short',
-  'unsigned int',
   'long',
   'unsigned long',
   'long long',

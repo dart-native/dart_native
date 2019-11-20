@@ -199,6 +199,12 @@ API_AVAILABLE(ios(11.0)){
     return (CGAffineTransform){1.1, 2.2, 3.3, 4.4, 5.5, 6.6};
 }
 
+- (NSArray *)fooNSArray:(NSArray *)array
+{
+    NSLog(@"%s %@", __FUNCTION__, array.description);
+    return array;
+}
+
 typedef NSObject *(^BarBlock)(NSObject *a);
 
 - (BarBlock)fooBlock:(BarBlock)block

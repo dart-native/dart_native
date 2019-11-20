@@ -2,9 +2,9 @@ import 'dart:convert';
 
 mixin _ToAlias {}
 
-class Box<T> {
+class NativeBox<T> {
   T value;
-  Box(this.value);
+  NativeBox(this.value);
 
   bool operator ==(other) {
     if (other == null) return false;
@@ -21,9 +21,9 @@ class Box<T> {
   }
 }
 
-class BOOL = Box<bool> with _ToAlias;
+class BOOL = NativeBox<bool> with _ToAlias;
 
-class char extends Box<int> with _ToAlias {
+class char extends NativeBox<int> with _ToAlias {
   char(int value) : super(value);
 
   @override
@@ -32,18 +32,19 @@ class char extends Box<int> with _ToAlias {
   }
 }
 
-class short = Box<int> with _ToAlias;
-class unsigned_short = Box<int> with _ToAlias;
-class unsigned_int = Box<int> with _ToAlias;
-class long = Box<int> with _ToAlias;
-class unsigned_long = Box<int> with _ToAlias;
-class long_long = Box<int> with _ToAlias;
-class unsigned_long_long = Box<int> with _ToAlias;
-class size_t = Box<int> with _ToAlias;
-class NSInteger = Box<int> with _ToAlias;
-class NSUInteger = Box<int> with _ToAlias;
-class float = Box<double> with _ToAlias;
-class CGFloat = Box<double> with _ToAlias;
+class unsigned_char = char with _ToAlias;
+class short = NativeBox<int> with _ToAlias;
+class unsigned_short = NativeBox<int> with _ToAlias;
+class unsigned_int = NativeBox<int> with _ToAlias;
+class long = NativeBox<int> with _ToAlias;
+class unsigned_long = NativeBox<int> with _ToAlias;
+class long_long = NativeBox<int> with _ToAlias;
+class unsigned_long_long = NativeBox<int> with _ToAlias;
+class size_t = NativeBox<int> with _ToAlias;
+class NSInteger = NativeBox<int> with _ToAlias;
+class NSUInteger = NativeBox<int> with _ToAlias;
+class float = NativeBox<double> with _ToAlias;
+class CGFloat = NativeBox<double> with _ToAlias;
 
 dynamic boxForValue(String type, dynamic value) {
   switch (type) {
@@ -57,6 +58,8 @@ dynamic boxForValue(String type, dynamic value) {
       return CGFloat(value);
     case 'char':
       return char(value);
+    case 'unsigned char':
+      return unsigned_char(value);
     case 'short':
       return short(value);
     case 'unsigned short':

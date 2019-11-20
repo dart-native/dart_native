@@ -25,7 +25,7 @@ dynamic msgSend(id target, Selector selector,
   if (target == nil) {
     return null;
   }
-  // int start1 = DateTime.now().millisecondsSinceEpoch;
+
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
       allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
@@ -35,9 +35,7 @@ dynamic msgSend(id target, Selector selector,
   if (signature.address == 0) {
     throw 'signature for [$target $selector] is NULL.';
   }
-  // msg_duration1 += DateTime.now().millisecondsSinceEpoch - start1;
 
-  // int start2 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
     pointers = allocate<Pointer<Void>>(count: args.length);
@@ -55,22 +53,18 @@ dynamic msgSend(id target, Selector selector,
     //TODO: need check args count.
     throw 'Arg list not match!';
   }
-  // msg_duration2 += DateTime.now().millisecondsSinceEpoch - start2;
 
-  // int start3 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Void> resultPtr =
       _msgSend(target.pointer, selectorPtr, signature, pointers, queue);
-  // msg_duration3 += DateTime.now().millisecondsSinceEpoch - start3;
-  // int start4 = DateTime.now().millisecondsSinceEpoch;
+
   Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);
   String typeEncodings = convertEncode(resultTypePtr);
   free(typeEncodingsPtrPtr);
-  // msg_duration4 += DateTime.now().millisecondsSinceEpoch - start4;
-  // int start5 = DateTime.now().millisecondsSinceEpoch;
+
   dynamic result = loadValueFromPointer(resultPtr, typeEncodings, auto);
   if (pointers != null) {
     free(pointers);
   }
-  // msg_duration5 += DateTime.now().millisecondsSinceEpoch - start5;
+
   return result;
 }

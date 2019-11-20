@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/foundation/native_struct.dart';
+import 'package:dart_objc/src/foundation/nsset.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:ffi/ffi.dart';
 
@@ -14,8 +15,8 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
   if (object == null && encoding == 'void') {
     return;
   }
-  if (object is num || object is bool || object is Box) {
-    if (object is Box) {
+  if (object is num || object is bool || object is NativeBox) {
+    if (object is NativeBox) {
       object = object.value;
     }
     if (object is bool) {
@@ -98,6 +99,12 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
         ptr.cast<Int8>().value = char;
       }
     }
+  } else if (object is List || encoding == 'object') {
+    ptr.value = NSArray(object).pointer;
+  } else if (object is Map || encoding == 'object') {
+    ptr.value = NSDictionary(object).pointer;
+  } else if (object is Set || encoding == 'object') {
+    ptr.value = NSSet(object).pointer;
   } else if (encoding == 'char *' || encoding == 'ptr') {
     if (object is Pointer<Utf8>) {
       ptr.cast<Pointer<Utf8>>().value = object;
@@ -131,10 +138,18 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
         result = data.getInt8(0) != 0;
         break;
       case 'char':
-        result = utf8.decode([data.getInt8(0)]);
+        if (auto) {
+          result = utf8.decode([data.getInt8(0)]);
+        } else {
+          result = data.getInt8(0);
+        }
         break;
       case 'uchar':
-        result = utf8.decode([data.getUint8(0)]);
+        if (auto) {
+          result = utf8.decode([data.getUint8(0)]);
+        } else {
+          result = data.getUint8(0);
+        }
         break;
       case 'sint8':
         result = data.getInt8(0);
@@ -184,9 +199,11 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
         result = Block.fromPointer(ptr);
         break;
       case 'char *':
+        Pointer<Utf8> temp = ptr.cast();
         if (auto) {
-          Pointer<Utf8> temp = ptr.cast();
           result = Utf8.fromUtf8(temp);
+        } else {
+          result = temp;
         }
         break;
       case 'void':
@@ -221,7 +238,11 @@ storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
 String structNameForEncoding(String encoding) {
   int index = encoding.indexOf('=');
   if (index != -1) {
-    return encoding.substring(1, index);
+    String result = encoding.substring(1, index);
+    if (result.startsWith('_')) {
+      result = result.substring(1);
+    }
+    return result;
   }
   return null;
 }
@@ -270,8 +291,26 @@ String convertEncode(Pointer<Utf8> ptr) {
     return _encodeCache[ptr];
   }
   String result = Utf8.fromUtf8(ptr);
-  _encodeCache[ptr] = result;
+  if (!result.startsWith('{')) {
+    _encodeCache[ptr] = result;
+  }
   return result;
 }
 
 Map<Pointer<Utf8>, String> _encodeCache = {};
+
+Map<String, String> encodingToNativeType = {
+  'c': 'char',
+  'C': 'unsignedChar',
+  's': 'short',
+  'S': 'unsignedShort',
+  'i': 'int',
+  'I': 'unsignedInt',
+  'l': 'long',
+  'L': 'unsignedLong',
+  'q': 'longLong',
+  'Q': 'unsignedLongLong',
+  'f': 'float',
+  'd': 'double',
+  'B': 'bool',
+};

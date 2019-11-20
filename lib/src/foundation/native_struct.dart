@@ -3,6 +3,8 @@ import 'dart:ffi';
 import 'package:dart_objc/src/common/precompile_macro.dart';
 import 'package:ffi/ffi.dart';
 
+abstract class NativeStruct {}
+
 class _NSUInteger32x2 extends Struct {
   @Uint32()
   int a;
@@ -33,7 +35,7 @@ class _NSUInteger64x2 extends Struct {
   }
 }
 
-class _NSUIntegerx2Wrapper {
+class _NSUIntegerx2Wrapper extends NativeStruct {
   _NSUInteger32x2 _value32;
   _NSUInteger64x2 _value64;
 
@@ -134,7 +136,7 @@ class _CGFloat64x2 extends Struct {
   }
 }
 
-class _CGFloatx2Wrapper {
+class _CGFloatx2Wrapper extends NativeStruct {
   _CGFloat32x2 _value32;
   _CGFloat64x2 _value64;
 
@@ -292,7 +294,7 @@ class _CGFloat64x4 extends Struct {
   }
 }
 
-class _CGFloatx4Wrapper {
+class _CGFloatx4Wrapper extends NativeStruct {
   _CGFloat32x4 _value32;
   _CGFloat64x4 _value64;
 
@@ -502,7 +504,7 @@ class _CGFloat64x6 extends Struct {
   }
 }
 
-class _CGFloatx6Wrapper {
+class _CGFloatx6Wrapper extends NativeStruct {
   _CGFloat32x6 _value32;
   _CGFloat64x6 _value64;
 
