@@ -1,3 +1,9 @@
+## 0.1.3
+
+* Support more structs: `CGPoint`, `CGVector`, `CGSize`, `CGRect`, `CGAffineTransform`, `UIEdgeInsets`, `NSDirectionalEdgeInsets`, `UIOffset`.
+* Support collections: `NSArray`, `NSDictionary`, `NSSet`.
+* Support box/unbox: `NSValue`, `NSNumber`.
+
 ## 0.1.2
 
 * Perform method on main/global queue.
@@ -16,7 +22,7 @@
 
 ## 0.0.6
 
-* Convert Bool Automatically.
+* Convert `bool` Automatically.
 
 ## 0.0.5
 

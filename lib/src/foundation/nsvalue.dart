@@ -28,10 +28,12 @@ class NSValue extends NSSubclass {
   }
 
   String _selNameForNativeValue(String encoding) {
-    if (encoding.startsWith('{')) { // Structs
+    if (encoding.startsWith('{')) {
+      // Structs
       String structName = structNameForEncoding(encoding);
       return '${structName}Value';
-    } else if (encoding.length == 1 && encodingToNativeType.containsKey(encoding)) {
+    } else if (encoding.length == 1 &&
+        encodingToNativeType.containsKey(encoding)) {
       return '${encodingToNativeType[encoding]}Value';
     } else {
       throw 'Invalid encoding type for NSValue: $encoding';

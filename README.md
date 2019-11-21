@@ -69,10 +69,10 @@ typedef int(^BarBlock)(NSObject *a);
 - [x] Type support:Struct
 - [x] Delegate callback
 - [x] Type support: CGPoint, CGVector, CGSize, CGRect, CGAffineTransform, UIEdgeInsets, NSDirectionalEdgeInsets, UIOffset.
-- [ ] Type support:List, Map, Set
-- [ ] Type support:NSNumber, NSValue
+- [x] Type support:List, Map, Set
+- [x] Type support:NSNumber, NSValue
+- [ ] Convert return value to `NSObject` subclass automatically.
 - [ ] Memory management
-- [ ] Main Thread Check
 - [ ] Generate Dart code from ObjectiveC/C++ Headers.
 - [ ] Unit test.
 - [ ] Documents.

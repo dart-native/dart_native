@@ -62,7 +62,8 @@ class RuntimeStub extends NSObject {
     return perform(Selector('fooUIEdgeInsets:'), args: [insets]);
   }
 
-  NSDirectionalEdgeInsets fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets insets) {
+  NSDirectionalEdgeInsets fooNSDirectionalEdgeInsets(
+      NSDirectionalEdgeInsets insets) {
     return perform(Selector('fooNSDirectionalEdgeInsets:'), args: [insets]);
   }
 

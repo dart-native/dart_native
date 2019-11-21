@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:ffi/ffi.dart';
 
+// TODO: need review
 class Protocol {
   String name;
   Pointer<Void> _protocolPtr;

@@ -27,8 +27,9 @@ class NSDictionary extends NSSubclass<Map> {
     if (value is Map) {
       NSArray keys = value.keys.toList(growable: false).toNSArray();
       NSArray values = value.values.toList(growable: false).toNSArray();
-      NSObject result = Class('NSDictionary')
-        .perform(Selector('dictionaryWithObjects:forKeys:'), args: [keys, values]);
+      NSObject result = Class('NSDictionary').perform(
+          Selector('dictionaryWithObjects:forKeys:'),
+          args: [keys, values]);
       return result.pointer;
     } else {
       throw 'Invalid param when initializing NSDictionary.';

@@ -33,8 +33,9 @@ class NSArray extends NSSubclass<List> {
       for (var i = 0; i < boxValues.length; i++) {
         listPtr.elementAt(i).value = boxValues[i].pointer;
       }
-      NSObject result =
-          Class('NSArray').perform(Selector('arrayWithObjects:count:'), args: [listPtr, boxValues.length]);
+      NSObject result = Class('NSArray').perform(
+          Selector('arrayWithObjects:count:'),
+          args: [listPtr, boxValues.length]);
       free(listPtr);
       return result.pointer;
     } else {

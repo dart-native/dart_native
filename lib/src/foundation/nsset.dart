@@ -8,7 +8,7 @@ class NSSet extends NSSubclass<Set> {
   NSSet(Set value) : super(value, _new) {
     value = Set.of(value);
   }
-  
+
   NSSet.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     List elements = allObjects.value;
     value = elements.toSet();
@@ -18,8 +18,8 @@ class NSSet extends NSSubclass<Set> {
     if (value is Set) {
       List list = value.toList(growable: false);
       NSArray array = NSArray(list);
-      NSObject result = Class('NSSet')
-        .perform(Selector('setWithArray:'), args: [array]);
+      NSObject result =
+          Class('NSSet').perform(Selector('setWithArray:'), args: [array]);
       return result.pointer;
     } else {
       throw 'Invalid param when initializing NSSet.';

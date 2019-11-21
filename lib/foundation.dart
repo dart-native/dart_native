@@ -7,4 +7,5 @@ export 'src/foundation/nsvalue.dart';
 export 'src/foundation/nsnumber.dart';
 export 'src/foundation/nsarray.dart';
 export 'src/foundation/nsdictionary.dart';
+export 'src/foundation/nsset.dart';
 export 'src/foundation/gcd.dart';

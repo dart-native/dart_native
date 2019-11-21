@@ -71,6 +71,8 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
   } else if (object is Selector &&
       (encoding == 'selector' || encoding == 'ptr')) {
     ptr.value = object.toPointer();
+  } else if (object is Protocol) {
+    ptr.value = object.toPointer();
   } else if (object is Block &&
       (encoding == 'block' || encoding == 'ptr' || encoding == 'object')) {
     ptr.value = object.pointer;
@@ -187,7 +189,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
   } else {
     switch (encoding) {
       case 'object':
-        result = NSObject.fromPointer(ptr);
+        result = loadObjectFromPointer(ptr);
         break;
       case 'class':
         result = Class.fromPointer(ptr);
@@ -213,8 +215,37 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
         result = ptr;
     }
   }
-
   return result;
+}
+
+dynamic loadObjectFromPointer(Pointer<Void> ptr) {
+  Class cls = type(of: ptr);
+  // TODO: handle class cluster.
+  switch (cls.name) {
+    case 'NSString':
+      return NSString.fromPointer(ptr);
+      break;
+    case 'NSValue':
+      return NSValue.fromPointer(ptr);
+      break;
+    case 'NSNumber':
+      return NSNumber.fromPointer(ptr);
+      break;
+    case 'NSArray':
+      return NSArray.fromPointer(ptr);
+      break;
+    case 'NSDictionary':
+      return NSDictionary.fromPointer(ptr);
+      break;
+    case 'NSSet':
+      return NSSet.fromPointer(ptr);
+      break;
+    case 'Protocol':
+      return Protocol.fromPointer(ptr);
+      break;
+    default:
+      return NSObject.fromPointer(ptr);
+  }
 }
 
 storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {

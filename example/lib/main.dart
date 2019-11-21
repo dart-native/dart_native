@@ -60,13 +60,15 @@ class _MyAppState extends State<MyApp> {
     UIEdgeInsets insets = stub.fooUIEdgeInsets(UIEdgeInsets(4, 3, 2, 1));
     print(insets);
 
-    NSDirectionalEdgeInsets dInsets = stub.fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets(4, 3, 2, 1));
+    NSDirectionalEdgeInsets dInsets =
+        stub.fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets(4, 3, 2, 1));
     print(dInsets);
 
-    CGAffineTransform transform = stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
+    CGAffineTransform transform =
+        stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
     print(transform);
 
-    NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String']);
+    NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
     print(array);
 
     stub.release();

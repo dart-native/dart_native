@@ -1,4 +1,8 @@
+import 'dart:ffi';
+
+import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/src/runtime/class.dart';
+import 'package:dart_objc/src/runtime/message.dart';
 import 'package:dart_objc/src/runtime/protocol.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:flutter/foundation.dart';
@@ -48,6 +52,8 @@ Class type({@required dynamic of}) {
     return of.perform(Selector('class'));
   } else if (of is Type) {
     return Class(of.toString());
+  } else if (of is Pointer) {
+    return NSObject.fromPointer(of).perform(Selector('class'));
   } else {
     return Class(of.runtimeType.toString());
   }
