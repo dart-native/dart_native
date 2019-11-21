@@ -6,7 +6,7 @@ Still under development!!!
 
 ## Requirements
 
-Flutter 1.10.15 (channel dev, using 2.6.0-dev.8.2)
+Flutter 1.12.5 (channel dev, using 2.7.0)
 
 ## Getting Started
 
