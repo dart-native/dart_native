@@ -12,7 +12,11 @@
 
 DO_EXTERN
 NSMethodSignature *
-native_method_signature(id object, SEL selector, const char **typeEncodings);
+native_method_signature(Class cls, SEL selector);
+
+DO_EXTERN
+void
+native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings);
 
 DO_EXTERN
 BOOL

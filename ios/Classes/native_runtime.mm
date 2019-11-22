@@ -7,17 +7,38 @@
 #import "DOMethodIMP.h"
 #import "DOObjectDealloc.h"
 
+static NSTimeInterval duration1 = 0;
+static NSTimeInterval duration2 = 0;
+
 NSMethodSignature *
-native_method_signature(id object, SEL selector, const char **typeEncodings) {
-    if (!object || !selector || !typeEncodings) {
-        return NULL;
+native_method_signature(Class cls, SEL selector) {
+    NSDate *now = [NSDate date];
+    if (!selector) {
+        return nil;
     }
-    NSMethodSignature *signature = [object methodSignatureForSelector:selector];
+    NSMethodSignature *signature = [cls instanceMethodSignatureForSelector:selector];
+    duration1 += -[now timeIntervalSinceNow];
+    return signature;
+}
+
+void
+native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings) {
+    if (!signature || !typeEncodings) {
+        return;
+    }
+    
+    NSDate *now = [NSDate date];
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
         *(typeEncodings + i - 1) = [signature getArgumentTypeAtIndex:i];
     }
     *typeEncodings = signature.methodReturnType;
-    return signature;
+    duration2 += -[now timeIntervalSinceNow];
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            NSLog(@"-----------d1:%f, d2:%f", duration1 * 1000, duration2 * 1000);
+        });
+    });
 }
 
 NSMutableArray<DOMethodIMP *> *_methodIMPList = [NSMutableArray array];
@@ -60,7 +81,6 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     if (!object || !selector || !signature) {
         return NULL;
     }
-    NSDate *now = [NSDate date];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = object;
     invocation.selector = selector;
