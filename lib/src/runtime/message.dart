@@ -12,10 +12,15 @@ Pointer<Void> _msgSend(Pointer<Void> target, Pointer<Void> selector,
     Pointer<Void> signature, Pointer<Pointer<Void>> args, DispatchQueue queue) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr;
-  if (args != null) {
+  // TODO: This awful code dues to this issue: https://github.com/dart-lang/sdk/issues/39488
+  if (args != null && queuePtr != nullptr) {
     result = nativeInvokeMethod(target, selector, signature, queuePtr, args);
-  } else {
+  } else if (args != null) {
+    result = nativeInvokeMethodNoQueue(target, selector, signature, args);
+  } else if (queuePtr != nullptr) {
     result = nativeInvokeMethodNoArgs(target, selector, signature, queuePtr);
+  } else {
+    result = nativeInvokeMethodNoArgsNorQueue(target, selector, signature);
   }
   return result;
 }

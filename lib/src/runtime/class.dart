@@ -35,7 +35,13 @@ Pointer<Void> _getClass(String className, [Class base]) {
     className = 'NSObject';
   }
   final classNamePtr = Utf8.toUtf8(className);
-  Pointer<Void> ptr = nativeGetClass(classNamePtr, base?.pointer ?? nullptr);
+  Pointer<Void> basePtr = base?.pointer;
+  Pointer<Void> result;
+  if (base == null) {
+    result = objc_getClass(classNamePtr);
+  } else {
+    result = nativeGetClass(classNamePtr, basePtr);
+  }
   free(classNamePtr);
-  return ptr;
+  return result;
 }

@@ -189,7 +189,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
   } else {
     switch (encoding) {
       case 'object':
-        result = loadObjectFromPointer(ptr);
+        result = NSObject.fromPointer(ptr);
         break;
       case 'class':
         result = Class.fromPointer(ptr);
@@ -216,36 +216,6 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
     }
   }
   return result;
-}
-
-dynamic loadObjectFromPointer(Pointer<Void> ptr) {
-  Class cls = type(of: ptr);
-  // TODO: handle class cluster.
-  switch (cls.name) {
-    case 'NSString':
-      return NSString.fromPointer(ptr);
-      break;
-    case 'NSValue':
-      return NSValue.fromPointer(ptr);
-      break;
-    case 'NSNumber':
-      return NSNumber.fromPointer(ptr);
-      break;
-    case 'NSArray':
-      return NSArray.fromPointer(ptr);
-      break;
-    case 'NSDictionary':
-      return NSDictionary.fromPointer(ptr);
-      break;
-    case 'NSSet':
-      return NSSet.fromPointer(ptr);
-      break;
-    case 'Protocol':
-      return Protocol.fromPointer(ptr);
-      break;
-    default:
-      return NSObject.fromPointer(ptr);
-  }
 }
 
 storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {

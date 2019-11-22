@@ -31,28 +31,35 @@ typedef GetClassD = Pointer<Void> Function(
 final GetClassD nativeGetClass =
     runtimeLib.lookupFunction<GetClassC, GetClassD>('native_get_class');
 
-typedef InvokeMethodC = Pointer<Void> Function(
+typedef InvokeMethod = Pointer<Void> Function(
     Pointer<Void> instance,
     Pointer<Void> selector,
     Pointer<Void> signature,
     Pointer<Void> queue,
     Pointer<Pointer<Void>> args);
-typedef InvokeMethodD = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Void> queue,
-    Pointer<Pointer<Void>> args);
-final InvokeMethodD nativeInvokeMethod = runtimeLib
-    .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
+final InvokeMethod nativeInvokeMethod = runtimeLib
+    .lookupFunction<InvokeMethod, InvokeMethod>('native_instance_invoke_args');
 
-typedef InvokeMethodNoArgsC = Pointer<Void> Function(Pointer<Void> instance,
+typedef InvokeMethodNoArgs = Pointer<Void> Function(Pointer<Void> instance,
     Pointer<Void> selector, Pointer<Void> signature, Pointer<Void> queue);
-typedef InvokeMethodNoArgsD = Pointer<Void> Function(Pointer<Void> instance,
-    Pointer<Void> selector, Pointer<Void> signature, Pointer<Void> queue);
-final InvokeMethodNoArgsD nativeInvokeMethodNoArgs =
-    runtimeLib.lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsD>(
-        'native_instance_invoke');
+final InvokeMethodNoArgs nativeInvokeMethodNoArgs =
+    runtimeLib.lookupFunction<InvokeMethodNoArgs, InvokeMethodNoArgs>(
+        'native_instance_invoke_noArgs');
+
+typedef InvokeMethodNoQueue = Pointer<Void> Function(
+    Pointer<Void> instance,
+    Pointer<Void> selector,
+    Pointer<Void> signature,
+    Pointer<Pointer<Void>> args);
+final InvokeMethodNoQueue nativeInvokeMethodNoQueue =
+    runtimeLib.lookupFunction<InvokeMethodNoQueue, InvokeMethodNoQueue>(
+        'native_instance_invoke_noQueue');
+
+typedef InvokeMethodNoArgsNorQueue = Pointer<Void> Function(
+    Pointer<Void> instance, Pointer<Void> selector, Pointer<Void> signature);
+final InvokeMethodNoArgsNorQueue nativeInvokeMethodNoArgsNorQueue = runtimeLib
+    .lookupFunction<InvokeMethodNoArgsNorQueue, InvokeMethodNoArgsNorQueue>(
+        'native_instance_invoke_noArgsNorQueue');
 
 typedef MethodIMPCallbackC = Void Function(
     Pointer<Void> target,

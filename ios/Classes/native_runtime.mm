@@ -47,10 +47,11 @@ native_get_class(const char *className, Class baseClass) {
     if (result) {
         return result;
     }
-    else if (baseClass) {
-        result = objc_allocateClassPair(baseClass, className, 0);
-        objc_registerClassPair(result);
+    if (!baseClass) {
+        baseClass = NSObject.class;
     }
+    result = objc_allocateClassPair(baseClass, className, 0);
+    objc_registerClassPair(result);
     return result;
 }
 
@@ -59,7 +60,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     if (!object || !selector || !signature) {
         return NULL;
     }
-    
+    NSDate *now = [NSDate date];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = object;
     invocation.selector = selector;
@@ -79,7 +80,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
             [invocation setArgument:&args[i - 2] atIndex:i];
         }
     }
-    if (queue) {
+    if (queue != NULL) {
         if (strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(queue)) == 0) {
             [invocation invoke];
         } else {
@@ -134,6 +135,21 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
         }
     }
     return result;
+}
+
+void *
+native_instance_invoke_noArgs(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue) {
+    return native_instance_invoke(object, selector, signature, queue, nil);
+}
+
+void *
+native_instance_invoke_noQueue(id object, SEL selector, NSMethodSignature *signature, void **args) {
+    return native_instance_invoke(object, selector, signature, nil, args);
+}
+
+void *
+native_instance_invoke_noArgsNorQueue(id object, SEL selector, NSMethodSignature *signature) {
+    return native_instance_invoke(object, selector, signature, nil, nil);
 }
 
 void *
@@ -347,4 +363,10 @@ NS_BUILD_32_LIKE_64() {
 dispatch_queue_main_t
 _dispatch_get_main_queue(void) {
     return dispatch_get_main_queue();
+}
+
+
+void *
+native_null() {
+    return (__bridge void *)[NSNull null];
 }

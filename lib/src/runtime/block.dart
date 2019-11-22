@@ -103,6 +103,7 @@ class Block extends id {
     if (count != (args?.length ?? 0) + 2) {
       throw 'Args Count NOT match';
     }
+    // TODO: kill the nullptr
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
     if (args != null) {
       argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
