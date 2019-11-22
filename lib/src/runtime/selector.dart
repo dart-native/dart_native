@@ -63,4 +63,5 @@ class SEL extends Selector {
 
 extension ToSelector on String {
   Selector toSelector() => Selector(this);
+  SEL toSEL() => SEL(this);
 }

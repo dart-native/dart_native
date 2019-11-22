@@ -9,19 +9,37 @@ import 'package:ffi/ffi.dart';
 class Class extends id {
   String name;
 
+  static final Map<int, Class> _cache = <int, Class>{};
+
   /// An opaque type that represents an Objective-C class.
-  Class(this.name, [Class base]) : super(_getClass(name, base)) {
-    if (pointer == nullptr) {
+  factory Class(String name, [Class base]) {
+    Pointer<Void> ptr = _getClass(name, base);
+    if (ptr == nullptr) {
       throw 'class $name is not exists!';
+    }
+    if (_cache.containsKey(ptr.address)) {
+      return _cache[ptr.address];
+    } else {
+      return Class._internal(name, ptr);
     }
   }
 
-  Class.fromPointer(Pointer<Void> ptr) : super(ptr) {
-    if (object_isClass(ptr) != 0) {
-      name = Utf8.fromUtf8(class_getName(ptr));
+  factory Class.fromPointer(Pointer<Void> ptr) {
+    int key = ptr.address;
+    if (_cache.containsKey(key)) {
+      return _cache[key];
     } else {
-      throw 'Pointer $ptr is not for Class!';
+      if (object_isClass(ptr) != 0) {
+        String name = Utf8.fromUtf8(class_getName(ptr));
+        return Class._internal(name, ptr);
+      } else {
+        throw 'Pointer $ptr is not for Class!';
+      }
     }
+  }
+
+  Class._internal(this.name, Pointer ptr) : super(ptr) {
+    _cache[ptr.address] = this;
   }
 
   @override

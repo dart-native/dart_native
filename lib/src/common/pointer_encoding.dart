@@ -83,7 +83,7 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-      NSObject('DOPointerWrapper')
+      NSObject(Class('DOPointerWrapper'))
           .autorelease()
           .perform(Selector('setPointer:'), args: [charPtr]);
       ptr.cast<Pointer<Utf8>>().value = charPtr;
@@ -229,7 +229,7 @@ storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
       object is NSDirectionalEdgeInsets ||
       object is CGAffineTransform) {
     Pointer<Void> result = object.addressOf.cast<Void>();
-    NSObject('DOPointerWrapper')
+    NSObject(Class('DOPointerWrapper'))
         .autorelease()
         .perform(Selector('setPointer:'), args: [result]);
     ptr.value = result;
