@@ -41,12 +41,14 @@ native_signature_encoding_list(NSMethodSignature *signature, const char **typeEn
     });
 }
 
-NSMutableArray<DOMethodIMP *> *_methodIMPList = [NSMutableArray array];
-
 BOOL
 native_add_method(id target, SEL selector, Protocol *proto, void *callback) {
     Class cls = object_getClass(target);
-    if ([target respondsToSelector:selector]) {
+    NSString *selName = [NSString stringWithFormat:@"dart_objc_%@", NSStringFromSelector(selector)];
+    SEL key = NSSelectorFromString(selName);
+    DOMethodIMP *imp = objc_getAssociatedObject(cls, key);
+    // Existing implemention can't be replaced. Flutter hot-reload must also be well handled.
+    if (!imp && [target respondsToSelector:selector]) {
         return NO;
     }
     struct objc_method_description description = protocol_getMethodDescription(proto, selector, YES, YES);
@@ -55,8 +57,8 @@ native_add_method(id target, SEL selector, Protocol *proto, void *callback) {
     }
     if (description.types != NULL) {
         DOMethodIMP *methodIMP = [[DOMethodIMP alloc] initWithTypeEncoding:description.types callback:callback]; // DOMethodIMP always exists.
-        [_methodIMPList addObject:methodIMP];
         class_replaceMethod(cls, selector, [methodIMP imp], description.types);
+        objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return YES;
     }
     return NO;
