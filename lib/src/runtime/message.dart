@@ -53,7 +53,7 @@ dynamic msgSend(id target, Selector selector,
     cache[selector] = signaturePtr;
   }
   nativeSignatureEncodingList(signaturePtr, typeEncodingsPtrPtr);
-  
+
   msg_duration1 += DateTime.now().millisecondsSinceEpoch - start1;
 
   int start2 = DateTime.now().millisecondsSinceEpoch;

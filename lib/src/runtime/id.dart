@@ -24,9 +24,9 @@ class id implements NSObjectProtocol {
     return _ptr;
   }
 
-  int _retainCount = 1;
+  int _retainCount = 0;
 
-  String get address =>
+  String get _address =>
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
   /// Register callback function for selector in protocol.
@@ -41,7 +41,13 @@ class id implements NSObjectProtocol {
 
   id(this._ptr) {
     if (_ptr != null && _ptr != nullptr) {
-      _objects[_ptr.address] = this;
+      List<id> list = _objects[_ptr.address];
+      if (list == null) {
+        list = [this];
+        _objects[_ptr.address] = list;
+      } else {
+        list.add(this);
+      }
     }
     // TODO: only invoke once.
     ChannelDispatch().registerChannelCallback('object_dealloc', _dealloc);
@@ -58,7 +64,8 @@ class id implements NSObjectProtocol {
   id retain() {
     if (this is NSObject) {
       _retainCount++;
-      return perform(Selector('retain'));
+      id temp = perform(Selector('retain'));
+      _ptr = temp._ptr;
     }
     return this;
   }
@@ -75,13 +82,14 @@ class id implements NSObjectProtocol {
   }
 
   id autorelease() {
-    return perform(Selector('autorelease'));
+    id temp = perform(Selector('autorelease'));
+    _ptr = temp._ptr;
+    return this;
   }
 
   /// Clean NSObject instance.
   /// Subclass can override this method and call release on its dart properties.
   dealloc() {
-    _objects.remove(pointer.address);
     removeDelegate(this);
     _ptr = nullptr;
   }
@@ -150,7 +158,7 @@ class id implements NSObjectProtocol {
 
   @override
   String toString() {
-    return '<${isa.name}: $address>';
+    return '<${isa.name}: $_address>';
   }
 
   bool operator ==(other) {
@@ -163,11 +171,12 @@ class id implements NSObjectProtocol {
   }
 }
 
-Map<int, id> _objects = {};
+Map<int, List<id>> _objects = {};
 
 _dealloc(int addr) {
-  id object = _objects[addr];
-  if (object != null) {
-    object.dealloc();
+  List<id> list = _objects[addr];
+  if (list != null) {
+    list.forEach((f) => f.dealloc());
+    _objects.remove(addr);
   }
 }

@@ -40,7 +40,11 @@ _objc_isTaggedPointer(const void *ptr)
 
 + (void)attachHost:(NSObject *)host
 {
-    if (!_objc_isTaggedPointer((__bridge const void *)(host)) || [host isKindOfClass:NSClassFromString(@"__NSMallocBlock")]) {
+    if (objc_getAssociatedObject(host, @selector(initWithHost:))) {
+        return;
+    }
+    if (!_objc_isTaggedPointer((__bridge const void *)(host)) ||
+        [host isKindOfClass:NSClassFromString(@"__NSMallocBlock")]) {
         __unused DOObjectDealloc *dealloc = [[self alloc] initWithHost:host];
     }
 }

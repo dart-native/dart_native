@@ -3,14 +3,16 @@ import 'dart:ffi';
 import 'package:dart_objc/src/common/library.dart';
 import 'package:ffi/ffi.dart';
 
-typedef MethodSignature = Pointer<Void> Function(Pointer<Void> instance,
-    Pointer<Void> selector);
+typedef MethodSignature = Pointer<Void> Function(
+    Pointer<Void> instance, Pointer<Void> selector);
 final MethodSignature nativeMethodSignature =
     runtimeLib.lookupFunction<MethodSignature, MethodSignature>(
         'native_method_signature');
 
-typedef SignatureEncodingListC = Void Function(Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
-typedef SignatureEncodingListD = void Function(Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
+typedef SignatureEncodingListC = Void Function(
+    Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
+typedef SignatureEncodingListD = void Function(
+    Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
 final SignatureEncodingListD nativeSignatureEncodingList =
     runtimeLib.lookupFunction<SignatureEncodingListC, SignatureEncodingListD>(
         'native_signature_encoding_list');

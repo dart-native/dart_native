@@ -11,8 +11,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  RuntimeStub stub = RuntimeStub();
-  DelegateStub delegate = DelegateStub();
+  RuntimeStub stub = RuntimeStub().retain();
+  DelegateStub delegate = DelegateStub().retain();
 
   @override
   void initState() {
@@ -71,7 +71,7 @@ class _MyAppState extends State<MyApp> {
     NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
     print(array);
 
-    stub.release();
+    // stub.release();
 
     NSObject currentThread = Class('NSThread')
         .perform(Selector('currentThread'), onQueue: DispatchQueue.global());
@@ -85,17 +85,17 @@ class _MyAppState extends State<MyApp> {
     //   String result = NSString.fromPointer(description.pointer).value;
     //   print('currentThread: $result');
     // });
-    String sysver;
-    int start = DateTime.now().millisecondsSinceEpoch;
-    // UIDevice.currentDevice.systemVersion
-    for (var i = 0; i < 10000; i++) {
-      NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
-      NSObject version = device.perform(Selector('systemVersion'));
-      sysver = NSString.fromPointer(version.pointer).value;
-    }
-    int duration = DateTime.now().millisecondsSinceEpoch - start;
-    print('msg_duration1:$msg_duration1, msg_duration2:$msg_duration2, msg_duration3:$msg_duration3, msg_duration4:$msg_duration4, msg_duration5:$msg_duration5');
-    print('duration:$duration');
+    // String sysver;
+    // int start = DateTime.now().millisecondsSinceEpoch;
+    // // UIDevice.currentDevice.systemVersion
+    // for (var i = 0; i < 10000; i++) {
+    //   NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
+    //   NSObject version = device.perform(Selector('systemVersion'));
+    //   sysver = NSString.fromPointer(version.pointer).value;
+    // }
+    // int duration = DateTime.now().millisecondsSinceEpoch - start;
+    // print('msg_duration1:$msg_duration1, msg_duration2:$msg_duration2, msg_duration3:$msg_duration3, msg_duration4:$msg_duration4, msg_duration5:$msg_duration5');
+    // print('duration:$duration');
   }
 
   Function testFunc = (NSObject a) {
@@ -103,9 +103,7 @@ class _MyAppState extends State<MyApp> {
     return a;
   };
 
-  Future<void> press() async {
-    delegate.release();
-  }
+  Future<void> press() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -123,5 +121,12 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    stub.release();
+    delegate.release();
+    super.dispose();
   }
 }
