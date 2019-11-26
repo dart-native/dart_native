@@ -105,3 +105,7 @@ typedef BlockInvokeD = Pointer<Void> Function(
     Pointer<Void> block, Pointer<Pointer<Void>> args);
 final BlockInvokeD blockInvoke = runtimeLib
     .lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');
+
+final void Function(Pointer<Void>) markAutoreleasereturnObject = nativeDylib
+    .lookup<NativeFunction<Void Function(Pointer<Void>)>>('native_mark_autoreleasereturn_object')
+    .asFunction();

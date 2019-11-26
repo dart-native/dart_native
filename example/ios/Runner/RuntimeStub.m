@@ -228,8 +228,8 @@ typedef NSObject *(^BarBlock)(NSObject *a);
     NSLog(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         // FIXME: resolve memory issue.
-//        NSObject *result = [delegate callback];
-//        NSLog(@"%s callback result:%@", __FUNCTION__, result);
+        NSObject *result = [delegate callback];
+        NSLog(@"%s callback result:%@", __FUNCTION__, result);
     });
 }
 

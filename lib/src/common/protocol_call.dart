@@ -61,6 +61,9 @@ _callback(
     String encoding = convertEncode(typesPtrPtr.elementAt(0).value);
     storeValueToPointer(result, retPtr, encoding);
   }
+  if (result is id) {
+    markAutoreleasereturnObject(result.pointer);
+  }
 }
 
 void _syncCallback(

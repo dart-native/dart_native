@@ -12,6 +12,7 @@
 #import "DOFFIHelper.h"
 #import "DOInvocation.h"
 #import <objc/runtime.h>
+#import "NSThread+DartObjC.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -292,10 +293,11 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         userArgs = args + 1;
     }
     *(void **)userRet = NULL;
-    
+    int64_t retObjectAddr = 0;
     if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
         void(*callback)(void *block, void **args, void *ret, int argCount) = wrapper.callback;
         callback((__bridge void *)(wrapper.block), args + 1, ret, (int)wrapper.numberOfArguments - 1);
+        retObjectAddr = (int64_t)*(void **)ret;
     }
     else {
         __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature hasStret:wrapper.hasStret];
@@ -328,7 +330,11 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         if (sema) {
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         }
+        retObjectAddr = (int64_t)*(void **)retAddr;
     }
+    [wrapper.thread do_performBlock:^{
+        NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
+    }];
 }
 
 

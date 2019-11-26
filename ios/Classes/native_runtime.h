@@ -74,4 +74,8 @@ DO_EXTERN
 dispatch_queue_main_t
 _dispatch_get_main_queue(void);
 
+DO_EXTERN
+void
+native_mark_autoreleasereturn_object(id object);
+
 #endif /* native_runtime_h */

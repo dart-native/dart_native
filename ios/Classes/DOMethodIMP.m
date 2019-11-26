@@ -10,6 +10,7 @@
 #import "DartObjcPlugin.h"
 #import "native_runtime.h"
 #import "DOInvocation.h"
+#import "NSThread+DartObjC.h"
 
 static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
@@ -108,11 +109,13 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     
     int argCount = (int)methodIMP.numberOfArguments - 2;
     const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
+    int64_t retObjectAddr = 0;
     if (methodIMP.thread == NSThread.currentThread && methodIMP.callback) {
         void(*callback)(void *target, SEL selector, void **args, void *ret, int argCount, const char **types) = methodIMP.callback;
         // args: target, selector, realArgs...
         callback(*(void **)args[0], *(void **)args[1], args + 2, ret, argCount, types);
         free(types);
+        retObjectAddr = (int64_t)*(void **)ret;
     }
     else {
         NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:methodIMP.typeEncoding];
@@ -145,5 +148,9 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         if (sema) {
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         }
+        retObjectAddr = (int64_t)*(void **)retAddr;
     }
+    [methodIMP.thread do_performBlock:^{
+        NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
+    }];
 }

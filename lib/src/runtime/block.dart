@@ -158,6 +158,9 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     String encoding = convertEncode(resultTypePtr);
     storeValueToPointer(result, retPtr, encoding);
   }
+  if (result is id) {
+    markAutoreleasereturnObject(result.pointer);
+  }
 }
 
 void _syncCallback(

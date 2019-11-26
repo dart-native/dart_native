@@ -6,6 +6,7 @@
 #import "DOFFIHelper.h"
 #import "DOMethodIMP.h"
 #import "DOObjectDealloc.h"
+#import "NSThread+DartObjC.h"
 
 static NSTimeInterval duration1 = 0;
 static NSTimeInterval duration2 = 0;
@@ -387,8 +388,11 @@ _dispatch_get_main_queue(void) {
     return dispatch_get_main_queue();
 }
 
-
-void *
-native_null() {
-    return (__bridge void *)[NSNull null];
+void
+native_mark_autoreleasereturn_object(id object) {
+    int64_t address = (int64_t)object;
+    [NSThread.currentThread do_performWaitingUntilDone:YES block:^{
+        NSThread.currentThread.threadDictionary[@(address)] = object;
+    }];
 }
+
