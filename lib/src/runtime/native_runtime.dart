@@ -37,19 +37,38 @@ typedef GetClassD = Pointer<Void> Function(
 final GetClassD nativeGetClass =
     runtimeLib.lookupFunction<GetClassC, GetClassD>('native_get_class');
 
-typedef InvokeMethod = Pointer<Void> Function(
+typedef InvokeMethodD = Pointer<Void> Function(
     Pointer<Void> instance,
     Pointer<Void> selector,
     Pointer<Void> signature,
     Pointer<Void> queue,
-    Pointer<Pointer<Void>> args);
-final InvokeMethod nativeInvokeMethod = runtimeLib
-    .lookupFunction<InvokeMethod, InvokeMethod>('native_instance_invoke_args');
+    Pointer<Pointer<Void>> args,
+    int waitUntilDone);
+typedef InvokeMethodC = Pointer<Void> Function(
+    Pointer<Void> instance,
+    Pointer<Void> selector,
+    Pointer<Void> signature,
+    Pointer<Void> queue,
+    Pointer<Pointer<Void>> args,
+    Int8 waitUntilDone);
+final InvokeMethodD nativeInvokeMethod =
+    runtimeLib.lookupFunction<InvokeMethodC, InvokeMethodD>(
+        'native_instance_invoke_args');
 
-typedef InvokeMethodNoArgs = Pointer<Void> Function(Pointer<Void> instance,
-    Pointer<Void> selector, Pointer<Void> signature, Pointer<Void> queue);
-final InvokeMethodNoArgs nativeInvokeMethodNoArgs =
-    runtimeLib.lookupFunction<InvokeMethodNoArgs, InvokeMethodNoArgs>(
+typedef InvokeMethodNoArgsD = Pointer<Void> Function(
+    Pointer<Void> instance,
+    Pointer<Void> selector,
+    Pointer<Void> signature,
+    Pointer<Void> queue,
+    int waitUntilDone);
+typedef InvokeMethodNoArgsC = Pointer<Void> Function(
+    Pointer<Void> instance,
+    Pointer<Void> selector,
+    Pointer<Void> signature,
+    Pointer<Void> queue,
+    Int8 waitUntilDone);
+final InvokeMethodNoArgsD nativeInvokeMethodNoArgs =
+    runtimeLib.lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsD>(
         'native_instance_invoke_noArgs');
 
 typedef InvokeMethodNoQueue = Pointer<Void> Function(
@@ -107,5 +126,6 @@ final BlockInvokeD blockInvoke = runtimeLib
     .lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');
 
 final void Function(Pointer<Void>) markAutoreleasereturnObject = nativeDylib
-    .lookup<NativeFunction<Void Function(Pointer<Void>)>>('native_mark_autoreleasereturn_object')
+    .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
+        'native_mark_autoreleasereturn_object')
     .asFunction();

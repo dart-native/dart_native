@@ -3,7 +3,6 @@ import 'dart:ffi';
 import 'package:dart_objc/dart_objc.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/foundation/gcd.dart';
-import 'package:dart_objc/src/runtime/class.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/native_runtime.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';
@@ -11,16 +10,19 @@ import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 Pointer<Void> _msgSend(Pointer<Void> target, Pointer<Void> selector,
-    Pointer<Void> signature, Pointer<Pointer<Void>> args, DispatchQueue queue) {
+    Pointer<Void> signature, Pointer<Pointer<Void>> args, DispatchQueue queue, bool waitUntilDone) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr;
+  if (waitUntilDone == null) {
+    waitUntilDone = true;
+  }
   // TODO: This awful code dues to this issue: https://github.com/dart-lang/sdk/issues/39488
   if (args != null && queuePtr != nullptr) {
-    result = nativeInvokeMethod(target, selector, signature, queuePtr, args);
+    result = nativeInvokeMethod(target, selector, signature, queuePtr, args, waitUntilDone ? 1 : 0);
   } else if (args != null) {
     result = nativeInvokeMethodNoQueue(target, selector, signature, args);
   } else if (queuePtr != nullptr) {
-    result = nativeInvokeMethodNoArgs(target, selector, signature, queuePtr);
+    result = nativeInvokeMethodNoArgs(target, selector, signature, queuePtr, waitUntilDone ? 1 : 0);
   } else {
     result = nativeInvokeMethodNoArgsNorQueue(target, selector, signature);
   }
@@ -30,9 +32,9 @@ Pointer<Void> _msgSend(Pointer<Void> target, Pointer<Void> selector,
 Map<Pointer, Map<Selector, Pointer>> _methodSignatureCache = {};
 
 dynamic msgSend(id target, Selector selector,
-    [List args, bool auto = true, DispatchQueue queue]) {
+    [List args, bool auto = true, DispatchQueue queue, bool waitUntilDone]) {
   if (target == nil) {
-    return null;
+    return nil;
   }
   int start1 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
@@ -78,7 +80,7 @@ dynamic msgSend(id target, Selector selector,
 
   int start3 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Void> resultPtr =
-      _msgSend(target.pointer, selectorPtr, signaturePtr, pointers, queue);
+      _msgSend(target.pointer, selectorPtr, signaturePtr, pointers, queue, waitUntilDone);
   msg_duration3 += DateTime.now().millisecondsSinceEpoch - start3;
   int start4 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);

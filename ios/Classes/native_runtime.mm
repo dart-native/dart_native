@@ -80,7 +80,7 @@ native_get_class(const char *className, Class baseClass) {
 }
 
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args) {
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, BOOL waitUntilDone) {
     if (!object || !selector || !signature) {
         return NULL;
     }
@@ -98,12 +98,19 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
         }
         if (argType[0] == '{') {
             [invocation setArgument:args[i - 2] atIndex:i];
-        }
-        else {
+        } else {
             [invocation setArgument:&args[i - 2] atIndex:i];
         }
     }
     if (queue != NULL) {
+        // Return immediately.
+        if (!waitUntilDone) {
+            dispatch_async(queue, ^{
+                [invocation invoke];
+            });
+            return nil;
+        }
+        // Same queue
         if (strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(queue)) == 0) {
             [invocation invoke];
         } else {
@@ -111,8 +118,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
                 [invocation invoke];
             });
         }
-    }
-    else {
+    } else {
         [invocation invoke];
     }
     void *result = NULL;
@@ -127,8 +133,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
                 [selString hasPrefix:@"mutableCopy"])) {
                 [DOObjectDealloc attachHost:(__bridge id)result];
             }
-        }
-        else if (returnType == '{') {
+        } else if (returnType == '{') {
             const char *temp = signature.methodReturnType;
             int index = 0;
             while (temp && *temp && *temp != '=') {
@@ -161,18 +166,18 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
 }
 
 void *
-native_instance_invoke_noArgs(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue) {
-    return native_instance_invoke(object, selector, signature, queue, nil);
+native_instance_invoke_noArgs(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, BOOL waitUntilDone) {
+    return native_instance_invoke(object, selector, signature, queue, nil, waitUntilDone);
 }
 
 void *
 native_instance_invoke_noQueue(id object, SEL selector, NSMethodSignature *signature, void **args) {
-    return native_instance_invoke(object, selector, signature, nil, args);
+    return native_instance_invoke(object, selector, signature, nil, args, YES);
 }
 
 void *
 native_instance_invoke_noArgsNorQueue(id object, SEL selector, NSMethodSignature *signature) {
-    return native_instance_invoke(object, selector, signature, nil, nil);
+    return native_instance_invoke(object, selector, signature, nil, nil, YES);
 }
 
 void *
@@ -209,19 +214,18 @@ native_type_encoding(const char *str) {
     static const char *typeList[20] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool", "char", "uchar"};
     
     #define SINT(type) do { \
-        if(str[0] == @encode(type)[0]) \
+        if (str[0] == @encode(type)[0]) \
         { \
             size_t size = sizeof(type); \
-            if(size == 1) \
+            if (size == 1) { \
                 return typeList[0]; \
-            else if(size == 2) \
+            } else if (size == 2) { \
                 return typeList[1]; \
-            else if(size == 4) \
+            } else if (size == 4) { \
                 return typeList[2]; \
-            else if(size == 8) \
+            } else if (size == 8) { \
                 return typeList[3]; \
-            else \
-            { \
+            } else { \
                 NSLog(@"Unknown size for type %s", #type); \
                 abort(); \
             } \
@@ -229,19 +233,18 @@ native_type_encoding(const char *str) {
     } while(0)
     
     #define UINT(type) do { \
-        if(str[0] == @encode(type)[0]) \
+        if (str[0] == @encode(type)[0]) \
         { \
             size_t size = sizeof(type); \
-            if(size == 1) \
+            if (size == 1) { \
                 return typeList[4]; \
-            else if(size == 2) \
+            } else if (size == 2) { \
                 return typeList[5]; \
-            else if(size == 4) \
+            } else if (size == 4) { \
                 return typeList[6]; \
-            else if(size == 8) \
+            } else if (size == 8) { \
                 return typeList[7]; \
-            else \
-            { \
+            } else { \
                 NSLog(@"Unknown size for type %s", #type); \
                 abort(); \
             } \
@@ -254,7 +257,7 @@ native_type_encoding(const char *str) {
     } while(0)
     
     #define COND(type, name) do { \
-        if(str[0] == @encode(type)[0]) \
+        if (str[0] == @encode(type)[0]) \
         return name; \
     } while(0)
     
@@ -315,8 +318,7 @@ native_types_encoding(const char *str, int *count, int startIndex) {
             const char *argType = native_type_encoding(str);
             if (argType) {
                 argTypes[i] = argType;
-            }
-            else {
+            } else {
                 if (count) {
                     *count = -1;
                 }

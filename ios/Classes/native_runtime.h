@@ -28,11 +28,11 @@ native_get_class(const char *className, Class baseClass);
 
 DO_EXTERN
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args);
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, BOOL waitUntilDone);
 
 DO_EXTERN
 void *
-native_instance_invoke_noArgs(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue);
+native_instance_invoke_noArgs(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, BOOL waitUntilDone);
 
 DO_EXTERN
 void *

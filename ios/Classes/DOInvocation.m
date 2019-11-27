@@ -71,12 +71,10 @@
             if (self.hasStret) {
                 if (idx == 0) {
                     type = self.methodSignature.methodReturnType;
-                }
-                else {
+                } else {
                     type = [self.methodSignature getArgumentTypeAtIndex:idx - 1];
                 }
-            }
-            else {
+            } else {
                 type = [self.methodSignature getArgumentTypeAtIndex:idx];
             }
             args[idx] = [self _copyPointer:self.realArgs[idx] encode:type key:@(idx)];
@@ -86,8 +84,7 @@
         if (self.hasStret) {
             self.args = args + 1;
             self.retValue = *((void **)args[0]);
-        }
-        else {
+        } else {
             void *ret = [self _copyPointer:self.retValue encode:self.methodSignature.methodReturnType key:@-1];
             [self _retainPointer:ret encode:self.methodSignature.methodReturnType key:@-1];
             self.args = args;
@@ -170,12 +167,10 @@
         id arg = (__bridge id)p;
         if (strcmp(encode, "@?") == 0) {
             self.retainMap[key] = [arg copy];
-        }
-        else {
+        } else {
             self.retainMap[key] = arg;
         }
-    }
-    else if (encode[0] == '*') {
+    } else if (encode[0] == '*') {
         char *arg = p;
         NSMutableData *data = [NSMutableData dataWithLength:sizeof(char) * strlen(arg)];
         self.retainMap[key] = data;

@@ -81,8 +81,7 @@ void DOStoreValueToPointer(id result, void *pointer, const char *encoding) {
             default:
                 break;
         }
-    }
-    else if ([result isKindOfClass:NSString.class]) {
+    } else if ([result isKindOfClass:NSString.class]) {
         NSString *string = result;
         switch (encoding[0]) {
             case 'c':
@@ -98,8 +97,7 @@ void DOStoreValueToPointer(id result, void *pointer, const char *encoding) {
             default:
                 break;
         }
-    }
-    else {
+    } else {
         *(void **)pointer = (__bridge void *)(result);
     }
 }
@@ -246,18 +244,16 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
 - (ffi_type *)ffiTypeForEncode:(const char *)str
 {
     #define SINT(type) do { \
-        if(str[0] == @encode(type)[0]) \
-        { \
-            if(sizeof(type) == 1) \
+        if (str[0] == @encode(type)[0]) { \
+            if (sizeof(type) == 1) { \
                 return &ffi_type_sint8; \
-            else if(sizeof(type) == 2) \
+            } else if (sizeof(type) == 2) { \
                 return &ffi_type_sint16; \
-            else if(sizeof(type) == 4) \
+            } else if (sizeof(type) == 4) { \
                 return &ffi_type_sint32; \
-            else if(sizeof(type) == 8) \
+            } else if (sizeof(type) == 8) { \
                 return &ffi_type_sint64; \
-            else \
-            { \
+            } else { \
                 NSLog(@"Unknown size for type %s", #type); \
                 abort(); \
             } \
@@ -265,18 +261,16 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
     } while(0)
     
     #define UINT(type) do { \
-        if(str[0] == @encode(type)[0]) \
-        { \
-            if(sizeof(type) == 1) \
+        if (str[0] == @encode(type)[0]) { \
+            if (sizeof(type) == 1) { \
                 return &ffi_type_uint8; \
-            else if(sizeof(type) == 2) \
+            } else if (sizeof(type) == 2) { \
                 return &ffi_type_uint16; \
-            else if(sizeof(type) == 4) \
+            } else if (sizeof(type) == 4) { \
                 return &ffi_type_uint32; \
-            else if(sizeof(type) == 8) \
+            } else if (sizeof(type) == 8) { \
                 return &ffi_type_uint64; \
-            else \
-            { \
+            } else { \
                 NSLog(@"Unknown size for type %s", #type); \
                 abort(); \
             } \
@@ -289,7 +283,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
     } while(0)
     
     #define COND(type, name) do { \
-        if(str[0] == @encode(type)[0]) \
+        if (str[0] == @encode(type)[0]) \
         return &ffi_type_ ## name; \
     } while(0)
     
@@ -360,8 +354,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
             ffi_type *argType = [self ffiTypeForEncode:str];
             if (argType) {
                 argTypes[i] = argType;
-            }
-            else {
+            } else {
                 if (outCount) {
                     *outCount = -1;
                 }

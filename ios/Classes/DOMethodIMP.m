@@ -116,8 +116,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         callback(*(void **)args[0], *(void **)args[1], args + 2, ret, argCount, types);
         free(types);
         retObjectAddr = (int64_t)*(void **)ret;
-    }
-    else {
+    } else {
         NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:methodIMP.typeEncoding];
         __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:signature hasStret:NO];
         invocation.args = userArgs;

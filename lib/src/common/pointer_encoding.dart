@@ -124,7 +124,7 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
     [bool auto = true]) {
-  dynamic result;
+  dynamic result = nil;
   if (encoding.startsWith('{')) {
     // ptr is struct pointer
     result = loadStructFromPointer(ptr, encoding);

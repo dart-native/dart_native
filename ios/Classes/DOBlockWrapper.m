@@ -220,8 +220,7 @@ void dispose_helper(struct _DOBlock *src)
         argTypes[0] = &ffi_type_pointer;
         returnType = &ffi_type_void;
         self.stret = YES;
-    }
-    else {
+    } else {
         argTypes = [helper argsWithEncodeString:str getCount:&argCount];
         if (!argTypes) { // Error!
             return -1;
@@ -268,8 +267,7 @@ void dispose_helper(struct _DOBlock *src)
             // Blocks are passed one implicit argument - the block, of type "@?".
             [encodeStr appendString:@"@?0"];
             retEncodeStr = encode;
-        }
-        else {
+        } else {
             [encodeStr appendString:encode];
             [encodeStr appendString:[NSString stringWithFormat:@"%d", currentLength]];
             currentLength += length;
@@ -298,8 +296,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         void(*callback)(void *block, void **args, void *ret, int argCount) = wrapper.callback;
         callback((__bridge void *)(wrapper.block), args + 1, ret, (int)wrapper.numberOfArguments - 1);
         retObjectAddr = (int64_t)*(void **)ret;
-    }
-    else {
+    } else {
         __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature hasStret:wrapper.hasStret];
         invocation.args = userArgs;
         invocation.retValue = userRet;
