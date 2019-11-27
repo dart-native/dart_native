@@ -32,18 +32,6 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
 
 DO_EXTERN
 void *
-native_instance_invoke_noArgs(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, BOOL waitUntilDone);
-
-DO_EXTERN
-void *
-native_instance_invoke_noQueue(id object, SEL selector, NSMethodSignature *signature, void **args);
-
-DO_EXTERN
-void *
-native_instance_invoke_noArgsNorQueue(id object, SEL selector, NSMethodSignature *signature);
-
-DO_EXTERN
-void *
 native_block_create(char *types, void *callback);
 
 DO_EXTERN

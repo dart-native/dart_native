@@ -166,21 +166,6 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
 }
 
 void *
-native_instance_invoke_noArgs(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, BOOL waitUntilDone) {
-    return native_instance_invoke(object, selector, signature, queue, nil, waitUntilDone);
-}
-
-void *
-native_instance_invoke_noQueue(id object, SEL selector, NSMethodSignature *signature, void **args) {
-    return native_instance_invoke(object, selector, signature, nil, args, YES);
-}
-
-void *
-native_instance_invoke_noArgsNorQueue(id object, SEL selector, NSMethodSignature *signature) {
-    return native_instance_invoke(object, selector, signature, nil, nil, YES);
-}
-
-void *
 native_block_create(char *types, void *callback) {
     DOBlockWrapper *wrapper = [[DOBlockWrapper alloc] initWithTypeString:types callback:callback];
     return (__bridge void *)wrapper;

@@ -37,6 +37,7 @@ typedef GetClassD = Pointer<Void> Function(
 final GetClassD nativeGetClass =
     runtimeLib.lookupFunction<GetClassC, GetClassD>('native_get_class');
 
+/// waitUntilDone is ignored when queue equals to nullptr.
 typedef InvokeMethodD = Pointer<Void> Function(
     Pointer<Void> instance,
     Pointer<Void> selector,
@@ -51,40 +52,8 @@ typedef InvokeMethodC = Pointer<Void> Function(
     Pointer<Void> queue,
     Pointer<Pointer<Void>> args,
     Int8 waitUntilDone);
-final InvokeMethodD nativeInvokeMethod =
-    runtimeLib.lookupFunction<InvokeMethodC, InvokeMethodD>(
-        'native_instance_invoke_args');
-
-typedef InvokeMethodNoArgsD = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Void> queue,
-    int waitUntilDone);
-typedef InvokeMethodNoArgsC = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Void> queue,
-    Int8 waitUntilDone);
-final InvokeMethodNoArgsD nativeInvokeMethodNoArgs =
-    runtimeLib.lookupFunction<InvokeMethodNoArgsC, InvokeMethodNoArgsD>(
-        'native_instance_invoke_noArgs');
-
-typedef InvokeMethodNoQueue = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Pointer<Void>> args);
-final InvokeMethodNoQueue nativeInvokeMethodNoQueue =
-    runtimeLib.lookupFunction<InvokeMethodNoQueue, InvokeMethodNoQueue>(
-        'native_instance_invoke_noQueue');
-
-typedef InvokeMethodNoArgsNorQueue = Pointer<Void> Function(
-    Pointer<Void> instance, Pointer<Void> selector, Pointer<Void> signature);
-final InvokeMethodNoArgsNorQueue nativeInvokeMethodNoArgsNorQueue = runtimeLib
-    .lookupFunction<InvokeMethodNoArgsNorQueue, InvokeMethodNoArgsNorQueue>(
-        'native_instance_invoke_noArgsNorQueue');
+final InvokeMethodD nativeInvokeMethod = runtimeLib
+    .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
 
 typedef MethodIMPCallbackC = Void Function(
     Pointer<Void> target,

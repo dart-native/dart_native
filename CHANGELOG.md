@@ -1,3 +1,8 @@
+## 0.1.4
+
+* Performance optimization.
+* Bug fix.
+
 ## 0.1.3
 
 * Support more structs: `CGPoint`, `CGVector`, `CGSize`, `CGRect`, `CGAffineTransform`, `UIEdgeInsets`, `NSDirectionalEdgeInsets`, `UIOffset`.

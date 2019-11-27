@@ -147,7 +147,8 @@ class id implements NSObjectProtocol {
   }
 
   /// Sends a specified message to the receiver and returns the result of the message.
-  dynamic perform(Selector selector, {List args, DispatchQueue onQueue, bool waitUntilDone = true}) {
+  dynamic perform(Selector selector,
+      {List args, DispatchQueue onQueue, bool waitUntilDone = true}) {
     return msgSend(this, selector, args, true, onQueue, waitUntilDone);
   }
 

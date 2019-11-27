@@ -9,23 +9,27 @@ import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-Pointer<Void> _msgSend(Pointer<Void> target, Pointer<Void> selector,
-    Pointer<Void> signature, Pointer<Pointer<Void>> args, DispatchQueue queue, bool waitUntilDone) {
+Pointer<Void> _msgSend(
+    Pointer<Void> target,
+    Pointer<Void> selector,
+    Pointer<Void> signature,
+    Pointer<Pointer<Void>> args,
+    DispatchQueue queue,
+    bool waitUntilDone) {
   Pointer<Void> result;
-  Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr;
+  Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr.cast();
+  // This awful code dues to this issue: https://github.com/dart-lang/sdk/issues/39488
+  if (queuePtr == nullptr) {
+    queuePtr = nullptr.cast();
+  }
+  if (args == null || args == nullptr) {
+    args = nullptr.cast();
+  }
   if (waitUntilDone == null) {
     waitUntilDone = true;
   }
-  // TODO: This awful code dues to this issue: https://github.com/dart-lang/sdk/issues/39488
-  if (args != null && queuePtr != nullptr) {
-    result = nativeInvokeMethod(target, selector, signature, queuePtr, args, waitUntilDone ? 1 : 0);
-  } else if (args != null) {
-    result = nativeInvokeMethodNoQueue(target, selector, signature, args);
-  } else if (queuePtr != nullptr) {
-    result = nativeInvokeMethodNoArgs(target, selector, signature, queuePtr, waitUntilDone ? 1 : 0);
-  } else {
-    result = nativeInvokeMethodNoArgsNorQueue(target, selector, signature);
-  }
+  result = nativeInvokeMethod(
+      target, selector, signature, queuePtr, args, waitUntilDone ? 1 : 0);
   return result;
 }
 
@@ -79,8 +83,8 @@ dynamic msgSend(id target, Selector selector,
   msg_duration2 += DateTime.now().millisecondsSinceEpoch - start2;
 
   int start3 = DateTime.now().millisecondsSinceEpoch;
-  Pointer<Void> resultPtr =
-      _msgSend(target.pointer, selectorPtr, signaturePtr, pointers, queue, waitUntilDone);
+  Pointer<Void> resultPtr = _msgSend(target.pointer, selectorPtr, signaturePtr,
+      pointers, queue, waitUntilDone);
   msg_duration3 += DateTime.now().millisecondsSinceEpoch - start3;
   int start4 = DateTime.now().millisecondsSinceEpoch;
   Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);
