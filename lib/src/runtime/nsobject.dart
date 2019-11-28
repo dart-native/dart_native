@@ -25,9 +25,3 @@ class NSObject extends id {
     return result.autorelease().pointer;
   }
 }
-
-int msg_duration1 = 0;
-int msg_duration2 = 0;
-int msg_duration3 = 0;
-int msg_duration4 = 0;
-int msg_duration5 = 0;
