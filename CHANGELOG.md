@@ -1,3 +1,8 @@
+## 0.1.6
+
+* Update readme.
+* Delete useless code.
+
 ## 0.1.5
 
 * Delete code for banckmark.

@@ -4,9 +4,11 @@ Write Objective-C Code using Dart. This package liberates you from native code a
 
 Still under development!!! 
 
+[![pub package](https://img.shields.io/pub/v/dart_objc.svg)](https://pub.dev/packages/dart_objc)
+
 ## Requirements
 
-Flutter 1.12.5 (channel dev, using 2.7.0)
+Flutter 1.12.13 (channel dev, using 2.7.0)
 
 ## Getting Started
 
@@ -65,14 +67,6 @@ typedef int(^BarBlock)(NSObject *a);
 
 ## TODO List
 
-- [x] Type support:Block
-- [x] Type support:Struct
-- [x] Delegate callback
-- [x] Type support: CGPoint, CGVector, CGSize, CGRect, CGAffineTransform, UIEdgeInsets, NSDirectionalEdgeInsets, UIOffset.
-- [x] Type support:List, Map, Set
-- [x] Type support:NSNumber, NSValue
-- [ ] Convert return value to `NSObject` subclass automatically.
-- [ ] Memory management
 - [ ] Generate Dart code from ObjectiveC/C++ Headers.
 - [ ] Unit test.
 - [ ] Documents.
@@ -80,3 +74,4 @@ typedef int(^BarBlock)(NSObject *a);
 ## Article
 
 - [用 Dart 来写 Objective-C 代码](http://yulingtianxia.com/blog/2019/10/27/Write-Objective-C-Code-using-Dart/)
+- [谈谈 dart_objc 混合编程引擎的设计](http://yulingtianxia.com/blog/2019/11/28/DartObjC-Design/)
