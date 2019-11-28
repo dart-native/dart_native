@@ -8,17 +8,12 @@
 #import "DOObjectDealloc.h"
 #import "NSThread+DartObjC.h"
 
-static NSTimeInterval duration1 = 0;
-static NSTimeInterval duration2 = 0;
-
 NSMethodSignature *
 native_method_signature(Class cls, SEL selector) {
-    NSDate *now = [NSDate date];
     if (!selector) {
         return nil;
     }
     NSMethodSignature *signature = [cls instanceMethodSignatureForSelector:selector];
-    duration1 += -[now timeIntervalSinceNow];
     return signature;
 }
 
@@ -28,18 +23,10 @@ native_signature_encoding_list(NSMethodSignature *signature, const char **typeEn
         return;
     }
     
-    NSDate *now = [NSDate date];
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
         *(typeEncodings + i - 1) = [signature getArgumentTypeAtIndex:i];
     }
     *typeEncodings = signature.methodReturnType;
-    duration2 += -[now timeIntervalSinceNow];
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            NSLog(@"-----------d1:%f, d2:%f", duration1 * 1000, duration2 * 1000);
-        });
-    });
 }
 
 BOOL

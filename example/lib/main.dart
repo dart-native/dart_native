@@ -85,18 +85,18 @@ class _MyAppState extends State<MyApp> {
     //   String result = NSString.fromPointer(description.pointer).value;
     //   print('currentThread: $result');
     // });
-    String sysver;
-    int start = DateTime.now().millisecondsSinceEpoch;
-    // UIDevice.currentDevice.systemVersion
-    for (var i = 0; i < 10000; i++) {
-      NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
-      NSObject version = device.perform(Selector('systemVersion'));
-      sysver = NSString.fromPointer(version.pointer).value;
-    }
-    int duration = DateTime.now().millisecondsSinceEpoch - start;
-    print(
-        'msg_duration1:$msg_duration1, msg_duration2:$msg_duration2, msg_duration3:$msg_duration3, msg_duration4:$msg_duration4, msg_duration5:$msg_duration5');
-    print('duration:$duration');
+    // String sysver;
+    // int start = DateTime.now().millisecondsSinceEpoch;
+    // // UIDevice.currentDevice.systemVersion
+    // for (var i = 0; i < 10000; i++) {
+    //   NSObject device = Class('UIDevice').perform(Selector('currentDevice'));
+    //   NSObject version = device.perform(Selector('systemVersion'));
+    //   sysver = NSString.fromPointer(version.pointer).value;
+    // }
+    // int duration = DateTime.now().millisecondsSinceEpoch - start;
+    // print(
+    //     'msg_duration1:$msg_duration1, msg_duration2:$msg_duration2, msg_duration3:$msg_duration3, msg_duration4:$msg_duration4, msg_duration5:$msg_duration5');
+    // print('duration:$duration');
   }
 
   Function testFunc = (NSObject a) {
