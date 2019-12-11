@@ -71,8 +71,6 @@ class _MyAppState extends State<MyApp> {
     NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
     print(array);
 
-    // stub.release();
-
     NSObject currentThread = Class('NSThread')
         .perform(Selector('currentThread'), onQueue: DispatchQueue.global());
     NSObject description = currentThread.perform(Selector('description'));

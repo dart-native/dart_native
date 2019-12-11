@@ -1,11 +1,19 @@
 PODS:
+  - CocoaLumberjack (3.6.0):
+    - CocoaLumberjack/Core (= 3.6.0)
+  - CocoaLumberjack/Core (3.6.0)
   - dart_objc (0.0.1):
     - Flutter
   - Flutter (1.0.0)
 
 DEPENDENCIES:
+  - CocoaLumberjack
   - dart_objc (from `.symlinks/plugins/dart_objc/ios`)
   - Flutter (from `Flutter`)
+
+SPEC REPOS:
+  https://cdn.cocoapods.org/:
+    - CocoaLumberjack
 
 EXTERNAL SOURCES:
   dart_objc:
@@ -14,9 +22,10 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
+  CocoaLumberjack: 78b0c238666f4f58db069738ec176f4519557516
   dart_objc: ff2d7ad2763bd50fc9215f981f332b791e04fdb3
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
 
-PODFILE CHECKSUM: 3dbe063e9c90a5d7c9e4e76e70a821b9e2c1d271
+PODFILE CHECKSUM: 9a73c7a50a979210dd9e86ea91a651e23f545314
 
 COCOAPODS: 1.8.3
