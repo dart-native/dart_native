@@ -1,8 +1,16 @@
 import 'dart:ffi';
 
-import 'package:dart_objc/foundation.dart';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
+import 'package:dart_objc/src/foundation/internal/native_struct.dart';
+import 'package:dart_objc/src/foundation/struct/cgaffinetransform.dart';
+import 'package:dart_objc/src/foundation/struct/cgpoint.dart';
+import 'package:dart_objc/src/foundation/struct/cgrect.dart';
+import 'package:dart_objc/src/foundation/struct/cgsize.dart';
+import 'package:dart_objc/src/foundation/struct/cgvector.dart';
+import 'package:dart_objc/src/foundation/struct/nsdirectionaledgeinsets.dart';
+import 'package:dart_objc/src/foundation/struct/nsrange.dart';
+import 'package:dart_objc/src/foundation/struct/uioffset.dart';
 import 'package:dart_objc/src/runtime/message.dart';
 import 'package:dart_objc/src/runtime/nssubclass.dart';
 

@@ -8,7 +8,7 @@ Still under development!!!
 
 ## Requirements
 
-Flutter 1.12.13 (channel dev, using 2.7.0)
+Flutter 1.12.13 (Dart 2.7.0)
 
 ## Getting Started
 

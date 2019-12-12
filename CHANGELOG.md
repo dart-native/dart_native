@@ -1,3 +1,7 @@
+## 0.1.7
+
+* Update dependancy.
+
 ## 0.1.6
 
 * Update readme.

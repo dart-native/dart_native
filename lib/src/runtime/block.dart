@@ -3,17 +3,17 @@ import 'dart:ffi';
 import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/common/channel_dispatch.dart';
 import 'package:dart_objc/src/common/library.dart';
-import 'package:dart_objc/src/foundation/native_type_box.dart';
+import 'package:dart_objc/src/foundation/internal/native_type_box.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/native_runtime.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-typedef DOBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
-typedef DOBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
-final DOBlockTypeEncodeStringD blockTypeEncodeString = runtimeLib
-    .lookupFunction<DOBlockTypeEncodeStringC, DOBlockTypeEncodeStringD>(
+typedef _DOBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
+typedef _DOBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
+final _DOBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
+    .lookupFunction<_DOBlockTypeEncodeStringC, _DOBlockTypeEncodeStringD>(
         'DOBlockTypeEncodeString');
 
 Map<int, Block> _blockForAddress = {};
@@ -93,7 +93,7 @@ class Block extends id {
     if (pointer == nullptr) {
       return null;
     }
-    Pointer<Utf8> typesEncodingsPtr = blockTypeEncodeString(pointer);
+    Pointer<Utf8> typesEncodingsPtr = _blockTypeEncodeString(pointer);
     Pointer<Int32> countPtr = allocate<Int32>();
     Pointer<Pointer<Utf8>> typesPtrPtr =
         nativeTypesEncoding(typesEncodingsPtr, countPtr, 0);
@@ -147,7 +147,7 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
       ptr = ptr.cast<Pointer<Void>>().value;
     }
     dynamic value = loadValueFromPointer(ptr, encoding);
-    dynamic arg = boxForValue(block.types[i + 1], value);
+    dynamic arg = boxingBasicValue(block.types[i + 1], value);
     args.add(arg);
   }
   dynamic result = Function.apply(block.function, args);

@@ -1,11 +1,19 @@
 library dart_objc.foundation;
 
-export 'src/foundation/native_struct.dart';
-export 'src/foundation/native_type_box.dart';
+export 'src/foundation/basic_type.dart';
 export 'src/foundation/nsstring.dart';
 export 'src/foundation/nsvalue.dart';
 export 'src/foundation/nsnumber.dart';
-export 'src/foundation/nsarray.dart';
-export 'src/foundation/nsdictionary.dart';
-export 'src/foundation/nsset.dart';
+export 'src/foundation/collection/nsarray.dart';
+export 'src/foundation/collection/nsdictionary.dart';
+export 'src/foundation/collection/nsset.dart';
 export 'src/foundation/gcd.dart';
+export 'package:dart_objc/src/foundation/struct/cgaffinetransform.dart';
+export 'package:dart_objc/src/foundation/struct/cgpoint.dart';
+export 'package:dart_objc/src/foundation/struct/cgrect.dart';
+export 'package:dart_objc/src/foundation/struct/cgsize.dart';
+export 'package:dart_objc/src/foundation/struct/cgvector.dart';
+export 'package:dart_objc/src/foundation/struct/nsdirectionaledgeinsets.dart';
+export 'package:dart_objc/src/foundation/struct/nsrange.dart';
+export 'package:dart_objc/src/foundation/struct/uiedgeinsets.dart';
+export 'package:dart_objc/src/foundation/struct/uioffset.dart';

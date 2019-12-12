@@ -1,7 +1,8 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/runtime.dart';
-import 'package:dart_objc/src/foundation/nsarray.dart';
+import 'package:dart_objc/src/foundation/internal/native_type_box.dart';
+import 'package:dart_objc/src/foundation/collection/nsarray.dart';
 import 'package:dart_objc/src/runtime/id.dart';
 import 'package:dart_objc/src/runtime/nssubclass.dart';
 

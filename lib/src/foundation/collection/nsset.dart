@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/runtime.dart';
-import 'package:dart_objc/src/foundation/nsarray.dart';
+import 'package:dart_objc/src/foundation/collection/nsarray.dart';
 import 'package:dart_objc/src/runtime/nssubclass.dart';
 
 class NSSet extends NSSubclass<Set> {
