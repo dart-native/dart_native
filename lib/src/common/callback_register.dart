@@ -15,8 +15,7 @@ bool registerMethodCallback(
   Pointer<Void> selectorPtr = selector.toPointer();
   CallbackManager.shared
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
-  int result = nativeAddMethod(
-      targetPtr, selectorPtr, types, _callbackPtr);
+  int result = nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr);
   ChannelDispatch().registerChannelCallback('method_callback', _asyncCallback);
   return result != 0;
 }
@@ -31,8 +30,8 @@ _callback(
     Pointer<Pointer<Void>> retPtr,
     int argCount,
     Pointer<Pointer<Utf8>> typesPtrPtr) {
-  Function function = CallbackManager.shared
-      .getCallbackForSelectorOnTarget(targetPtr, selPtr);
+  Function function =
+      CallbackManager.shared.getCallbackForSelectorOnTarget(targetPtr, selPtr);
   if (function == null) {
     return null;
   }

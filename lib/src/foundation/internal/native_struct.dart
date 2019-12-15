@@ -407,8 +407,7 @@ class CGFloatx6Wrapper extends NativeStruct {
     }
   }
 
-  CGFloatx6Wrapper(
-      double a, double b, double c, double d, double e, double f) {
+  CGFloatx6Wrapper(double a, double b, double c, double d, double e, double f) {
     if (LP64) {
       _value64 = CGFloat64x6(a, b, c, d, e, f);
     } else {
@@ -450,4 +449,3 @@ class CGFloatx6Wrapper extends NativeStruct {
     return '$runtimeType=($a, $b, $c, $d, $e, $f)';
   }
 }
-

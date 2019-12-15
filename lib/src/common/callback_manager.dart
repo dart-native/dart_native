@@ -11,7 +11,8 @@ class CallbackManager {
   factory CallbackManager() => _instance;
   static CallbackManager get shared => _instance;
 
-  setCallbackForSelectorOnTarget(Pointer<Void> targetPtr, Pointer<Void> selectorPtr, Function function) {
+  setCallbackForSelectorOnTarget(
+      Pointer<Void> targetPtr, Pointer<Void> selectorPtr, Function function) {
     Map<Pointer<Void>, Function> methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
       methodsMap = {selectorPtr: function};
@@ -21,7 +22,8 @@ class CallbackManager {
     _callbackManager[targetPtr] = methodsMap;
   }
 
-  Function getCallbackForSelectorOnTarget(Pointer<Void> targetPtr, Pointer<Void> selectorPtr) {
+  Function getCallbackForSelectorOnTarget(
+      Pointer<Void> targetPtr, Pointer<Void> selectorPtr) {
     Map<Pointer<Void>, Function> methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
       return null;
