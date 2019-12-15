@@ -20,7 +20,11 @@ native_signature_encoding_list(NSMethodSignature *signature, const char **typeEn
 
 DO_EXTERN
 BOOL
-native_add_method(id target, SEL selector, Protocol *proto, void *callback);
+native_add_method(id target, SEL selector, char *types, void *callback);
+
+DO_EXTERN
+char *
+native_protocol_method_types(Protocol *proto, SEL selector);
 
 DO_EXTERN
 Class

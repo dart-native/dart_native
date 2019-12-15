@@ -1,12 +1,15 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/dart_objc.dart';
+import 'package:dart_objc/src/common/callback_manager.dart';
 import 'package:dart_objc/src/common/channel_dispatch.dart';
-import 'package:dart_objc/src/common/protocol_call.dart';
+import 'package:dart_objc/src/common/callback_register.dart';
 import 'package:dart_objc/src/runtime/functions.dart';
 import 'package:dart_objc/src/runtime/class.dart';
+import 'package:dart_objc/src/runtime/native_runtime.dart';
 import 'package:dart_objc/src/runtime/nsobject.dart';
 import 'package:dart_objc/src/runtime/nsobject_protocol.dart';
+import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dart_objc/src/runtime/message.dart';
 
@@ -30,13 +33,26 @@ class id implements NSObjectProtocol {
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
   /// Register callback function for selector in protocol.
-  registerCallback(Function callback, String selName, String protoName) {
+  bool registerProtocolCallback(Function callback, String selName, String protoName) {
     Selector selector = Selector(selName);
     Protocol protocol = Protocol(protoName);
     if (protocol == null) {
       throw 'Protocol($protoName) never used in native code! Can not get Protocol by its name!';
     }
-    return registerDelegate(this, selector, callback, protocol);
+    Pointer<Utf8> types = nativeProtocolMethodTypes(protocol.toPointer(), selector.toPointer());
+    return registerMethodCallback(this, selector, callback, types);
+  }
+
+  /// Register callback function for selector in notification.
+  /// The method specified by selName must have one and only one argument (an instance of NSNotification).
+  bool registerNotificationCallback(Function callback, String selName) {
+    // TODO: check signature for callback and selName, we need only one argument.
+    Selector selector = Selector(selName);
+    String notificationEncoding = 'v24@0:8@16';
+    Pointer<Utf8> types = Utf8.toUtf8(notificationEncoding);
+    bool success = registerMethodCallback(this, selector, callback, types);
+    free(types);
+    return success;
   }
 
   id(this._ptr) {
@@ -90,7 +106,7 @@ class id implements NSObjectProtocol {
   /// Clean NSObject instance.
   /// Subclass can override this method and call release on its dart properties.
   dealloc() {
-    removeDelegate(this);
+    CallbackManager.shared.clearAllCallbackOnTarget(this);
     _ptr = nullptr;
   }
 

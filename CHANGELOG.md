@@ -1,3 +1,8 @@
+## 0.1.8
+
+* Dart function can be observer for `NSNotification`.
+* Fix issue for automatic transfer of `NSRange`.
+
 ## 0.1.7
 
 * Update dependancy.

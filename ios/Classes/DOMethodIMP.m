@@ -22,9 +22,10 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 }
 
 @property (nonatomic) NSUInteger numberOfArguments;
-@property (nonatomic) const char *typeEncoding;
+@property (nonatomic) char *typeEncoding;
 @property (nonatomic) NSThread *thread;
 @property (nonatomic) void *callback;
+@property (nonatomic) DOFFIHelper *helper;
 
 @end
 
@@ -34,7 +35,9 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 {
     self = [super init];
     if (self) {
-        _typeEncoding = typeEncoding;
+        _helper = [DOFFIHelper new];
+        _typeEncoding = malloc(sizeof(char) * strlen(typeEncoding));
+        strcpy(_typeEncoding, typeEncoding);
         _callback = callback;
         _thread = NSThread.currentThread;
     }
@@ -43,6 +46,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (void)dealloc
 {
+    free(_typeEncoding);
     ffi_closure_free(_closure);
 }
 
@@ -71,13 +75,12 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     ffi_type **argTypes;
     ffi_type *returnType;
     
-    DOFFIHelper *helper = [DOFFIHelper new];
     // TODO: handle struct return on x86
-    argTypes = [helper argsWithEncodeString:str getCount:&argCount];
+    argTypes = [self.helper argsWithEncodeString:str getCount:&argCount];
     if (!argTypes) { // Error!
         return -1;
     }
-    returnType = [helper ffiTypeForEncode:str];
+    returnType = [self.helper ffiTypeForEncode:str];
     
     if (!returnType) { // Error!
         return -1;
@@ -137,7 +140,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
             sema = dispatch_semaphore_create(0);
         }
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-            [channel invokeMethod:@"method_delegate" arguments:@[@(targetAddr), @(selectorAddr), @(argsAddr), @(retAddr), @(argCount), @(typesAddr)] result:^(id  _Nullable result) {
+            [channel invokeMethod:@"method_callback" arguments:@[@(targetAddr), @(selectorAddr), @(argsAddr), @(retAddr), @(argCount), @(typesAddr)] result:^(id  _Nullable result) {
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);

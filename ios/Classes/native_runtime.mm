@@ -30,7 +30,7 @@ native_signature_encoding_list(NSMethodSignature *signature, const char **typeEn
 }
 
 BOOL
-native_add_method(id target, SEL selector, Protocol *proto, void *callback) {
+native_add_method(id target, SEL selector, char *types, void *callback) {
     Class cls = object_getClass(target);
     NSString *selName = [NSString stringWithFormat:@"dart_objc_%@", NSStringFromSelector(selector)];
     SEL key = NSSelectorFromString(selName);
@@ -39,17 +39,22 @@ native_add_method(id target, SEL selector, Protocol *proto, void *callback) {
     if (!imp && [target respondsToSelector:selector]) {
         return NO;
     }
-    struct objc_method_description description = protocol_getMethodDescription(proto, selector, YES, YES);
-    if (description.types == NULL) {
-        description = protocol_getMethodDescription(proto, selector, NO, YES);
-    }
-    if (description.types != NULL) {
-        DOMethodIMP *methodIMP = [[DOMethodIMP alloc] initWithTypeEncoding:description.types callback:callback]; // DOMethodIMP always exists.
-        class_replaceMethod(cls, selector, [methodIMP imp], description.types);
+    if (types != NULL) {
+        DOMethodIMP *methodIMP = [[DOMethodIMP alloc] initWithTypeEncoding:types callback:callback]; // DOMethodIMP always exists.
+        class_replaceMethod(cls, selector, [methodIMP imp], types);
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return YES;
     }
     return NO;
+}
+
+char *
+native_protocol_method_types(Protocol *proto, SEL selector) {
+    struct objc_method_description description = protocol_getMethodDescription(proto, selector, YES, YES);
+    if (description.types == NULL) {
+        description = protocol_getMethodDescription(proto, selector, NO, YES);
+    }
+    return description.types;
 }
 
 Class
@@ -369,4 +374,3 @@ native_mark_autoreleasereturn_object(id object) {
         NSThread.currentThread.threadDictionary[@(address)] = object;
     }];
 }
-

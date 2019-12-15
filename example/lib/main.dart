@@ -18,11 +18,11 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    bool resultBool = stub.fooBool(false);
-    print('fooBool result:$resultBool');
+    // bool resultBool = stub.fooBool(false);
+    // print('fooBool result:$resultBool');
 
-    NSString resultNSString = stub.fooNSString('This is NSString');
-    print('fooNSString result:$resultNSString');
+    // NSString resultNSString = stub.fooNSString('This is NSString');
+    // print('fooNSString result:$resultNSString');
 
     String resultChar = stub.fooChar('A');
     print('fooChar result:$resultChar');
@@ -76,6 +76,10 @@ class _MyAppState extends State<MyApp> {
     NSObject description = currentThread.perform(Selector('description'));
     String threadResult = NSString.fromPointer(description.pointer).value;
     print('currentThread: $threadResult');
+
+    NSObject center = Class('NSNotificationCenter').perform(Selector('defaultCenter'));
+    // TODO: Only need function.
+    center.perform(Selector('addObserver:selector:name:object:'), args: [delegate, Selector('handleNotification:'), 'SampleDartNotification', nil]);
 
     // DispatchQueue.main.async(() {
     //   NSObject currentThread = Class('NSThread').perform(Selector('currentThread'));

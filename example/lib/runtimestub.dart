@@ -81,7 +81,7 @@ class RuntimeStub extends NSObject {
     return NSArray.fromPointer(result.pointer);
   }
 
-  fooDelegate(DelegateStub delegate) {
+  fooDelegate(SampleDelegate delegate) {
     perform(Selector('fooDelegate:'), args: [delegate]);
   }
 }

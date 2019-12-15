@@ -40,7 +40,7 @@ dynamic msgSend(id target, Selector selector,
   if (target == nil) {
     return nil;
   }
-  int start1 = DateTime.now().millisecondsSinceEpoch;
+
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
       allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
