@@ -95,7 +95,6 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
       NSObject(Class('DOPointerWrapper'))
-          // .autorelease()
           .perform(Selector('setPointer:'), args: [charPtr]);
       ptr.cast<Pointer<Utf8>>().value = charPtr;
     } else if (encoding == 'object') {
@@ -241,7 +240,6 @@ storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
       object is CGAffineTransform) {
     Pointer<Void> result = object.addressOf.cast<Void>();
     NSObject(Class('DOPointerWrapper'))
-        // .autorelease()
         .perform(Selector('setPointer:'), args: [result]);
     ptr.value = result;
   }
@@ -277,7 +275,7 @@ dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
       case 'CGRect':
         result = CGRect.fromPointer(ptr);
         break;
-      case '_NSRange':
+      case 'NSRange':
         result = NSRange.fromPointer(ptr);
         break;
       case 'UIOffset':

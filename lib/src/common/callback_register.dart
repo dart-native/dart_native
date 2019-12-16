@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/runtime.dart';
+import 'package:dart_objc/src/common/callback_manager.dart';
 import 'package:dart_objc/src/common/channel_dispatch.dart';
 import 'package:dart_objc/src/common/pointer_encoding.dart';
 import 'package:dart_objc/src/runtime/id.dart';
@@ -8,25 +9,15 @@ import 'package:dart_objc/src/runtime/native_runtime.dart';
 import 'package:dart_objc/src/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-Map<Pointer<Void>, Map<Pointer<Void>, Function>> _cache = {};
-
-bool registerDelegate(
-    id target, Selector selector, Function function, Protocol protocol) {
-  Map<Pointer<Void>, Function> methodsMap = _cache[target.pointer];
-  if (methodsMap == null) {
-    methodsMap = {selector.toPointer(): function};
-  } else {
-    methodsMap[selector.toPointer()] = function;
-  }
-  _cache[target.pointer] = methodsMap;
-  int result = nativeAddMethod(
-      target.pointer, selector.toPointer(), protocol.toPointer(), _callbackPtr);
-  ChannelDispatch().registerChannelCallback('method_delegate', _asyncCallback);
+bool registerMethodCallback(
+    id target, Selector selector, Function function, Pointer<Utf8> types) {
+  Pointer<Void> targetPtr = target.pointer;
+  Pointer<Void> selectorPtr = selector.toPointer();
+  CallbackManager.shared
+      .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
+  int result = nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr);
+  ChannelDispatch().registerChannelCallback('method_callback', _asyncCallback);
   return result != 0;
-}
-
-removeDelegate(id target) {
-  _cache.remove(target.pointer);
 }
 
 Pointer<NativeFunction<MethodIMPCallbackC>> _callbackPtr =
@@ -39,14 +30,16 @@ _callback(
     Pointer<Pointer<Void>> retPtr,
     int argCount,
     Pointer<Pointer<Utf8>> typesPtrPtr) {
-  Map<Pointer<Void>, Function> methodsMap = _cache[targetPtr];
-  if (methodsMap == null) {
+  Function function =
+      CallbackManager.shared.getCallbackForSelectorOnTarget(targetPtr, selPtr);
+  if (function == null) {
     return null;
   }
   List args = [];
 
   for (var i = 0; i < argCount; i++) {
-    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).value);
+    // types: ret, self, _cmd, args...
+    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 3).value);
     Pointer ptr = argsPtrPtr.elementAt(i).value;
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
@@ -55,7 +48,6 @@ _callback(
     args.add(value);
   }
 
-  Function function = methodsMap[selPtr];
   dynamic result = Function.apply(function, args);
   if (retPtr != nullptr && result != null) {
     String encoding = convertEncode(typesPtrPtr.elementAt(0).value);

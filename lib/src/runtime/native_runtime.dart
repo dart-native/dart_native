@@ -20,15 +20,18 @@ final SignatureEncodingListD nativeSignatureEncodingList =
 typedef AddMethodC = Int32 Function(
     Pointer<Void> target,
     Pointer<Void> selector,
-    Pointer<Void> protocol,
+    Pointer<Utf8> types,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback);
-typedef AddMethodD = int Function(
-    Pointer<Void> target,
-    Pointer<Void> selector,
-    Pointer<Void> protocol,
-    Pointer<NativeFunction<MethodIMPCallbackC>> callback);
+typedef AddMethodD = int Function(Pointer<Void> target, Pointer<Void> selector,
+    Pointer<Utf8> types, Pointer<NativeFunction<MethodIMPCallbackC>> callback);
 final AddMethodD nativeAddMethod =
     runtimeLib.lookupFunction<AddMethodC, AddMethodD>('native_add_method');
+
+typedef ProtocolMethodTypes = Pointer<Utf8> Function(
+    Pointer<Void> protocol, Pointer<Void> selector);
+final ProtocolMethodTypes nativeProtocolMethodTypes =
+    runtimeLib.lookupFunction<ProtocolMethodTypes, ProtocolMethodTypes>(
+        'native_protocol_method_types');
 
 typedef GetClassC = Pointer<Void> Function(
     Pointer<Utf8> className, Pointer<Void> baseClass);
