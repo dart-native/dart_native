@@ -89,6 +89,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
             }
         }
         if (argType[0] == '{') {
+            // Already put struct in pointer on Dart side.
             [invocation setArgument:args[i - 2] atIndex:i];
         } else {
             [invocation setArgument:&args[i - 2] atIndex:i];
@@ -168,8 +169,21 @@ native_block_invoke(void *block, void **args) {
     const char *typeString = DOBlockTypeEncodeString((__bridge id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    for (NSUInteger idx = 1; idx < signature.numberOfArguments; idx++) {
-        [invocation setArgument:&args[idx - 1] atIndex:idx];
+    for (NSUInteger i = 1; i < signature.numberOfArguments; i++) {
+        const char *argType = [signature getArgumentTypeAtIndex:i];
+        if (argType[0] == '*') {
+            // Copy CString to NSTaggedPointerString and transfer it's lifecycle to ARC. Orginal pointer will be freed after function returning.
+            const char *temp = [NSString stringWithUTF8String:(const char *)args[i - 1]].UTF8String;
+            if (temp) {
+                args[i - 1] = (void *)temp;
+            }
+        }
+        if (argType[0] == '{') {
+            // Already put struct in pointer on Dart side.
+            [invocation setArgument:args[i - 1] atIndex:i];
+        } else {
+            [invocation setArgument:&args[i - 1] atIndex:i];
+        }
     }
     [invocation invokeWithTarget:(__bridge id)block];
     void *result = NULL;

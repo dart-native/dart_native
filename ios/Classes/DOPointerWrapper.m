@@ -7,18 +7,7 @@
 
 #import "DOPointerWrapper.h"
 
-@interface DOPointerWrapper ()
-{
-    void *_pointer;
-}
-@end
-
 @implementation DOPointerWrapper
-
-- (void)setPointer:(void *)pointer
-{
-    _pointer = pointer;
-}
 
 - (void)dealloc
 {

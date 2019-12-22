@@ -18,11 +18,11 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    // bool resultBool = stub.fooBool(false);
-    // print('fooBool result:$resultBool');
+    bool resultBool = stub.fooBool(false);
+    print('fooBool result:$resultBool');
 
-    // NSString resultNSString = stub.fooNSString('This is NSString');
-    // print('fooNSString result:$resultNSString');
+    NSString resultNSString = stub.fooNSString('This is NSString');
+    print('fooNSString result:$resultNSString');
 
     String resultChar = stub.fooChar('A');
     print('fooChar result:$resultChar');

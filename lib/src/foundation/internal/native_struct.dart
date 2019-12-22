@@ -3,7 +3,9 @@ import 'dart:ffi';
 import 'package:dart_objc/src/common/precompile_macro.dart';
 import 'package:ffi/ffi.dart';
 
-abstract class NativeStruct {}
+abstract class NativeStruct {
+  Pointer get addressOf;
+}
 
 class NSUInteger32x2 extends Struct {
   @Uint32()

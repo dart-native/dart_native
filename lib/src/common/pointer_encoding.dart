@@ -7,6 +7,7 @@ import 'package:dart_objc/runtime.dart';
 import 'package:dart_objc/src/foundation/collection/nsarray.dart';
 import 'package:dart_objc/src/foundation/collection/nsdictionary.dart';
 import 'package:dart_objc/src/foundation/collection/nsset.dart';
+import 'package:dart_objc/src/foundation/internal/native_struct.dart';
 import 'package:dart_objc/src/foundation/internal/native_type_box.dart';
 import 'package:dart_objc/src/foundation/struct/cgaffinetransform.dart';
 import 'package:dart_objc/src/foundation/struct/cgpoint.dart';
@@ -229,15 +230,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
 }
 
 storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
-  if (object is CGSize ||
-      object is CGPoint ||
-      object is CGVector ||
-      object is CGRect ||
-      object is NSRange ||
-      object is UIOffset ||
-      object is UIEdgeInsets ||
-      object is NSDirectionalEdgeInsets ||
-      object is CGAffineTransform) {
+  if (object is NativeStruct) {
     Pointer<Void> result = object.addressOf.cast<Void>();
     NSObject(Class('DOPointerWrapper'))
         .perform(Selector('setPointer:'), args: [result]);

@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DOPointerWrapper : NSObject
 
-- (void)setPointer:(void *)pointer;
+@property (nonatomic) void *pointer;
 
 @end
 
