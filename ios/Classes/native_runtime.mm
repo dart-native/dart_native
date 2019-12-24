@@ -119,13 +119,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
         [invocation getReturnValue:&result];
         const char returnType = signature.methodReturnType[0];
         if (result && returnType == '@') {
-            NSString *selString = NSStringFromSelector(selector);
-            if (!([selString hasPrefix:@"new"] ||
-                [selString hasPrefix:@"alloc"] ||
-                [selString hasPrefix:@"copy"] ||
-                [selString hasPrefix:@"mutableCopy"])) {
-                [DOObjectDealloc attachHost:(__bridge id)result];
-            }
+            [DOObjectDealloc attachHost:(__bridge id)result];
         } else if (returnType == '{') {
             const char *temp = signature.methodReturnType;
             int index = 0;

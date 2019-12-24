@@ -23,6 +23,16 @@ class NSObject extends id {
     return perform(Selector('init'));
   }
 
+  NSObject copy() {
+    NSObject result = perform(Selector('copy'));
+    return NSObject.fromPointer(result.autorelease().pointer);
+  }
+
+  NSObject mutableCopy() {
+    NSObject result = perform(Selector('mutableCopy'));
+    return NSObject.fromPointer(result.autorelease().pointer);
+  }
+
   static Pointer<Void> _alloc(Class isa) {
     if (isa == null) {
       isa = Class('NSObject');
