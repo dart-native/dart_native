@@ -17,6 +17,20 @@ class NSObject extends id {
     }
   }
 
+  NSObject.alloc([Class isa]) : super(_alloc(isa));
+
+  NSObject init() {
+    return perform(Selector('init'));
+  }
+
+  static Pointer<Void> _alloc(Class isa) {
+    if (isa == null) {
+      isa = Class('NSObject');
+    }
+    NSObject result = isa.perform(Selector('alloc'));
+    return result.autorelease().pointer;
+  }
+
   static Pointer<Void> _new(Class isa) {
     if (isa == null) {
       isa = Class('NSObject');
