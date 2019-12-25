@@ -7,7 +7,6 @@ abstract class SampleDelegate {
 class DelegateStub extends NSObject implements SampleDelegate {
   DelegateStub() : super(Class('DelegateStub', type(of: NSObject))) {
     registerProtocolCallback(callback, 'callback', 'StubDelegate');
-    registerNotificationCallback(handleNotification, 'handleNotification:');
   }
 
   callback() {

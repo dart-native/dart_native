@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_objc/runtime.dart';
+import 'package:dart_objc/src/common/precompile_macro.dart';
 import 'package:dart_objc/src/foundation/nsvalue.dart';
 
 class NSNumber extends NSValue {
@@ -21,7 +22,6 @@ class NSNumber extends NSValue {
   }
 }
 
-// TODO: size_t, CGFloat
 Map<String, String> _NSNumberCreationForBoxType = {
   'char': 'Char',
   'unsigned_char': 'UnsignedChar',
@@ -39,4 +39,6 @@ Map<String, String> _NSNumberCreationForBoxType = {
   'BOOL': 'Bool',
   'NSInteger': 'Integer',
   'NSUInteger': 'UnsignedInteger',
+  'CGFloat': (LP64 ? 'Double' : 'Float'),
+  'size_t': (LP64 ? 'UnsignedLong' : 'UnsignedInt'),
 };

@@ -17,3 +17,4 @@ export 'package:dart_objc/src/foundation/struct/nsdirectionaledgeinsets.dart';
 export 'package:dart_objc/src/foundation/struct/nsrange.dart';
 export 'package:dart_objc/src/foundation/struct/uiedgeinsets.dart';
 export 'package:dart_objc/src/foundation/struct/uioffset.dart';
+export 'package:dart_objc/src/foundation/notification.dart';

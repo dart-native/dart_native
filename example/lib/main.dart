@@ -77,15 +77,8 @@ class _MyAppState extends State<MyApp> {
     String threadResult = NSString.fromPointer(description.pointer).value;
     print('currentThread: $threadResult');
 
-    NSObject center =
-        Class('NSNotificationCenter').perform(Selector('defaultCenter'));
-    // TODO: Only need function.
-    center.perform(Selector('addObserver:selector:name:object:'), args: [
-      delegate,
-      Selector('handleNotification:'),
-      'SampleDartNotification',
-      nil
-    ]);
+    NSNotificationCenter.defaultCenter.addObserver(
+        delegate, delegate.handleNotification, 'SampleDartNotification', nil);
 
     // DispatchQueue.main.async(() {
     //   NSObject currentThread = Class('NSThread').perform(Selector('currentThread'));

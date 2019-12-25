@@ -45,18 +45,6 @@ class id implements NSObjectProtocol {
     return registerMethodCallback(this, selector, callback, types);
   }
 
-  /// Register callback function for selector in notification.
-  /// The method specified by selName must have one and only one argument (an instance of NSNotification).
-  bool registerNotificationCallback(Function callback, String selName) {
-    // TODO: check signature for callback and selName, we need only one argument.
-    Selector selector = Selector(selName);
-    String notificationEncoding = 'v24@0:8@16';
-    Pointer<Utf8> types = Utf8.toUtf8(notificationEncoding);
-    bool success = registerMethodCallback(this, selector, callback, types);
-    free(types);
-    return success;
-  }
-
   id(this._ptr) {
     if (_ptr != null && _ptr != nullptr) {
       List<id> list = _objects[_ptr.address];
