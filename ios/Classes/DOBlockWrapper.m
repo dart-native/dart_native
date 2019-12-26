@@ -284,6 +284,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     int64_t blockAddr = (int64_t)wrapper.block;
     void *userRet = ret;
     void **userArgs = args;
+    // TODO: handle struct return: should pass pointer to struct
     if (wrapper.hasStret) {
         // The first arg contains address of a pointer of returned struct.
         userRet = *((void **)args[0]);

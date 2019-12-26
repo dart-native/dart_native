@@ -101,6 +101,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     
     void *userRet = ret;
     void **userArgs = args;
+// TODO: handle struct return: should pass pointer to struct
 //    TODO: handle stret on x86
 //    if (hasStret) {
 //        // The first arg contains address of a pointer of returned struct.

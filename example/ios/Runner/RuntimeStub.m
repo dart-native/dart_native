@@ -214,19 +214,19 @@ API_AVAILABLE(ios(11.0)){
     return array;
 }
 
-typedef NSObject *(^BarBlock)(NSObject *a);
+typedef CGRect (^BarBlock)(NSObject *a);
 
 - (BarBlock)fooBlock:(BarBlock)block
 {
     NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        NSObject *result = block(arg);
+        CGRect result = block(arg);
         DDLogInfo(@"%s result: %@", __FUNCTION__, result);
     });
     
     BarBlock bar = ^(NSObject *a) {
         DDLogInfo(@"bar block arg: %@ %@", a, arg);
-        return a;
+        return CGRectMake(1, 2, 3, 4);
     };
     
     return bar;
