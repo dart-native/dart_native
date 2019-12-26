@@ -123,7 +123,7 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
       ptr.cast<Pointer<Utf8>>().value = object;
     } else if (object is Pointer) {
       Pointer<Void> tempPtr = object.cast<Void>();
-      ptr.value = (tempPtr);
+      ptr.value = tempPtr;
     }
   } else if (encoding.startsWith('{')) {
     // ptr is struct pointer
