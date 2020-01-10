@@ -5,6 +5,7 @@ Write native code using Dart. This package liberates you from native code and lo
 Still under development!!! 
 
 [![pub package](https://img.shields.io/pub/v/dart_native.svg)](https://pub.dev/packages/dart_native)
+[![Build Status](https://travis-ci.org/dart-native/dart_native.svg?branch=master)](https://travis-ci.org/dart-native/dart_native)
 
 ## Requirements
 
