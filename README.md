@@ -1,6 +1,6 @@
-# dart_objc
+# dart_native
 
-Write Objective-C Code using Dart. This package liberates you from native code and low performance channel.
+Write native code using Dart. This package liberates you from native code and low performance channel.
 
 Still under development!!! 
 
@@ -42,16 +42,14 @@ Objective-C code:
 @interface RuntimeStub ()
 @end
 @implementation RuntimeStub
-- (CGRect)fooCGRect:(CGRect)rect
-{
+- (CGRect)fooCGRect:(CGRect)rect {
     NSLog(@"%s %f, %f, %f, %f", __func__, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
     return (CGRect){1, 2, 3, 4};
 }
 
 typedef int(^BarBlock)(NSObject *a);
 
-- (BarBlock)fooBlock:(BarBlock)block
-{
+- (BarBlock)fooBlock:(BarBlock)block {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         int result = block([NSObject new]);
         NSLog(@"---result: %d", result);

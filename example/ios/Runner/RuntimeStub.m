@@ -29,8 +29,7 @@
 
 @implementation RuntimeStub
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
         _object = [NSObject new];
@@ -41,157 +40,131 @@
     return self;
 }
 
-- (BOOL)fooBOOL:(BOOL)a
-{
+- (BOOL)fooBOOL:(BOOL)a {
     DDLogInfo(@"%s arg: %d", __FUNCTION__, a);
     return a;
 }
 
-- (int8_t)fooInt8:(int8_t)a
-{
+- (int8_t)fooInt8:(int8_t)a {
     DDLogInfo(@"%s arg: %d", __FUNCTION__, a);
     return -123;
 }
 
-- (int16_t)fooInt16:(int16_t)a
-{
+- (int16_t)fooInt16:(int16_t)a {
     DDLogInfo(@"%s arg: %d", __FUNCTION__, a);
     return -12345;
 }
 
-- (int32_t)fooInt32:(int32_t)a
-{
+- (int32_t)fooInt32:(int32_t)a {
     DDLogInfo(@"%s arg: %d", __FUNCTION__, a);
     return -123456;
 }
 
-- (int64_t)fooInt64:(int64_t)a
-{
+- (int64_t)fooInt64:(int64_t)a {
     DDLogInfo(@"%s arg: %lld", __FUNCTION__, a);
     return -123456;
 }
 
-- (uint8_t)fooUInt8:(uint8_t)a
-{
+- (uint8_t)fooUInt8:(uint8_t)a {
     DDLogInfo(@"%s arg: %d", __FUNCTION__, a);
     return 123;
 }
 
-- (uint16_t)fooUInt16:(uint16_t)a
-{
+- (uint16_t)fooUInt16:(uint16_t)a {
     DDLogInfo(@"%s arg: %d", __FUNCTION__, a);
     return 12345;
 }
 
-- (uint32_t)fooUInt32:(uint32_t)a
-{
+- (uint32_t)fooUInt32:(uint32_t)a {
     DDLogInfo(@"%s arg: %d", __FUNCTION__, a);
     return 123456;
 }
 
-- (uint64_t)fooUInt64:(uint64_t)a
-{
+- (uint64_t)fooUInt64:(uint64_t)a {
     DDLogInfo(@"%s arg: %llu", __FUNCTION__, a);
     return 123456;
 }
 
-- (float)fooFloat:(float)a
-{
+- (float)fooFloat:(float)a {
     DDLogInfo(@"%s arg: %f", __FUNCTION__, a);
     return 123.456;
 }
 
-- (double)fooDouble:(double)a
-{
+- (double)fooDouble:(double)a {
     DDLogInfo(@"%s arg: %f", __FUNCTION__, a);
     return 123.456;
 }
 
-- (char)fooChar:(char)a
-{
+- (char)fooChar:(char)a {
     DDLogInfo(@"%s arg: %c", __FUNCTION__, a);
     return a;
 }
 
-- (unsigned char)fooUChar:(unsigned char)a
-{
+- (unsigned char)fooUChar:(unsigned char)a {
     DDLogInfo(@"%s arg: %c", __FUNCTION__, a);
     return a;
 }
 
-- (char *)fooCharPtr:(char *)a
-{
+- (char *)fooCharPtr:(char *)a {
     DDLogInfo(@"%s arg: %s", __FUNCTION__, a);
     return a;
 }
 
-- (Class)fooClass:(Class)a
-{
+- (Class)fooClass:(Class)a {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, a);
     return [RuntimeStub class];
 }
 
-- (SEL)fooSEL:(SEL)a
-{
+- (SEL)fooSEL:(SEL)a {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, NSStringFromSelector(a));
     return _cmd;
 }
 
-- (id)fooObject:(id)a
-{
+- (id)fooObject:(id)a {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, a);
     return self.object;
 }
 
-- (void *)fooPointer:(void *)a
-{
+- (void *)fooPointer:(void *)a {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, a);
     return (__bridge void *)(self);
 }
 
-- (void)fooVoid
-{
+- (void)fooVoid {
     DDLogInfo(@"%s called", __FUNCTION__);
 }
 
-- (CGSize)fooCGSize:(CGSize)size
-{
+- (CGSize)fooCGSize:(CGSize)size {
     DDLogInfo(@"%s %f, %f", __FUNCTION__, size.width, size.height);
     return (CGSize){1.2345, 2.3456};
 }
 
-- (CGPoint)fooCGPoint:(CGPoint)point
-{
+- (CGPoint)fooCGPoint:(CGPoint)point {
     DDLogInfo(@"%s %f, %f", __FUNCTION__, point.x, point.y);
     return (CGPoint){1.2345, 2.3456};
 }
 
-- (CGVector)fooCGVector:(CGVector)vector
-{
+- (CGVector)fooCGVector:(CGVector)vector {
     DDLogInfo(@"%s %f, %f", __FUNCTION__, vector.dx, vector.dy);
     return (CGVector){1.2345, 2.3456};
 }
 
-- (CGRect)fooCGRect:(CGRect)rect
-{
+- (CGRect)fooCGRect:(CGRect)rect {
     DDLogInfo(@"%s %f, %f, %f, %f", __FUNCTION__, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
     return (CGRect){1, 2, 3, 4};
 }
 
-- (NSRange)fooNSRange:(NSRange)range
-{
+- (NSRange)fooNSRange:(NSRange)range {
     DDLogInfo(@"%s %lu, %lu", __FUNCTION__, (unsigned long)range.location, (unsigned long)range.length);
     return (NSRange){12345, 23456};
 }
 
-- (UIOffset)fooUIOffset:(UIOffset)offset
-{
+- (UIOffset)fooUIOffset:(UIOffset)offset {
     DDLogInfo(@"%s %f, %f", __FUNCTION__, offset.horizontal, offset.vertical);
     return (UIOffset){1.2345, 2.3456};
 }
 
-- (UIEdgeInsets)fooUIEdgeInsets:(UIEdgeInsets)insets
-{
+- (UIEdgeInsets)fooUIEdgeInsets:(UIEdgeInsets)insets {
     DDLogInfo(@"%s %f, %f, %f, %f", __FUNCTION__, insets.top, insets.left, insets.bottom, insets.right);
     return (UIEdgeInsets){1, 2, 3, 4};
 }
@@ -202,38 +175,34 @@ API_AVAILABLE(ios(11.0)){
     return (NSDirectionalEdgeInsets){1, 2, 3, 4};
 }
 
-- (CGAffineTransform)fooCGAffineTransform:(CGAffineTransform)transform
-{
+- (CGAffineTransform)fooCGAffineTransform:(CGAffineTransform)transform {
     DDLogInfo(@"%s %f, %f, %f, %f, %f, %f", __FUNCTION__, transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
     return (CGAffineTransform){1.1, 2.2, 3.3, 4.4, 5.5, 6.6};
 }
 
-- (NSArray *)fooNSArray:(NSArray *)array
-{
+- (NSArray *)fooNSArray:(NSArray *)array {
     DDLogInfo(@"%s %@", __FUNCTION__, array.description);
     return array;
 }
 
-typedef CGRect (^BarBlock)(NSObject *a);
+typedef NSObject *(^BarBlock)(NSObject *a);
 
-- (BarBlock)fooBlock:(BarBlock)block
-{
+- (BarBlock)fooBlock:(BarBlock)block {
     NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        CGRect result = block(arg);
+        NSObject *result = block(arg);
         DDLogInfo(@"%s result: %@", __FUNCTION__, result);
     });
     
     BarBlock bar = ^(NSObject *a) {
         DDLogInfo(@"bar block arg: %@ %@", a, arg);
-        return CGRectMake(1, 2, 3, 4);
+        return a;
     };
     
     return bar;
 }
 
-- (void)fooDelegate:(id<StubDelegate>)delegate
-{
+- (void)fooDelegate:(id<StubDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         NSObject *result = [delegate callback];
@@ -241,8 +210,7 @@ typedef CGRect (^BarBlock)(NSObject *a);
     });
 }
 
-- (NSString *)fooNSString:(NSString *)str
-{
+- (NSString *)fooNSString:(NSString *)str {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
     return @"test nsstring";
 }

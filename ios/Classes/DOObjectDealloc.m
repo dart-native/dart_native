@@ -7,7 +7,7 @@
 
 #import "DOObjectDealloc.h"
 #import <objc/runtime.h>
-#import "DartObjcPlugin.h"
+#import "DartNativePlugin.h"
 
 #if TARGET_OS_OSX && __x86_64__
     // 64-bit Mac - tag bit is LSB
@@ -63,7 +63,7 @@ _objc_isTaggedPointer(const void *ptr)
 - (void)dealloc
 {
     // TODO: replace with ffi callback.
-    [DartObjcPlugin.channel invokeMethod:@"object_dealloc" arguments:@[@(_hostAddress)]];
+    [DartNativePlugin.channel invokeMethod:@"object_dealloc" arguments:@[@(_hostAddress)]];
 }
 
 @end

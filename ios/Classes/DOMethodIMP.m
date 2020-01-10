@@ -7,7 +7,7 @@
 
 #import "DOMethodIMP.h"
 #import "DOFFIHelper.h"
-#import "DartObjcPlugin.h"
+#import "DartNativePlugin.h"
 #import "native_runtime.h"
 #import "DOInvocation.h"
 #import "NSThread+DartObjC.h"
@@ -97,7 +97,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DOMethodIMP *methodIMP = (__bridge DOMethodIMP *)userdata;
-    FlutterMethodChannel *channel = DartObjcPlugin.channel;
+    FlutterMethodChannel *channel = DartNativePlugin.channel;
     
     void *userRet = ret;
     void **userArgs = args;

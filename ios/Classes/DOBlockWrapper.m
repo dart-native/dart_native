@@ -8,7 +8,7 @@
 #import "DOBlockWrapper.h"
 #import "ffi.h"
 #import <Flutter/Flutter.h>
-#import "DartObjcPlugin.h"
+#import "DartNativePlugin.h"
 #import "DOFFIHelper.h"
 #import "DOInvocation.h"
 #import <objc/runtime.h>
@@ -143,7 +143,7 @@ void dispose_helper(struct _DOBlock *src)
     free(_descriptor);
     free(_typeEncodings);
     // TODO: replace with ffi callback.
-    [DartObjcPlugin.channel invokeMethod:@"object_dealloc" arguments:@[@([self blockAddress])]];
+    [DartNativePlugin.channel invokeMethod:@"object_dealloc" arguments:@[@([self blockAddress])]];
 }
 
 - (void)initBlock
@@ -280,7 +280,7 @@ void dispose_helper(struct _DOBlock *src)
 
 static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DOBlockWrapper *wrapper = (__bridge DOBlockWrapper *)userdata;
-    FlutterMethodChannel *channel = DartObjcPlugin.channel;
+    FlutterMethodChannel *channel = DartNativePlugin.channel;
     int64_t blockAddr = (int64_t)wrapper.block;
     void *userRet = ret;
     void **userArgs = args;

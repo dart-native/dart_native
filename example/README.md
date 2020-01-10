@@ -1,6 +1,6 @@
-# dart_objc_example
+# dart_native_example
 
-Demonstrates how to use the dart_objc plugin.
+Demonstrates how to use the dart_native plugin.
 
 ## Getting Started
 

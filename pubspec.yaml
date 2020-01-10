@@ -1,7 +1,7 @@
-name: dart_objc
-description: Write Objective-C Code using Dart. This package liberates you from native code and low performance channel.
-version: 0.1.8
-homepage: https://github.com/yulingtianxia/dart_objc
+name: dart_native
+description: Write native code using Dart. This package liberates you from native code and low performance channel.
+version: 0.1.9
+homepage: https://github.com/dart-native
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -25,8 +25,8 @@ flutter:
   # be modified. They are used by the tooling to maintain consistency when
   # adding or updating assets for this project.
   plugin:
-    androidPackage: com.yulingtianxia.dartobjc.dart_objc
-    pluginClass: DartObjcPlugin
+    androidPackage: com.dartnative.dart_native
+    pluginClass: DartNativePlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
