@@ -4,7 +4,7 @@ Write native code using Dart. This package liberates you from native code and lo
 
 Still under development!!! 
 
-[![pub package](https://img.shields.io/pub/v/dart_objc.svg)](https://pub.dev/packages/dart_objc)
+[![pub package](https://img.shields.io/pub/v/dart_native.svg)](https://pub.dev/packages/dart_native)
 
 ## Requirements
 

@@ -1,3 +1,7 @@
+## 0.1.9
+
+* Change plugin name to "dart_native".
+
 ## 0.1.8
 
 * Dart function can be observer for `NSNotification`.
