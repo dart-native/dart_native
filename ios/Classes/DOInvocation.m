@@ -23,8 +23,7 @@
 
 @synthesize argumentsRetained = _argumentsRetained;
 
-- (instancetype)initWithSignature:(NSMethodSignature *)signature hasStret:(BOOL)stret
-{
+- (instancetype)initWithSignature:(NSMethodSignature *)signature hasStret:(BOOL)stret {
     self = [super init];
     if (self) {
         _methodSignature = signature;
@@ -41,8 +40,7 @@
 
 #pragma mark - getter&setter
 
-- (BOOL)isArgumentsRetained
-{
+- (BOOL)isArgumentsRetained {
     __block BOOL temp;
     dispatch_sync(self.argumentsRetainedQueue, ^{
         temp = self->_argumentsRetained;
@@ -50,8 +48,7 @@
     return temp;
 }
 
-- (void)setArgumentsRetained:(BOOL)argumentsRetained
-{
+- (void)setArgumentsRetained:(BOOL)argumentsRetained {
     dispatch_barrier_async(self.argumentsRetainedQueue, ^{
         self->_argumentsRetained = argumentsRetained;
     });
@@ -59,8 +56,7 @@
 
 #pragma mark - Public Method
 
-- (void)retainArguments
-{
+- (void)retainArguments {
     if (!self.isArgumentsRetained) {
         self.dataArgs = [NSMutableData dataWithLength:self.numberOfRealArgs * sizeof(void *)];
         self.retainMap = [NSMutableDictionary dictionaryWithCapacity:self.numberOfRealArgs + 1];
@@ -96,8 +92,7 @@
     }
 }
 
-- (void)getReturnValue:(void *)retLoc
-{
+- (void)getReturnValue:(void *)retLoc {
     if (!retLoc || !self.retValue) {
         return;
     }
@@ -105,8 +100,7 @@
     memcpy(retLoc, self.retValue, retSize);
 }
 
-- (void)setReturnValue:(void *)retLoc
-{
+- (void)setReturnValue:(void *)retLoc {
     if (!retLoc || !self.retValue) {
         return;
     }
@@ -117,8 +111,7 @@
     memcpy(self.retValue, retLoc, retSize);
 }
 
-- (void)getArgument:(void *)argumentLocation atIndex:(NSInteger)idx
-{
+- (void)getArgument:(void *)argumentLocation atIndex:(NSInteger)idx {
     if (!argumentLocation || !self.args || !self.args[idx]) {
         return;
     }
@@ -129,8 +122,7 @@
     memcpy(argumentLocation, arg, argSize);
 }
 
-- (void)setArgument:(void *)argumentLocation atIndex:(NSInteger)idx
-{
+- (void)setArgument:(void *)argumentLocation atIndex:(NSInteger)idx {
     if (!argumentLocation || !self.args || !self.args[idx]) {
         return;
     }
@@ -146,8 +138,7 @@
 
 #pragma mark - Private Helper
 
-- (void *)_copyPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key
-{
+- (void *)_copyPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key {
     NSUInteger pointerSize;
     NSGetSizeAndAlignment(encode, &pointerSize, NULL);
     NSMutableData *pointerData = [NSMutableData dataWithLength:pointerSize];
@@ -157,8 +148,7 @@
     return pointerBuf;
 }
 
-- (void)_retainPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key
-{
+- (void)_retainPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key {
     void *p = *pointer;
     if (!p) {
         return;

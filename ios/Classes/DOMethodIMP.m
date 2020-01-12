@@ -31,8 +31,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @implementation DOMethodIMP
 
-- (instancetype)initWithTypeEncoding:(const char *)typeEncoding callback:(void *)callback
-{
+- (instancetype)initWithTypeEncoding:(const char *)typeEncoding callback:(void *)callback {
     self = [super init];
     if (self) {
         _helper = [DOFFIHelper new];
@@ -44,14 +43,12 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     free(_typeEncoding);
     ffi_closure_free(_closure);
 }
 
-- (IMP)imp
-{
+- (IMP)imp {
     if (!_methodIMP) {
         NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:self.typeEncoding];
         if (numberOfArguments == -1) { // Unknown encode.
@@ -69,8 +66,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     return _methodIMP;
 }
 
-- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str
-{
+- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str {
     int argCount;
     ffi_type **argTypes;
     ffi_type *returnType;

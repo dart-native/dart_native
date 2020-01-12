@@ -32,8 +32,7 @@ typedef void(*DOBlockCopyFunction)(void *, const void *);
 typedef void(*DOBlockDisposeFunction)(const void *);
 typedef void(*DOBlockInvokeFunction)(void *, ...);
 
-struct _DOBlockDescriptor1
-{
+struct _DOBlockDescriptor1 {
     uintptr_t reserved;
     uintptr_t size;
 };
@@ -55,8 +54,7 @@ struct _DOBlockDescriptor {
     struct _DOBlockDescriptor3 descriptor3;
 };
 
-struct _DOBlock
-{
+struct _DOBlock {
     void *isa;
     volatile int32_t flags; // contains ref count
     int32_t reserved;
@@ -65,8 +63,7 @@ struct _DOBlock
     void *wrapper;
 };
 
-struct _DOBlockDescriptor3 * _do_Block_descriptor_3(struct _DOBlock *aBlock)
-{
+struct _DOBlockDescriptor3 * _do_Block_descriptor_3(struct _DOBlock *aBlock) {
     if (! (aBlock->flags & BLOCK_HAS_SIGNATURE)) return nil;
     uint8_t *desc = (uint8_t *)aBlock->descriptor;
     desc += sizeof(struct _DOBlockDescriptor1);
@@ -76,27 +73,23 @@ struct _DOBlockDescriptor3 * _do_Block_descriptor_3(struct _DOBlock *aBlock)
     return (struct _DOBlockDescriptor3 *)desc;
 }
 
-const char *DOBlockTypeEncodeString(id blockObj)
-{
+const char *DOBlockTypeEncodeString(id blockObj) {
     struct _DOBlock *block = (__bridge void *)blockObj;
     return _do_Block_descriptor_3(block)->signature;
 }
 
 static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
-static NSString *trim(NSString *string)
-{
+static NSString *trim(NSString *string) {
     return [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
-void copy_helper(struct _DOBlock *dst, struct _DOBlock *src)
-{
+void copy_helper(struct _DOBlock *dst, struct _DOBlock *src) {
     // do not copy anything is this funcion! just retain if need.
     CFRetain(dst->wrapper);
 }
 
-void dispose_helper(struct _DOBlock *src)
-{
+void dispose_helper(struct _DOBlock *src) {
     CFRelease(src->wrapper);
 }
 
@@ -125,8 +118,7 @@ void dispose_helper(struct _DOBlock *src)
 
 @implementation DOBlockWrapper
 
-- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback
-{
+- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback {
     self = [super init];
     if (self) {
         _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
@@ -137,8 +129,7 @@ void dispose_helper(struct _DOBlock *src)
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     ffi_closure_free(_closure);
     free(_descriptor);
     free(_typeEncodings);
@@ -146,8 +137,7 @@ void dispose_helper(struct _DOBlock *src)
     [DartNativePlugin.channel invokeMethod:@"object_dealloc" arguments:@[@([self blockAddress])]];
 }
 
-- (void)initBlock
-{
+- (void)initBlock {
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
     // Check block encoding types valid.
@@ -193,21 +183,18 @@ void dispose_helper(struct _DOBlock *src)
     #pragma clang diagnostic pop
 }
 
-- (int64_t)blockAddress
-{
+- (int64_t)blockAddress {
     if (!_blockAddress) {
         _blockAddress = (int64_t)self.block;
     }
     return _blockAddress;
 }
 
-- (void)invokeWithArgs:(void **)args retValue:(void *)retValue
-{
+- (void)invokeWithArgs:(void **)args retValue:(void *)retValue {
     ffi_call(&_cif, _blockIMP, retValue, args);
 }
 
-- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str flags:(int32_t)flags
-{
+- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str flags:(int32_t)flags {
     int argCount;
     ffi_type **argTypes;
     ffi_type *returnType;
@@ -238,8 +225,7 @@ void dispose_helper(struct _DOBlock *src)
     return argCount;
 }
 
-- (NSString *)_parseTypeNames:(NSString *)typeNames
-{
+- (NSString *)_parseTypeNames:(NSString *)typeNames {
     NSMutableString *encodeStr = [[NSMutableString alloc] init];
     NSArray *typeArr = [typeNames componentsSeparatedByString:@","];
     if (!_typeEncodings) {

@@ -9,8 +9,7 @@
 
 @implementation DOPointerWrapper
 
-- (void)dealloc
-{
+- (void)dealloc {
     free(_pointer);
 }
 

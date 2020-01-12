@@ -209,8 +209,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
 
 @implementation DOFFIHelper
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
         _allocations = [[NSMutableArray alloc] init];
@@ -218,8 +217,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
     return self;
 }
 
-- (ffi_type *)ffiTypeForStructEncode:(const char *)str
-{
+- (ffi_type *)ffiTypeForStructEncode:(const char *)str {
     NSUInteger size, align;
     long length;
     DOSizeAndAlignment(str, &size, &align, &length);
@@ -241,8 +239,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
     return structType;
 }
 
-- (ffi_type *)ffiTypeForEncode:(const char *)str
-{
+- (ffi_type *)ffiTypeForEncode:(const char *)str {
     #define SINT(type) do { \
         if (str[0] == @encode(type)[0]) { \
             if (sizeof(type) == 1) { \
@@ -330,19 +327,16 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
     return nil;
 }
 
-- (ffi_type **)argsWithEncodeString:(const char *)str getCount:(int *)outCount
-{
+- (ffi_type **)argsWithEncodeString:(const char *)str getCount:(int *)outCount {
     // 第一个是返回值，需要排除
     return [self typesWithEncodeString:str getCount:outCount startIndex:1];
 }
 
-- (ffi_type **)typesWithEncodeString:(const char *)str getCount:(int *)outCount startIndex:(int)start
-{
+- (ffi_type **)typesWithEncodeString:(const char *)str getCount:(int *)outCount startIndex:(int)start {
     return [self typesWithEncodeString:str getCount:outCount startIndex:start nullAtEnd:NO];
 }
 
-- (ffi_type **)typesWithEncodeString:(const char *)str getCount:(int *)outCount startIndex:(int)start nullAtEnd:(BOOL)nullAtEnd
-{
+- (ffi_type **)typesWithEncodeString:(const char *)str getCount:(int *)outCount startIndex:(int)start nullAtEnd:(BOOL)nullAtEnd {
     int argCount = DOTypeCount(str) - start;
     ffi_type **argTypes = [self _allocate:(argCount + (nullAtEnd ? 1 : 0)) * sizeof(*argTypes)];
     
@@ -379,8 +373,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
 
 #pragma mark - Private Method
 
-- (void *)_allocate:(size_t)howmuch
-{
+- (void *)_allocate:(size_t)howmuch {
     NSMutableData *data = [NSMutableData dataWithLength:howmuch];
     [self.allocations addObject:data];
     return data.mutableBytes;

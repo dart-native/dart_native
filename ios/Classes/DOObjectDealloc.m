@@ -24,8 +24,7 @@
 #endif
 
 static inline bool
-_objc_isTaggedPointer(const void *ptr)
-{
+_objc_isTaggedPointer(const void *ptr) {
     return ((intptr_t)ptr & _OBJC_TAG_MASK) == _OBJC_TAG_MASK;
 }
 
@@ -38,8 +37,7 @@ _objc_isTaggedPointer(const void *ptr)
 
 @implementation DOObjectDealloc
 
-+ (void)attachHost:(NSObject *)host
-{
++ (void)attachHost:(NSObject *)host {
     if (objc_getAssociatedObject(host, @selector(initWithHost:))) {
         return;
     }
@@ -49,8 +47,7 @@ _objc_isTaggedPointer(const void *ptr)
     }
 }
 
-- (instancetype)initWithHost:(NSObject *)host
-{
+- (instancetype)initWithHost:(NSObject *)host {
     self = [super init];
     if (self) {
         _host = host;
@@ -60,8 +57,7 @@ _objc_isTaggedPointer(const void *ptr)
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     // TODO: replace with ffi callback.
     [DartNativePlugin.channel invokeMethod:@"object_dealloc" arguments:@[@(_hostAddress)]];
 }

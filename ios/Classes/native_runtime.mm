@@ -72,6 +72,58 @@ native_get_class(const char *className, Class baseClass) {
 }
 
 void *
+_copyStruct2heap(NSMethodSignature *signature, void *structOnStack) {
+    const char *temp = signature.methodReturnType;
+    int index = 0;
+    while (temp && *temp && *temp != '=') {
+        temp++;
+        index++;
+    }
+    NSString *structTypeEncoding = [NSString stringWithUTF8String:signature.methodReturnType];
+    NSString *structName = [structTypeEncoding substringWithRange:NSMakeRange(1, index - 1)];
+    #define HandleStruct(struct) \
+    if ([structName isEqualToString:@#struct]) { \
+        void *structAddr = malloc(sizeof(struct)); \
+        memcpy(structAddr, structOnStack, sizeof(struct)); \
+        return structAddr; \
+    }
+    HandleStruct(CGSize)
+    HandleStruct(CGPoint)
+    HandleStruct(CGVector)
+    HandleStruct(CGRect)
+    HandleStruct(_NSRange)
+    HandleStruct(UIOffset);
+    HandleStruct(UIEdgeInsets);
+    if (@available(iOS 11.0, *)) {
+        HandleStruct(NSDirectionalEdgeInsets);
+    }
+    HandleStruct(CGAffineTransform);
+    NSCAssert(NO, @"Can't handle struct type:%@", structName);
+    return NULL;
+}
+
+void
+_fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset) {
+    for (NSUInteger i = offset; i < signature.numberOfArguments; i++) {
+        const char *argType = [signature getArgumentTypeAtIndex:i];
+        NSUInteger argsIndex = i - offset;
+        if (argType[0] == '*') {
+            // Copy CString to NSTaggedPointerString and transfer it's lifecycle to ARC. Orginal pointer will be freed after function returning.
+            const char *temp = [NSString stringWithUTF8String:(const char *)args[argsIndex]].UTF8String;
+            if (temp) {
+                args[argsIndex] = (void *)temp;
+            }
+        }
+        if (argType[0] == '{') {
+            // Already put struct in pointer on Dart side.
+            [invocation setArgument:args[argsIndex] atIndex:i];
+        } else {
+            [invocation setArgument:&args[argsIndex] atIndex:i];
+        }
+    }
+}
+
+void *
 native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, BOOL waitUntilDone) {
     if (!object || !selector || !signature) {
         return NULL;
@@ -79,22 +131,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = object;
     invocation.selector = selector;
-    for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
-        const char *argType = [signature getArgumentTypeAtIndex:i];
-        if (argType[0] == '*') {
-            // Copy CString to NSTaggedPointerString and transfer it's lifecycle to ARC. Orginal pointer will be freed after function returning.
-            const char *temp = [NSString stringWithUTF8String:(const char *)args[i - 2]].UTF8String;
-            if (temp) {
-                args[i - 2] = (void *)temp;
-            }
-        }
-        if (argType[0] == '{') {
-            // Already put struct in pointer on Dart side.
-            [invocation setArgument:args[i - 2] atIndex:i];
-        } else {
-            [invocation setArgument:&args[i - 2] atIndex:i];
-        }
-    }
+    _fillArgsToInvocation(signature, args, invocation, 2);
     if (queue != NULL) {
         // Return immediately.
         if (!waitUntilDone) {
@@ -121,32 +158,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
         if (result && returnType == '@') {
             [DOObjectDealloc attachHost:(__bridge id)result];
         } else if (returnType == '{') {
-            const char *temp = signature.methodReturnType;
-            int index = 0;
-            while (temp && *temp && *temp != '=') {
-                temp++;
-                index++;
-            }
-            NSString *structTypeEncoding = [NSString stringWithUTF8String:signature.methodReturnType];
-            NSString *structName = [structTypeEncoding substringWithRange:NSMakeRange(1, index - 1)];
-            #define HandleStruct(struct) \
-            if ([structName isEqualToString:@#struct]) { \
-                void *structAddr = malloc(sizeof(struct)); \
-                memcpy(structAddr, &result, sizeof(struct)); \
-                return structAddr; \
-            }
-            HandleStruct(CGSize)
-            HandleStruct(CGPoint)
-            HandleStruct(CGVector)
-            HandleStruct(CGRect)
-            HandleStruct(_NSRange)
-            HandleStruct(UIOffset);
-            HandleStruct(UIEdgeInsets);
-            if (@available(iOS 11.0, *)) {
-                HandleStruct(NSDirectionalEdgeInsets);
-            }
-            HandleStruct(CGAffineTransform);
-            NSCAssert(NO, @"Can't handle struct type:%@", structName);
+            return _copyStruct2heap(signature, &result);
         }
     }
     return result;
@@ -163,28 +175,16 @@ native_block_invoke(void *block, void **args) {
     const char *typeString = DOBlockTypeEncodeString((__bridge id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    for (NSUInteger i = 1; i < signature.numberOfArguments; i++) {
-        const char *argType = [signature getArgumentTypeAtIndex:i];
-        if (argType[0] == '*') {
-            // Copy CString to NSTaggedPointerString and transfer it's lifecycle to ARC. Orginal pointer will be freed after function returning.
-            const char *temp = [NSString stringWithUTF8String:(const char *)args[i - 1]].UTF8String;
-            if (temp) {
-                args[i - 1] = (void *)temp;
-            }
-        }
-        if (argType[0] == '{') {
-            // Already put struct in pointer on Dart side.
-            [invocation setArgument:args[i - 1] atIndex:i];
-        } else {
-            [invocation setArgument:&args[i - 1] atIndex:i];
-        }
-    }
+    _fillArgsToInvocation(signature, args, invocation, 1);
     [invocation invokeWithTarget:(__bridge id)block];
     void *result = NULL;
     if (signature.methodReturnLength > 0) {
         [invocation getReturnValue:&result];
-        if (result && signature.methodReturnType[0] == '@') {
+        const char returnType = signature.methodReturnType[0];
+        if (result && returnType == '@') {
             [DOObjectDealloc attachHost:(__bridge id)result];
+        } else if (returnType == '{') {
+            return _copyStruct2heap(signature, &result);
         }
     }
     return result;
@@ -322,8 +322,7 @@ native_types_encoding(const char *str, int *count, int startIndex) {
 }
 
 const char *
-native_struct_encoding(const char *encoding)
-{
+native_struct_encoding(const char *encoding) {
     NSUInteger size, align;
     long length;
     DOSizeAndAlignment(encoding, &size, &align, &length);
