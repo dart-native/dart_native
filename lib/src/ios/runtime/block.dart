@@ -130,12 +130,17 @@ class Block extends id {
 Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =
     Pointer.fromFunction(_syncCallback);
 
-_callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr, Pointer<Pointer<Void>> retPtrPtr, int argCount, bool stret) {
+_callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
+    Pointer<Pointer<Void>> retPtrPtr, int argCount, bool stret) {
   // If stret, the first arg contains address of a pointer of returned struct. Other args move backwards.
   // This is the index for first argument of block in argsPtrPtrPtr list.
   int argStartIndex = stret ? 2 : 1;
-  
-  Pointer<Void> blockPtr = argsPtrPtrPtr.elementAt(argStartIndex - 1).value.cast<Pointer<Void>>().value;
+
+  Pointer<Void> blockPtr = argsPtrPtrPtr
+      .elementAt(argStartIndex - 1)
+      .value
+      .cast<Pointer<Void>>()
+      .value;
   Block block = _blockForAddress[blockPtr.address];
   if (block == null) {
     return null;
@@ -167,7 +172,8 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr, Pointer<Pointer<Void>> 
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
-      PointerWrapper wrapper = storeValueToPointer(result, realRetPtrPtr, encoding);
+      PointerWrapper wrapper =
+          storeValueToPointer(result, realRetPtrPtr, encoding);
       if (wrapper != null) {
         storeValueToPointer(wrapper, retPtrPtr, 'object');
         result = wrapper;
@@ -179,11 +185,8 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr, Pointer<Pointer<Void>> 
   }
 }
 
-void _syncCallback(
-    Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr,
-    int argCount,
-    int stret) {
+void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
+    Pointer<Pointer<Void>> retPtr, int argCount, int stret) {
   _callback(argsPtrPtr, retPtr, argCount, stret != 0);
 }
 

@@ -13,6 +13,7 @@
 #import "DOInvocation.h"
 #import <objc/runtime.h>
 #import "NSThread+DartObjC.h"
+#import "DOPointerWrapper.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -140,10 +141,9 @@ void dispose_helper(struct _DOBlock *src) {
 - (void)initBlock {
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
-    // Struct return value MUST be put into pointer.(On heap)
-    if (typeString[0] == '{') {
+    // Struct return value on x86(32&64) MUST be put into pointer.(On heap)
+    if (typeString[0] == '{' && (TARGET_CPU_X86 || TARGET_CPU_X86_64)) {
         flags |= BLOCK_HAS_STRET;
-        flags |= 0xFFFFFFFFE0000000;
     }
     // Check block encoding types valid.
     NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:typeString flags:flags];
@@ -173,7 +173,7 @@ void dispose_helper(struct _DOBlock *src) {
     
     _descriptor = malloc(sizeof(struct _DOBlockDescriptor));
     memcpy(_descriptor, &descriptor, sizeof(struct _DOBlockDescriptor));
-//    TODO: handle x86 stret
+
     struct _DOBlock simulateBlock = {
         &_NSConcreteStackBlock,
         flags,
@@ -278,7 +278,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     
     void *userRet = ret;
     void **userArgs = args;
-    // TODO: handle struct return: should pass pointer to struct
+    // handle struct return: should pass pointer to struct
     if (wrapper.hasStret) {
         // The first arg contains address of a pointer of returned struct.
         userRet = *((void **)args[0]);
@@ -303,7 +303,9 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         
         int64_t argsAddr = (int64_t)(invocation.realArgs);
         int64_t retAddr = (int64_t)(invocation.realRetValue);
+        
         [invocation retainArguments];
+        
         dispatch_semaphore_t sema;
         if (!NSThread.isMainThread) {
             sema = dispatch_semaphore_create(0);
@@ -315,6 +317,13 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         }
         dispatch_async(queue, ^{
             [channel invokeMethod:@"block_invoke" arguments:@[@(argsAddr), @(retAddr), @(numberOfArguments), @(wrapper.hasStret)] result:^(id  _Nullable result) {
+                if (wrapper.hasStret) {
+                    // synchronize stret value from first argument.
+                    [invocation setReturnValue:*(void **)args[0]];
+                } else if ([wrapper.typeString hasPrefix:@"{"]) {
+                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+                    memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+                }
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);
