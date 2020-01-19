@@ -23,9 +23,13 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
 
   // stub.fooDelegate(delegate);
 
-  Block block = stub.fooBlock(_testFunc);
-  // CGRect result = block.invoke([stub]);
-  // print(result);
+  // Block block = stub.fooBlock(_blockFunc);
+  // NSObject resultObj = block.invoke([stub]);
+  // print('fooBlock result:$resultObj');
+
+  Block blockStret = stub.fooStretBlock(_blockStretFunc);
+  // CGRect resultStret = blockStret.invoke([stub]);
+  // print('fooStretBlock result:$resultStret');
 
   // CGSize size = stub.fooCGSize(CGSize(2, 1));
   // print(size);
@@ -73,7 +77,12 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   // });
 }
 
-Function _testFunc = (NSObject a) {
+Function _blockFunc = (NSObject a) {
   print('hello block! ${a.toString()}');
+  return a;
+};
+
+Function _blockStretFunc = (NSObject a) {
+  print('hello block stret! ${a.toString()}');
   return CGRect(12, 0, 12, 0);
 };
