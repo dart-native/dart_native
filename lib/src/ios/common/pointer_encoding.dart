@@ -8,8 +8,19 @@ import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:ffi/ffi.dart';
 
+class PointerWrapper extends NSObject {
+  PointerWrapper() : super(Class('DOPointerWrapper'));
+
+  Pointer<Void> get value => perform(Selector('pointer'));
+  set value(Pointer<Void> ptr) {
+    perform(Selector('setPointer:'), args: [ptr]);
+  }
+}
+
+// TODO: change encoding hard code string to const var.
+
 /// return complete closure to clear memory etc.
-storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
+dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     [bool auto = true]) {
   if (object == null && encoding == 'void') {
     return;
@@ -82,8 +93,7 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-      NSObject(Class('DOPointerWrapper'))
-          .perform(Selector('setPointer:'), args: [charPtr]);
+      PointerWrapper().value = charPtr.cast<Void>();
       ptr.cast<Pointer<Utf8>>().value = charPtr;
     } else if (encoding == 'object') {
       NSString string = NSString(object);
@@ -114,7 +124,7 @@ storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     }
   } else if (encoding.startsWith('{')) {
     // ptr is struct pointer
-    storeStructToPointer(object, ptr);
+    return storeStructToPointer(ptr, object);
   } else {
     throw '$object not match type $encoding!';
   }
@@ -216,13 +226,15 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
   return result;
 }
 
-storeStructToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
+PointerWrapper storeStructToPointer(Pointer<Pointer<Void>> ptr, dynamic object) {
   if (object is NativeStruct) {
     Pointer<Void> result = object.addressOf.cast<Void>();
-    NSObject(Class('DOPointerWrapper'))
-        .perform(Selector('setPointer:'), args: [result]);
+    PointerWrapper wrapper = PointerWrapper();
+    wrapper.value = result;
     ptr.value = result;
+    return wrapper;
   }
+  return null;
 }
 
 String structNameForEncoding(String encoding) {

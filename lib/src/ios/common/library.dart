@@ -6,7 +6,7 @@ DynamicLibrary get runtimeLib {
     return _runtimeLib;
   }
   try {
-    _runtimeLib = DynamicLibrary.open('dart_objc.framework/dart_objc');
+    _runtimeLib = DynamicLibrary.open('dart_native.framework/dart_native');
   } catch (e) {
     // static linking
     _runtimeLib = nativeDylib;

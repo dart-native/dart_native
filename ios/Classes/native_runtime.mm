@@ -32,7 +32,7 @@ native_signature_encoding_list(NSMethodSignature *signature, const char **typeEn
 BOOL
 native_add_method(id target, SEL selector, char *types, void *callback) {
     Class cls = object_getClass(target);
-    NSString *selName = [NSString stringWithFormat:@"dart_objc_%@", NSStringFromSelector(selector)];
+    NSString *selName = [NSString stringWithFormat:@"dart_native_%@", NSStringFromSelector(selector)];
     SEL key = NSSelectorFromString(selName);
     DOMethodIMP *imp = objc_getAssociatedObject(cls, key);
     // Existing implemention can't be replaced. Flutter hot-reload must also be well handled.
@@ -192,7 +192,7 @@ native_block_invoke(void *block, void **args) {
 
 const char *
 native_type_encoding(const char *str) {
-    if (!str) {
+    if (!str || strlen(str) == 0) {
         return NULL;
     }
     // Use pointer as key of encoding string cache (on dart side).

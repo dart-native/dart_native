@@ -140,12 +140,20 @@ void dispose_helper(struct _DOBlock *src) {
 - (void)initBlock {
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
+    // Struct return value MUST be put into pointer.(On heap)
+    if (typeString[0] == '{') {
+        flags |= BLOCK_HAS_STRET;
+        flags |= 0xFFFFFFFFE0000000;
+    }
     // Check block encoding types valid.
     NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:typeString flags:flags];
     if (numberOfArguments == -1) { // Unknown encode.
         return;
     }
     self.numberOfArguments = numberOfArguments;
+    if (self.hasStret) {
+        self.numberOfArguments--;
+    }
     
     _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&_blockIMP);
     
@@ -267,7 +275,7 @@ void dispose_helper(struct _DOBlock *src) {
 static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DOBlockWrapper *wrapper = (__bridge DOBlockWrapper *)userdata;
     FlutterMethodChannel *channel = DartNativePlugin.channel;
-    int64_t blockAddr = (int64_t)wrapper.block;
+    
     void *userRet = ret;
     void **userArgs = args;
     // TODO: handle struct return: should pass pointer to struct
@@ -279,20 +287,22 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     }
     *(void **)userRet = NULL;
     int64_t retObjectAddr = 0;
+    // Use (numberOfArguments - 1) exclude block itself.
+    NSUInteger numberOfArguments = wrapper.numberOfArguments - 1;
     if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
-        void(*callback)(void *block, void **args, void *ret, int argCount) = wrapper.callback;
-        callback((__bridge void *)(wrapper.block), args + 1, ret, (int)wrapper.numberOfArguments - 1);
-        retObjectAddr = (int64_t)*(void **)ret;
+        void(*callback)(void **args, void *ret, int argCount, BOOL stret) = wrapper.callback;
+        callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
+        retObjectAddr = (int64_t)*(void **)userRet;
     } else {
-        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature hasStret:wrapper.hasStret];
+        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature
+                                                                          hasStret:wrapper.hasStret];
         invocation.args = userArgs;
         invocation.retValue = userRet;
         invocation.realArgs = args;
         invocation.realRetValue = ret;
         
-        // Use (numberOfArguments - 1) exclude block itself.
-        int64_t argsAddr = (int64_t)(invocation.args + 1);
-        int64_t retAddr = (int64_t)(invocation.retValue);
+        int64_t argsAddr = (int64_t)(invocation.realArgs);
+        int64_t retAddr = (int64_t)(invocation.realRetValue);
         [invocation retainArguments];
         dispatch_semaphore_t sema;
         if (!NSThread.isMainThread) {
@@ -304,7 +314,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
             queue = dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0);
         }
         dispatch_async(queue, ^{
-            [channel invokeMethod:@"block_invoke" arguments:@[@(blockAddr), @(argsAddr), @(retAddr), @(wrapper.numberOfArguments - 1)] result:^(id  _Nullable result) {
+            [channel invokeMethod:@"block_invoke" arguments:@[@(argsAddr), @(retAddr), @(numberOfArguments), @(wrapper.hasStret)] result:^(id  _Nullable result) {
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);

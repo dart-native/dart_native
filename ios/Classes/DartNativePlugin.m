@@ -13,11 +13,10 @@ static FlutterMethodChannel *_channel;
 }
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"dart_native"
-            binaryMessenger:[registrar messenger]];
-  DartNativePlugin* instance = [[DartNativePlugin alloc] init];
-  [registrar addMethodCallDelegate:instance channel:channel];
+  _channel = [FlutterMethodChannel methodChannelWithName:@"dart_native"
+                                         binaryMessenger:[registrar messenger]];
+  DartNativePlugin *instance = [[DartNativePlugin alloc] init];
+  [registrar addMethodCallDelegate:instance channel:_channel];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {

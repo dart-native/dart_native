@@ -10,7 +10,7 @@
 @implementation DOPointerWrapper
 
 - (void)dealloc {
-    free(_pointer);
+//    free(_pointer);
 }
 
 @end

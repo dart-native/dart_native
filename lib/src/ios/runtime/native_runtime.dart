@@ -79,10 +79,10 @@ final TypesEncodingD nativeTypesEncoding = runtimeLib
     .lookupFunction<TypesEncodingC, TypesEncodingD>('native_types_encoding');
 
 typedef BlockCallbackC = Void Function(
-    Pointer<Void> blockPtr,
-    Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr,
-    Int32 argCount);
+    Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
+    Pointer<Pointer<Void>> retPtrPtr,
+    Int32 argCount,
+    Int32 stret);
 typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
     Pointer<NativeFunction<BlockCallbackC>> callback);
 typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings,

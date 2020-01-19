@@ -130,8 +130,12 @@ class Block extends id {
 Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =
     Pointer.fromFunction(_syncCallback);
 
-_callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr, int argCount) {
+_callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr, Pointer<Pointer<Void>> retPtrPtr, int argCount, bool stret) {
+  // If stret, the first arg contains address of a pointer of returned struct. Other args move backwards.
+  // This is the index for first argument of block in argsPtrPtrPtr list.
+  int argStartIndex = stret ? 2 : 1;
+  
+  Pointer<Void> blockPtr = argsPtrPtrPtr.elementAt(argStartIndex - 1).value.cast<Pointer<Void>>().value;
   Block block = _blockForAddress[blockPtr.address];
   if (block == null) {
     return null;
@@ -144,7 +148,7 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Utf8> argTypePtr =
         nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).value);
     String encoding = convertEncode(argTypePtr);
-    Pointer ptr = argsPtrPtr.elementAt(i).value;
+    Pointer ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value;
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
@@ -156,9 +160,19 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
 
   Pointer<Utf8> resultTypePtr =
       nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
-  if (retPtr != nullptr && result != null) {
+  if (result != null) {
     String encoding = convertEncode(resultTypePtr);
-    storeValueToPointer(result, retPtr, encoding);
+    Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
+    if (stret) {
+      realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
+    }
+    if (realRetPtrPtr != nullptr) {
+      PointerWrapper wrapper = storeValueToPointer(result, realRetPtrPtr, encoding);
+      if (wrapper != null) {
+        storeValueToPointer(wrapper, retPtrPtr, 'object');
+        result = wrapper;
+      }
+    }
   }
   if (result is id) {
     markAutoreleasereturnObject(result.pointer);
@@ -166,18 +180,17 @@ _callback(Pointer<Void> blockPtr, Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
 }
 
 void _syncCallback(
-    Pointer<Void> blockPtr,
     Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr,
-    int argCount) {
-  _callback(blockPtr, argsPtrPtr, retPtr, argCount);
+    int argCount,
+    int stret) {
+  _callback(argsPtrPtr, retPtr, argCount, stret != 0);
 }
 
-_asyncCallback(int blockAddr, int argsAddr, int retAddr, int argCount) {
-  Pointer<Void> blockPtr = Pointer.fromAddress(blockAddr);
+_asyncCallback(int argsAddr, int retAddr, int argCount, bool stret) {
   Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr = Pointer.fromAddress(argsAddr);
   Pointer<Pointer<Void>> retPtrPtr = Pointer.fromAddress(retAddr);
-  _callback(blockPtr, argsPtrPtrPtr, retPtrPtr, argCount);
+  _callback(argsPtrPtrPtr, retPtrPtr, argCount, stret);
 }
 
 Map<String, String> _nativeTypeNameMap = {

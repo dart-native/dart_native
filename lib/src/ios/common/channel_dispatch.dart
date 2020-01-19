@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 class ChannelDispatch {
-  MethodChannel _channel = const MethodChannel('dart_objc');
+  MethodChannel _channel = const MethodChannel('dart_native');
   static final ChannelDispatch _singleton = ChannelDispatch._internal();
   Map<String, Function> _callbacks = {};
 
