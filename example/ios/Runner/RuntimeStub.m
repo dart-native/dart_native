@@ -186,17 +186,18 @@ API_AVAILABLE(ios(11.0)){
 }
 
 typedef NSObject *(^BarBlock)(NSObject *a);
+typedef CGRect (^StretBlock)(NSObject *a);
 
-- (BarBlock)fooBlock:(BarBlock)block {
+- (StretBlock)fooBlock:(StretBlock)block {
     NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        NSObject *result = block(arg);
-        DDLogInfo(@"%s result: %@", __FUNCTION__, result);
+        CGRect result = block(arg);
+        DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGRect(result));
     });
     
-    BarBlock bar = ^(NSObject *a) {
+    StretBlock bar = ^(NSObject *a) {
         DDLogInfo(@"bar block arg: %@ %@", a, arg);
-        return a;
+        return CGRectMake(1.1, 2.2, 3.3, 4.4);
     };
     
     return bar;
