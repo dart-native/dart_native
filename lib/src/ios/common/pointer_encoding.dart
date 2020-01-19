@@ -20,7 +20,8 @@ class PointerWrapper extends NSObject {
 // TODO: change encoding hard code string to const var.
 
 /// return complete closure to clear memory etc.
-dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
+dynamic storeValueToPointer(
+    dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     [bool auto = true]) {
   if (object == null && encoding == 'void') {
     return;
@@ -226,7 +227,8 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
   return result;
 }
 
-PointerWrapper storeStructToPointer(Pointer<Pointer<Void>> ptr, dynamic object) {
+PointerWrapper storeStructToPointer(
+    Pointer<Pointer<Void>> ptr, dynamic object) {
   if (object is NativeStruct) {
     Pointer<Void> result = object.addressOf.cast<Void>();
     PointerWrapper wrapper = PointerWrapper();

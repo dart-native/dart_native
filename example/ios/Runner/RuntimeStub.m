@@ -190,13 +190,34 @@ typedef NSObject *(^BarBlock)(NSObject *a);
 - (BarBlock)fooBlock:(BarBlock)block {
     NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        NSObject *result = block(arg);
-        DDLogInfo(@"%s result: %@", __FUNCTION__, result);
+        if (block) {
+            NSObject *result = block(arg);
+            DDLogInfo(@"%s result: %@", __FUNCTION__, result);
+        }
     });
     
     BarBlock bar = ^(NSObject *a) {
         DDLogInfo(@"bar block arg: %@ %@", a, arg);
-        return a;
+        return arg;
+    };
+    
+    return bar;
+}
+
+typedef CGRect (^StretBlock)(NSObject *a);
+
+- (StretBlock)fooStretBlock:(StretBlock)block {
+    NSObject *arg = [NSObject new];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (block) {
+            CGRect result = block(arg);
+            DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGRect(result));
+        }
+    });
+    
+    StretBlock bar = ^(NSObject *a) {
+        DDLogInfo(@"bar block arg: %@ %@", a, arg);
+        return CGRectMake(1.1, 2.2, 3.3, 4.4);
     };
     
     return bar;

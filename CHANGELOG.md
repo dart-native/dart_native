@@ -1,3 +1,8 @@
+## 0.1.10
+
+* Fix issue for "dart_native" channel.
+* Support stret for block.
+
 ## 0.1.9
 
 * Change plugin name to "dart_native".
