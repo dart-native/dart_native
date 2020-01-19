@@ -72,7 +72,7 @@ native_get_class(const char *className, Class baseClass) {
 }
 
 void *
-_copyStruct2heap(NSMethodSignature *signature, void *structOnStack) {
+_mallocStruct(NSMethodSignature *signature) {
     const char *temp = signature.methodReturnType;
     int index = 0;
     while (temp && *temp && *temp != '=') {
@@ -81,23 +81,22 @@ _copyStruct2heap(NSMethodSignature *signature, void *structOnStack) {
     }
     NSString *structTypeEncoding = [NSString stringWithUTF8String:signature.methodReturnType];
     NSString *structName = [structTypeEncoding substringWithRange:NSMakeRange(1, index - 1)];
-    #define HandleStruct(struct) \
+    #define MallocStruct(struct) \
     if ([structName isEqualToString:@#struct]) { \
         void *structAddr = malloc(sizeof(struct)); \
-        memcpy(structAddr, structOnStack, sizeof(struct)); \
         return structAddr; \
     }
-    HandleStruct(CGSize)
-    HandleStruct(CGPoint)
-    HandleStruct(CGVector)
-    HandleStruct(CGRect)
-    HandleStruct(_NSRange)
-    HandleStruct(UIOffset);
-    HandleStruct(UIEdgeInsets);
+    MallocStruct(CGSize)
+    MallocStruct(CGPoint)
+    MallocStruct(CGVector)
+    MallocStruct(CGRect)
+    MallocStruct(_NSRange)
+    MallocStruct(UIOffset);
+    MallocStruct(UIEdgeInsets);
     if (@available(iOS 11.0, *)) {
-        HandleStruct(NSDirectionalEdgeInsets);
+        MallocStruct(NSDirectionalEdgeInsets);
     }
-    HandleStruct(CGAffineTransform);
+    MallocStruct(CGAffineTransform);
     NSCAssert(NO, @"Can't handle struct type:%@", structName);
     return NULL;
 }
@@ -152,13 +151,16 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
         [invocation invoke];
     }
     void *result = NULL;
+    const char returnType = signature.methodReturnType[0];
     if (signature.methodReturnLength > 0) {
-        [invocation getReturnValue:&result];
-        const char returnType = signature.methodReturnType[0];
-        if (result && returnType == '@') {
-            [DOObjectDealloc attachHost:(__bridge id)result];
-        } else if (returnType == '{') {
-            return _copyStruct2heap(signature, &result);
+        if (returnType == '{') {
+            result = _mallocStruct(signature);
+            [invocation getReturnValue:result];
+        } else {
+            [invocation getReturnValue:&result];
+            if (returnType == '@') {
+                [DOObjectDealloc attachHost:(__bridge id)result];
+            }
         }
     }
     return result;
@@ -178,13 +180,16 @@ native_block_invoke(void *block, void **args) {
     _fillArgsToInvocation(signature, args, invocation, 1);
     [invocation invokeWithTarget:(__bridge id)block];
     void *result = NULL;
+    const char returnType = signature.methodReturnType[0];
     if (signature.methodReturnLength > 0) {
-        [invocation getReturnValue:&result];
-        const char returnType = signature.methodReturnType[0];
-        if (result && returnType == '@') {
-            [DOObjectDealloc attachHost:(__bridge id)result];
-        } else if (returnType == '{') {
-            return _copyStruct2heap(signature, &result);
+        if (returnType == '{') {
+            result = _mallocStruct(signature);
+            [invocation getReturnValue:result];
+        } else {
+            [invocation getReturnValue:&result];
+            if (returnType == '@') {
+                [DOObjectDealloc attachHost:(__bridge id)result];
+            }
         }
     }
     return result;
