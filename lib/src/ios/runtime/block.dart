@@ -165,7 +165,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
 
   if (result != null) {
     Pointer<Utf8> resultTypePtr =
-      nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
+        nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
     String encoding = convertEncode(resultTypePtr);
     Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
     if (stret) {
