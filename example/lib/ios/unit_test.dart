@@ -22,6 +22,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   print('fooObject result:$resultObj');
 
   stub.fooDelegate(delegate);
+  stub.fooStretDelegate(delegate);
 
   Block block = stub.fooBlock(_blockFunc);
   resultObj = block.invoke([stub]);
