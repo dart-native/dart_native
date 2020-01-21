@@ -1,3 +1,7 @@
+## 0.1.11
+
+* Support stret for method callback.
+
 ## 0.1.10
 
 * Fix issue for "dart_native" channel.
