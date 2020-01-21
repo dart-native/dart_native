@@ -59,12 +59,11 @@ final InvokeMethodD nativeInvokeMethod = runtimeLib
     .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
 
 typedef MethodIMPCallbackC = Void Function(
-    Pointer<Void> target,
-    Pointer<Void> selector,
     Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr,
     Int32 argCount,
-    Pointer<Pointer<Utf8>> types);
+    Pointer<Pointer<Utf8>> types,
+    Int32 stret);
 
 typedef TypeEncodingC = Pointer<Utf8> Function(Pointer<Utf8> str);
 typedef TypeEncodingD = Pointer<Utf8> Function(Pointer<Utf8> str);

@@ -15,13 +15,14 @@
   static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif
 
-@protocol StubDelegate <NSObject>
+@protocol SampleDelegate <NSObject>
 
 - (NSObject *)callback;
+- (CGRect)callbackStret;
 
 @end
 
-@interface RuntimeStub ()<StubDelegate>
+@interface RuntimeStub ()<SampleDelegate>
 
 @property (nonatomic) id object;
 
@@ -223,11 +224,19 @@ typedef CGRect (^StretBlock)(NSObject *a);
     return bar;
 }
 
-- (void)fooDelegate:(id<StubDelegate>)delegate {
+- (void)fooDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         NSObject *result = [delegate callback];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, result);
+    });
+}
+
+- (void)fooStretDelegate:(id<SampleDelegate>)delegate {
+    DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        CGRect result = [delegate callbackStret];
+        DDLogInfo(@"%s callback result:%@", __FUNCTION__, NSStringFromCGRect(result));
     });
 }
 

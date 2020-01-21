@@ -26,9 +26,9 @@ class Block extends id {
   List<String> types = [];
 
   /// TODO: This is not working. Waiting for ffi async callback.
-  set queue(Pointer<Void> queue) {
-    _wrapper.perform(Selector('setQueue:'), args: [queue]);
-  }
+  // set queue(Pointer<Void> queue) {
+  //   _wrapper.perform(Selector('setQueue:'), args: [queue]);
+  // }
 
   factory Block(Function function) {
     List<String> types = _typeStringForFunction(function);
@@ -163,9 +163,9 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   }
   dynamic result = Function.apply(block.function, args);
 
-  Pointer<Utf8> resultTypePtr =
-      nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
   if (result != null) {
+    Pointer<Utf8> resultTypePtr =
+      nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
     String encoding = convertEncode(resultTypePtr);
     Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
     if (stret) {

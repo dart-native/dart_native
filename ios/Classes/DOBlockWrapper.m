@@ -290,7 +290,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     // Use (numberOfArguments - 1) exclude block itself.
     NSUInteger numberOfArguments = wrapper.numberOfArguments - 1;
     if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
-        void(*callback)(void **args, void *ret, int argCount, BOOL stret) = wrapper.callback;
+        void(*callback)(void **args, void *ret, int numberOfArguments, BOOL stret) = wrapper.callback;
         callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
         retObjectAddr = (int64_t)*(void **)userRet;
     } else {

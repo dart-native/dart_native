@@ -23,12 +23,25 @@ Pointer<NativeFunction<MethodIMPCallbackC>> _callbackPtr =
     Pointer.fromFunction(_syncCallback);
 
 _callback(
-    Pointer<Void> targetPtr,
-    Pointer<Void> selPtr,
-    Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr,
+    Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
+    Pointer<Pointer<Void>> retPtrPtr,
     int argCount,
-    Pointer<Pointer<Utf8>> typesPtrPtr) {
+    Pointer<Pointer<Utf8>> typesPtrPtr,
+    bool stret) {
+  // If stret, the first arg contains address of a pointer of returned struct. Other args move backwards.
+  // This is the index for first argument of target in argsPtrPtrPtr list.
+  int argStartIndex = stret ? 3 : 2;
+
+  Pointer<Void> targetPtr = argsPtrPtrPtr
+      .elementAt(argStartIndex - 2)
+      .value
+      .cast<Pointer<Void>>()
+      .value;
+  Pointer<Void> selPtr = argsPtrPtrPtr
+      .elementAt(argStartIndex - 1)
+      .value
+      .cast<Pointer<Void>>()
+      .value;
   Function function =
       CallbackManager.shared.getCallbackForSelectorOnTarget(targetPtr, selPtr);
   if (function == null) {
@@ -39,7 +52,7 @@ _callback(
   for (var i = 0; i < argCount; i++) {
     // types: ret, self, _cmd, args...
     String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 3).value);
-    Pointer ptr = argsPtrPtr.elementAt(i).value;
+    Pointer ptr = argsPtrPtrPtr.elementAt(i).value;
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
@@ -48,9 +61,21 @@ _callback(
   }
 
   dynamic result = Function.apply(function, args);
-  if (retPtr != nullptr && result != null) {
+
+  if (result != null) {
     String encoding = convertEncode(typesPtrPtr.elementAt(0).value);
-    storeValueToPointer(result, retPtr, encoding);
+    Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
+    if (stret) {
+      realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
+    }
+    if (realRetPtrPtr != nullptr) {
+      PointerWrapper wrapper =
+          storeValueToPointer(result, realRetPtrPtr, encoding);
+      if (wrapper != null) {
+        storeValueToPointer(wrapper, retPtrPtr, 'object');
+        result = wrapper;
+      }
+    }
   }
   if (result is id) {
     markAutoreleasereturnObject(result.pointer);
@@ -58,22 +83,17 @@ _callback(
 }
 
 void _syncCallback(
-    Pointer<Void> targetPtr,
-    Pointer<Void> selPtr,
     Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr,
+    Pointer<Pointer<Void>> retPtrPtr,
     int argCount,
-    Pointer<Pointer<Utf8>> typesPtrPtr) {
-  _callback(targetPtr, selPtr, argsPtrPtr, retPtr, argCount, typesPtrPtr);
+    Pointer<Pointer<Utf8>> typesPtrPtr,
+    int stret) {
+  _callback(argsPtrPtr, retPtrPtr, argCount, typesPtrPtr, stret != 0);
 }
 
-dynamic _asyncCallback(int targetAddr, int selAddr, int argsAddr, int retAddr,
-    int argCount, int typesAddr) {
-  Pointer<Void> targetPtr = Pointer.fromAddress(targetAddr);
-  Pointer<Void> selPtr = Pointer.fromAddress(selAddr);
-  Pointer<Pointer<Pointer<Void>>> argsPtrPtr = Pointer.fromAddress(argsAddr);
+dynamic _asyncCallback(int argsAddr, int retAddr, int argCount, int typesAddr, bool stret) {
+  Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr = Pointer.fromAddress(argsAddr);
   Pointer<Pointer<Utf8>> typesPtrPtr = Pointer.fromAddress(typesAddr);
   Pointer<Pointer<Void>> retPtrPtr = Pointer.fromAddress(retAddr);
-  return _callback(
-      targetPtr, selPtr, argsPtrPtr, retPtrPtr, argCount, typesPtrPtr);
+  return _callback(argsPtrPtrPtr, retPtrPtr, argCount, typesPtrPtr, stret);
 }

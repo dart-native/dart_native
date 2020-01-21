@@ -11,6 +11,7 @@
 #import "native_runtime.h"
 #import "DOInvocation.h"
 #import "NSThread+DartObjC.h"
+#import "DOPointerWrapper.h"
 
 static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
@@ -26,6 +27,8 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 @property (nonatomic) NSThread *thread;
 @property (nonatomic) void *callback;
 @property (nonatomic) DOFFIHelper *helper;
+@property (nonatomic) NSMethodSignature *signature;
+@property (nonatomic, getter=hasStret) BOOL stret;
 
 @end
 
@@ -39,6 +42,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         strcpy(_typeEncoding, typeEncoding);
         _callback = callback;
         _thread = NSThread.currentThread;
+        _signature = [NSMethodSignature signatureWithObjCTypes:_typeEncoding];
     }
     return self;
 }
@@ -97,37 +101,35 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     
     void *userRet = ret;
     void **userArgs = args;
-// TODO: handle struct return: should pass pointer to struct
-//    TODO: handle stret on x86
-//    if (hasStret) {
-//        // The first arg contains address of a pointer of returned struct.
-//        userRet = *((void **)args[0]);
-//        // Other args move backwards.
-//        userArgs = args + 1;
-//    }
+    // handle struct return: should pass pointer to struct
+    if (methodIMP.hasStret) {
+        // The first arg contains address of a pointer of returned struct.
+        userRet = *((void **)args[0]);
+        // Other args move backwards.
+        userArgs = args + 1;
+    }
     *(void **)userRet = NULL;
-    
-    int argCount = (int)methodIMP.numberOfArguments - 2;
-    const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
     int64_t retObjectAddr = 0;
+    // Use (numberOfArguments - 2) exclude itself and _cmd.
+    int numberOfArguments = (int)methodIMP.numberOfArguments - 2;
+    const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
+    
     if (methodIMP.thread == NSThread.currentThread && methodIMP.callback) {
-        void(*callback)(void *target, SEL selector, void **args, void *ret, int argCount, const char **types) = methodIMP.callback;
+        void(*callback)(void **args, void *ret, int numberOfArguments, const char **types, BOOL stret) = methodIMP.callback;
         // args: target, selector, realArgs...
-        callback(*(void **)args[0], *(void **)args[1], args + 2, ret, argCount, types);
+        callback(args, ret, numberOfArguments, types, methodIMP.hasStret);
         free(types);
-        retObjectAddr = (int64_t)*(void **)ret;
+        retObjectAddr = (int64_t)*(void **)userRet;
     } else {
-        NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:methodIMP.typeEncoding];
-        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:signature hasStret:NO];
+        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:methodIMP.signature
+                                                                          hasStret:methodIMP.hasStret];
         invocation.args = userArgs;
         invocation.retValue = userRet;
         invocation.realArgs = args;
         invocation.realRetValue = ret;
         
-        int64_t targetAddr = (int64_t)(*(void **)invocation.args[0]);
-        int64_t selectorAddr = (int64_t)(*(void **)invocation.args[1]);
-        int64_t argsAddr = (int64_t)(invocation.args + 2);
-        int64_t retAddr = (int64_t)(invocation.retValue);
+        int64_t argsAddr = (int64_t)(invocation.realArgs);
+        int64_t retAddr = (int64_t)(invocation.realRetValue);
         int64_t typesAddr = (int64_t)types;
         
         [invocation retainArguments];
@@ -137,7 +139,20 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
             sema = dispatch_semaphore_create(0);
         }
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-            [channel invokeMethod:@"method_callback" arguments:@[@(targetAddr), @(selectorAddr), @(argsAddr), @(retAddr), @(argCount), @(typesAddr)] result:^(id  _Nullable result) {
+            [channel invokeMethod:@"method_callback"
+                        arguments:@[@(argsAddr),
+                                    @(retAddr),
+                                    @(numberOfArguments),
+                                    @(typesAddr),
+                                    @(methodIMP.hasStret)]
+                           result:^(id  _Nullable result) {
+                if (methodIMP.hasStret) {
+                    // synchronize stret value from first argument.
+                    [invocation setReturnValue:*(void **)args[0]];
+                } else if (methodIMP.typeEncoding[0] == '{') {
+                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+                    memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+                }
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);

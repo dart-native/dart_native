@@ -34,7 +34,8 @@ class id implements NSObjectProtocol {
 
   /// Register callback function for selector in protocol.
   bool registerProtocolCallback(
-      Function callback, String selName, String protoName) {
+      Function callback, String selName, Type protocolType) {
+    String protoName = protocolType.toString();
     Selector selector = Selector(selName);
     Protocol protocol = Protocol(protoName);
     if (protocol == null) {
