@@ -152,6 +152,11 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
                 } else if (methodIMP.typeEncoding[0] == '{') {
                     DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
                     memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+                } else if (methodIMP.typeEncoding[0] == '*') {
+                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+                    const char *origCString = (const char *)pointerWrapper.pointer;
+                    const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
+                    *(const char **)ret = temp;
                 }
                 invocation = nil;
                 if (sema) {

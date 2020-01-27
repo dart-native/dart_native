@@ -39,6 +39,11 @@ class RuntimeStub extends NSObject {
     return result;
   }
 
+  Block fooCStringBlock(Function func) {
+    Block result = perform(Selector('fooCStringBlock:'), args: [func]);
+    return result;
+  }
+
   CGSize fooCGSize(CGSize size) {
     return perform(Selector('fooCGSize:'), args: [size]);
   }

@@ -66,6 +66,9 @@ dynamic storeValueToPointer(
       case 'float64':
         ptr.cast<Double>().value = object;
         break;
+      case 'char *':
+        return storeCStringToPointer(object, ptr);
+        break;
       default:
         throw '$object not match type $encoding!';
     }
@@ -93,9 +96,7 @@ dynamic storeValueToPointer(
     ptr.value = block.pointer;
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
-      Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-      PointerWrapper().value = charPtr.cast<Void>();
-      ptr.cast<Pointer<Utf8>>().value = charPtr;
+      return storeCStringToPointer(object, ptr);
     } else if (encoding == 'object') {
       NSString string = NSString(object);
       ptr.value = string.pointer;
@@ -129,6 +130,14 @@ dynamic storeValueToPointer(
   } else {
     throw '$object not match type $encoding!';
   }
+}
+
+dynamic storeCStringToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
+  Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+  PointerWrapper wrapper = PointerWrapper();
+  wrapper.value = charPtr.cast<Void>();
+  ptr.cast<Pointer<Utf8>>().value = charPtr;
+  return wrapper;
 }
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,

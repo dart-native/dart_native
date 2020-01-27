@@ -52,7 +52,7 @@ _callback(
   for (var i = 0; i < argCount; i++) {
     // types: ret, self, _cmd, args...
     String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 3).value);
-    Pointer ptr = argsPtrPtrPtr.elementAt(i).value;
+    Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i).value.cast();
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }

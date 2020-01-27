@@ -1,74 +1,81 @@
+import 'dart:ffi';
+
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
+import 'package:ffi/ffi.dart';
 
 testIOS(RuntimeStub stub, DelegateStub delegate) {
-  bool resultBool = stub.fooBool(false);
-  print('fooBool result:$resultBool');
+  // bool resultBool = stub.fooBool(false);
+  // print('fooBool result:$resultBool');
 
-  NSString resultNSString = stub.fooNSString('This is NSString');
-  print('fooNSString result:$resultNSString');
+  // NSString resultNSString = stub.fooNSString('This is NSString');
+  // print('fooNSString result:$resultNSString');
 
-  String resultChar = stub.fooChar('A');
-  print('fooChar result:$resultChar');
+  // String resultChar = stub.fooChar('A');
+  // print('fooChar result:$resultChar');
 
-  String resultUChar = stub.fooUChar('A');
-  print('fooUChar result:$resultUChar');
+  // String resultUChar = stub.fooUChar('A');
+  // print('fooUChar result:$resultUChar');
 
-  String resultCharPtr = stub.fooCharPtr('test CString');
-  print('fooCharPtr result:$resultCharPtr');
+  // String resultCharPtr = stub.fooCharPtr('test CString');
+  // print('fooCharPtr result:$resultCharPtr');
 
-  NSObject resultObj = stub.fooObject(delegate);
-  print('fooObject result:$resultObj');
+  // NSObject resultObj = stub.fooObject(delegate);
+  // print('fooObject result:$resultObj');
 
-  stub.fooDelegate(delegate);
-  stub.fooStretDelegate(delegate);
+  // stub.fooDelegate(delegate);
+  // stub.fooStretDelegate(delegate);
 
-  Block block = stub.fooBlock(_blockFunc);
-  resultObj = block.invoke([stub]);
-  print('fooBlock result:$resultObj');
+  // Block block = stub.fooBlock(_blockFunc);
+  // resultObj = block.invoke([stub]);
+  // print('fooBlock result:$resultObj');
 
-  Block blockStret = stub.fooStretBlock(_blockStretFunc);
-  CGRect resultStret = blockStret.invoke([stub]);
-  print('fooStretBlock result:$resultStret');
+  // Block blockStret = stub.fooStretBlock(_blockStretFunc);
+  // CGRect resultStret = blockStret.invoke([CGRect(4, 3, 2, 1)]);
+  // print('fooStretBlock result:$resultStret');
 
-  CGSize size = stub.fooCGSize(CGSize(2, 1));
-  print(size);
+  Block blockCString = stub.fooCStringBlock(_blockCString);
+  String resultCString = blockCString.invoke(['test cstring arg']);
+  print('fooCStringBlock result:$resultCString');
 
-  CGPoint point = stub.fooCGPoint(CGPoint(2, 1));
-  print(point);
+  // CGSize size = stub.fooCGSize(CGSize(2, 1));
+  // print(size);
 
-  CGVector vector = stub.fooCGVector(CGVector(2, 1));
-  print(vector);
+  // CGPoint point = stub.fooCGPoint(CGPoint(2, 1));
+  // print(point);
 
-  CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
-  print(rect);
+  // CGVector vector = stub.fooCGVector(CGVector(2, 1));
+  // print(vector);
 
-  NSRange range = stub.fooNSRange(NSRange(2, 1));
-  print(range);
+  // CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
+  // print(rect);
 
-  UIEdgeInsets insets = stub.fooUIEdgeInsets(UIEdgeInsets(4, 3, 2, 1));
-  print(insets);
+  // NSRange range = stub.fooNSRange(NSRange(2, 1));
+  // print(range);
 
-  NSDirectionalEdgeInsets dInsets =
-      stub.fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets(4, 3, 2, 1));
-  print(dInsets);
+  // UIEdgeInsets insets = stub.fooUIEdgeInsets(UIEdgeInsets(4, 3, 2, 1));
+  // print(insets);
 
-  CGAffineTransform transform =
-      stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
-  print(transform);
+  // NSDirectionalEdgeInsets dInsets =
+  //     stub.fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets(4, 3, 2, 1));
+  // print(dInsets);
 
-  NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
-  print(array);
+  // CGAffineTransform transform =
+  //     stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
+  // print(transform);
 
-  NSObject currentThread = Class('NSThread')
-      .perform(Selector('currentThread'), onQueue: DispatchQueue.global());
-  NSObject description = currentThread.perform(Selector('description'));
-  String threadResult = NSString.fromPointer(description.pointer).value;
-  print('currentThread: $threadResult');
+  // NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
+  // print(array);
 
-  NSNotificationCenter.defaultCenter.addObserver(
-      delegate, delegate.handleNotification, 'SampleDartNotification', nil);
+  // NSObject currentThread = Class('NSThread')
+  //     .perform(Selector('currentThread'), onQueue: DispatchQueue.global());
+  // NSObject description = currentThread.perform(Selector('description'));
+  // String threadResult = NSString.fromPointer(description.pointer).value;
+  // print('currentThread: $threadResult');
+
+  // NSNotificationCenter.defaultCenter.addObserver(
+  //     delegate, delegate.handleNotification, 'SampleDartNotification', nil);
 
   // DispatchQueue.main.async(() {
   //   NSObject currentThread = Class('NSThread').perform(Selector('currentThread'));
@@ -83,7 +90,12 @@ Function _blockFunc = (NSObject a) {
   return a;
 };
 
-Function _blockStretFunc = (NSObject a) {
+Function _blockStretFunc = (CGRect a) {
   print('hello block stret! ${a.toString()}');
   return CGRect(12, 0, 12, 0);
+};
+
+Function _blockCString = (CString a) {
+  print('hello block cstring! $a');
+  return CString('test return cstring');
 };

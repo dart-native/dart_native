@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
+import 'package:ffi/ffi.dart';
 
 mixin _ToAlias {}
 
@@ -28,3 +30,4 @@ class NSInteger = NativeBox<int> with _ToAlias;
 class NSUInteger = NativeBox<int> with _ToAlias;
 class float = NativeBox<double> with _ToAlias;
 class CGFloat = NativeBox<double> with _ToAlias;
+class CString = NativeBox<String> with _ToAlias;

@@ -323,6 +323,11 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
                 } else if ([wrapper.typeString hasPrefix:@"{"]) {
                     DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
                     memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+                } else if ([wrapper.typeString hasPrefix:@"*"]) {
+                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+                    const char *origCString = (const char *)pointerWrapper.pointer;
+                    const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
+                    *(const char **)ret = temp;
                 }
                 invocation = nil;
                 if (sema) {

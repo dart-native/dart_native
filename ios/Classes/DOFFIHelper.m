@@ -148,6 +148,7 @@ int DOTypeLengthWithTypeName(NSString *typeName) {
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"block"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"NSObject*"];
         [_typeLengthDict setObject:@(sizeof(NSObject *)) forKey:@"NSObject"];
+        [_typeLengthDict setObject:@(sizeof(char *)) forKey:@"CString"];
     }
     return [_typeLengthDict[typeName] intValue];
 }
@@ -197,6 +198,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
         [_typeEncodeDict setObject:@"@?" forKey:@"block"];
         [_typeEncodeDict setObject:@"^@" forKey:@"NSObject*"];
         [_typeEncodeDict setObject:@"@" forKey:@"NSObject"];
+        [_typeEncodeDict setObject:@"*" forKey:@"CString"];
     }
     return _typeEncodeDict[typeName];
 }

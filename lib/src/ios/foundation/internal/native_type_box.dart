@@ -60,6 +60,8 @@ dynamic boxingBasicValue(String type, dynamic value) {
       return size_t(value);
     case 'float':
       return float(value);
+    case 'CString':
+      return CString(value);
     default:
       return value;
   }

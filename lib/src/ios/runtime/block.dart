@@ -153,7 +153,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     Pointer<Utf8> argTypePtr =
         nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).value);
     String encoding = convertEncode(argTypePtr);
-    Pointer ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value;
+    Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
@@ -254,6 +254,8 @@ List<String> _typeStringForFunction(Function function) {
       return '$ret, $args'.split(', ').map((String s) {
         if (s.contains('Pointer')) {
           return 'ptr';
+        } else if (s.contains('CString')) {
+          return 'CString';
         } else if (s.contains('Function')) {
           return 'block';
         } else if (!_nativeTypeNames.contains(s)) {
