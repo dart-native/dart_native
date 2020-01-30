@@ -286,7 +286,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         userArgs = args + 1;
     }
     *(void **)userRet = NULL;
-    int64_t retObjectAddr = 0;
+    __block int64_t retObjectAddr = 0;
     // Use (numberOfArguments - 1) exclude block itself.
     NSUInteger numberOfArguments = wrapper.numberOfArguments - 1;
     if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
@@ -317,6 +317,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         }
         dispatch_async(queue, ^{
             [channel invokeMethod:@"block_invoke" arguments:@[@(argsAddr), @(retAddr), @(numberOfArguments), @(wrapper.hasStret)] result:^(id  _Nullable result) {
+                retObjectAddr = (int64_t)*(void **)retAddr;
                 if (wrapper.hasStret) {
                     // synchronize stret value from first argument.
                     [invocation setReturnValue:*(void **)args[0]];
@@ -338,7 +339,6 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         if (sema) {
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         }
-        retObjectAddr = (int64_t)*(void **)retAddr;
     }
     [wrapper.thread do_performBlock:^{
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;

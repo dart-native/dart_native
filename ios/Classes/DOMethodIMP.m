@@ -109,7 +109,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         userArgs = args + 1;
     }
     *(void **)userRet = NULL;
-    int64_t retObjectAddr = 0;
+    __block int64_t retObjectAddr = 0;
     // Use (numberOfArguments - 2) exclude itself and _cmd.
     int numberOfArguments = (int)methodIMP.numberOfArguments - 2;
     const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
@@ -146,6 +146,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
                                     @(typesAddr),
                                     @(methodIMP.hasStret)]
                            result:^(id  _Nullable result) {
+                retObjectAddr = (int64_t)*(void **)retAddr;
                 if (methodIMP.hasStret) {
                     // synchronize stret value from first argument.
                     [invocation setReturnValue:*(void **)args[0]];
@@ -167,7 +168,6 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         if (sema) {
             dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
         }
-        retObjectAddr = (int64_t)*(void **)retAddr;
     }
     [methodIMP.thread do_performBlock:^{
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
