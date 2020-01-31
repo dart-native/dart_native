@@ -9,6 +9,10 @@
 
 @implementation DOPointerWrapper
 
+- (void)setPointer:(void *)pointer {
+    _pointer = pointer;
+}
+
 - (void)dealloc {
     free(_pointer);
 }

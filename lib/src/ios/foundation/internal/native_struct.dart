@@ -2,9 +2,29 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/precompile_macro.dart';
 import 'package:ffi/ffi.dart';
+import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 
 abstract class NativeStruct {
   Pointer get addressOf;
+
+  PointerWrapper _wrapper;
+  PointerWrapper get wrapper {
+    if (_wrapper == null) {
+      _wrapper = PointerWrapper();
+    }
+    Pointer<Void> result = addressOf.cast<Void>();
+    _wrapper.value = result;
+    return _wrapper;
+  }
+
+  NativeStruct retain() {
+    wrapper.retain();
+    return this;
+  }
+
+  release() => wrapper.release();
+
+  // TODO: dealloc
 }
 
 class NSUInteger32x2 extends Struct {
@@ -67,6 +87,7 @@ class NSUIntegerx2Wrapper extends NativeStruct {
     } else {
       _value32 = NSUInteger32x2(a, b);
     }
+    wrapper;
   }
 
   Pointer get addressOf => _is64bit ? _value64.addressOf : _value32.addressOf;
@@ -151,6 +172,7 @@ class CGFloatx2Wrapper extends NativeStruct {
     } else {
       _value32 = CGFloat32x2(a, b);
     }
+    wrapper;
   }
 
   Pointer get addressOf => LP64 ? _value64.addressOf : _value32.addressOf;
@@ -267,6 +289,7 @@ class CGFloatx4Wrapper extends NativeStruct {
     } else {
       _value32 = CGFloat32x4(a, b, c, d);
     }
+    wrapper;
   }
 
   Pointer get addressOf => LP64 ? _value64.addressOf : _value32.addressOf;
@@ -415,6 +438,7 @@ class CGFloatx6Wrapper extends NativeStruct {
     } else {
       _value32 = CGFloat32x6(a, b, c, d, e, f);
     }
+    wrapper;
   }
 
   Pointer get addressOf => LP64 ? _value64.addressOf : _value32.addressOf;

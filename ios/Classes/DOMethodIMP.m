@@ -128,6 +128,19 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     __block int64_t retObjectAddr = 0;
     // Use (numberOfArguments - 2) exclude itself and _cmd.
     int numberOfArguments = (int)methodIMP.numberOfArguments - 2;
+    
+    NSUInteger indexOffset = methodIMP.hasStret ? 1 : 0;
+    for (NSUInteger i = 0; i < methodIMP.signature.numberOfArguments; i++) {
+        const char *type = [methodIMP.signature getArgumentTypeAtIndex:i];
+        if (type[0] == '{') {
+            NSUInteger size;
+            DOSizeAndAlignment(type, &size, NULL, NULL);
+            void *temp = malloc(size);
+            memcpy(temp, args[i + indexOffset], size);
+            args[i + indexOffset] = temp;
+        }
+    }
+    
     const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
     
     

@@ -305,6 +305,18 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     // Use (numberOfArguments - 1) exclude block itself.
     NSUInteger numberOfArguments = wrapper.numberOfArguments - 1;
     
+    NSUInteger indexOffset = wrapper.hasStret ? 1 : 0;
+    for (NSUInteger i = 0; i < wrapper.signature.numberOfArguments; i++) {
+        const char *type = [wrapper.signature getArgumentTypeAtIndex:i];
+        if (type[0] == '{') {
+            NSUInteger size;
+            DOSizeAndAlignment(type, &size, NULL, NULL);
+            void *temp = malloc(size);
+            memcpy(temp, args[i + indexOffset], size);
+            args[i + indexOffset] = temp;
+        }
+    }
+    
     __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature
                                                                       hasStret:wrapper.hasStret];
     invocation.args = userArgs;

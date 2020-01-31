@@ -1,9 +1,6 @@
-import 'dart:ffi';
-
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
-import 'package:ffi/ffi.dart';
 
 testIOS(RuntimeStub stub, DelegateStub delegate) {
   bool resultBool = stub.fooBool(false);
@@ -25,17 +22,17 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   print('fooObject result:$resultObj');
 
   stub.fooDelegate(delegate);
-  stub.fooStretDelegate(delegate);
+  stub.fooStructDelegate(delegate);
 
   Block block = stub.fooBlock(_blockFunc);
   resultObj = block.invoke([stub]);
   print('fooBlock result:$resultObj');
 
-  Block blockStret = stub.fooStretBlock(_blockStretFunc);
+  Block blockStret = stub.fooStretBlock(_blockStructFunc);
   CGRect resultStret = blockStret.invoke([CGRect(4, 3, 2, 1)]);
   print('fooStretBlock result:$resultStret');
 
-  Block blockCString = stub.fooCStringBlock(_blockCString);
+  Block blockCString = stub.fooCStringBlock(_blockCStringFunc);
   String resultCString = blockCString.invoke(['test cstring arg']);
   print('fooCStringBlock result:$resultCString');
 
@@ -83,12 +80,12 @@ Function _blockFunc = (NSObject a) {
   return a;
 };
 
-Function _blockStretFunc = (CGRect a) {
+Function _blockStructFunc = (CGRect a) {
   print('hello block stret! ${a.toString()}');
   return CGRect(12, 0, 12, 0);
 };
 
-Function _blockCString = (CString a) {
+Function _blockCStringFunc = (CString a) {
   print('hello block cstring! $a');
   return CString('test return cstring');
 };

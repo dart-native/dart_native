@@ -72,33 +72,12 @@ native_get_class(const char *className, Class baseClass) {
 }
 
 void *
-_mallocStruct(NSMethodSignature *signature) {
-    const char *temp = signature.methodReturnType;
-    int index = 0;
-    while (temp && *temp && *temp != '=') {
-        temp++;
-        index++;
-    }
-    NSString *structTypeEncoding = [NSString stringWithUTF8String:signature.methodReturnType];
-    NSString *structName = [structTypeEncoding substringWithRange:NSMakeRange(1, index - 1)];
-    #define MallocStruct(struct) \
-    if ([structName isEqualToString:@#struct]) { \
-        void *structAddr = malloc(sizeof(struct)); \
-        return structAddr; \
-    }
-    MallocStruct(CGSize)
-    MallocStruct(CGPoint)
-    MallocStruct(CGVector)
-    MallocStruct(CGRect)
-    MallocStruct(_NSRange)
-    MallocStruct(UIOffset);
-    MallocStruct(UIEdgeInsets);
-    if (@available(iOS 11.0, *)) {
-        MallocStruct(NSDirectionalEdgeInsets);
-    }
-    MallocStruct(CGAffineTransform);
-    NSCAssert(NO, @"Can't handle struct type:%@", structName);
-    return NULL;
+_mallocReturnStruct(NSMethodSignature *signature) {
+    const char *type = signature.methodReturnType;
+    NSUInteger size;
+    DOSizeAndAlignment(type, &size, NULL, NULL);
+    void *result = malloc(size);
+    return result;
 }
 
 void
@@ -154,7 +133,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     const char returnType = signature.methodReturnType[0];
     if (signature.methodReturnLength > 0) {
         if (returnType == '{') {
-            result = _mallocStruct(signature);
+            result = _mallocReturnStruct(signature);
             [invocation getReturnValue:result];
         } else {
             [invocation getReturnValue:&result];
@@ -183,7 +162,7 @@ native_block_invoke(void *block, void **args) {
     const char returnType = signature.methodReturnType[0];
     if (signature.methodReturnLength > 0) {
         if (returnType == '{') {
-            result = _mallocStruct(signature);
+            result = _mallocReturnStruct(signature);
             [invocation getReturnValue:result];
         } else {
             [invocation getReturnValue:&result];

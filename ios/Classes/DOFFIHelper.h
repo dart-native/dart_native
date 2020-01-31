@@ -18,9 +18,6 @@ DO_EXTERN
 int DOTypeCount(const char *str);
 
 DO_EXTERN
-void DOStoreValueToPointer(id result, void *pointer, const char *encoding);
-
-DO_EXTERN
 int DOTypeLengthWithTypeName(NSString *typeName);
 
 DO_EXTERN

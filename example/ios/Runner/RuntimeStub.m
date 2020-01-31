@@ -18,7 +18,7 @@
 @protocol SampleDelegate <NSObject>
 
 - (NSObject *)callback;
-- (CGRect)callbackStret;
+- (CGRect)callbackStruct:(CGRect)rect;
 
 @end
 
@@ -251,10 +251,10 @@ typedef char *(^CStringRetBlock)(char *a);
     });
 }
 
-- (void)fooStretDelegate:(id<SampleDelegate>)delegate {
+- (void)fooStructDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        CGRect result = [delegate callbackStret];
+        CGRect result = [delegate callbackStruct:CGRectMake(1.1, 2.2, 3.3, 4.4)];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, NSStringFromCGRect(result));
     });
 }

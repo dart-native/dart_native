@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/common/library.dart';
+import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
