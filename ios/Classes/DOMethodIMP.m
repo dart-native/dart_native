@@ -95,6 +95,22 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @end
 
+
+static void DOHandleReturnValue(void *ret, void **args, DOMethodIMP *methodIMP, DOInvocation *invocation) {
+    if (methodIMP.hasStret) {
+        // synchronize stret value from first argument.
+        [invocation setReturnValue:*(void **)args[0]];
+    } else if (methodIMP.typeEncoding[0] == '{') {
+        DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+        memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+    } else if (methodIMP.typeEncoding[0] == '*') {
+        DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+        const char *origCString = (const char *)pointerWrapper.pointer;
+        const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
+        *(const char **)ret = temp;
+    }
+}
+
 static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DOMethodIMP *methodIMP = (__bridge DOMethodIMP *)userdata;
     FlutterMethodChannel *channel = DartNativePlugin.channel;
@@ -114,22 +130,26 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     int numberOfArguments = (int)methodIMP.numberOfArguments - 2;
     const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
     
+    
+    __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:methodIMP.signature
+                                                                      hasStret:methodIMP.hasStret];
+    invocation.args = userArgs;
+    invocation.retValue = userRet;
+    invocation.realArgs = args;
+    invocation.realRetValue = ret;
+    
+    int64_t retAddr = (int64_t)(invocation.realRetValue);
+    
     if (methodIMP.thread == NSThread.currentThread && methodIMP.callback) {
         void(*callback)(void **args, void *ret, int numberOfArguments, const char **types, BOOL stret) = methodIMP.callback;
         // args: target, selector, realArgs...
         callback(args, ret, numberOfArguments, types, methodIMP.hasStret);
         free(types);
-        retObjectAddr = (int64_t)*(void **)userRet;
+        retObjectAddr = (int64_t)*(void **)retAddr;
+        DOHandleReturnValue(ret, args, methodIMP, invocation);
     } else {
-        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:methodIMP.signature
-                                                                          hasStret:methodIMP.hasStret];
-        invocation.args = userArgs;
-        invocation.retValue = userRet;
-        invocation.realArgs = args;
-        invocation.realRetValue = ret;
         
         int64_t argsAddr = (int64_t)(invocation.realArgs);
-        int64_t retAddr = (int64_t)(invocation.realRetValue);
         int64_t typesAddr = (int64_t)types;
         
         [invocation retainArguments];
@@ -147,18 +167,7 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
                                     @(methodIMP.hasStret)]
                            result:^(id  _Nullable result) {
                 retObjectAddr = (int64_t)*(void **)retAddr;
-                if (methodIMP.hasStret) {
-                    // synchronize stret value from first argument.
-                    [invocation setReturnValue:*(void **)args[0]];
-                } else if (methodIMP.typeEncoding[0] == '{') {
-                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
-                    memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
-                } else if (methodIMP.typeEncoding[0] == '*') {
-                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
-                    const char *origCString = (const char *)pointerWrapper.pointer;
-                    const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
-                    *(const char **)ret = temp;
-                }
+                DOHandleReturnValue(ret, args, methodIMP, invocation);
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);
@@ -173,3 +182,4 @@ static void DOFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
     }];
 }
+

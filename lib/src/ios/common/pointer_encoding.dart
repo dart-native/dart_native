@@ -223,6 +223,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
         if (auto) {
           result = Utf8.fromUtf8(temp);
         } else {
+          // TODO: malloc and strcpy
           result = temp;
         }
         break;

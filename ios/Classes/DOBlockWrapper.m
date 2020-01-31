@@ -272,6 +272,21 @@ void dispose_helper(struct _DOBlock *src) {
 
 @end
 
+static void DOHandleReturnValue(void *ret, void **args, DOBlockWrapper *wrapper, DOInvocation *invocation) {
+    if (wrapper.hasStret) {
+        // synchronize stret value from first argument.
+        [invocation setReturnValue:*(void **)args[0]];
+    } else if ([wrapper.typeString hasPrefix:@"{"]) {
+        DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+        memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+    } else if ([wrapper.typeString hasPrefix:@"*"]) {
+        DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
+        const char *origCString = (const char *)pointerWrapper.pointer;
+        const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
+        *(const char **)ret = temp;
+    }
+}
+
 static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DOBlockWrapper *wrapper = (__bridge DOBlockWrapper *)userdata;
     FlutterMethodChannel *channel = DartNativePlugin.channel;
@@ -289,21 +304,23 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     __block int64_t retObjectAddr = 0;
     // Use (numberOfArguments - 1) exclude block itself.
     NSUInteger numberOfArguments = wrapper.numberOfArguments - 1;
+    
+    __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature
+                                                                      hasStret:wrapper.hasStret];
+    invocation.args = userArgs;
+    invocation.retValue = userRet;
+    invocation.realArgs = args;
+    invocation.realRetValue = ret;
+    
+    int64_t retAddr = (int64_t)(invocation.realRetValue);
+    
     if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
         void(*callback)(void **args, void *ret, int numberOfArguments, BOOL stret) = wrapper.callback;
         callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
         retObjectAddr = (int64_t)*(void **)userRet;
+        DOHandleReturnValue(ret, args, wrapper, invocation);
     } else {
-        __block DOInvocation *invocation = [[DOInvocation alloc] initWithSignature:wrapper.signature
-                                                                          hasStret:wrapper.hasStret];
-        invocation.args = userArgs;
-        invocation.retValue = userRet;
-        invocation.realArgs = args;
-        invocation.realRetValue = ret;
-        
         int64_t argsAddr = (int64_t)(invocation.realArgs);
-        int64_t retAddr = (int64_t)(invocation.realRetValue);
-        
         [invocation retainArguments];
         
         dispatch_semaphore_t sema;
@@ -318,18 +335,7 @@ static void DOFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         dispatch_async(queue, ^{
             [channel invokeMethod:@"block_invoke" arguments:@[@(argsAddr), @(retAddr), @(numberOfArguments), @(wrapper.hasStret)] result:^(id  _Nullable result) {
                 retObjectAddr = (int64_t)*(void **)retAddr;
-                if (wrapper.hasStret) {
-                    // synchronize stret value from first argument.
-                    [invocation setReturnValue:*(void **)args[0]];
-                } else if ([wrapper.typeString hasPrefix:@"{"]) {
-                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
-                    memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
-                } else if ([wrapper.typeString hasPrefix:@"*"]) {
-                    DOPointerWrapper *pointerWrapper = *(DOPointerWrapper *__strong *)ret;
-                    const char *origCString = (const char *)pointerWrapper.pointer;
-                    const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
-                    *(const char **)ret = temp;
-                }
+                DOHandleReturnValue(ret, args, wrapper, invocation);
                 invocation = nil;
                 if (sema) {
                     dispatch_semaphore_signal(sema);
