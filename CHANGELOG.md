@@ -1,3 +1,7 @@
+## 0.1.12
+
+* Fix issue for callback.
+
 ## 0.1.11
 
 * Support stret for method callback.
