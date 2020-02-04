@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
+import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
@@ -52,7 +53,7 @@ _callback(
   for (var i = 0; i < argCount; i++) {
     // types: ret, self, _cmd, args...
     String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 3).value);
-    Pointer ptr = argsPtrPtrPtr.elementAt(i).value;
+    Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }

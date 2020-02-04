@@ -2,13 +2,13 @@ import 'package:dart_native/dart_native.dart';
 
 abstract class SampleDelegate {
   callback();
-  callbackStret();
+  CGRect callbackStruct(CGRect rect);
 }
 
 class DelegateStub extends NSObject implements SampleDelegate {
   DelegateStub() : super(Class('DelegateStub', type(of: NSObject))) {
     registerProtocolCallback(callback, 'callback', SampleDelegate);
-    registerProtocolCallback(callbackStret, 'callbackStret', SampleDelegate);
+    registerProtocolCallback(callbackStruct, 'callbackStruct:', SampleDelegate);
   }
 
   handleNotification(NSObject notification) {
@@ -22,8 +22,8 @@ class DelegateStub extends NSObject implements SampleDelegate {
   }
 
   @override
-  callbackStret() {
-    print('callbackStret succeed!');
+  CGRect callbackStruct(CGRect rect) {
+    print('callbackStret succeed! $rect');
     return CGRect(1, 2, 3, 4);
   }
 }

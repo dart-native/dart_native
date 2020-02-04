@@ -18,7 +18,7 @@
 @protocol SampleDelegate <NSObject>
 
 - (NSObject *)callback;
-- (CGRect)callbackStret;
+- (CGRect)callbackStruct:(CGRect)rect;
 
 @end
 
@@ -205,10 +205,10 @@ typedef NSObject *(^BarBlock)(NSObject *a);
     return bar;
 }
 
-typedef CGRect (^StretBlock)(NSObject *a);
+typedef CGRect (^StretBlock)(CGRect a);
 
 - (StretBlock)fooStretBlock:(StretBlock)block {
-    NSObject *arg = [NSObject new];
+    CGRect arg = CGRectMake(1.1, 2.2, 3.3, 4.4);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             CGRect result = block(arg);
@@ -216,9 +216,28 @@ typedef CGRect (^StretBlock)(NSObject *a);
         }
     });
     
-    StretBlock bar = ^(NSObject *a) {
-        DDLogInfo(@"bar block arg: %@ %@", a, arg);
-        return CGRectMake(1.1, 2.2, 3.3, 4.4);
+    StretBlock bar = ^(CGRect a) {
+        DDLogInfo(@"bar block arg: %@ %@", NSStringFromCGRect(a), NSStringFromCGRect(arg));
+        return arg;
+    };
+    
+    return bar;
+}
+
+typedef char *(^CStringRetBlock)(char *a);
+
+- (CStringRetBlock)fooCStringBlock:(CStringRetBlock)block {
+    char *arg = "test c-string";
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (block) {
+            char *result = block(arg);
+            DDLogInfo(@"%s result: %s", __FUNCTION__, result);
+        }
+    });
+    
+    CStringRetBlock bar = ^(char *a) {
+        DDLogInfo(@"bar block arg: %s %s", a, arg);
+        return "return c-string";
     };
     
     return bar;
@@ -232,10 +251,10 @@ typedef CGRect (^StretBlock)(NSObject *a);
     });
 }
 
-- (void)fooStretDelegate:(id<SampleDelegate>)delegate {
+- (void)fooStructDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        CGRect result = [delegate callbackStret];
+        CGRect result = [delegate callbackStruct:CGRectMake(1.1, 2.2, 3.3, 4.4)];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, NSStringFromCGRect(result));
     });
 }

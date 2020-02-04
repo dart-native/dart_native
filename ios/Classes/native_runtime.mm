@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
-#import "DOBlockWrapper.h"
-#import "DOFFIHelper.h"
-#import "DOMethodIMP.h"
-#import "DOObjectDealloc.h"
-#import "NSThread+DartObjC.h"
+#import "DNBlockWrapper.h"
+#import "DNFFIHelper.h"
+#import "DNMethodIMP.h"
+#import "DNObjectDealloc.h"
+#import "NSThread+DartNative.h"
 
 NSMethodSignature *
 native_method_signature(Class cls, SEL selector) {
@@ -34,13 +34,13 @@ native_add_method(id target, SEL selector, char *types, void *callback) {
     Class cls = object_getClass(target);
     NSString *selName = [NSString stringWithFormat:@"dart_native_%@", NSStringFromSelector(selector)];
     SEL key = NSSelectorFromString(selName);
-    DOMethodIMP *imp = objc_getAssociatedObject(cls, key);
+    DNMethodIMP *imp = objc_getAssociatedObject(cls, key);
     // Existing implemention can't be replaced. Flutter hot-reload must also be well handled.
     if (!imp && [target respondsToSelector:selector]) {
         return NO;
     }
     if (types != NULL) {
-        DOMethodIMP *methodIMP = [[DOMethodIMP alloc] initWithTypeEncoding:types callback:callback]; // DOMethodIMP always exists.
+        DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types callback:callback]; // DNMethodIMP always exists.
         class_replaceMethod(cls, selector, [methodIMP imp], types);
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return YES;
@@ -72,33 +72,12 @@ native_get_class(const char *className, Class baseClass) {
 }
 
 void *
-_mallocStruct(NSMethodSignature *signature) {
-    const char *temp = signature.methodReturnType;
-    int index = 0;
-    while (temp && *temp && *temp != '=') {
-        temp++;
-        index++;
-    }
-    NSString *structTypeEncoding = [NSString stringWithUTF8String:signature.methodReturnType];
-    NSString *structName = [structTypeEncoding substringWithRange:NSMakeRange(1, index - 1)];
-    #define MallocStruct(struct) \
-    if ([structName isEqualToString:@#struct]) { \
-        void *structAddr = malloc(sizeof(struct)); \
-        return structAddr; \
-    }
-    MallocStruct(CGSize)
-    MallocStruct(CGPoint)
-    MallocStruct(CGVector)
-    MallocStruct(CGRect)
-    MallocStruct(_NSRange)
-    MallocStruct(UIOffset);
-    MallocStruct(UIEdgeInsets);
-    if (@available(iOS 11.0, *)) {
-        MallocStruct(NSDirectionalEdgeInsets);
-    }
-    MallocStruct(CGAffineTransform);
-    NSCAssert(NO, @"Can't handle struct type:%@", structName);
-    return NULL;
+_mallocReturnStruct(NSMethodSignature *signature) {
+    const char *type = signature.methodReturnType;
+    NSUInteger size;
+    DNSizeAndAlignment(type, &size, NULL, NULL);
+    void *result = malloc(size);
+    return result;
 }
 
 void
@@ -154,12 +133,12 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     const char returnType = signature.methodReturnType[0];
     if (signature.methodReturnLength > 0) {
         if (returnType == '{') {
-            result = _mallocStruct(signature);
+            result = _mallocReturnStruct(signature);
             [invocation getReturnValue:result];
         } else {
             [invocation getReturnValue:&result];
             if (returnType == '@') {
-                [DOObjectDealloc attachHost:(__bridge id)result];
+                [DNObjectDealloc attachHost:(__bridge id)result];
             }
         }
     }
@@ -168,13 +147,13 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
 
 void *
 native_block_create(char *types, void *callback) {
-    DOBlockWrapper *wrapper = [[DOBlockWrapper alloc] initWithTypeString:types callback:callback];
+    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types callback:callback];
     return (__bridge void *)wrapper;
 }
 
 void *
 native_block_invoke(void *block, void **args) {
-    const char *typeString = DOBlockTypeEncodeString((__bridge id)block);
+    const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     _fillArgsToInvocation(signature, args, invocation, 1);
@@ -183,12 +162,12 @@ native_block_invoke(void *block, void **args) {
     const char returnType = signature.methodReturnType[0];
     if (signature.methodReturnLength > 0) {
         if (returnType == '{') {
-            result = _mallocStruct(signature);
+            result = _mallocReturnStruct(signature);
             [invocation getReturnValue:result];
         } else {
             [invocation getReturnValue:&result];
             if (returnType == '@') {
-                [DOObjectDealloc attachHost:(__bridge id)result];
+                [DNObjectDealloc attachHost:(__bridge id)result];
             }
         }
     }
@@ -297,13 +276,13 @@ native_type_encoding(const char *str) {
 
 const char **
 native_types_encoding(const char *str, int *count, int startIndex) {
-    int argCount = DOTypeCount(str) - startIndex;
+    int argCount = DNTypeCount(str) - startIndex;
     const char **argTypes = (const char **)malloc(sizeof(char *) * argCount);
     
     int i = -startIndex;
     while(str && *str)
     {
-        const char *next = DOSizeAndAlignment(str, NULL, NULL, NULL);
+        const char *next = DNSizeAndAlignment(str, NULL, NULL, NULL);
         if (i >= 0 && i < argCount) {
             const char *argType = native_type_encoding(str);
             if (argType) {
@@ -330,7 +309,7 @@ const char *
 native_struct_encoding(const char *encoding) {
     NSUInteger size, align;
     long length;
-    DOSizeAndAlignment(encoding, &size, &align, &length);
+    DNSizeAndAlignment(encoding, &size, &align, &length);
     NSString *str = [NSString stringWithUTF8String:encoding];
     const char *temp = [str substringWithRange:NSMakeRange(0, length)].UTF8String;
     int structNameLength = 0;
@@ -382,7 +361,7 @@ _dispatch_get_main_queue(void) {
 void
 native_mark_autoreleasereturn_object(id object) {
     int64_t address = (int64_t)object;
-    [NSThread.currentThread do_performWaitingUntilDone:YES block:^{
+    [NSThread.currentThread dn_performWaitingUntilDone:YES block:^{
         NSThread.currentThread.threadDictionary[@(address)] = object;
     }];
 }

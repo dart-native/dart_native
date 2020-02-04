@@ -22,15 +22,19 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   print('fooObject result:$resultObj');
 
   stub.fooDelegate(delegate);
-  stub.fooStretDelegate(delegate);
+  stub.fooStructDelegate(delegate);
 
   Block block = stub.fooBlock(_blockFunc);
   resultObj = block.invoke([stub]);
   print('fooBlock result:$resultObj');
 
-  Block blockStret = stub.fooStretBlock(_blockStretFunc);
-  CGRect resultStret = blockStret.invoke([stub]);
+  Block blockStret = stub.fooStretBlock(_blockStructFunc);
+  CGRect resultStret = blockStret.invoke([CGRect(4, 3, 2, 1)]);
   print('fooStretBlock result:$resultStret');
+
+  Block blockCString = stub.fooCStringBlock(_blockCStringFunc);
+  String resultCString = blockCString.invoke(['test cstring arg']);
+  print('fooCStringBlock result:$resultCString');
 
   CGSize size = stub.fooCGSize(CGSize(2, 1));
   print(size);
@@ -69,13 +73,6 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
 
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);
-
-  // DispatchQueue.main.async(() {
-  //   NSObject currentThread = Class('NSThread').perform(Selector('currentThread'));
-  //   NSObject description = currentThread.perform(Selector('description'));
-  //   String result = NSString.fromPointer(description.pointer).value;
-  //   print('currentThread: $result');
-  // });
 }
 
 Function _blockFunc = (NSObject a) {
@@ -83,7 +80,12 @@ Function _blockFunc = (NSObject a) {
   return a;
 };
 
-Function _blockStretFunc = (NSObject a) {
+Function _blockStructFunc = (CGRect a) {
   print('hello block stret! ${a.toString()}');
   return CGRect(12, 0, 12, 0);
+};
+
+Function _blockCStringFunc = (CString a) {
+  print('hello block cstring! $a');
+  return CString('test return cstring');
 };

@@ -2,20 +2,12 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:ffi/ffi.dart';
-
-class PointerWrapper extends NSObject {
-  PointerWrapper() : super(Class('DOPointerWrapper'));
-
-  Pointer<Void> get value => perform(Selector('pointer'));
-  set value(Pointer<Void> ptr) {
-    perform(Selector('setPointer:'), args: [ptr]);
-  }
-}
 
 // TODO: change encoding hard code string to const var.
 
@@ -66,6 +58,9 @@ dynamic storeValueToPointer(
       case 'float64':
         ptr.cast<Double>().value = object;
         break;
+      case 'char *':
+        return storeCStringToPointer(object, ptr);
+        break;
       default:
         throw '$object not match type $encoding!';
     }
@@ -93,9 +88,7 @@ dynamic storeValueToPointer(
     ptr.value = block.pointer;
   } else if (object is String) {
     if (encoding == 'char *' || encoding == 'ptr') {
-      Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-      PointerWrapper().value = charPtr.cast<Void>();
-      ptr.cast<Pointer<Utf8>>().value = charPtr;
+      return storeCStringToPointer(object, ptr);
     } else if (encoding == 'object') {
       NSString string = NSString(object);
       ptr.value = string.pointer;
@@ -129,6 +122,14 @@ dynamic storeValueToPointer(
   } else {
     throw '$object not match type $encoding!';
   }
+}
+
+dynamic storeCStringToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
+  Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+  PointerWrapper wrapper = PointerWrapper();
+  wrapper.value = charPtr.cast<Void>();
+  ptr.cast<Pointer<Utf8>>().value = charPtr;
+  return wrapper;
 }
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
@@ -214,6 +215,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
         if (auto) {
           result = Utf8.fromUtf8(temp);
         } else {
+          // TODO: malloc and strcpy
           result = temp;
         }
         break;
@@ -231,10 +233,8 @@ PointerWrapper storeStructToPointer(
     Pointer<Pointer<Void>> ptr, dynamic object) {
   if (object is NativeStruct) {
     Pointer<Void> result = object.addressOf.cast<Void>();
-    PointerWrapper wrapper = PointerWrapper();
-    wrapper.value = result;
     ptr.value = result;
-    return wrapper;
+    return object.wrapper;
   }
   return null;
 }
@@ -251,8 +251,8 @@ String structNameForEncoding(String encoding) {
   return null;
 }
 
-dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
-  dynamic result;
+NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {
+  NativeStruct result;
   String structName = structNameForEncoding(encoding);
   if (structName != null) {
     // struct
@@ -287,7 +287,7 @@ dynamic loadStructFromPointer(Pointer<Void> ptr, String encoding) {
       default:
     }
   }
-  return result;
+  return result..wrapper;
 }
 
 String convertEncode(Pointer<Utf8> ptr) {

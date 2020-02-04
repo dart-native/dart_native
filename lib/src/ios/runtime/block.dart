@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/common/library.dart';
+import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
@@ -12,11 +13,11 @@ import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-typedef _DOBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
-typedef _DOBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
-final _DOBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
-    .lookupFunction<_DOBlockTypeEncodeStringC, _DOBlockTypeEncodeStringD>(
-        'DOBlockTypeEncodeString');
+typedef _DNBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
+typedef _DNBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
+final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
+    .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
+        'DNBlockTypeEncodeString');
 
 Map<int, Block> _blockForAddress = {};
 
@@ -153,7 +154,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     Pointer<Utf8> argTypePtr =
         nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).value);
     String encoding = convertEncode(argTypePtr);
-    Pointer ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value;
+    Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
@@ -254,6 +255,8 @@ List<String> _typeStringForFunction(Function function) {
       return '$ret, $args'.split(', ').map((String s) {
         if (s.contains('Pointer')) {
           return 'ptr';
+        } else if (s.contains('CString')) {
+          return 'CString';
         } else if (s.contains('Function')) {
           return 'block';
         } else if (!_nativeTypeNames.contains(s)) {
