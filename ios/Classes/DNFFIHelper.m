@@ -1,13 +1,13 @@
 //
-//  DOFFIHelper.m
-//  dart_objc
+//  DNFFIHelper.m
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/10/30.
 //
 
-#import "DOFFIHelper.h"
+#import "DNFFIHelper.h"
 
-const char *DOSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp) {
+const char *DNSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp) {
     const char *out = NSGetSizeAndAlignment(str, sizep, alignp);
     if (lenp) {
         *lenp = out - str;
@@ -21,57 +21,57 @@ const char *DOSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *a
     return out;
 }
 
-int DOTypeCount(const char *str) {
+int DNTypeCount(const char *str) {
     int typeCount = 0;
     while(str && *str)
     {
-        str = DOSizeAndAlignment(str, NULL, NULL, NULL);
+        str = DNSizeAndAlignment(str, NULL, NULL, NULL);
         typeCount++;
     }
     return typeCount;
 }
 
-int DOTypeLengthWithTypeName(NSString *typeName) {
+int DNTypeLengthWithTypeName(NSString *typeName) {
     if (!typeName) return 0;
     static NSMutableDictionary *_typeLengthDict;
     if (!_typeLengthDict) {
         _typeLengthDict = [[NSMutableDictionary alloc] init];
         
-        #define DO_DEFINE_TYPE_LENGTH(_type) \
+        #define DN_DEFINE_TYPE_LENGTH(_type) \
         [_typeLengthDict setObject:@(sizeof(_type)) forKey:@#_type];\
 
-        DO_DEFINE_TYPE_LENGTH(id);
-        DO_DEFINE_TYPE_LENGTH(BOOL);
-        DO_DEFINE_TYPE_LENGTH(int);
-        DO_DEFINE_TYPE_LENGTH(void);
-        DO_DEFINE_TYPE_LENGTH(char);
-        DO_DEFINE_TYPE_LENGTH(short);
-        DO_DEFINE_TYPE_LENGTH(unsigned short);
-        DO_DEFINE_TYPE_LENGTH(unsigned int);
-        DO_DEFINE_TYPE_LENGTH(long);
-        DO_DEFINE_TYPE_LENGTH(unsigned long);
-        DO_DEFINE_TYPE_LENGTH(long long);
-        DO_DEFINE_TYPE_LENGTH(unsigned long long);
-        DO_DEFINE_TYPE_LENGTH(float);
-        DO_DEFINE_TYPE_LENGTH(double);
-        DO_DEFINE_TYPE_LENGTH(bool);
-        DO_DEFINE_TYPE_LENGTH(size_t);
-        DO_DEFINE_TYPE_LENGTH(CGFloat);
-        DO_DEFINE_TYPE_LENGTH(CGSize);
-        DO_DEFINE_TYPE_LENGTH(CGRect);
-        DO_DEFINE_TYPE_LENGTH(CGPoint);
-        DO_DEFINE_TYPE_LENGTH(CGVector);
-        DO_DEFINE_TYPE_LENGTH(UIOffset);
-        DO_DEFINE_TYPE_LENGTH(UIEdgeInsets);
+        DN_DEFINE_TYPE_LENGTH(id);
+        DN_DEFINE_TYPE_LENGTH(BOOL);
+        DN_DEFINE_TYPE_LENGTH(int);
+        DN_DEFINE_TYPE_LENGTH(void);
+        DN_DEFINE_TYPE_LENGTH(char);
+        DN_DEFINE_TYPE_LENGTH(short);
+        DN_DEFINE_TYPE_LENGTH(unsigned short);
+        DN_DEFINE_TYPE_LENGTH(unsigned int);
+        DN_DEFINE_TYPE_LENGTH(long);
+        DN_DEFINE_TYPE_LENGTH(unsigned long);
+        DN_DEFINE_TYPE_LENGTH(long long);
+        DN_DEFINE_TYPE_LENGTH(unsigned long long);
+        DN_DEFINE_TYPE_LENGTH(float);
+        DN_DEFINE_TYPE_LENGTH(double);
+        DN_DEFINE_TYPE_LENGTH(bool);
+        DN_DEFINE_TYPE_LENGTH(size_t);
+        DN_DEFINE_TYPE_LENGTH(CGFloat);
+        DN_DEFINE_TYPE_LENGTH(CGSize);
+        DN_DEFINE_TYPE_LENGTH(CGRect);
+        DN_DEFINE_TYPE_LENGTH(CGPoint);
+        DN_DEFINE_TYPE_LENGTH(CGVector);
+        DN_DEFINE_TYPE_LENGTH(UIOffset);
+        DN_DEFINE_TYPE_LENGTH(UIEdgeInsets);
         if (@available(iOS 11.0, *)) {
-            DO_DEFINE_TYPE_LENGTH(NSDirectionalEdgeInsets);
+            DN_DEFINE_TYPE_LENGTH(NSDirectionalEdgeInsets);
         }
-        DO_DEFINE_TYPE_LENGTH(CGAffineTransform);
-        DO_DEFINE_TYPE_LENGTH(NSRange);
-        DO_DEFINE_TYPE_LENGTH(NSInteger);
-        DO_DEFINE_TYPE_LENGTH(NSUInteger);
-        DO_DEFINE_TYPE_LENGTH(Class);
-        DO_DEFINE_TYPE_LENGTH(SEL);
+        DN_DEFINE_TYPE_LENGTH(CGAffineTransform);
+        DN_DEFINE_TYPE_LENGTH(NSRange);
+        DN_DEFINE_TYPE_LENGTH(NSInteger);
+        DN_DEFINE_TYPE_LENGTH(NSUInteger);
+        DN_DEFINE_TYPE_LENGTH(Class);
+        DN_DEFINE_TYPE_LENGTH(SEL);
         [_typeLengthDict setObject:@(sizeof(SEL)) forKey:@"Selector"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"ptr"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"block"];
@@ -82,46 +82,46 @@ int DOTypeLengthWithTypeName(NSString *typeName) {
     return [_typeLengthDict[typeName] intValue];
 }
 
-NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
+NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
     if (!typeName) return nil;
     static NSMutableDictionary *_typeEncodeDict;
     if (!_typeEncodeDict) {
         _typeEncodeDict = [[NSMutableDictionary alloc] init];
-        #define DO_DEFINE_TYPE_ENCODE_CASE(_type) \
+        #define DN_DEFINE_TYPE_ENCODE_CASE(_type) \
         [_typeEncodeDict setObject:[NSString stringWithUTF8String:@encode(_type)] forKey:@#_type];\
 
-        DO_DEFINE_TYPE_ENCODE_CASE(id);
-        DO_DEFINE_TYPE_ENCODE_CASE(BOOL);
-        DO_DEFINE_TYPE_ENCODE_CASE(int);
-        DO_DEFINE_TYPE_ENCODE_CASE(void);
-        DO_DEFINE_TYPE_ENCODE_CASE(char);
-        DO_DEFINE_TYPE_ENCODE_CASE(short);
-        DO_DEFINE_TYPE_ENCODE_CASE(unsigned short);
-        DO_DEFINE_TYPE_ENCODE_CASE(unsigned int);
-        DO_DEFINE_TYPE_ENCODE_CASE(long);
-        DO_DEFINE_TYPE_ENCODE_CASE(unsigned long);
-        DO_DEFINE_TYPE_ENCODE_CASE(long long);
-        DO_DEFINE_TYPE_ENCODE_CASE(unsigned long long);
-        DO_DEFINE_TYPE_ENCODE_CASE(float);
-        DO_DEFINE_TYPE_ENCODE_CASE(double);
-        DO_DEFINE_TYPE_ENCODE_CASE(bool);
-        DO_DEFINE_TYPE_ENCODE_CASE(size_t);
-        DO_DEFINE_TYPE_ENCODE_CASE(CGFloat);
-        DO_DEFINE_TYPE_ENCODE_CASE(CGSize);
-        DO_DEFINE_TYPE_ENCODE_CASE(CGRect);
-        DO_DEFINE_TYPE_ENCODE_CASE(CGPoint);
-        DO_DEFINE_TYPE_ENCODE_CASE(CGVector);
-        DO_DEFINE_TYPE_ENCODE_CASE(NSRange);
-        DO_DEFINE_TYPE_ENCODE_CASE(UIOffset);
-        DO_DEFINE_TYPE_ENCODE_CASE(UIEdgeInsets);
+        DN_DEFINE_TYPE_ENCODE_CASE(id);
+        DN_DEFINE_TYPE_ENCODE_CASE(BOOL);
+        DN_DEFINE_TYPE_ENCODE_CASE(int);
+        DN_DEFINE_TYPE_ENCODE_CASE(void);
+        DN_DEFINE_TYPE_ENCODE_CASE(char);
+        DN_DEFINE_TYPE_ENCODE_CASE(short);
+        DN_DEFINE_TYPE_ENCODE_CASE(unsigned short);
+        DN_DEFINE_TYPE_ENCODE_CASE(unsigned int);
+        DN_DEFINE_TYPE_ENCODE_CASE(long);
+        DN_DEFINE_TYPE_ENCODE_CASE(unsigned long);
+        DN_DEFINE_TYPE_ENCODE_CASE(long long);
+        DN_DEFINE_TYPE_ENCODE_CASE(unsigned long long);
+        DN_DEFINE_TYPE_ENCODE_CASE(float);
+        DN_DEFINE_TYPE_ENCODE_CASE(double);
+        DN_DEFINE_TYPE_ENCODE_CASE(bool);
+        DN_DEFINE_TYPE_ENCODE_CASE(size_t);
+        DN_DEFINE_TYPE_ENCODE_CASE(CGFloat);
+        DN_DEFINE_TYPE_ENCODE_CASE(CGSize);
+        DN_DEFINE_TYPE_ENCODE_CASE(CGRect);
+        DN_DEFINE_TYPE_ENCODE_CASE(CGPoint);
+        DN_DEFINE_TYPE_ENCODE_CASE(CGVector);
+        DN_DEFINE_TYPE_ENCODE_CASE(NSRange);
+        DN_DEFINE_TYPE_ENCODE_CASE(UIOffset);
+        DN_DEFINE_TYPE_ENCODE_CASE(UIEdgeInsets);
         if (@available(iOS 11.0, *)) {
-            DO_DEFINE_TYPE_ENCODE_CASE(NSDirectionalEdgeInsets);
+            DN_DEFINE_TYPE_ENCODE_CASE(NSDirectionalEdgeInsets);
         }
-        DO_DEFINE_TYPE_ENCODE_CASE(CGAffineTransform);
-        DO_DEFINE_TYPE_ENCODE_CASE(NSInteger);
-        DO_DEFINE_TYPE_ENCODE_CASE(NSUInteger);
-        DO_DEFINE_TYPE_ENCODE_CASE(Class);
-        DO_DEFINE_TYPE_ENCODE_CASE(SEL);
+        DN_DEFINE_TYPE_ENCODE_CASE(CGAffineTransform);
+        DN_DEFINE_TYPE_ENCODE_CASE(NSInteger);
+        DN_DEFINE_TYPE_ENCODE_CASE(NSUInteger);
+        DN_DEFINE_TYPE_ENCODE_CASE(Class);
+        DN_DEFINE_TYPE_ENCODE_CASE(SEL);
         [_typeEncodeDict setObject:@"Selector" forKey:@"Selector"];
         [_typeEncodeDict setObject:@"^v" forKey:@"ptr"];
         [_typeEncodeDict setObject:@"@?" forKey:@"block"];
@@ -132,13 +132,13 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
     return _typeEncodeDict[typeName];
 }
 
-@interface DOFFIHelper ()
+@interface DNFFIHelper ()
 
 @property (nonatomic) NSMutableArray *allocations;
 
 @end
 
-@implementation DOFFIHelper
+@implementation DNFFIHelper
 
 - (instancetype)init {
     self = [super init];
@@ -151,7 +151,7 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
 - (ffi_type *)ffiTypeForStructEncode:(const char *)str {
     NSUInteger size, align;
     long length;
-    DOSizeAndAlignment(str, &size, &align, &length);
+    DNSizeAndAlignment(str, &size, &align, &length);
     ffi_type *structType = [self _allocate:sizeof(*structType)];
     structType->type = FFI_TYPE_STRUCT;
     
@@ -268,13 +268,13 @@ NSString *DOTypeEncodeWithTypeName(NSString *typeName) {
 }
 
 - (ffi_type **)typesWithEncodeString:(const char *)str getCount:(int *)outCount startIndex:(int)start nullAtEnd:(BOOL)nullAtEnd {
-    int argCount = DOTypeCount(str) - start;
+    int argCount = DNTypeCount(str) - start;
     ffi_type **argTypes = [self _allocate:(argCount + (nullAtEnd ? 1 : 0)) * sizeof(*argTypes)];
     
     int i = -start;
     while(str && *str)
     {
-        const char *next = DOSizeAndAlignment(str, NULL, NULL, NULL);
+        const char *next = DNSizeAndAlignment(str, NULL, NULL, NULL);
         if (i >= 0 && i < argCount) {
             ffi_type *argType = [self ffiTypeForEncode:str];
             if (argType) {

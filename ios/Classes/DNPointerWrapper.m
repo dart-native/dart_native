@@ -1,13 +1,13 @@
 //
-//  DOPointerWrapper.m
-//  dart_objc
+//  DNPointerWrapper.m
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/11/5.
 //
 
-#import "DOPointerWrapper.h"
+#import "DNPointerWrapper.h"
 
-@implementation DOPointerWrapper
+@implementation DNPointerWrapper
 
 - (void)setPointer:(void *)pointer {
     _pointer = pointer;

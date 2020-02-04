@@ -1,6 +1,6 @@
 //
-//  DOObjectDealloc.h
-//  dart_objc
+//  DNObjectDealloc.h
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/11/5.
 //
@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DOObjectDealloc : NSObject
+@interface DNObjectDealloc : NSObject
 
 + (void)attachHost:(NSObject *)host;
 

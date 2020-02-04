@@ -1,13 +1,13 @@
 //
-//  DOInvocation.m
-//  dart_objc
+//  DNInvocation.m
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/10/31.
 //
 
-#import "DOInvocation.h"
+#import "DNInvocation.h"
 
-@interface DOInvocation ()
+@interface DNInvocation ()
 
 @property (nonatomic, strong, readwrite) NSMethodSignature *methodSignature;
 @property (nonatomic, getter=hasStret) BOOL stret;
@@ -19,7 +19,7 @@
 
 @end
 
-@implementation DOInvocation
+@implementation DNInvocation
 
 @synthesize argumentsRetained = _argumentsRetained;
 

@@ -13,11 +13,11 @@ import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-typedef _DOBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
-typedef _DOBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
-final _DOBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
-    .lookupFunction<_DOBlockTypeEncodeStringC, _DOBlockTypeEncodeStringD>(
-        'DOBlockTypeEncodeString');
+typedef _DNBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
+typedef _DNBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
+final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
+    .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
+        'DNBlockTypeEncodeString');
 
 Map<int, Block> _blockForAddress = {};
 

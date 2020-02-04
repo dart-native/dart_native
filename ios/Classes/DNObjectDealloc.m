@@ -1,11 +1,11 @@
 //
-//  DOObjectDealloc.m
-//  dart_objc
+//  DNObjectDealloc.m
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/11/5.
 //
 
-#import "DOObjectDealloc.h"
+#import "DNObjectDealloc.h"
 #import <objc/runtime.h>
 #import "DartNativePlugin.h"
 
@@ -28,14 +28,14 @@ _objc_isTaggedPointer(const void *ptr) {
     return ((intptr_t)ptr & _OBJC_TAG_MASK) == _OBJC_TAG_MASK;
 }
 
-@interface DOObjectDealloc ()
+@interface DNObjectDealloc ()
 
 @property (nonatomic, weak) NSObject *host;
 @property (nonatomic) int64_t hostAddress;
 
 @end
 
-@implementation DOObjectDealloc
+@implementation DNObjectDealloc
 
 + (void)attachHost:(NSObject *)host {
     if (objc_getAssociatedObject(host, @selector(initWithHost:))) {
@@ -43,7 +43,7 @@ _objc_isTaggedPointer(const void *ptr) {
     }
     if (!_objc_isTaggedPointer((__bridge const void *)(host)) ||
         [host isKindOfClass:NSClassFromString(@"__NSMallocBlock")]) {
-        __unused DOObjectDealloc *dealloc = [[self alloc] initWithHost:host];
+        __unused DNObjectDealloc *dealloc = [[self alloc] initWithHost:host];
     }
 }
 

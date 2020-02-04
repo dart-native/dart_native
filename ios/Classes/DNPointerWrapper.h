@@ -1,6 +1,6 @@
 //
-//  DOPointerWrapper.h
-//  dart_objc
+//  DNPointerWrapper.h
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/11/5.
 //
@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DOPointerWrapper : NSObject
+@interface DNPointerWrapper : NSObject
 
 @property (nonatomic) void *pointer;
 

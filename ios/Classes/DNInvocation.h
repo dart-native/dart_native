@@ -1,6 +1,6 @@
 //
-//  DOInvocation.h
-//  dart_objc
+//  DNInvocation.h
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/10/31.
 //
@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DOInvocation : NSObject
+@interface DNInvocation : NSObject
 
 /**
  YES if the receiver has retained its arguments, NO otherwise.

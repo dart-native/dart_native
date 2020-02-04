@@ -1,29 +1,29 @@
 //
-//  DOFFIHelper.h
-//  dart_objc
+//  DNFFIHelper.h
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/10/30.
 //
 
 #import <Foundation/Foundation.h>
 #import "ffi.h"
-#import "DOMacro.h"
+#import "DNMacro.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-DO_EXTERN
-const char *DOSizeAndAlignment(const char *str, NSUInteger * _Nullable sizep, NSUInteger * _Nullable alignp, long * _Nullable lenp);
+DN_EXTERN
+const char *DNSizeAndAlignment(const char *str, NSUInteger * _Nullable sizep, NSUInteger * _Nullable alignp, long * _Nullable lenp);
 
-DO_EXTERN
-int DOTypeCount(const char *str);
+DN_EXTERN
+int DNTypeCount(const char *str);
 
-DO_EXTERN
-int DOTypeLengthWithTypeName(NSString *typeName);
+DN_EXTERN
+int DNTypeLengthWithTypeName(NSString *typeName);
 
-DO_EXTERN
-NSString * _Nullable DOTypeEncodeWithTypeName(NSString *typeName);
+DN_EXTERN
+NSString * _Nullable DNTypeEncodeWithTypeName(NSString *typeName);
 
-@interface DOFFIHelper : NSObject
+@interface DNFFIHelper : NSObject
 
 - (ffi_type *)ffiTypeForStructEncode:(const char *)str;
 - (ffi_type *_Nullable)ffiTypeForEncode:(const char *)str;

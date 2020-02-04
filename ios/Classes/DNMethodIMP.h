@@ -1,6 +1,6 @@
 //
-//  DOMethodIMP.h
-//  dart_objc
+//  DNMethodIMP.h
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/10/30.
 //
@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DOMethodIMP : NSObject
+@interface DNMethodIMP : NSObject
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncodings callback:(void *)callback;
 - (IMP)imp;

@@ -1,19 +1,19 @@
 //
-//  DOBlockWrapper.h
-//  dart_objc
+//  DNBlockWrapper.h
+//  dart_native
 //
 //  Created by 杨萧玉 on 2019/10/18.
 //
 
 #import <Foundation/Foundation.h>
-#import "DOMacro.h"
+#import "DNMacro.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-DO_EXTERN
-const char *DOBlockTypeEncodeString(id blockObj);
+DN_EXTERN
+const char *DNBlockTypeEncodeString(id blockObj);
 
-@interface DOBlockWrapper : NSObject
+@interface DNBlockWrapper : NSObject
 
 - (int64_t)blockAddress;
 
