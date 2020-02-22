@@ -211,8 +211,9 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
     } while(0)
     
     #define COND(type, name) do { \
-        if (str[0] == @encode(type)[0]) \
-        return &ffi_type_ ## name; \
+        if (str[0] == @encode(type)[0]) {\
+            return &ffi_type_ ## name; \
+        } \
     } while(0)
     
     #define PTR(type) COND(type, pointer)

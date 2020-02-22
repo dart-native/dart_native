@@ -205,19 +205,19 @@ typedef NSObject *(^BarBlock)(NSObject *a);
     return bar;
 }
 
-typedef CGRect (^StretBlock)(CGRect a);
+typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
 
 - (StretBlock)fooStretBlock:(StretBlock)block {
-    CGRect arg = CGRectMake(1.1, 2.2, 3.3, 4.4);
+    CGAffineTransform arg = CGAffineTransformMake(1.1, 2.2, 3.3, 4.4, 5.5, 6.6);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
-            CGRect result = block(arg);
-            DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGRect(result));
+            CGAffineTransform result = block(arg);
+            DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGAffineTransform(result));
         }
     });
     
-    StretBlock bar = ^(CGRect a) {
-        DDLogInfo(@"bar block arg: %@ %@", NSStringFromCGRect(a), NSStringFromCGRect(arg));
+    StretBlock bar = ^(CGAffineTransform a) {
+        DDLogInfo(@"bar block arg: %@ %@", NSStringFromCGAffineTransform(a), NSStringFromCGAffineTransform(arg));
         return arg;
     };
     
