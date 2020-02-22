@@ -17,6 +17,6 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           # same with pubspec.yaml
-          flutter-version: "1.12.13+hotfix.5"
+          flutter-version: "1.12.13+hotfix.8"
       - run: flutter pub get
       - run: flutter test --no-pub test/
