@@ -29,7 +29,8 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   print('fooBlock result:$resultObj');
 
   Block blockStret = stub.fooStretBlock(_blockStructFunc);
-  CGAffineTransform resultStret = blockStret.invoke([CGAffineTransform(6, 5, 4, 3, 2, 1)]);
+  CGAffineTransform resultStret =
+      blockStret.invoke([CGAffineTransform(6, 5, 4, 3, 2, 1)]);
   print('fooStretBlock result:$resultStret');
 
   Block blockCString = stub.fooCStringBlock(_blockCStringFunc);
