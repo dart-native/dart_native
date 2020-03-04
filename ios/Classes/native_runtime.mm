@@ -291,6 +291,7 @@ native_types_encoding(const char *str, int *count, int startIndex) {
                 if (count) {
                     *count = -1;
                 }
+                free(argTypes);
                 return nil;
             }
         }

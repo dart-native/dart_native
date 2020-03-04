@@ -3,7 +3,6 @@ import 'package:dart_native_example/ios/delegatestub.dart';
 
 class RuntimeStub extends NSObject {
   RuntimeStub() : super(Class('RuntimeStub'));
-  int selectorDuration = 0;
 
   bool fooBool(bool b) {
     return perform('fooBOOL:'.toSelector(), args: [b]);

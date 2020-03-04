@@ -234,7 +234,6 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
     
     COND(float, float);
     COND(double, double);
-    
     COND(void, void);
     
     // Ignore Method Encodings
@@ -305,8 +304,8 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
 
 #pragma mark - Private Method
 
-- (void *)_allocate:(size_t)howmuch {
-    NSMutableData *data = [NSMutableData dataWithLength:howmuch];
+- (void *)_allocate:(size_t)size {
+    NSMutableData *data = [NSMutableData dataWithLength:size];
     [self.allocations addObject:data];
     return data.mutableBytes;
 }
