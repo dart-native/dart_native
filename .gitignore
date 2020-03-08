@@ -5,3 +5,7 @@
 .pub/
 
 build/
+
+.idea/
+
+.cxx/

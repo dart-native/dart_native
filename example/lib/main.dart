@@ -1,49 +1,6 @@
-import 'package:dart_native_example/ios/delegatestub.dart';
-import 'package:dart_native_example/ios/runtimestub.dart';
-import 'package:dart_native_example/ios/unit_test.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
+import 'package:dart_native_example/android/android_main.dart';
+import 'package:dart_native_example/ios/ios_main.dart';
+import 'dart:io';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  RuntimeStub stub = RuntimeStub().retain();
-  DelegateStub delegate = DelegateStub().retain();
-
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
-
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    testIOS(stub, delegate);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
-        body: Center(
-          child: Text('Using DartNative\n'),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    stub.release();
-    delegate.release();
-    super.dispose();
-  }
-}
+void main() => runApp(Platform.isAndroid ? AndroidApp() : IOSApp());

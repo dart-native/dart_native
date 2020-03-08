@@ -32,7 +32,17 @@ public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
 
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-    if (call.method.equals("getPlatformVersion")) {
+    if (call.method.equals("getPlatformVersionInt")) {
+      result.success(1);
+    }else if (call.method.equals("getPlatformVersionDouble")) {
+      result.success(100.23d);
+    }else if (call.method.equals("getPlatformVersionByte")) {
+      byte ret = 1;
+      result.success((byte)ret);
+    }else if (call.method.equals("getPlatformVersionString")) {
+      String ret = "abcd";
+      result.success(ret);
+    }else if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
     } else {
       result.notImplemented();
