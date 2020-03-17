@@ -12,7 +12,7 @@ class NSArray extends NSSubclass<List> {
   }
 
   NSArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    int count = perform(Selector('count'));
+    int count = perform(SEL('count'));
     List temp = List(count);
     for (var i = 0; i < count; i++) {
       id e = objectAtIndex(i);
@@ -31,7 +31,7 @@ class NSArray extends NSSubclass<List> {
         listPtr.elementAt(i).value = boxValues[i].pointer;
       }
       NSObject result = Class('NSArray').perform(
-          Selector('arrayWithObjects:count:'),
+          SEL('arrayWithObjects:count:'),
           args: [listPtr, boxValues.length]);
       free(listPtr);
       return result.pointer;
@@ -40,10 +40,10 @@ class NSArray extends NSSubclass<List> {
     }
   }
 
-  int get count => perform(Selector('count'));
+  int get count => perform(SEL('count'));
 
   id objectAtIndex(int index) {
-    return perform(Selector('objectAtIndex:'), args: [index]);
+    return perform(SEL('objectAtIndex:'), args: [index]);
   }
 }
 

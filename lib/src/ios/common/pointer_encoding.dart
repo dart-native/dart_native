@@ -11,7 +11,8 @@ import 'package:ffi/ffi.dart';
 
 // TODO: change encoding hard code string to const var.
 
-/// return complete closure to clear memory etc.
+/// Store [object] to [ptr] which using [encoding] for automatic type conversion.
+/// Returns a wrapper if [encoding] is some struct or pointer.
 dynamic storeValueToPointer(
     dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
     [bool auto = true]) {
@@ -74,7 +75,7 @@ dynamic storeValueToPointer(
           encoding == 'block' ||
           encoding == 'ptr')) {
     ptr.value = object.pointer;
-  } else if (object is Selector &&
+  } else if (object is SEL &&
       (encoding == 'selector' || encoding == 'ptr')) {
     ptr.value = object.toPointer();
   } else if (object is Protocol) {
@@ -92,16 +93,6 @@ dynamic storeValueToPointer(
     } else if (encoding == 'object') {
       NSString string = NSString(object);
       ptr.value = string.pointer;
-    } else if (encoding.contains('char')) {
-      if (object.length > 1) {
-        throw '$object: Invalid String argument for native char type!';
-      }
-      int char = utf8.encode(object).first;
-      if (encoding == 'uchar') {
-        ptr.cast<Uint8>().value = char;
-      } else if (encoding == 'char') {
-        ptr.cast<Int8>().value = char;
-      }
     }
   } else if (object is List || encoding == 'object') {
     ptr.value = NSArray(object).pointer;
@@ -140,28 +131,12 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
     result = loadStructFromPointer(ptr, encoding);
   } else if (encoding.contains('int') ||
       encoding.contains('float') ||
-      encoding == 'bool' ||
-      encoding == 'char' ||
-      encoding == 'uchar') {
+      encoding == 'bool') {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
     switch (encoding) {
       case 'bool':
         result = data.getInt8(0) != 0;
-        break;
-      case 'char':
-        if (auto) {
-          result = utf8.decode([data.getInt8(0)]);
-        } else {
-          result = data.getInt8(0);
-        }
-        break;
-      case 'uchar':
-        if (auto) {
-          result = utf8.decode([data.getUint8(0)]);
-        } else {
-          result = data.getUint8(0);
-        }
         break;
       case 'sint8':
         result = data.getInt8(0);
@@ -205,7 +180,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
         result = Class.fromPointer(ptr);
         break;
       case 'selector':
-        result = Selector.fromPointer(ptr);
+        result = SEL.fromPointer(ptr);
         break;
       case 'block':
         result = Block.fromPointer(ptr);

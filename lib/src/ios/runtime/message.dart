@@ -33,9 +33,9 @@ Pointer<Void> _msgSend(
   return result;
 }
 
-Map<Pointer, Map<Selector, Pointer>> _methodSignatureCache = {};
+Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
-dynamic msgSend(id target, Selector selector,
+dynamic msgSend(id target, SEL selector,
     [List args, bool auto = true, DispatchQueue queue, bool waitUntilDone]) {
   if (target == nil) {
     return nil;
@@ -45,7 +45,7 @@ dynamic msgSend(id target, Selector selector,
       allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
   Pointer isaPtr = object_getClass(target.pointer);
-  Map<Selector, Pointer> cache = _methodSignatureCache[isaPtr];
+  Map<SEL, Pointer> cache = _methodSignatureCache[isaPtr];
   if (cache == null) {
     cache = {};
     _methodSignatureCache[isaPtr] = cache;

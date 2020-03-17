@@ -180,7 +180,7 @@ native_type_encoding(const char *str) {
         return NULL;
     }
     // Use pointer as key of encoding string cache (on dart side).
-    static const char *typeList[20] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool", "char", "uchar"};
+    static const char *typeList[18] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool"};
     
     #define SINT(type) do { \
         if (str[0] == @encode(type)[0]) \
@@ -233,8 +233,8 @@ native_type_encoding(const char *str) {
     #define PTR(type) COND(type, typeList[16])
     
     COND(_Bool, typeList[17]);
-    COND(char, typeList[18]);
-    COND(unsigned char, typeList[19]);
+    SINT(signed char);
+    UINT(unsigned char);
     INT(short);
     INT(int);
     INT(long);

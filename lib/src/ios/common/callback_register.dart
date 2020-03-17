@@ -10,7 +10,7 @@ import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 bool registerMethodCallback(
-    id target, Selector selector, Function function, Pointer<Utf8> types) {
+    id target, SEL selector, Function function, Pointer<Utf8> types) {
   Pointer<Void> targetPtr = target.pointer;
   Pointer<Void> selectorPtr = selector.toPointer();
   CallbackManager.shared

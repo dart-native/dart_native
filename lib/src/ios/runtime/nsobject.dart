@@ -20,16 +20,16 @@ class NSObject extends id {
   NSObject.alloc([Class isa]) : super(_alloc(isa));
 
   NSObject init() {
-    return perform(Selector('init'));
+    return perform(SEL('init'));
   }
 
   NSObject copy() {
-    NSObject result = perform(Selector('copy'));
+    NSObject result = perform(SEL('copy'));
     return NSObject.fromPointer(result.autorelease().pointer);
   }
 
   NSObject mutableCopy() {
-    NSObject result = perform(Selector('mutableCopy'));
+    NSObject result = perform(SEL('mutableCopy'));
     return NSObject.fromPointer(result.autorelease().pointer);
   }
 
@@ -37,7 +37,7 @@ class NSObject extends id {
     if (isa == null) {
       isa = Class('NSObject');
     }
-    NSObject result = isa.perform(Selector('alloc'));
+    NSObject result = isa.perform(SEL('alloc'));
     return result.autorelease().pointer;
   }
 
@@ -45,7 +45,7 @@ class NSObject extends id {
     if (isa == null) {
       isa = Class('NSObject');
     }
-    NSObject result = isa.perform(Selector('new'));
+    NSObject result = isa.perform(SEL('new'));
     return result.autorelease().pointer;
   }
 }
