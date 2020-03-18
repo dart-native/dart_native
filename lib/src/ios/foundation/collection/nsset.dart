@@ -19,17 +19,17 @@ class NSSet extends NSSubclass<Set> {
       List list = value.toList(growable: false);
       NSArray array = NSArray(list);
       NSObject result =
-          Class('NSSet').perform(Selector('setWithArray:'), args: [array]);
+          Class('NSSet').perform(SEL('setWithArray:'), args: [array]);
       return result.pointer;
     } else {
       throw 'Invalid param when initializing NSSet.';
     }
   }
 
-  int get count => perform(Selector('count'));
+  int get count => perform(SEL('count'));
 
   NSArray get allObjects {
-    NSObject result = perform(Selector('allObjects'));
+    NSObject result = perform(SEL('allObjects'));
     return NSArray.fromPointer(result.pointer);
   }
 }

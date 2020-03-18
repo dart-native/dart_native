@@ -33,19 +33,25 @@ Pointer<Void> _msgSend(
   return result;
 }
 
-Map<Pointer, Map<Selector, Pointer>> _methodSignatureCache = {};
+Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
-dynamic msgSend(id target, Selector selector,
+dynamic msgSend(id target, SEL selector,
     [List args, bool auto = true, DispatchQueue queue, bool waitUntilDone]) {
   if (target == nil) {
     return nil;
   }
 
+  int argCount = (args?.length ?? 0);
+  // check if count of args match native method.
+  if (':'.allMatches(selector.name).length != argCount) {
+    throw 'Count of args does not match native method!';
+  }
+
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
-      allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
+      allocate<Pointer<Utf8>>(count: argCount + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
   Pointer isaPtr = object_getClass(target.pointer);
-  Map<Selector, Pointer> cache = _methodSignatureCache[isaPtr];
+  Map<SEL, Pointer> cache = _methodSignatureCache[isaPtr];
   if (cache == null) {
     cache = {};
     _methodSignatureCache[isaPtr] = cache;
@@ -62,8 +68,8 @@ dynamic msgSend(id target, Selector selector,
 
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
-    pointers = allocate<Pointer<Void>>(count: args.length);
-    for (var i = 0; i < args.length; i++) {
+    pointers = allocate<Pointer<Void>>(count: argCount);
+    for (var i = 0; i < argCount; i++) {
       var arg = args[i];
       if (arg == null) {
         throw 'One of args list is null';
@@ -73,9 +79,6 @@ dynamic msgSend(id target, Selector selector,
       String typeEncodings = convertEncode(argTypePtr);
       storeValueToPointer(arg, pointers.elementAt(i), typeEncodings, auto);
     }
-  } else if (selector.name.contains(':')) {
-    //TODO: need check args count.
-    throw 'Arg list not match!';
   }
 
   Pointer<Void> resultPtr = _msgSend(target.pointer, selectorPtr, signaturePtr,

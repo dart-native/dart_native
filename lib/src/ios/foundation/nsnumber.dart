@@ -13,8 +13,7 @@ class NSNumber extends NSValue {
     String typeName = value.runtimeType.toString();
     if (_NSNumberCreationForBoxType.containsKey(typeName)) {
       String selName = 'numberWith${_NSNumberCreationForBoxType[typeName]}:';
-      NSObject result =
-          type(of: NSNumber).perform(Selector(selName), args: [value]);
+      NSObject result = type(of: NSNumber).perform(SEL(selName), args: [value]);
       return result.pointer;
     } else {
       throw 'Unknown type for initializing NSNumber.';

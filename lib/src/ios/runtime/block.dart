@@ -36,7 +36,7 @@ class Block extends id {
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
-    int blockAddr = blockWrapper.perform(Selector('blockAddress'));
+    int blockAddr = blockWrapper.perform(SEL('blockAddress'));
     Block result = Block._internal(Pointer.fromAddress(blockAddr));
     free(typeStringPtr);
     result.types = types;
@@ -51,11 +51,12 @@ class Block extends id {
   }
 
   Block._internal(Pointer<Void> ptr) : super(ptr) {
-    ChannelDispatch().registerChannelCallback('block_invoke', _asyncCallback);
+    ChannelDispatch()
+        .registerChannelCallbackIfNot('block_invoke', _asyncCallback);
   }
 
   Class get superclass {
-    return isa.perform(Selector('superclass'));
+    return isa.perform(SEL('superclass'));
   }
 
   String get description {
@@ -147,7 +148,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     return null;
   }
   List args = [];
-  Pointer pointer = block._wrapper.perform(Selector('typeEncodings'));
+  Pointer pointer = block._wrapper.perform(SEL('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.

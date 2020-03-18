@@ -33,10 +33,11 @@ class id implements NSObjectProtocol {
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
   /// Register callback function for selector in protocol.
+  /// Protocol [protocolType] must be used in native code.
   bool registerProtocolCallback(
       Function callback, String selName, Type protocolType) {
     String protoName = protocolType.toString();
-    Selector selector = Selector(selName);
+    SEL selector = SEL(selName);
     Protocol protocol = Protocol(protoName);
     if (protocol == null) {
       throw 'Protocol($protoName) never used in native code! Can not get Protocol by its name!';
@@ -56,8 +57,7 @@ class id implements NSObjectProtocol {
         list.add(this);
       }
     }
-    // TODO: only invoke once.
-    ChannelDispatch().registerChannelCallback('object_dealloc', _dealloc);
+    ChannelDispatch().registerChannelCallbackIfNot('object_dealloc', _dealloc);
   }
 
   factory id.fromPointer(Pointer<Void> ptr) {
@@ -71,7 +71,7 @@ class id implements NSObjectProtocol {
   id retain() {
     if (this is NSObject) {
       _retainCount++;
-      id temp = perform(Selector('retain'));
+      id temp = perform(SEL('retain'));
       _ptr = temp._ptr;
     }
     return this;
@@ -80,7 +80,7 @@ class id implements NSObjectProtocol {
   release() {
     if (_retainCount > 0) {
       if (this is NSObject) {
-        perform(Selector('release'));
+        perform(SEL('release'));
       } else if (this is Block) {
         Block_release(this.pointer);
       }
@@ -89,7 +89,7 @@ class id implements NSObjectProtocol {
   }
 
   id autorelease() {
-    id temp = perform(Selector('autorelease'));
+    id temp = perform(SEL('autorelease'));
     _ptr = temp._ptr;
     return this;
   }
@@ -105,17 +105,17 @@ class id implements NSObjectProtocol {
 
   /// Returns the class object for the receiver’s superclass.
   Class get superclass {
-    return perform(Selector('superclass'));
+    return perform(SEL('superclass'));
   }
 
   /// Returns a Boolean value that indicates whether the receiver and a given object are equal.
   bool isEqual(NSObjectProtocol object) {
-    return perform(Selector('isEqual:'), args: [object]);
+    return perform(SEL('isEqual:'), args: [object]);
   }
 
   /// Returns an integer that can be used as a table address in a hash table structure.
   int get hash {
-    return perform(Selector('hash'));
+    return perform(SEL('hash'));
   }
 
   /// Returns the receiver.
@@ -125,43 +125,43 @@ class id implements NSObjectProtocol {
 
   /// Returns a Boolean value that indicates whether the receiver is an instance of given class or an instance of any class that inherits from that class.
   bool isKind({@required Class of}) {
-    return perform(Selector('isKindOfClass:'), args: [of]);
+    return perform(SEL('isKindOfClass:'), args: [of]);
   }
 
   /// Returns a Boolean value that indicates whether the receiver is an instance of a given class.
   bool isMember({@required Class of}) {
-    return perform(Selector('isMemberOfClass:'), args: [of]);
+    return perform(SEL('isMemberOfClass:'), args: [of]);
   }
 
   /// Returns a Boolean value that indicates whether the receiver implements or inherits a method that can respond to a specified message.
-  bool responds({@required Selector to}) {
-    return perform(Selector('respondsToSelector:'), args: [to]);
+  bool responds({@required SEL to}) {
+    return perform(SEL('respondsToSelector:'), args: [to]);
   }
 
   /// Returns a Boolean value that indicates whether the receiver conforms to a given protocol.
   bool conforms({@required Protocol to}) {
-    return perform(Selector('conformsToProtocol:'), args: [to]);
+    return perform(SEL('conformsToProtocol:'), args: [to]);
   }
 
   /// Returns a string that describes the contents of the receiver.
   String get description {
-    return perform(Selector('description'));
+    return perform(SEL('description'));
   }
 
   /// Returns a string that describes the contents of the receiver for presentation in the debugger.
   String get debugDescription {
-    return perform(Selector('debugDescription'));
+    return perform(SEL('debugDescription'));
   }
 
   /// Sends a specified message to the receiver and returns the result of the message.
-  dynamic perform(Selector selector,
+  dynamic perform(SEL selector,
       {List args, DispatchQueue onQueue, bool waitUntilDone = true}) {
     return msgSend(this, selector, args, true, onQueue, waitUntilDone);
   }
 
   /// Returns a Boolean value that indicates whether the receiver does not descend from NSObject.
   bool isProxy() {
-    return perform(Selector('isProxy'));
+    return perform(SEL('isProxy'));
   }
 
   @override

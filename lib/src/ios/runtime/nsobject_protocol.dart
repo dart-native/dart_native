@@ -27,7 +27,7 @@ abstract class NSObjectProtocol {
   bool isMember({@required Class of});
 
   /// Returns a Boolean value that indicates whether the receiver implements or inherits a method that can respond to a specified message.
-  bool responds({@required Selector to});
+  bool responds({@required SEL to});
 
   /// Returns a Boolean value that indicates whether the receiver conforms to a given protocol.
   bool conforms({@required Protocol to});
@@ -39,7 +39,7 @@ abstract class NSObjectProtocol {
   String get debugDescription;
 
   /// Sends a specified message to the receiver and returns the result of the message.
-  dynamic perform(Selector selector, {List args});
+  dynamic perform(SEL selector, {List args});
 
   /// Returns a Boolean value that indicates whether the receiver does not descend from NSObject.
   bool isProxy();
@@ -48,11 +48,11 @@ abstract class NSObjectProtocol {
 /// Returns the class object for the receiver’s class.
 Class type({@required dynamic of}) {
   if (of is NSObjectProtocol) {
-    return of.perform(Selector('class'));
+    return of.perform(SEL('class'));
   } else if (of is Type) {
     return Class(of.toString());
   } else if (of is Pointer) {
-    return NSObject.fromPointer(of).perform(Selector('class'));
+    return NSObject.fromPointer(of).perform(SEL('class'));
   } else {
     return Class(of.runtimeType.toString());
   }

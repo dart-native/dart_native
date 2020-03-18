@@ -13,8 +13,12 @@ class ChannelDispatch {
     _channel.setMethodCallHandler(_handler);
   }
 
-  registerChannelCallback(String method, Function callback) {
-    _callbacks[method] = callback;
+  bool registerChannelCallbackIfNot(String method, Function callback) {
+    if (_callbacks[method] == null) {
+      _callbacks[method] = callback;
+      return true;
+    }
+    return false;
   }
 
   Future<dynamic> _handler(MethodCall call) async {

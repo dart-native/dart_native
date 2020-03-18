@@ -3,29 +3,20 @@ name: Dart CI
 on: [push]
 
 jobs:
-  build:
-    name: Build APK
-    runs-on: macos-latest
-
-    container:
-      image:  google/dart:latest
-
+  check:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v1
         with:
-          java-version: '12.x'
+          java-version: "12.x"
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: '1.12.13+hotfix.5'
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Run tests
-        run: flutter test
-      - name: Build Debug APK
-        run: flutter build apk --debug --split-per-abi
-      - name: Create a Release APK
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/app/outputs/apk/debug/*.apk"
-          token: ${{ secrets.TOKEN }}
+          # same with pubspec.yaml
+          flutter-version: "1.12.13+hotfix.8"
+      - run: flutter pub get
+      - run: flutter test --no-pub test/

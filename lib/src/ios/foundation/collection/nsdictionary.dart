@@ -12,7 +12,7 @@ class NSDictionary extends NSSubclass<Map> {
   }
 
   NSDictionary.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    NSObject keysObject = perform(Selector('allKeys'));
+    NSObject keysObject = perform(SEL('allKeys'));
     NSArray keysArray = NSArray.fromPointer(keysObject.pointer);
     List keysList = keysArray.value;
     Map temp = {};
@@ -28,19 +28,18 @@ class NSDictionary extends NSSubclass<Map> {
     if (value is Map) {
       NSArray keys = value.keys.toList(growable: false).toNSArray();
       NSArray values = value.values.toList(growable: false).toNSArray();
-      NSObject result = Class('NSDictionary').perform(
-          Selector('dictionaryWithObjects:forKeys:'),
-          args: [keys, values]);
+      NSObject result = Class('NSDictionary')
+          .perform(SEL('dictionaryWithObjects:forKeys:'), args: [keys, values]);
       return result.pointer;
     } else {
       throw 'Invalid param when initializing NSDictionary.';
     }
   }
 
-  int get count => perform(Selector('count'));
+  int get count => perform(SEL('count'));
 
   id objectForKey(id key) {
-    return perform(Selector('objectForKey:'), args: [key]);
+    return perform(SEL('objectForKey:'), args: [key]);
   }
 }
 

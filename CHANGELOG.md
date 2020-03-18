@@ -1,3 +1,9 @@
+## 0.1.13
+
+* Fix iOS memory leak.
+* Support iOS struct dealloc callback.
+* Add sample code for Android.
+
 ## 0.1.12
 
 * Fix issue for callback.

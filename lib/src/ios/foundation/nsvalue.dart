@@ -19,9 +19,9 @@ class NSValue extends NSSubclass {
 
   NSValue.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     if (value == null) {
-      String encoding = perform(Selector('objCType'));
+      String encoding = perform(SEL('objCType'));
       String selName = _selNameForNativeValue(encoding);
-      value = msgSend(this, Selector(selName), null, false);
+      value = msgSend(this, SEL(selName), null, false);
     }
   }
 
@@ -50,14 +50,13 @@ class NSValue extends NSSubclass {
 
   static NSValue valueWithPointer(Pointer value) {
     NSObject result =
-        type(of: NSValue).perform(Selector('valueWithPointer:'), args: [value]);
+        type(of: NSValue).perform(SEL('valueWithPointer:'), args: [value]);
     return NSValue.fromPointer(result.pointer);
   }
 
   static NSValue valueWithStruct<T extends NativeStruct>(T struct) {
     String selName = 'valueWith${struct.runtimeType.toString()}:';
-    NSObject result =
-        type(of: NSValue).perform(Selector(selName), args: [struct]);
+    NSObject result = type(of: NSValue).perform(SEL(selName), args: [struct]);
     NSValue value = NSValue.fromPointer(result.pointer);
     value.value = struct;
     return value;
@@ -69,32 +68,32 @@ extension NSValueUIGeometry on NSValue {
     return NSValue.valueWithStruct(point);
   }
 
-  CGPoint get CGPointValue => perform(Selector('CGPointValue'));
+  CGPoint get CGPointValue => perform(SEL('CGPointValue'));
 
   static NSValue valueWithCGVector(CGVector vector) {
     return NSValue.valueWithStruct(vector);
   }
 
-  CGVector get CGVectorValue => perform(Selector('CGVectorValue'));
+  CGVector get CGVectorValue => perform(SEL('CGVectorValue'));
 
   static NSValue valueWithCGSize(CGSize size) {
     return NSValue.valueWithStruct(size);
   }
 
-  CGSize get CGSizeValue => perform(Selector('CGSizeValue'));
+  CGSize get CGSizeValue => perform(SEL('CGSizeValue'));
 
   static NSValue valueWithCGRect(CGRect rect) {
     return NSValue.valueWithStruct(rect);
   }
 
-  CGRect get CGRectValue => perform(Selector('CGRectValue'));
+  CGRect get CGRectValue => perform(SEL('CGRectValue'));
 
   static NSValue valueWithCGAffineTransform(CGAffineTransform transform) {
     return NSValue.valueWithStruct(transform);
   }
 
   CGAffineTransform get CGAffineTransformValue =>
-      perform(Selector('CGAffineTransformValue'));
+      perform(SEL('CGAffineTransformValue'));
 
   static NSValue valueWithNSDirectionalEdgeInsets(
       NSDirectionalEdgeInsets insets) {
@@ -102,13 +101,13 @@ extension NSValueUIGeometry on NSValue {
   }
 
   NSDirectionalEdgeInsets get NSDirectionalEdgeInsetsValue =>
-      perform(Selector('NSDirectionalEdgeInsetsValue'));
+      perform(SEL('NSDirectionalEdgeInsetsValue'));
 
   static NSValue valueWithUIOffset(UIOffset insets) {
     return NSValue.valueWithStruct(insets);
   }
 
-  UIOffset get UIOffsetValue => perform(Selector('UIOffsetValue'));
+  UIOffset get UIOffsetValue => perform(SEL('UIOffsetValue'));
 }
 
 extension NSValueRange on NSValue {
@@ -116,5 +115,5 @@ extension NSValueRange on NSValue {
     return NSValue.valueWithStruct(range);
   }
 
-  NSRange get rangeValue => perform(Selector('rangeValue'));
+  NSRange get rangeValue => perform(SEL('rangeValue'));
 }
