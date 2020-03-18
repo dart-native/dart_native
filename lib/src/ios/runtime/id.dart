@@ -33,6 +33,7 @@ class id implements NSObjectProtocol {
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
   /// Register callback function for selector in protocol.
+  /// Protocol [protocolType] must be used in native code.
   bool registerProtocolCallback(
       Function callback, String selName, Type protocolType) {
     String protoName = protocolType.toString();
@@ -56,8 +57,7 @@ class id implements NSObjectProtocol {
         list.add(this);
       }
     }
-    // TODO: only invoke once.
-    ChannelDispatch().registerChannelCallback('object_dealloc', _dealloc);
+    ChannelDispatch().registerChannelCallbackIfNot('object_dealloc', _dealloc);
   }
 
   factory id.fromPointer(Pointer<Void> ptr) {

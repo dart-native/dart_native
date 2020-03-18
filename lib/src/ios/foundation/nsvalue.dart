@@ -56,8 +56,7 @@ class NSValue extends NSSubclass {
 
   static NSValue valueWithStruct<T extends NativeStruct>(T struct) {
     String selName = 'valueWith${struct.runtimeType.toString()}:';
-    NSObject result =
-        type(of: NSValue).perform(SEL(selName), args: [struct]);
+    NSObject result = type(of: NSValue).perform(SEL(selName), args: [struct]);
     NSValue value = NSValue.fromPointer(result.pointer);
     value.value = struct;
     return value;

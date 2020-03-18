@@ -171,7 +171,7 @@ class _AndroidAppState extends State<AndroidApp> {
     print("testIntFFI");
     var startMs = currentTimeMillis();
     final ffi.DynamicLibrary nativePlatformLib =
-    ffi.DynamicLibrary.open("libtest_lib.so");
+        ffi.DynamicLibrary.open("libtest_lib.so");
 
     for (int i = 0; i < _TEST_COUNT; i++) {
       final IntPlatformFunction nativePlatform = nativePlatformLib
@@ -219,7 +219,7 @@ class _AndroidAppState extends State<AndroidApp> {
     print("testDoubleFFI");
     var startMs = currentTimeMillis();
     final ffi.DynamicLibrary nativePlatformLib =
-    ffi.DynamicLibrary.open("libtest_lib.so");
+        ffi.DynamicLibrary.open("libtest_lib.so");
 
     for (int i = 0; i < _TEST_COUNT; i++) {
       final DoublePlatformFunction nativePlatform = nativePlatformLib
@@ -239,7 +239,7 @@ class _AndroidAppState extends State<AndroidApp> {
     print("testByteFFI");
     var startMs = currentTimeMillis();
     final ffi.DynamicLibrary nativePlatformLib =
-    ffi.DynamicLibrary.open("libtest_lib.so");
+        ffi.DynamicLibrary.open("libtest_lib.so");
 
     for (int i = 0; i < _TEST_COUNT; i++) {
       final BytePlatformFunction nativePlatform = nativePlatformLib
@@ -259,7 +259,7 @@ class _AndroidAppState extends State<AndroidApp> {
     print("testShortFFI");
     var startMs = currentTimeMillis();
     final ffi.DynamicLibrary nativePlatformLib =
-    ffi.DynamicLibrary.open("libtest_lib.so");
+        ffi.DynamicLibrary.open("libtest_lib.so");
 
     for (int i = 0; i < _TEST_COUNT; i++) {
       final ShortPlatformFunction nativePlatform = nativePlatformLib
@@ -279,7 +279,7 @@ class _AndroidAppState extends State<AndroidApp> {
     print("testLongFFI");
     var startMs = currentTimeMillis();
     final ffi.DynamicLibrary nativePlatformLib =
-    ffi.DynamicLibrary.open("libtest_lib.so");
+        ffi.DynamicLibrary.open("libtest_lib.so");
 
     for (int i = 0; i < _TEST_COUNT; i++) {
       final LongPlatformFunction nativePlatform = nativePlatformLib
@@ -299,7 +299,7 @@ class _AndroidAppState extends State<AndroidApp> {
     print("testFloatFFI");
     var startMs = currentTimeMillis();
     final ffi.DynamicLibrary nativePlatformLib =
-    ffi.DynamicLibrary.open("libtest_lib.so");
+        ffi.DynamicLibrary.open("libtest_lib.so");
 
     for (int i = 0; i < _TEST_COUNT; i++) {
       final FloatPlatformFunction nativePlatform = nativePlatformLib
@@ -319,7 +319,7 @@ class _AndroidAppState extends State<AndroidApp> {
     print("testCharFFI");
     var startMs = currentTimeMillis();
     final ffi.DynamicLibrary nativePlatformLib =
-    ffi.DynamicLibrary.open("libtest_lib.so");
+        ffi.DynamicLibrary.open("libtest_lib.so");
 
     for (int i = 0; i < _TEST_COUNT; i++) {
       final CharPlatformFunction nativePlatform = nativePlatformLib

@@ -53,7 +53,7 @@ class RuntimeStub extends NSObject {
   String fooCharPtr(String charPtr) {
     return perform(SEL('fooCharPtr:'), args: [charPtr]);
   }
-  
+
   Class fooClass(Class cls) {
     return perform(SEL('fooClass:'), args: [cls]);
   }

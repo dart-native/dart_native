@@ -16,7 +16,8 @@ bool registerMethodCallback(
   CallbackManager.shared
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
   int result = nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr);
-  ChannelDispatch().registerChannelCallback('method_callback', _asyncCallback);
+  ChannelDispatch()
+      .registerChannelCallbackIfNot('method_callback', _asyncCallback);
   return result != 0;
 }
 

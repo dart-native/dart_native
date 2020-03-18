@@ -51,7 +51,8 @@ class Block extends id {
   }
 
   Block._internal(Pointer<Void> ptr) : super(ptr) {
-    ChannelDispatch().registerChannelCallback('block_invoke', _asyncCallback);
+    ChannelDispatch()
+        .registerChannelCallbackIfNot('block_invoke', _asyncCallback);
   }
 
   Class get superclass {
