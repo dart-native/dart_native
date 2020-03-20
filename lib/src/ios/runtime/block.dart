@@ -112,11 +112,12 @@ class Block extends id {
     if (args != null) {
       argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
       for (var i = 0; i < args.length; i++) {
-        if (args[i] == null) {
-          throw 'One of args list is null';
+        var arg = args[i];
+        if (arg == null) {
+          arg = nil;
         }
         String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).value);
-        storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
+        storeValueToPointer(arg, argsPtrPtr.elementAt(i), encoding);
       }
     }
     Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);

@@ -72,7 +72,7 @@ dynamic msgSend(id target, SEL selector,
     for (var i = 0; i < argCount; i++) {
       var arg = args[i];
       if (arg == null) {
-        throw 'One of args list is null';
+        arg = nil;
       }
       Pointer<Utf8> argTypePtr =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
