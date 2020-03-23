@@ -8,7 +8,7 @@ class JObject {
   dynamic invoke(String method, List args) {
     final methodPtr = Utf8.toUtf8(method);
 
-//    Pointer<Void> nativeMethodPtr = nativeMethod(methodPtr);
+    Pointer<Void> nativeMethodPtr = nativeMethod(methodPtr);
     Pointer<Utf8> typePtr = nativeMethodType(methodPtr);
     String returnType = Utf8.fromUtf8(typePtr);
     print("huizz $returnType");

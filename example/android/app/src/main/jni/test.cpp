@@ -134,7 +134,7 @@ jmethodID  *nativeMethod() {
     if (cls != nullptr) {
         jmethodID method = curEnv->GetStaticMethodID(cls, "getMethod", "(Ljava/lang/String;)Ljava/lang/reflect/Method;");
         if (method != nullptr) {
-            methodResult = (jmethodID *)curEnv->CallStaticObjectMethod(cls, method, "getChar");
+            methodResult = (jmethodID *)curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF("getChar"));
         }
     }
 
