@@ -87,16 +87,25 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
   print(array);
 
-  Block block = stub.fooBlock(_blockFunc);
+  Block block = stub.fooBlock((NSObject a) {
+    print('hello block! ${a.toString()}');
+    return a;
+  });
   resultObj = block.invoke([stub]);
   print('fooBlock result:$resultObj');
 
-  Block blockStret = stub.fooStretBlock(_blockStructFunc);
+  Block blockStret = stub.fooStretBlock((CGRect a) {
+    print('hello block stret! ${a.toString()}');
+    return CGAffineTransform(12, 0, 12, 0, 12, 0);
+  });
   CGAffineTransform resultStret =
       blockStret.invoke([CGAffineTransform(6, 5, 4, 3, 2, 1)]);
   print('fooStretBlock result:$resultStret');
 
-  Block blockCString = stub.fooCStringBlock(_blockCStringFunc);
+  Block blockCString = stub.fooCStringBlock((CString a) {
+    print('hello block cstring! $a');
+    return CString('test return cstring');
+  });
   String resultCString = blockCString.invoke(['test cstring arg']);
   print('fooCStringBlock result:$resultCString');
 
@@ -115,18 +124,3 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);
 }
-
-Function _blockFunc = (NSObject a) {
-  print('hello block! ${a.toString()}');
-  return a;
-};
-
-Function _blockStructFunc = (CGRect a) {
-  print('hello block stret! ${a.toString()}');
-  return CGAffineTransform(12, 0, 12, 0, 12, 0);
-};
-
-Function _blockCStringFunc = (CString a) {
-  print('hello block cstring! $a');
-  return CString('test return cstring');
-};
