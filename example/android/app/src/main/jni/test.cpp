@@ -83,8 +83,94 @@ int32_t getPlatformInt() {
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
-
     return ret;
+}
+
+
+char *nativeMethodType(const char *methodName) {
+
+    JNIEnv *curEnv;
+    bool bShouldDetach = false;
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        bShouldDetach = true;
+        NSLog("AttachCurrentThread : %d", error);
+    }
+
+    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+    char *typeResult = nullptr;
+
+    if (cls != nullptr) {
+        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodType", "(Ljava/lang/String;)Ljava/lang/String;");
+        if (method != nullptr) {
+            jstring type = (jstring) curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF(methodName));
+            typeResult = (char *)curEnv->GetStringUTFChars(type, 0);
+        }
+    }
+
+    if (bShouldDetach) {
+        gJvm->DetachCurrentThread();
+    }
+
+    return typeResult;
+}
+
+jmethodID  *nativeMethod() {
+    JNIEnv *curEnv;
+    bool bShouldDetach = false;
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        bShouldDetach = true;
+        NSLog("AttachCurrentThread : %d", error);
+    }
+
+    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+    jmethodID *methodResult = nullptr;
+
+    if (cls != nullptr) {
+        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethod", "(Ljava/lang/String;)Ljava/lang/reflect/Method;");
+        if (method != nullptr) {
+            methodResult = (jmethodID *)curEnv->CallStaticObjectMethod(cls, method, "getChar");
+        }
+    }
+
+    if (bShouldDetach) {
+        gJvm->DetachCurrentThread();
+    }
+
+    return methodResult;
+}
+
+void *invokeNativeMethod(void *method, void **args) {
+//    JNIEnv *curEnv;
+//    bool bShouldDetach = false;
+//
+//    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+//    if (error < 0) {
+//        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+//        bShouldDetach = true;
+//        NSLog("AttachCurrentThread : %d", error);
+//    }
+//
+//    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+//    auto *invokeResult = nullptr;
+//
+//    if (cls != nullptr) {
+//        if (method != nullptr) {
+//            jstring type = (jstring) curEnv->CallStatic(cls, method, );
+//            typeResult = (char *)curEnv->GetStringUTFChars(type, 0);
+//        }
+//    }
+//
+//    if (bShouldDetach) {
+//        gJvm->DetachCurrentThread();
+//    }
+//
+//    return invokeResult;
 }
 
 double getPlatformDouble() {

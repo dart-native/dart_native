@@ -12,7 +12,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
 
 SPEC REPOS:
-  https://cdn.cocoapods.org/:
+  trunk:
     - CocoaLumberjack
 
 EXTERNAL SOURCES:
@@ -28,4 +28,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 9a73c7a50a979210dd9e86ea91a651e23f545314
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.1

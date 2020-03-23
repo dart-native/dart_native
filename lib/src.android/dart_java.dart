@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 import 'dart:ffi' as ffi;
+export 'runtime/jobject.dart';
 
 class DartJava {
   static const MethodChannel _channel =

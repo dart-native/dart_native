@@ -3,9 +3,13 @@ package com.dartnative.dart_native_example;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import io.flutter.Log;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugins.GeneratedPluginRegistrant;
+
+import java.lang.reflect.Method;
+import java.util.NoSuchElementException;
 
 public class MainActivity extends FlutterActivity {
   static{
@@ -45,4 +49,20 @@ public class MainActivity extends FlutterActivity {
     return 1;
   }
 
+  public static String getMethodType(String methodName) {
+    try {
+      Method clsMethod = MainActivity.class.getDeclaredMethod(methodName);
+      return clsMethod.getGenericReturnType().toString();
+    } catch (NoSuchMethodException e) {
+      throw new NoSuchElementException(e.getMessage());
+    }
+  }
+
+  public static Method getMethod(String method) {
+    try {
+      return MainActivity.class.getDeclaredMethod(method);
+    } catch (NoSuchMethodException e) {
+      throw new NoSuchElementException(e.getMessage());
+    }
+  }
 }
