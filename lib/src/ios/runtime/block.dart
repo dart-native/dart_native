@@ -240,7 +240,6 @@ List<String> _nativeTypeNames = [
   'NSUInteger',
   'Class',
   'SEL',
-  'Selector'
 ];
 
 List<String> _typeStringForFunction(Function function) {

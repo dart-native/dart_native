@@ -72,7 +72,6 @@ int DNTypeLengthWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_LENGTH(NSUInteger);
         DN_DEFINE_TYPE_LENGTH(Class);
         DN_DEFINE_TYPE_LENGTH(SEL);
-        [_typeLengthDict setObject:@(sizeof(SEL)) forKey:@"Selector"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"ptr"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"block"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"NSObject*"];
@@ -122,7 +121,6 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_ENCODE_CASE(NSUInteger);
         DN_DEFINE_TYPE_ENCODE_CASE(Class);
         DN_DEFINE_TYPE_ENCODE_CASE(SEL);
-        [_typeEncodeDict setObject:@"Selector" forKey:@"Selector"];
         [_typeEncodeDict setObject:@"^v" forKey:@"ptr"];
         [_typeEncodeDict setObject:@"@?" forKey:@"block"];
         [_typeEncodeDict setObject:@"^@" forKey:@"NSObject*"];
