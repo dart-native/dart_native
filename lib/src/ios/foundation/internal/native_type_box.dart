@@ -40,21 +40,21 @@ dynamic boxingBasicValue(String type, dynamic value) {
       return CGFloat(value);
     case 'char':
       return char(value);
-    case 'unsigned char':
+    case 'unsigned_char':
       return unsigned_char(value);
     case 'short':
       return short(value);
-    case 'unsigned short':
+    case 'unsigned_short':
       return unsigned_short(value);
-    case 'unsigned int':
+    case 'unsigned_int':
       return unsigned_int(value);
     case 'long':
       return long(value);
-    case 'unsigned long':
+    case 'unsigned_long':
       return unsigned_long(value);
-    case 'long long':
+    case 'long_long':
       return long_long(value);
-    case 'unsigned long long':
+    case 'unsigned_long_long':
       return unsigned_long_long(value);
     case 'size_t':
       return size_t(value);

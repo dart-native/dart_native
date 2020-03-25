@@ -32,14 +32,15 @@ class Block extends id {
   // }
 
   factory Block(Function function) {
-    List<String> types = _typeStringForFunction(function);
-    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
+    List<String> dartTypes = _dartTypeStringForFunction(function);
+    List<String> nativeTypes = _nativeTypeStringForDart(dartTypes);
+    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(nativeTypes.join(', '));
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
     Block result = Block._internal(Pointer.fromAddress(blockAddr));
     free(typeStringPtr);
-    result.types = types;
+    result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
     _blockForAddress[result.pointer.address] = result;
@@ -162,6 +163,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     }
     dynamic value = loadValueFromPointer(ptr, encoding);
     dynamic arg = boxingBasicValue(block.types[i + 1], value);
+    // TODO:
     args.add(arg);
   }
   dynamic result = Function.apply(block.function, args);
@@ -242,7 +244,7 @@ List<String> _nativeTypeNames = [
   'SEL',
 ];
 
-List<String> _typeStringForFunction(Function function) {
+List<String> _dartTypeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
   if (argsAndRet.length == 2) {
@@ -250,24 +252,26 @@ List<String> _typeStringForFunction(Function function) {
     String ret = argsAndRet.last.replaceAll('Null', 'void');
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      _nativeTypeNameMap.forEach((String dartTypeName, String nativeTypeName) {
-        args = args.replaceAll(dartTypeName, nativeTypeName);
-      });
-      return '$ret, $args'.split(', ').map((String s) {
-        if (s.contains('Pointer')) {
-          return 'ptr';
-        } else if (s.contains('CString')) {
-          return 'CString';
-        } else if (s.contains('Function')) {
-          return 'block';
-        } else if (!_nativeTypeNames.contains(s)) {
-          return 'NSObject';
-        }
-        return s;
-      }).toList();
+      return '$ret, $args'.split(', ');
     } else {
       return [ret];
     }
   }
   return [];
+}
+
+List<String> _nativeTypeStringForDart(List<String> types) {
+  return types.map((String s) {
+    s = _nativeTypeNameMap[s] ?? s;
+    if (s.contains('Pointer')) {
+      return 'ptr';
+    } else if (s.contains('CString')) {
+      return 'CString';
+    } else if (s.contains('Function')) {
+      return 'block';
+    } else if (!_nativeTypeNames.contains(s)) {
+      return 'NSObject';
+    }
+    return s;
+  }).toList();
 }
