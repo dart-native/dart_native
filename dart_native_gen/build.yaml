@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      dart_native_gen|type_convertor:
+        enabled: true
+
+builders:
+  type_convertor:
+    import: "package:dart_native_gen/builder.dart"
+    builder_factories: ["typeConvertor"]
+    build_extensions: {".dart": [".type_convertor.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
