@@ -1,6 +1,7 @@
 package com.dartnative.dart_native_example;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import io.flutter.Log;
@@ -33,7 +34,7 @@ public class MainActivity extends FlutterActivity {
     return 1;
   }
 
-  public static float getFloat() {
+  public static float getFloat(String name, int jk, boolean issure) {
     return 100.0f;
   }
 
@@ -64,5 +65,27 @@ public class MainActivity extends FlutterActivity {
     } catch (NoSuchMethodException e) {
       throw new NoSuchElementException(e.getMessage());
     }
+  }
+
+  public static String[] getMethodParams(String methodName) {
+    Method[] clsMethod = MainActivity.class.getDeclaredMethods();
+    Method findMethod = null;
+    for (Method method : clsMethod) {
+      if (TextUtils.equals(method.getName(), methodName)) {
+        findMethod = method;
+        break;
+      }
+    }
+    if (findMethod == null) {
+      throw new NoSuchElementException(methodName);
+    }
+    Class[] typeClasses = findMethod.getParameterTypes();
+    int count = 0;
+    String[] methodTypes = new String[typeClasses.length];
+    for (Class type : typeClasses) {
+      methodTypes[count] = type.getCanonicalName();
+      count++;
+    }
+    return methodTypes;
   }
 }

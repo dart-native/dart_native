@@ -8,14 +8,15 @@ class JObject {
   dynamic invoke(String method, List args) {
     final methodPtr = Utf8.toUtf8(method);
 
-    Pointer<Void> nativeMethodPtr = nativeMethod(methodPtr);
+//    Pointer<Void> nativeMethodPtr = nativeMethod(methodPtr);
     Pointer<Utf8> typePtr = nativeMethodType(methodPtr);
     String returnType = Utf8.fromUtf8(typePtr);
-    print("huizz $returnType");
+    print("returnType $returnType");
+    free(typePtr);
 
     Pointer<Pointer<Void>> pointers;
     if (args != null) {
-      pointers = allocate<Pointer<Void>>(count: args.length);
+      pointers = allocate<Pointer<Void>>(count: args.length + 1);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (arg == null) {
@@ -24,8 +25,10 @@ class JObject {
         storeValueToPointer(arg, pointers.elementAt(i));
       }
     }
-
-//    Pointer<Void> invokeMethod = invokeNativeMethod(nativeMethodPtr, pointers);
+    Pointer<Void> invokeMethod = invokeNativeMethod(methodPtr, pointers);
+    if(pointers != null) {
+      free(pointers);
+    }
 
 
     //covert dart type to native

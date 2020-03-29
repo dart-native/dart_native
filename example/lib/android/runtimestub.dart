@@ -11,7 +11,7 @@ class RuntimeStub extends JObject {
 //  }
 
   void getInt() {
-    return invoke('getChar', ['200dc']);
+    return invoke('getChar', ['b', 'v', 'c']);
   }
 
 //  int getByte() {

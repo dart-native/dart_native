@@ -5,6 +5,7 @@
 #include <jni.h>
 #include <stdint.h>
 #include <android/log.h>
+#include <string.h>
 
 
 extern "C" {
@@ -84,93 +85,6 @@ int32_t getPlatformInt() {
         gJvm->DetachCurrentThread();
     }
     return ret;
-}
-
-
-char *nativeMethodType(const char *methodName) {
-
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-    char *typeResult = nullptr;
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodType", "(Ljava/lang/String;)Ljava/lang/String;");
-        if (method != nullptr) {
-            jstring type = (jstring) curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF(methodName));
-            typeResult = (char *)curEnv->GetStringUTFChars(type, 0);
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-
-    return typeResult;
-}
-
-jmethodID  *nativeMethod() {
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-    jmethodID *methodResult = nullptr;
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethod", "(Ljava/lang/String;)Ljava/lang/reflect/Method;");
-        if (method != nullptr) {
-            methodResult = (jmethodID *)curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF("getChar"));
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-
-    return methodResult;
-}
-
-void *invokeNativeMethod(void *method, void **args) {
-//    JNIEnv *curEnv;
-//    bool bShouldDetach = false;
-//
-//    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-//    if (error < 0) {
-//        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-//        bShouldDetach = true;
-//        NSLog("AttachCurrentThread : %d", error);
-//    }
-//
-//    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-//    auto *invokeResult = nullptr;
-//
-//    if (cls != nullptr) {
-//        if (method != nullptr) {
-//            jstring type = (jstring) curEnv->CallStatic(cls, method, );
-//            typeResult = (char *)curEnv->GetStringUTFChars(type, 0);
-//        }
-//    }
-//
-//    if (bShouldDetach) {
-//        gJvm->DetachCurrentThread();
-//    }
-//
-//    return invokeResult;
 }
 
 double getPlatformDouble() {
@@ -374,6 +288,120 @@ char getPlatformChar() {
     }
 
     return ret;
+}
+
+char *nativeMethodType(const char *methodName) {
+
+    JNIEnv *curEnv;
+    bool bShouldDetach = false;
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        bShouldDetach = true;
+        NSLog("AttachCurrentThread : %d", error);
+    }
+
+    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+    char *typeResult = nullptr;
+
+    if (cls != nullptr) {
+        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodType", "(Ljava/lang/String;)Ljava/lang/String;");
+        if (method != nullptr) {
+            jstring type = (jstring) curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF(methodName));
+            typeResult = (char *)curEnv->GetStringUTFChars(type, 0);
+        }
+    }
+
+    if (bShouldDetach) {
+        gJvm->DetachCurrentThread();
+    }
+
+    return typeResult;
+}
+
+jmethodID  *nativeMethod() {
+    JNIEnv *curEnv;
+    bool bShouldDetach = false;
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        bShouldDetach = true;
+        NSLog("AttachCurrentThread : %d", error);
+    }
+
+    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+    jmethodID *methodResult = nullptr;
+
+    if (cls != nullptr) {
+        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethod", "(Ljava/lang/String;)Ljava/lang/reflect/Method;");
+        if (method != nullptr) {
+            methodResult = (jmethodID *)curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF("getChar"));
+        }
+    }
+
+    if (bShouldDetach) {
+        gJvm->DetachCurrentThread();
+    }
+
+    return methodResult;
+}
+
+void *invokeNativeMethod(char* methodName, void **args) {
+    JNIEnv *curEnv;
+    bool bShouldDetach = false;
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        bShouldDetach = true;
+        NSLog("AttachCurrentThread : %d", error);
+    }
+
+    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+
+    if (cls != nullptr) {
+        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodParams", "(Ljava/lang/String;)[Ljava/lang/String;");
+        if (method != nullptr) {
+            jarray methodResult = (jarray)curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF("getFloat"));
+            // assumption: the result of getData() is never null
+            jsize const length = curEnv->GetArrayLength(methodResult);
+            NSLog("param count, %d", length);
+            // assumption: the String[] is always of length > 0
+            char** arrArgs = new char*[length];
+
+            for(jsize index(0); index < length; ++index){
+                jstring element = (jstring) curEnv->GetObjectArrayElement((jobjectArray)methodResult, index);
+
+                // assumption: there are no null strings in the array
+                char const* nativeString = curEnv->GetStringUTFChars(element, 0);
+                jsize const nativeLength = strlen(nativeString);
+
+                arrArgs[index] = new char[nativeLength + 1];
+                strlcpy(arrArgs[index], nativeString, (size_t) nativeLength + 1);
+
+                curEnv->ReleaseStringUTFChars(element, nativeString);
+                curEnv->DeleteLocalRef(element);
+            }
+
+            for (size_t i = 0; i < length; i++) {
+                NSLog("argType %s" , arrArgs[i]);
+            }
+
+            for(size_t i = 0; i < length; ++args, ++i) {
+                NSLog("arg %s" , (char *)args);
+            }
+
+        }
+    }
+
+    if (bShouldDetach) {
+        gJvm->DetachCurrentThread();
+    }
+
+    return (char *)"a";
+
 }
 
 }

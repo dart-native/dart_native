@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'package:ffi/ffi.dart';
 
 import 'dart:typed_data';
 
@@ -18,7 +19,13 @@ dynamic storeValueToPointer(
         ptr.cast<Int32>().value = object;
         break;
     }
-  }
+  }else if (object is String) {
+      if (object.length > 1) {
+        throw '$object: Invalid String argument for native char type!';
+      }
+      int charC = utf8.encode(object).first;
+      ptr.cast<Uint16>().value = charC;
+    }
 }
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
