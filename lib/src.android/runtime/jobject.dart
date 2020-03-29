@@ -25,7 +25,7 @@ class JObject {
         storeValueToPointer(arg, pointers.elementAt(i));
       }
     }
-    Pointer<Void> invokeMethod = invokeNativeMethod(methodPtr, pointers);
+    Pointer<Utf8> invokeMethod = invokeNativeMethod(methodPtr, pointers);
     if(pointers != null) {
       free(pointers);
     }
@@ -36,8 +36,8 @@ class JObject {
     //covert native type to dart
 
     //return
-//    dynamic result = loadValueFromPointer(invokeMethod, returnType);
-//    return result;
+    dynamic result = loadValueFromPointer(invokeMethod, returnType);
+    return result;
   }
 }
 

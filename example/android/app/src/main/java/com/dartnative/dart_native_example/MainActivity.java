@@ -13,6 +13,8 @@ import java.lang.reflect.Method;
 import java.util.NoSuchElementException;
 
 public class MainActivity extends FlutterActivity {
+  public static final String TAG = "dart_java";
+
   static{
     System.loadLibrary("test_lib");
   }
@@ -22,7 +24,8 @@ public class MainActivity extends FlutterActivity {
     GeneratedPluginRegistrant.registerWith(flutterEngine);
   }
 
-  public static int getNumber() {
+  public static int getInt(int i){
+    Log.d(TAG, "getInt : " + i);
     return 100;
   }
 
@@ -38,8 +41,9 @@ public class MainActivity extends FlutterActivity {
     return 100.0f;
   }
 
-  public static char getChar() {
-    return 'a';
+  public static char getChar(char c) {
+    Log.d(TAG, "getChar : " + c);
+    return 'b';
   }
 
   public static short getShort() {
@@ -51,12 +55,25 @@ public class MainActivity extends FlutterActivity {
   }
 
   public static String getMethodType(String methodName) {
-    try {
-      Method clsMethod = MainActivity.class.getDeclaredMethod(methodName);
-      return clsMethod.getGenericReturnType().toString();
-    } catch (NoSuchMethodException e) {
-      throw new NoSuchElementException(e.getMessage());
+    Method[] clsMethod = MainActivity.class.getDeclaredMethods();
+    Method findMethod = null;
+    for (Method method : clsMethod) {
+      if (TextUtils.equals(method.getName(), methodName)) {
+        findMethod = method;
+        break;
+      }
     }
+    if (findMethod == null) {
+      throw new NoSuchElementException(methodName);
+    }
+    return findMethod.getGenericReturnType().toString();
+
+//    try {
+//      Method clsMethod = MainActivity.class.getDeclaredMethod(methodName);
+//      return clsMethod.getGenericReturnType().toString();
+//    } catch (NoSuchMethodException e) {
+//      throw new NoSuchElementException(e.getMessage());
+//    }
   }
 
   public static Method getMethod(String method) {

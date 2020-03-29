@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <android/log.h>
 #include <string.h>
+#include <malloc.h>
+#include <map>
 
 
 extern "C" {
@@ -15,6 +17,10 @@ extern "C" {
 static JavaVM *gJvm = nullptr;
 static jobject gClassLoader;
 static jmethodID gFindClassMethod;
+
+static std::map<char*, char*> param_to_signature = {
+        {"char", "C"}
+};
 
 JNIEnv *getEnv() {
     JNIEnv *env;
@@ -347,10 +353,39 @@ jmethodID  *nativeMethod() {
 
     return methodResult;
 }
+char *spliceChar(char *dest, char *src) {
+    char *result = (char *)malloc(strlen(dest) + strlen(src));
+    strcpy(result, dest);
+    strcat(result, src);
+    return result;
+}
+
+
+char *generateSignature(JNIEnv *env, char *methodName, char **argTypes, int length) {
+    char *signature = const_cast<char *>("(");
+    for (size_t i = 0; i < length; i++) {
+        if (strcmp(argTypes[i], "char") == 0) {
+            signature = spliceChar(signature, const_cast<char *>("C"));
+        }
+        if (strcmp(argTypes[i], "int") == 0) {
+            signature = spliceChar(signature, const_cast<char *>("I"));
+        }
+    }
+    signature = spliceChar(signature, const_cast<char *>(")"));
+    char *methodReturnType = nativeMethodType(methodName);
+    if (strcmp(methodReturnType, "char") == 0) {
+        signature = spliceChar(signature, const_cast<char *>("C"));
+    }
+    if (strcmp(methodReturnType, "int") == 0) {
+        signature = spliceChar(signature, const_cast<char *>("I"));
+    }
+    return signature;
+}
 
 void *invokeNativeMethod(char* methodName, void **args) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
+    char *nativeRunResult = nullptr;
 
     auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
     if (error < 0) {
@@ -364,7 +399,7 @@ void *invokeNativeMethod(char* methodName, void **args) {
     if (cls != nullptr) {
         jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodParams", "(Ljava/lang/String;)[Ljava/lang/String;");
         if (method != nullptr) {
-            jarray methodResult = (jarray)curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF("getFloat"));
+            jarray methodResult = (jarray)curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF(methodName));
             // assumption: the result of getData() is never null
             jsize const length = curEnv->GetArrayLength(methodResult);
             NSLog("param count, %d", length);
@@ -389,10 +424,29 @@ void *invokeNativeMethod(char* methodName, void **args) {
                 NSLog("argType %s" , arrArgs[i]);
             }
 
+            char** arrs = new char*[length];
+            jchar *jcharArray1 = (jchar *) calloc((size_t) length, sizeof(jchar));
             for(size_t i = 0; i < length; ++args, ++i) {
                 NSLog("arg %s" , (char *)args);
+                jcharArray1 = (jchar *) (char *)args;
             }
 
+            char *signature = generateSignature(curEnv, methodName, arrArgs, length);
+            NSLog("complete signature %s" , signature);
+
+            char *methodReturnType = nativeMethodType(methodName);
+            if (strcmp(methodReturnType, "char") == 0) {
+                jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                if (nativeMethod != nullptr) {
+                    nativeRunResult = (char *)curEnv->CallStaticCharMethod(cls, nativeMethod, L'C');
+                }
+            }
+            if (strcmp(methodReturnType, "int") == 0) {
+                jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                if (nativeMethod != nullptr) {
+                    nativeRunResult = (char *)curEnv->CallStaticIntMethod(cls, nativeMethod, L'C');
+                }
+            }
         }
     }
 
@@ -400,7 +454,7 @@ void *invokeNativeMethod(char* methodName, void **args) {
         gJvm->DetachCurrentThread();
     }
 
-    return (char *)"a";
+    return (char *)"B";
 
 }
 

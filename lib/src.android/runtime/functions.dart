@@ -11,6 +11,6 @@ typedef NativeMethod = Pointer<Void> Function(Pointer<Utf8> signature);
 final NativeMethod nativeMethod =
 nativeDylib.lookupFunction<NativeMethod, NativeMethod>('nativeMethod');
 
-typedef InvokeNativeMethod = Pointer<Void> Function(Pointer<Utf8> methodName, Pointer<Pointer<Void>> args);
+typedef InvokeNativeMethod = Pointer<Utf8> Function(Pointer<Utf8> methodName, Pointer<Pointer<Void>> args);
 final InvokeNativeMethod invokeNativeMethod =
 nativeDylib.lookupFunction<InvokeNativeMethod, InvokeNativeMethod>('invokeNativeMethod');

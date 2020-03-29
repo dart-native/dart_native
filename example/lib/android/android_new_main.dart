@@ -31,7 +31,8 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         ),
         body: FlatButton(
           onPressed: (){
-        testAndroid(stub);
+            int resultInt = stub.getInt();
+            print('getChar result:$resultInt');
           },
           child: Text('Using DartNative\n'),
         ),

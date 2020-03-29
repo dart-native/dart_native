@@ -5,8 +5,8 @@ testAndroid(RuntimeStub stub) {
 //  double resultDouble = stub.getDouble();
 //  print('getChar result:$resultDouble');
 
-  stub.getInt();
-//  print('getChar result:$resultInt');
+  int resultInt = stub.getInt();
+  print('getChar result:$resultInt');
 //
 //  int resultByte = stub.getByte();
 //  print('getChar result:$resultByte');
