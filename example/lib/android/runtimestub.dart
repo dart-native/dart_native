@@ -10,12 +10,12 @@ class RuntimeStub extends JObject {
 //    return invoke('getDouble');
 //  }
 
-//  String getChar() {
-//    return invoke('getChar', ['a']);
-//  }
+  String getChar() {
+    return invoke('getChar', ['a']);
+  }
 
   int getInt() {
-    return invoke('getInt', [10]);
+    return invoke('getInt', [8]);
   }
 
 //  int getByte() {

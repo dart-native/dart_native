@@ -24,6 +24,7 @@ class JObject {
         }
         storeValueToPointer(arg, pointers.elementAt(i));
       }
+      pointers.elementAt(args.length).value = nullptr;
     }
     Pointer<Utf8> invokeMethod = invokeNativeMethod(methodPtr, pointers);
     if(pointers != null) {

@@ -13,12 +13,16 @@ dynamic storeValueToPointer(
     if (object is bool) {
       // TODO: waiting for ffi bool type support.
       object = object ? 1 : 0;
+    } else {
+      ptr.cast<Int32>().value = object;
     }
-    switch (object) {
-      case int :
-        ptr.cast<Int32>().value = object;
-        break;
-    }
+//    switch (object) {
+//      case Int32:
+//        ptr.cast<Int32>
+//      case int :
+//        ptr.cast<Int32>().value = object;
+//        break;
+//    }
   }else if (object is String) {
       if (object.length > 1) {
         throw '$object: Invalid String argument for native char type!';
