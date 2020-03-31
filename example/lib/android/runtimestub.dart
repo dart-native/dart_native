@@ -15,7 +15,11 @@ class RuntimeStub extends JObject {
   }
 
   int getInt() {
-    return invoke('getInt', [8]);
+    return invoke('getInt', [10]);
+  }
+
+  bool getBool() {
+    return invoke('getBool', [true]);
   }
 
 //  int getByte() {

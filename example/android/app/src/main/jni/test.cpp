@@ -66,209 +66,6 @@ jclass findClass(JNIEnv *env, const char* name) {
     return static_cast<jclass>(env->CallObjectMethod(gClassLoader, gFindClassMethod, env->NewStringUTF(name)));
 }
 
-int32_t getPlatformInt() {
-    //NSLog("getPlatform");
-
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    int32_t ret = 10088;
-
-    //NSLog("findClass start");
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-
-    //NSLog("findClass success!");
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getNumber", "()I");
-        if (method != nullptr) {
-            ret = curEnv->CallStaticIntMethod(cls, method);
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-    return ret;
-}
-
-double getPlatformDouble() {
-
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    double ret = 10088.23;
-
-    //NSLog("findClass start");
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-
-    //NSLog("findClass success!");
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getDouble", "()D");
-        if (method != nullptr) {
-            ret = curEnv->CallStaticDoubleMethod(cls, method);
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-
-    return ret;
-}
-
-jbyte getPlatformByte() {
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    jbyte ret = 1;
-
-    //NSLog("findClass start");
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-
-    //NSLog("findClass success!");
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getByte", "()B");
-        if (method != nullptr) {
-            ret = curEnv->CallStaticByteMethod(cls, method);
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-
-    return ret;
-}
-
-
-jshort getPlatformShort() {
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    jshort ret = 1;
-
-    //NSLog("findClass start");
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-
-    //NSLog("findClass success!");
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getShort", "()S");
-        if (method != nullptr) {
-            ret = curEnv->CallStaticShortMethod(cls, method);
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-
-    return ret;
-}
-
-jlong getPlatformLong() {
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    jlong ret = 1;
-
-    //NSLog("findClass start");
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-
-    //NSLog("findClass success!");
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getLong", "()J");
-        if (method != nullptr) {
-            ret = curEnv->CallStaticLongMethod(cls, method);
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-
-    return ret;
-}
-
-
-float getPlatformFloat() {
-
-    JNIEnv *curEnv;
-    bool bShouldDetach = false;
-
-    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
-    if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
-        bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
-    }
-
-    float ret = 10088.2;
-
-    //NSLog("findClass start");
-
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
-
-    //NSLog("findClass success!");
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getFloat", "()F");
-        if (method != nullptr) {
-            ret = curEnv->CallStaticFloatMethod(cls, method);
-        }
-    }
-
-    if (bShouldDetach) {
-        gJvm->DetachCurrentThread();
-    }
-
-    return ret;
-}
-
 char *nativeMethodType(const char *methodName) {
 
     JNIEnv *curEnv;
@@ -385,20 +182,31 @@ char *invokeNativeMethod(char* methodName, void **args) {
                 curEnv->DeleteLocalRef(element);
             }
 
-            char **arrArgs = new char*[length];
-            for(jsize index(0); *args ; ++args, ++index) {
-                NSLog("arg param : %s", (char *)args);
-                jsize const paramLength = strlen((char *)args);
-                arrArgs[index] = new char[paramLength + 1];
-                strlcpy(arrArgs[index], (char *)args, (size_t) paramLength + 1);
-            }
             char *methodReturnType = nativeMethodType(methodName);
             char *signature = generateSignature(methodReturnType, arrArgTypes, length);
+            NSLog("%s return %s signature %s", methodName, methodReturnType, signature);
+
+
+            void **arrArgs = new void*[length];
+            for(jsize index(0); *args ; ++args, ++index) {
+
+                if (strcmp(arrArgTypes[index], "boolean") == 0
+                    || strcmp(arrArgTypes[index], "int") == 0) {
+                    NSLog("bool or int param %d", *((int *)args));
+                    arrArgs[index] = (int *) args;
+                }
+
+                if (strcmp(arrArgTypes[index], "char") == 0) {
+                    NSLog("char param : %s", (char *)args);
+                    arrArgs[index] = (char *)args;
+                }
+            }
 
             if (strcmp(methodReturnType, "char") == 0) {
                 jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
                 if (nativeMethod != nullptr) {
-                    jchar nativeChar = curEnv->CallStaticCharMethod(cls, nativeMethod, (jchar)*arrArgs[0]);
+                    char *charArg = (char *)arrArgs[0];
+                    jchar nativeChar = curEnv->CallStaticCharMethod(cls, nativeMethod, (jchar)*charArg);
                     char cChar = (char) nativeChar;
                     nativeRunResult = & cChar;
                 }
@@ -407,9 +215,20 @@ char *invokeNativeMethod(char* methodName, void **args) {
             if (strcmp(methodReturnType, "int") == 0) {
                 jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
                 if (nativeMethod != nullptr) {
-                    jint nativeInt = curEnv->CallStaticIntMethod(cls, nativeMethod, atoi(arrArgs[0]));
-                    char cInt = (char) nativeInt;
-                    nativeRunResult = &cInt;
+                    jint nativeInt = curEnv->CallStaticIntMethod(cls, nativeMethod, (jint)*((int *)arrArgs[0]));
+                    const char* to_char = std::to_string(nativeInt).c_str();
+                    char* cInt = new char[strlen(to_char)];
+                    strlcpy(cInt, to_char, strlen(to_char));
+                    nativeRunResult = cInt;
+                }
+            }
+
+            if (strcmp(methodReturnType, "boolean") == 0) {
+                jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                if (nativeMethod != nullptr) {
+                    jint nativeBool = curEnv->CallStaticBooleanMethod(cls, nativeMethod, *((int *)arrArgs) ? JNI_TRUE : JNI_FALSE);
+                    char cBool = static_cast<char>(nativeBool + '0');
+                    nativeRunResult = &cBool;
                 }
             }
         }

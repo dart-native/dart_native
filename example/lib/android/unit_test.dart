@@ -10,6 +10,9 @@ testAndroid(RuntimeStub stub) {
 
   int resultInt = stub.getInt();
   print('getInt result:$resultInt');
+
+  bool resultBool = stub.getBool();
+  print('getBool result:$resultBool');
 //
 //  int resultByte = stub.getByte();
 //  print('getChar result:$resultByte');

@@ -13,9 +13,8 @@ dynamic storeValueToPointer(
     if (object is bool) {
       // TODO: waiting for ffi bool type support.
       object = object ? 1 : 0;
-    } else {
-      ptr.cast<Int32>().value = object;
     }
+    ptr.cast<Int32>().value = object;
 //    switch (object) {
 //      case Int32:
 //        ptr.cast<Int32>
@@ -36,7 +35,7 @@ dynamic loadValueFromPointer(Pointer<Utf8> ptr, String encoding) {
   dynamic result;
   if (encoding.contains('int') ||
       encoding.contains('float') ||
-      encoding == 'bool' ||
+      encoding == 'boolean' ||
       encoding == 'char' ||
       encoding == 'uchar') {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
@@ -45,7 +44,7 @@ dynamic loadValueFromPointer(Pointer<Utf8> ptr, String encoding) {
       case 'int' :
         result = data.getInt32(0);
         break;
-      case 'bool':
+      case 'boolean':
         result = data.getInt8(0) != 0;
         break;
       case 'char':

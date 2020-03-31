@@ -1,6 +1,5 @@
 package com.dartnative.dart_native_example;
 
-import android.os.Bundle;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -52,6 +51,11 @@ public class MainActivity extends FlutterActivity {
 
   public static long getLong() {
     return 1;
+  }
+
+  public static boolean getBool(boolean b) {
+    Log.d(TAG, "getBool : " + b);
+    return false;
   }
 
   public static String getMethodType(String methodName) {
