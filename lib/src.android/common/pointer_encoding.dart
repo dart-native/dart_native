@@ -31,7 +31,7 @@ dynamic storeValueToPointer(
     }
 }
 
-dynamic loadValueFromPointer(Pointer<Utf8> ptr, String encoding) {
+dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
   dynamic result;
   if (encoding.contains('int') ||
       encoding.contains('float') ||
@@ -42,13 +42,13 @@ dynamic loadValueFromPointer(Pointer<Utf8> ptr, String encoding) {
     ByteData data = ByteData.view(buffer);
     switch (encoding) {
       case 'int' :
-        result = data.getInt32(0);
+        result = data.getInt32(0, Endian.host);
         break;
       case 'boolean':
         result = data.getInt8(0) != 0;
         break;
       case 'char':
-          result = Utf8.fromUtf8(ptr);
+        result = utf8.decode([data.getInt8(0)]);
         break;
       case 'uchar':
           result = utf8.decode([data.getUint8(0)]);
