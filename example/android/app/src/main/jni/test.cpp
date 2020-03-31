@@ -348,7 +348,7 @@ char *generateSignature(char *methodReturnType, char **argTypes, int length) {
     return signature;
 }
 
-void *invokeNativeMethod(char* methodName, void **args) {
+char *invokeNativeMethod(char* methodName, void **args) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
     char *nativeRunResult = nullptr;
@@ -386,14 +386,7 @@ void *invokeNativeMethod(char* methodName, void **args) {
             }
 
             char **arrArgs = new char*[length];
-            jint* intValue;
             for(jsize index(0); *args ; ++args, ++index) {
-//                if (strcmp(arrArgTypes[index], "int") == 0) {
-////                    intValue = (jint*)args;
-//                    int t = atoi((char *)args);
-//                    NSLog("int param : %s %d", (char *)args, t);
-//                }
-
                 NSLog("arg param : %s", (char *)args);
                 jsize const paramLength = strlen((char *)args);
                 arrArgs[index] = new char[paramLength + 1];
@@ -405,18 +398,18 @@ void *invokeNativeMethod(char* methodName, void **args) {
             if (strcmp(methodReturnType, "char") == 0) {
                 jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
                 if (nativeMethod != nullptr) {
-                    //todo char to jchar; jchar to char
-                    curEnv->CallStaticCharMethod(cls, nativeMethod, L'A');
-                    nativeRunResult = (char *)"B";
+                    jchar nativeChar = curEnv->CallStaticCharMethod(cls, nativeMethod, (jchar)*arrArgs[0]);
+                    char cChar = (char) nativeChar;
+                    nativeRunResult = & cChar;
                 }
             }
 
             if (strcmp(methodReturnType, "int") == 0) {
                 jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
                 if (nativeMethod != nullptr) {
-                    jint jt = curEnv->CallStaticIntMethod(cls, nativeMethod, 10);
-                    int32_t intVa = (int32_t) jt;
-                    NSLog("CallStaticIntMethod : %d", intVa);
+                    jint nativeInt = curEnv->CallStaticIntMethod(cls, nativeMethod, atoi(arrArgs[0]));
+                    char cInt = (char) nativeInt;
+                    nativeRunResult = &cInt;
                 }
             }
         }
