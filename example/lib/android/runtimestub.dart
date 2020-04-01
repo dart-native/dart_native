@@ -2,13 +2,13 @@ import 'package:dart_native/dart_native.dart';
 
 class RuntimeStub extends JObject {
 
-//  float getFloat() {
-//    return invoke('getFloat');
-//  }
-//
-//  double getDouble() {
-//    return invoke('getDouble');
-//  }
+  double getFloat() {
+    return invoke('getFloat', [8.65], true);
+  }
+
+  double getDouble() {
+    return invoke('getDouble', [10.22]);
+  }
 
   String getChar() {
     return invoke('getChar', ['a']);

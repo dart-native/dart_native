@@ -5,7 +5,8 @@ import 'package:ffi/ffi.dart';
 
 class JObject {
 
-  dynamic invoke(String method, List args) {
+  //todo args nativeTypeEncoding
+  dynamic invoke(String method, List args, [bool isFloat = false]) {
     final methodPtr = Utf8.toUtf8(method);
 
 //    Pointer<Void> nativeMethodPtr = nativeMethod(methodPtr);
@@ -22,7 +23,7 @@ class JObject {
         if (arg == null) {
           throw 'One of args list is null';
         }
-        storeValueToPointer(arg, pointers.elementAt(i));
+        storeValueToPointer(arg, pointers.elementAt(i), isFloat);
       }
       pointers.elementAt(args.length).value = nullptr;
     }

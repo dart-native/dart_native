@@ -189,7 +189,6 @@ extern "C" {
 
                 void **arrArgs = new void*[length];
                 for(jsize index(0); *args ; ++args, ++index) {
-
                     if (strcmp(arrArgTypes[index], "boolean") == 0
                         || strcmp(arrArgTypes[index], "int") == 0) {
                         NSLog("bool or int param %d", *((int *)args));
@@ -199,6 +198,16 @@ extern "C" {
                     if (strcmp(arrArgTypes[index], "char") == 0) {
                         NSLog("char param : %s", (char *)args);
                         arrArgs[index] = (char *)args;
+                    }
+
+                    if (strcmp(arrArgTypes[index], "double") == 0) {
+                        NSLog("double param : %f", *((double *)args));
+                        arrArgs[index] = (double *)args;
+                    }
+
+                    if (strcmp(arrArgTypes[index], "float") == 0) {
+                        NSLog("float param : %f", *((float *)args));
+                        arrArgs[index] = (float *)args;
                     }
                 }
 
@@ -224,6 +233,24 @@ extern "C" {
                     if (nativeMethod != nullptr) {
                         jint nativeBool = curEnv->CallStaticBooleanMethod(cls, nativeMethod, *((int *)arrArgs) ? JNI_TRUE : JNI_FALSE);
                         nativeRunResult = (void *)nativeBool;
+                    }
+                }
+
+                if (strcmp(methodReturnType, "double") == 0) {
+                    jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                    if (nativeMethod != nullptr) {
+                        jdouble nativeDouble = curEnv->CallStaticDoubleMethod(cls, nativeMethod, (jdouble)*((double *)arrArgs[0]));
+                        double cDouble = (double) nativeDouble;
+                        memcpy(&nativeRunResult, &cDouble, sizeof(double));
+                    }
+                }
+
+                if (strcmp(methodReturnType, "float") == 0) {
+                    jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                    if (nativeMethod != nullptr) {
+                        jfloat nativeFloat = curEnv->CallStaticFloatMethod(cls, nativeMethod, (jfloat)*((float *)arrArgs[0]));
+                        float cFloat = (float) nativeFloat;
+                        memcpy(&nativeRunResult, &cFloat, sizeof(float));
                     }
                 }
             }

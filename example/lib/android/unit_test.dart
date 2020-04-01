@@ -2,8 +2,8 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 
 testAndroid(RuntimeStub stub) {
-//  double resultDouble = stub.getDouble();
-//  print('getChar result:$resultDouble');
+  double resultDouble = stub.getDouble();
+  print('getDouble result:$resultDouble');
 
   String resultChar = stub.getChar();
   print('getChar result:$resultChar');
@@ -13,6 +13,9 @@ testAndroid(RuntimeStub stub) {
 
   bool resultBool = stub.getBool();
   print('getBool result:$resultBool');
+
+  double resultFloat = stub.getFloat();
+  print('getFloat result:$resultFloat');
 //
 //  int resultByte = stub.getByte();
 //  print('getChar result:$resultByte');

@@ -28,7 +28,8 @@ public class MainActivity extends FlutterActivity {
     return 100;
   }
 
-  public static double getDouble() {
+  public static double getDouble(double b) {
+    Log.d(TAG, "getDouble : " + b);
     return 100.23;
   }
 
@@ -36,8 +37,9 @@ public class MainActivity extends FlutterActivity {
     return 1;
   }
 
-  public static float getFloat(String name, int jk, boolean issure) {
-    return 100.0f;
+  public static float getFloat(float f) {
+    Log.d(TAG, "getFloat : " + f);
+    return 9.8f;
   }
 
   public static char getChar(char c) {

@@ -1,20 +1,26 @@
 import 'dart:convert';
 import 'dart:ffi';
+import 'package:dart_native/dart_native.dart';
 import 'package:ffi/ffi.dart';
-
 import 'dart:typed_data';
 
 dynamic storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr) {
+    dynamic object, Pointer<Pointer<Void>> ptr, bool isFloat) {
   if (object == null) {
     return;
   }
-  if (object is num || object is bool) {
+  if(isFloat) {
+    ptr.cast<Float>().value = object;
+  }else if (object is num || object is bool) {
     if (object is bool) {
       // TODO: waiting for ffi bool type support.
       object = object ? 1 : 0;
+      ptr.cast<Int32>().value = object;
+    } else if(object is int) {
+      ptr.cast<Int32>().value = object;
+    } else if(object is double) {
+      ptr.cast<Double>().value = object;
     }
-    ptr.cast<Int32>().value = object;
 //    switch (object) {
 //      case Int32:
 //        ptr.cast<Int32>
@@ -35,6 +41,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
   dynamic result;
   if (encoding.contains('int') ||
       encoding.contains('float') ||
+      encoding.contains('double') ||
       encoding == 'boolean' ||
       encoding == 'char' ||
       encoding == 'uchar') {
@@ -77,10 +84,10 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
       case 'uint64':
         result = data.getUint64(0, Endian.host);
         break;
-      case 'float32':
+      case 'float':
         result = data.getFloat32(0, Endian.host);
         break;
-      case 'float64':
+      case 'double':
         result = data.getFloat64(0, Endian.host);
         break;
       default:
