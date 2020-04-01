@@ -11,7 +11,5 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dart_native_example/main.dart';
 
 void main() {
-  testWidgets('Verify Platform version', (WidgetTester tester) async {
-    
-  });
+  testWidgets('Verify Platform version', (WidgetTester tester) async {});
 }

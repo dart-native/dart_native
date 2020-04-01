@@ -168,7 +168,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     arg = convertFromPointer(dartType, arg);
     args.add(arg);
   }
-  
+
   dynamic result = Function.apply(block.function, args);
 
   if (result != null) {

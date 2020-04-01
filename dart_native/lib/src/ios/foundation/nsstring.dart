@@ -3,8 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
-
-part 'nsstring.g.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 @NativeClass()
 class NSString extends NSSubclass<String> {

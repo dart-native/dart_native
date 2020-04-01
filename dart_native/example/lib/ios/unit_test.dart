@@ -5,7 +5,6 @@ import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
 
 testIOS(RuntimeStub stub, DelegateStub delegate) {
-
   bool resultBool = stub.fooBool(false);
   print('fooBool result:$resultBool');
 

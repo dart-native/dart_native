@@ -2,11 +2,12 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/ios/delegatestub.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
-part 'runtimestub.g.dart';
-
+@NativeClass()
 class RuntimeSon extends RuntimeStub {
   RuntimeSon([Class isa]) : super(Class('RuntimeSon'));
+  RuntimeSon.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
 @NativeClass()
