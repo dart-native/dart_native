@@ -1,7 +1,7 @@
 name: dart_native_gen
-description: A new Flutter package project.
-version: 0.0.1
-homepage: https://github.com/dart-native/dart_native_gen
+description: Annotation for dart_native.
+version: 0.0.2
+homepage: https://github.com/dart-native/dart_native/
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

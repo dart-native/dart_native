@@ -1,3 +1,5 @@
-## [0.0.1] - TODO: Add release date.
+## [0.0.2] - Fix homepage.
 
-* TODO: Describe initial release.
+## [0.0.1] - First release.
+
+* Annotation for native class.
