@@ -15,7 +15,7 @@ public class MainActivity extends FlutterActivity {
   public static final String TAG = "dart_java";
 
   static{
-    System.loadLibrary("test_lib");
+    System.loadLibrary("dart_native");
   }
 
   @Override

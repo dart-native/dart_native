@@ -13,13 +13,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../jniLibs/${ANDROID_AB
     # automatically packages shared libraries with your APK.
 
 add_library( # Specifies the name of the library.
-             test_lib
+             dart_native
 
              # Sets the library as a shared library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             src/main/jni/test.cpp )
+             ../../../android/src/main/jni/dart_native.cpp )
 
     find_library( # Sets the name of the path variable.
             log-lib
@@ -29,7 +29,7 @@ add_library( # Specifies the name of the library.
             log )
 
     target_link_libraries( # Specifies the target library.
-            test_lib
+            dart_native
 
             # Links the target library to the log library
             # included in the NDK.

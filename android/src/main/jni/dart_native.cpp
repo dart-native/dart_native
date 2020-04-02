@@ -1,7 +1,3 @@
-//
-// Created by siriushe on 2019/11/7.
-//
-
 #include <jni.h>
 #include <stdint.h>
 #include <android/log.h>
@@ -12,11 +8,12 @@
 
 extern "C" {
 
-    #define NSLog(...)  __android_log_print(ANDROID_LOG_DEBUG,"Sirius_Native",__VA_ARGS__)
+    #define NSLog(...)  __android_log_print(ANDROID_LOG_DEBUG,"Native",__VA_ARGS__)
 
     static JavaVM *gJvm = nullptr;
     static jobject gClassLoader;
     static jmethodID gFindClassMethod;
+    static jobject gTargetClass;
 
     static std::map<std::string, char *> basic_type_to_signature = {
             {"char", "C"},
@@ -46,7 +43,7 @@ extern "C" {
         gJvm = pjvm;  // cache the JavaVM pointer
         auto env = getEnv();
         //replace with one of your classes in the line below
-        auto randomClass = env->FindClass("com/dartnative/dart_native_example/MainActivity");
+        auto randomClass = env->FindClass("com/dartnative/dart_native/DartNative");
         jclass classClass = env->GetObjectClass(randomClass);
         auto classLoaderClass = env->FindClass("java/lang/ClassLoader");
         auto getClassLoaderMethod = env->GetMethodID(classClass, "getClassLoader",
@@ -66,8 +63,33 @@ extern "C" {
         return static_cast<jclass>(env->CallObjectMethod(gClassLoader, gFindClassMethod, env->NewStringUTF(name)));
     }
 
-    char *nativeMethodType(const char *methodName) {
+    void setTargetClass(char *targetClassName) {
+        JNIEnv *curEnv;
+        bool bShouldDetach = false;
 
+        auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+        if (error < 0) {
+            error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+            bShouldDetach = true;
+            NSLog("AttachCurrentThread : %d", error);
+        }
+        jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
+        NSLog("class name : %s", targetClassName);
+        jclass targetClass = findClass(curEnv, targetClassName);
+        gTargetClass = curEnv->NewGlobalRef(targetClass);
+        if (cls != nullptr) {
+            jmethodID method = curEnv->GetStaticMethodID(cls, "setTargetClass", "(Ljava/lang/Class;)V");
+            if (method != nullptr) {
+                curEnv->CallStaticVoidMethod(cls, method, targetClass);
+            }
+        }
+
+        if (bShouldDetach) {
+            gJvm->DetachCurrentThread();
+        }
+    }
+
+    char *nativeMethodType(const char *methodName) {
         JNIEnv *curEnv;
         bool bShouldDetach = false;
 
@@ -78,7 +100,7 @@ extern "C" {
             NSLog("AttachCurrentThread : %d", error);
         }
 
-        jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+        jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
         char *typeResult = nullptr;
 
         if (cls != nullptr) {
@@ -107,7 +129,7 @@ extern "C" {
             NSLog("AttachCurrentThread : %d", error);
         }
 
-        jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+        jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
         jmethodID *methodResult = nullptr;
 
         if (cls != nullptr) {
@@ -157,7 +179,7 @@ extern "C" {
             NSLog("AttachCurrentThread : %d", error);
         }
 
-        jclass cls = findClass(curEnv, "com/dartnative/dart_native_example/MainActivity");
+        jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
 
         if (cls != nullptr) {
             jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodParams", "(Ljava/lang/String;)[Ljava/lang/String;");
@@ -212,43 +234,43 @@ extern "C" {
                 }
 
                 if (strcmp(methodReturnType, "char") == 0) {
-                    jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                    jmethodID nativeMethod = curEnv->GetStaticMethodID(static_cast<jclass>(gTargetClass), methodName, signature);
                     if (nativeMethod != nullptr) {
                         char *charArg = (char *)arrArgs[0];
-                        jchar nativeChar = curEnv->CallStaticCharMethod(cls, nativeMethod, (jchar)*charArg);
+                        jchar nativeChar = curEnv->CallStaticCharMethod(static_cast<jclass>(gTargetClass), nativeMethod, (jchar)*charArg);
                         nativeRunResult = (void *)nativeChar;
                     }
                 }
 
                 if (strcmp(methodReturnType, "int") == 0) {
-                    jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                    jmethodID nativeMethod = curEnv->GetStaticMethodID(static_cast<jclass>(gTargetClass), methodName, signature);
                     if (nativeMethod != nullptr) {
-                        jint nativeInt = curEnv->CallStaticIntMethod(cls, nativeMethod, (jint)*((int *)arrArgs[0]));
+                        jint nativeInt = curEnv->CallStaticIntMethod(static_cast<jclass>(gTargetClass), nativeMethod, (jint)*((int *)arrArgs[0]));
                         nativeRunResult = (void *)nativeInt;
                     }
                 }
 
                 if (strcmp(methodReturnType, "boolean") == 0) {
-                    jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                    jmethodID nativeMethod = curEnv->GetStaticMethodID(static_cast<jclass>(gTargetClass), methodName, signature);
                     if (nativeMethod != nullptr) {
-                        jint nativeBool = curEnv->CallStaticBooleanMethod(cls, nativeMethod, *((int *)arrArgs) ? JNI_TRUE : JNI_FALSE);
+                        jint nativeBool = curEnv->CallStaticBooleanMethod(static_cast<jclass>(gTargetClass), nativeMethod, *((int *)arrArgs) ? JNI_TRUE : JNI_FALSE);
                         nativeRunResult = (void *)nativeBool;
                     }
                 }
 
                 if (strcmp(methodReturnType, "double") == 0) {
-                    jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                    jmethodID nativeMethod = curEnv->GetStaticMethodID(static_cast<jclass>(gTargetClass), methodName, signature);
                     if (nativeMethod != nullptr) {
-                        jdouble nativeDouble = curEnv->CallStaticDoubleMethod(cls, nativeMethod, (jdouble)*((double *)arrArgs[0]));
+                        jdouble nativeDouble = curEnv->CallStaticDoubleMethod(static_cast<jclass>(gTargetClass), nativeMethod, (jdouble)*((double *)arrArgs[0]));
                         double cDouble = (double) nativeDouble;
                         memcpy(&nativeRunResult, &cDouble, sizeof(double));
                     }
                 }
 
                 if (strcmp(methodReturnType, "float") == 0) {
-                    jmethodID nativeMethod = curEnv->GetStaticMethodID(cls, methodName, signature);
+                    jmethodID nativeMethod = curEnv->GetStaticMethodID(static_cast<jclass>(gTargetClass), methodName, signature);
                     if (nativeMethod != nullptr) {
-                        jfloat nativeFloat = curEnv->CallStaticFloatMethod(cls, nativeMethod, (jfloat)*((float *)arrArgs[0]));
+                        jfloat nativeFloat = curEnv->CallStaticFloatMethod(static_cast<jclass>(gTargetClass), nativeMethod, (jfloat)*((float *)arrArgs[0]));
                         float cFloat = (float) nativeFloat;
                         memcpy(&nativeRunResult, &cFloat, sizeof(float));
                     }

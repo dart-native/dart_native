@@ -1,3 +1,3 @@
 import 'dart:ffi';
 
-final DynamicLibrary nativeDylib = DynamicLibrary.open('libtest_lib.so');
+final DynamicLibrary nativeDylib = DynamicLibrary.open('libdart_native.so');

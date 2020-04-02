@@ -22,6 +22,10 @@ class RuntimeStub extends JObject {
     return invoke('getBool', [true]);
   }
 
+  void setJavaTargetClass(String className) {
+    setTargetClass(className);
+  }
+
 //  int getByte() {
 //    return invoke('getByte');
 //  }

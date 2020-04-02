@@ -5,11 +5,16 @@ import 'package:ffi/ffi.dart';
 
 class JObject {
 
+  //init target class
+  void setTargetClass(String className) {
+    final clsNamePtr = Utf8.toUtf8(className);
+    targetClass(clsNamePtr);
+  }
+
   //todo args nativeTypeEncoding
   dynamic invoke(String method, List args, [bool isFloat = false]) {
     final methodPtr = Utf8.toUtf8(method);
 
-//    Pointer<Void> nativeMethodPtr = nativeMethod(methodPtr);
     Pointer<Utf8> typePtr = nativeMethodType(methodPtr);
     String returnType = Utf8.fromUtf8(typePtr);
     print("returnType $returnType");
