@@ -1,6 +1,6 @@
 import 'dart:ffi';
 
-import 'package:dart_native/src.android/common/library.dart';
+import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
 typedef NativeMethodType = Pointer<Utf8> Function(Pointer<Utf8> signature);

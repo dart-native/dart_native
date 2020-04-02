@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:ffi' as ffi;
 
-import 'package:dart_native/src.android/dart_java.dart';
+import 'package:dart_native/src/android/dart_java.dart';
 
 class AndroidApp extends StatefulWidget {
   @override

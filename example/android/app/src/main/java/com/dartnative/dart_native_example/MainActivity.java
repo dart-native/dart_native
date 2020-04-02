@@ -1,15 +1,10 @@
 package com.dartnative.dart_native_example;
 
-import android.text.TextUtils;
-
 import androidx.annotation.NonNull;
 import io.flutter.Log;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugins.GeneratedPluginRegistrant;
-
-import java.lang.reflect.Method;
-import java.util.NoSuchElementException;
 
 public class MainActivity extends FlutterActivity {
   public static final String TAG = "dart_java";
@@ -58,57 +53,5 @@ public class MainActivity extends FlutterActivity {
   public static boolean getBool(boolean b) {
     Log.d(TAG, "getBool : " + b);
     return false;
-  }
-
-  public static String getMethodType(String methodName) {
-    Method[] clsMethod = MainActivity.class.getDeclaredMethods();
-    Method findMethod = null;
-    for (Method method : clsMethod) {
-      if (TextUtils.equals(method.getName(), methodName)) {
-        findMethod = method;
-        break;
-      }
-    }
-    if (findMethod == null) {
-      throw new NoSuchElementException(methodName);
-    }
-    return findMethod.getGenericReturnType().toString();
-
-//    try {
-//      Method clsMethod = MainActivity.class.getDeclaredMethod(methodName);
-//      return clsMethod.getGenericReturnType().toString();
-//    } catch (NoSuchMethodException e) {
-//      throw new NoSuchElementException(e.getMessage());
-//    }
-  }
-
-  public static Method getMethod(String method) {
-    try {
-      return MainActivity.class.getDeclaredMethod(method);
-    } catch (NoSuchMethodException e) {
-      throw new NoSuchElementException(e.getMessage());
-    }
-  }
-
-  public static String[] getMethodParams(String methodName) {
-    Method[] clsMethod = MainActivity.class.getDeclaredMethods();
-    Method findMethod = null;
-    for (Method method : clsMethod) {
-      if (TextUtils.equals(method.getName(), methodName)) {
-        findMethod = method;
-        break;
-      }
-    }
-    if (findMethod == null) {
-      throw new NoSuchElementException(methodName);
-    }
-    Class[] typeClasses = findMethod.getParameterTypes();
-    int count = 0;
-    String[] methodTypes = new String[typeClasses.length];
-    for (Class type : typeClasses) {
-      methodTypes[count] = type.getCanonicalName();
-      count++;
-    }
-    return methodTypes;
   }
 }
