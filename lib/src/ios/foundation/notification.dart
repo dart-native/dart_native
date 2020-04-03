@@ -14,7 +14,7 @@ class NSNotificationCenter extends NSObject {
   static NSNotificationCenter get defaultCenter {
     if (_defaultCenter == null) {
       NSObject result =
-          Class('NSNotificationCenter').perform(Selector('defaultCenter'));
+          Class('NSNotificationCenter').perform(SEL('defaultCenter'));
       _defaultCenter = NSNotificationCenter.fromPointer(result.pointer);
     }
     return _defaultCenter;
@@ -25,20 +25,20 @@ class NSNotificationCenter extends NSObject {
   /// Register callback function for notification.
   /// The function must have one and only one argument (an instance of NSNotification).
   void addObserver(id observer, Function function, String name, id object) {
-    Selector selector = _registerNotificationCallback(observer, function);
+    SEL selector = _registerNotificationCallback(observer, function);
     if (selector == null) {
       throw 'Selector($selector) already exists when register notification!';
     }
-    perform(Selector('addObserver:selector:name:object:'),
+    perform(SEL('addObserver:selector:name:object:'),
         args: [observer, selector, name, object]);
   }
 }
 
 int _notificationIndex = 0;
 
-Selector _registerNotificationCallback(id target, Function callback) {
+SEL _registerNotificationCallback(id target, Function callback) {
   String selName = 'handleNotification${_notificationIndex++}:';
-  Selector selector = Selector(selName);
+  SEL selector = SEL(selName);
   String notificationEncoding = 'v24@0:8@16';
   Pointer<Utf8> types = Utf8.toUtf8(notificationEncoding);
   bool success = registerMethodCallback(target, selector, callback, types);

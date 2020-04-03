@@ -10,13 +10,14 @@ import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 bool registerMethodCallback(
-    id target, Selector selector, Function function, Pointer<Utf8> types) {
+    id target, SEL selector, Function function, Pointer<Utf8> types) {
   Pointer<Void> targetPtr = target.pointer;
   Pointer<Void> selectorPtr = selector.toPointer();
   CallbackManager.shared
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
   int result = nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr);
-  ChannelDispatch().registerChannelCallback('method_callback', _asyncCallback);
+  ChannelDispatch()
+      .registerChannelCallbackIfNot('method_callback', _asyncCallback);
   return result != 0;
 }
 

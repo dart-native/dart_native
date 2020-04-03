@@ -174,67 +174,68 @@ native_block_invoke(void *block, void **args) {
     return result;
 }
 
+// Use pointer as key of encoding string cache (on dart side).
+static const char *typeList[18] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool"};
+
+#define SINT(type) do { \
+    if (str[0] == @encode(type)[0]) \
+    { \
+        size_t size = sizeof(type); \
+        if (size == 1) { \
+            return typeList[0]; \
+        } else if (size == 2) { \
+            return typeList[1]; \
+        } else if (size == 4) { \
+            return typeList[2]; \
+        } else if (size == 8) { \
+            return typeList[3]; \
+        } else { \
+            NSLog(@"Unknown size for type %s", #type); \
+            abort(); \
+        } \
+    } \
+} while(0)
+
+#define UINT(type) do { \
+    if (str[0] == @encode(type)[0]) \
+    { \
+        size_t size = sizeof(type); \
+        if (size == 1) { \
+            return typeList[4]; \
+        } else if (size == 2) { \
+            return typeList[5]; \
+        } else if (size == 4) { \
+            return typeList[6]; \
+        } else if (size == 8) { \
+            return typeList[7]; \
+        } else { \
+            NSLog(@"Unknown size for type %s", #type); \
+            abort(); \
+        } \
+    } \
+} while(0)
+
+#define INT(type) do { \
+    SINT(type); \
+    UINT(unsigned type); \
+} while(0)
+
+#define COND(type, name) do { \
+    if (str[0] == @encode(type)[0]) \
+    return name; \
+} while(0)
+
+#define PTR(type) COND(type, typeList[16])
+
 const char *
 native_type_encoding(const char *str) {
     if (!str || strlen(str) == 0) {
         return NULL;
     }
-    // Use pointer as key of encoding string cache (on dart side).
-    static const char *typeList[20] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool", "char", "uchar"};
-    
-    #define SINT(type) do { \
-        if (str[0] == @encode(type)[0]) \
-        { \
-            size_t size = sizeof(type); \
-            if (size == 1) { \
-                return typeList[0]; \
-            } else if (size == 2) { \
-                return typeList[1]; \
-            } else if (size == 4) { \
-                return typeList[2]; \
-            } else if (size == 8) { \
-                return typeList[3]; \
-            } else { \
-                NSLog(@"Unknown size for type %s", #type); \
-                abort(); \
-            } \
-        } \
-    } while(0)
-    
-    #define UINT(type) do { \
-        if (str[0] == @encode(type)[0]) \
-        { \
-            size_t size = sizeof(type); \
-            if (size == 1) { \
-                return typeList[4]; \
-            } else if (size == 2) { \
-                return typeList[5]; \
-            } else if (size == 4) { \
-                return typeList[6]; \
-            } else if (size == 8) { \
-                return typeList[7]; \
-            } else { \
-                NSLog(@"Unknown size for type %s", #type); \
-                abort(); \
-            } \
-        } \
-    } while(0)
-    
-    #define INT(type) do { \
-        SINT(type); \
-        UINT(unsigned type); \
-    } while(0)
-    
-    #define COND(type, name) do { \
-        if (str[0] == @encode(type)[0]) \
-        return name; \
-    } while(0)
-    
-    #define PTR(type) COND(type, typeList[16])
     
     COND(_Bool, typeList[17]);
-    COND(char, typeList[18]);
-    COND(unsigned char, typeList[19]);
+    SINT(signed char);
+    UINT(unsigned char);
     INT(short);
     INT(int);
     INT(long);

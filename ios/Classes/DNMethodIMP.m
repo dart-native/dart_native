@@ -143,7 +143,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     
     const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
     
-    
     __block DNInvocation *invocation = [[DNInvocation alloc] initWithSignature:methodIMP.signature
                                                                       hasStret:methodIMP.hasStret];
     invocation.args = userArgs;

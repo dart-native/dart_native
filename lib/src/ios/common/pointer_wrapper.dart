@@ -9,9 +9,9 @@ class PointerWrapper extends NSObject {
   // Using for calling pointer's Dart class dealloc.
   Function _pointerDealloc;
 
-  Pointer<Void> get value => perform(Selector('pointer'));
+  Pointer<Void> get value => perform(SEL('pointer'));
   set value(Pointer<Void> ptr) {
-    perform(Selector('setPointer:'), args: [ptr]);
+    perform(SEL('setPointer:'), args: [ptr]);
   }
 
   @override

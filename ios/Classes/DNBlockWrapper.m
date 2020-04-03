@@ -207,7 +207,7 @@ void dispose_helper(struct _DNBlock *src) {
     ffi_type **argTypes;
     ffi_type *returnType;
     DNFFIHelper *helper = [DNFFIHelper new];
-    if ((flags & BLOCK_HAS_STRET)) {
+    if (flags & BLOCK_HAS_STRET) {
         argTypes = [helper typesWithEncodeString:str getCount:&argCount startIndex:0];
         if (!argTypes) { // Error!
             return -1;

@@ -32,14 +32,15 @@ class Block extends id {
   // }
 
   factory Block(Function function) {
-    List<String> types = _typeStringForFunction(function);
-    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(types.join(', '));
+    List<String> dartTypes = _dartTypeStringForFunction(function);
+    List<String> nativeTypes = _nativeTypeStringForDart(dartTypes);
+    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(nativeTypes.join(', '));
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
-    int blockAddr = blockWrapper.perform(Selector('blockAddress'));
+    int blockAddr = blockWrapper.perform(SEL('blockAddress'));
     Block result = Block._internal(Pointer.fromAddress(blockAddr));
     free(typeStringPtr);
-    result.types = types;
+    result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
     _blockForAddress[result.pointer.address] = result;
@@ -51,11 +52,12 @@ class Block extends id {
   }
 
   Block._internal(Pointer<Void> ptr) : super(ptr) {
-    ChannelDispatch().registerChannelCallback('block_invoke', _asyncCallback);
+    ChannelDispatch()
+        .registerChannelCallbackIfNot('block_invoke', _asyncCallback);
   }
 
   Class get superclass {
-    return isa.perform(Selector('superclass'));
+    return isa.perform(SEL('superclass'));
   }
 
   String get description {
@@ -111,11 +113,12 @@ class Block extends id {
     if (args != null) {
       argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
       for (var i = 0; i < args.length; i++) {
-        if (args[i] == null) {
-          throw 'One of args list is null';
+        var arg = args[i];
+        if (arg == null) {
+          arg = nil;
         }
         String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).value);
-        storeValueToPointer(args[i], argsPtrPtr.elementAt(i), encoding);
+        storeValueToPointer(arg, argsPtrPtr.elementAt(i), encoding);
       }
     }
     Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
@@ -147,7 +150,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     return null;
   }
   List args = [];
-  Pointer pointer = block._wrapper.perform(Selector('typeEncodings'));
+  Pointer pointer = block._wrapper.perform(SEL('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
@@ -160,6 +163,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     }
     dynamic value = loadValueFromPointer(ptr, encoding);
     dynamic arg = boxingBasicValue(block.types[i + 1], value);
+    // TODO:
     args.add(arg);
   }
   dynamic result = Function.apply(block.function, args);
@@ -238,10 +242,9 @@ List<String> _nativeTypeNames = [
   'NSUInteger',
   'Class',
   'SEL',
-  'Selector'
 ];
 
-List<String> _typeStringForFunction(Function function) {
+List<String> _dartTypeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
   if (argsAndRet.length == 2) {
@@ -249,24 +252,26 @@ List<String> _typeStringForFunction(Function function) {
     String ret = argsAndRet.last.replaceAll('Null', 'void');
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      _nativeTypeNameMap.forEach((String dartTypeName, String nativeTypeName) {
-        args = args.replaceAll(dartTypeName, nativeTypeName);
-      });
-      return '$ret, $args'.split(', ').map((String s) {
-        if (s.contains('Pointer')) {
-          return 'ptr';
-        } else if (s.contains('CString')) {
-          return 'CString';
-        } else if (s.contains('Function')) {
-          return 'block';
-        } else if (!_nativeTypeNames.contains(s)) {
-          return 'NSObject';
-        }
-        return s;
-      }).toList();
+      return '$ret, $args'.split(', ');
     } else {
       return [ret];
     }
   }
   return [];
+}
+
+List<String> _nativeTypeStringForDart(List<String> types) {
+  return types.map((String s) {
+    s = _nativeTypeNameMap[s] ?? s;
+    if (s.contains('Pointer')) {
+      return 'ptr';
+    } else if (s.contains('CString')) {
+      return 'CString';
+    } else if (s.contains('Function')) {
+      return 'block';
+    } else if (!_nativeTypeNames.contains(s)) {
+      return 'NSObject';
+    }
+    return s;
+  }).toList();
 }

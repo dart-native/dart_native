@@ -72,7 +72,6 @@ int DNTypeLengthWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_LENGTH(NSUInteger);
         DN_DEFINE_TYPE_LENGTH(Class);
         DN_DEFINE_TYPE_LENGTH(SEL);
-        [_typeLengthDict setObject:@(sizeof(SEL)) forKey:@"Selector"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"ptr"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"block"];
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"NSObject*"];
@@ -122,7 +121,6 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_ENCODE_CASE(NSUInteger);
         DN_DEFINE_TYPE_ENCODE_CASE(Class);
         DN_DEFINE_TYPE_ENCODE_CASE(SEL);
-        [_typeEncodeDict setObject:@"Selector" forKey:@"Selector"];
         [_typeEncodeDict setObject:@"^v" forKey:@"ptr"];
         [_typeEncodeDict setObject:@"@?" forKey:@"block"];
         [_typeEncodeDict setObject:@"^@" forKey:@"NSObject*"];
@@ -170,54 +168,54 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
     return structType;
 }
 
+#define SINT(type) do { \
+    if (str[0] == @encode(type)[0]) { \
+        if (sizeof(type) == 1) { \
+            return &ffi_type_sint8; \
+        } else if (sizeof(type) == 2) { \
+            return &ffi_type_sint16; \
+        } else if (sizeof(type) == 4) { \
+            return &ffi_type_sint32; \
+        } else if (sizeof(type) == 8) { \
+            return &ffi_type_sint64; \
+        } else { \
+            NSLog(@"Unknown size for type %s", #type); \
+            abort(); \
+        } \
+    } \
+} while(0)
+
+#define UINT(type) do { \
+    if (str[0] == @encode(type)[0]) { \
+        if (sizeof(type) == 1) { \
+            return &ffi_type_uint8; \
+        } else if (sizeof(type) == 2) { \
+            return &ffi_type_uint16; \
+        } else if (sizeof(type) == 4) { \
+            return &ffi_type_uint32; \
+        } else if (sizeof(type) == 8) { \
+            return &ffi_type_uint64; \
+        } else { \
+            NSLog(@"Unknown size for type %s", #type); \
+            abort(); \
+        } \
+    } \
+} while(0)
+
+#define INT(type) do { \
+    SINT(type); \
+    UINT(unsigned type); \
+} while(0)
+
+#define COND(type, name) do { \
+    if (str[0] == @encode(type)[0]) {\
+        return &ffi_type_ ## name; \
+    } \
+} while(0)
+
+#define PTR(type) COND(type, pointer)
+
 - (ffi_type *)ffiTypeForEncode:(const char *)str {
-    #define SINT(type) do { \
-        if (str[0] == @encode(type)[0]) { \
-            if (sizeof(type) == 1) { \
-                return &ffi_type_sint8; \
-            } else if (sizeof(type) == 2) { \
-                return &ffi_type_sint16; \
-            } else if (sizeof(type) == 4) { \
-                return &ffi_type_sint32; \
-            } else if (sizeof(type) == 8) { \
-                return &ffi_type_sint64; \
-            } else { \
-                NSLog(@"Unknown size for type %s", #type); \
-                abort(); \
-            } \
-        } \
-    } while(0)
-    
-    #define UINT(type) do { \
-        if (str[0] == @encode(type)[0]) { \
-            if (sizeof(type) == 1) { \
-                return &ffi_type_uint8; \
-            } else if (sizeof(type) == 2) { \
-                return &ffi_type_uint16; \
-            } else if (sizeof(type) == 4) { \
-                return &ffi_type_uint32; \
-            } else if (sizeof(type) == 8) { \
-                return &ffi_type_uint64; \
-            } else { \
-                NSLog(@"Unknown size for type %s", #type); \
-                abort(); \
-            } \
-        } \
-    } while(0)
-    
-    #define INT(type) do { \
-        SINT(type); \
-        UINT(unsigned type); \
-    } while(0)
-    
-    #define COND(type, name) do { \
-        if (str[0] == @encode(type)[0]) {\
-            return &ffi_type_ ## name; \
-        } \
-    } while(0)
-    
-    #define PTR(type) COND(type, pointer)
-    
     SINT(_Bool);
     SINT(signed char);
     UINT(unsigned char);

@@ -96,16 +96,6 @@
     return 123.456;
 }
 
-- (char)fooChar:(char)a {
-    DDLogInfo(@"%s arg: %c", __FUNCTION__, a);
-    return a;
-}
-
-- (unsigned char)fooUChar:(unsigned char)a {
-    DDLogInfo(@"%s arg: %c", __FUNCTION__, a);
-    return a;
-}
-
 - (char *)fooCharPtr:(char *)a {
     DDLogInfo(@"%s arg: %s", __FUNCTION__, a);
     return a;

@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
-import 'package:ffi/ffi.dart';
 
 mixin _ToAlias {}
 
