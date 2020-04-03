@@ -1,6 +1,9 @@
 import 'dart:ffi';
 
+import 'package:dart_native/src/ios/common/callback_register.dart';
 import 'package:dart_native/src/ios/runtime/functions.dart';
+import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 class Protocol {
@@ -49,4 +52,25 @@ class Protocol {
 
 extension ToProtocol on String {
   Protocol toProtocol() => Protocol(this);
+}
+
+
+abstract class BasicProtocol {
+  register();
+}
+
+/// Register callback function for selector in protocol.
+/// Protocol [protocolType] must be used in native code.
+bool registerProtocolCallback(
+    dynamic target, Function callback, String selName, Type protocolType) {
+  String protoName = protocolType.toString();
+  SEL selector = SEL(selName);
+  Protocol protocol = Protocol(protoName);
+  if (protocol == null) {
+    // FIXME: Use Dart Function signature to create a native method.
+    throw 'Protocol($protoName) never used in native code! Can not get Protocol by its name!';
+  }
+  Pointer<Utf8> types =
+      nativeProtocolMethodTypes(protocol.toPointer(), selector.toPointer());
+  return registerMethodCallback(target, selector, callback, types);
 }

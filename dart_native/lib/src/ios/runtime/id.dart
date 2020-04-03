@@ -32,21 +32,6 @@ class id implements NSObjectProtocol {
   String get _address =>
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
-  /// Register callback function for selector in protocol.
-  /// Protocol [protocolType] must be used in native code.
-  bool registerProtocolCallback(
-      Function callback, String selName, Type protocolType) {
-    String protoName = protocolType.toString();
-    SEL selector = SEL(selName);
-    Protocol protocol = Protocol(protoName);
-    if (protocol == null) {
-      throw 'Protocol($protoName) never used in native code! Can not get Protocol by its name!';
-    }
-    Pointer<Utf8> types =
-        nativeProtocolMethodTypes(protocol.toPointer(), selector.toPointer());
-    return registerMethodCallback(this, selector, callback, types);
-  }
-
   id(this._ptr) {
     if (_ptr != null && _ptr != nullptr) {
       List<id> list = _objects[_ptr.address];

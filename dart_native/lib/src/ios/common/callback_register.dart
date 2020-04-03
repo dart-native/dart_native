@@ -4,8 +4,10 @@ import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
+import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
@@ -50,7 +52,7 @@ _callback(
     return null;
   }
   List args = [];
-
+  List<String> dartTypes = dartTypeStringForFunction(function);
   for (var i = 0; i < argCount; i++) {
     // types: ret, self, _cmd, args...
     String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 3).value);
@@ -58,8 +60,14 @@ _callback(
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    dynamic value = loadValueFromPointer(ptr, encoding);
-    args.add(value);
+    dynamic arg = loadValueFromPointer(ptr, encoding);
+    if (i + 1 < dartTypes.length) {
+      String dartType = dartTypes[i + 1];
+      arg = boxingBasicValue(dartType, arg);
+      arg = convertFromPointer(dartType, arg);
+    }
+    
+    args.add(arg);
   }
 
   dynamic result = Function.apply(function, args);

@@ -33,8 +33,8 @@ class Block extends id {
   // }
 
   factory Block(Function function) {
-    List<String> dartTypes = _dartTypeStringForFunction(function);
-    List<String> nativeTypes = _nativeTypeStringForDart(dartTypes);
+    List<String> dartTypes = dartTypeStringForFunction(function);
+    List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(nativeTypes.join(', '));
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
@@ -162,10 +162,12 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     if (!encoding.startsWith('{')) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    dynamic value = loadValueFromPointer(ptr, encoding);
-    String dartType = block.types[i + 1];
-    dynamic arg = boxingBasicValue(dartType, value);
-    arg = convertFromPointer(dartType, arg);
+    dynamic arg = loadValueFromPointer(ptr, encoding);
+    if (i + 1 < block.types.length) {
+      String dartType = block.types[i + 1];
+      arg = boxingBasicValue(dartType, arg);
+      arg = convertFromPointer(dartType, arg);
+    }
     args.add(arg);
   }
 
@@ -204,77 +206,4 @@ _asyncCallback(int argsAddr, int retAddr, int argCount, bool stret) {
   _callback(argsPtrPtrPtr, retPtrPtr, argCount, stret);
 }
 
-Map<String, String> _nativeTypeNameMap = {
-  'unsigned_char': 'unsigned char',
-  'unsigned_short': 'unsigned short',
-  'unsigned_int': 'unsigned int',
-  'unsigned_long': 'unsigned long',
-  'long_long': 'long long',
-  'unsigned_long_long': 'unsigned long long',
-};
 
-List<String> _nativeTypeNames = [
-  'id',
-  'BOOL',
-  'int',
-  'unsigned int',
-  'void',
-  'char',
-  'unsigned char',
-  'short',
-  'unsigned short',
-  'long',
-  'unsigned long',
-  'long long',
-  'unsigned long long',
-  'float',
-  'double',
-  'bool',
-  'size_t',
-  'CGFloat',
-  'CGSize',
-  'CGRect',
-  'CGPoint',
-  'CGVector',
-  'NSRange',
-  'UIOffset',
-  'UIEdgeInsets',
-  'NSDirectionalEdgeInsets',
-  'CGAffineTransform',
-  'NSInteger',
-  'NSUInteger',
-  'Class',
-  'SEL',
-];
-
-List<String> _dartTypeStringForFunction(Function function) {
-  String typeString = function.runtimeType.toString();
-  List<String> argsAndRet = typeString.split(' => ');
-  if (argsAndRet.length == 2) {
-    String args = argsAndRet.first;
-    String ret = argsAndRet.last.replaceAll('Null', 'void');
-    if (args.length > 2) {
-      args = args.substring(1, args.length - 1);
-      return '$ret, $args'.split(', ');
-    } else {
-      return [ret];
-    }
-  }
-  return [];
-}
-
-List<String> _nativeTypeStringForDart(List<String> types) {
-  return types.map((String s) {
-    s = _nativeTypeNameMap[s] ?? s;
-    if (s.contains('Pointer')) {
-      return 'ptr';
-    } else if (s.contains('CString')) {
-      return 'CString';
-    } else if (s.contains('Function')) {
-      return 'block';
-    } else if (!_nativeTypeNames.contains(s)) {
-      return 'NSObject';
-    }
-    return s;
-  }).toList();
-}

@@ -13,7 +13,9 @@ import 'package:dart_native/src/ios/foundation/struct/nsrange.dart';
 import 'package:dart_native/src/ios/foundation/struct/uioffset.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
+@NativeClass()
 class NSValue extends NSSubclass {
   NSValue(dynamic value) : super(value, _new);
 
@@ -41,8 +43,8 @@ class NSValue extends NSSubclass {
       String structName = structNameForEncoding(encoding);
       return '${structName}Value';
     } else if (encoding.length == 1 &&
-        encodingToNativeType.containsKey(encoding)) {
-      return '${encodingToNativeType[encoding]}Value';
+        _encodingToNativeValueName.containsKey(encoding)) {
+      return '${_encodingToNativeValueName[encoding]}Value';
     } else {
       throw 'Invalid encoding type for NSValue: $encoding';
     }
@@ -62,6 +64,22 @@ class NSValue extends NSSubclass {
     return value;
   }
 }
+
+Map<String, String> _encodingToNativeValueName = {
+  'c': 'char',
+  'C': 'unsignedChar',
+  's': 'short',
+  'S': 'unsignedShort',
+  'i': 'int',
+  'I': 'unsignedInt',
+  'l': 'long',
+  'L': 'unsignedLong',
+  'q': 'longLong',
+  'Q': 'unsignedLongLong',
+  'f': 'float',
+  'd': 'double',
+  'B': 'bool',
+};
 
 extension NSValueUIGeometry on NSValue {
   static NSValue valueWithCGPoint(CGPoint point) {

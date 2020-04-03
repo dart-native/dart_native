@@ -342,18 +342,77 @@ String convertEncode(Pointer<Utf8> ptr) {
 
 Map<Pointer<Utf8>, String> _encodeCache = {};
 
-Map<String, String> encodingToNativeType = {
-  'c': 'char',
-  'C': 'unsignedChar',
-  's': 'short',
-  'S': 'unsignedShort',
-  'i': 'int',
-  'I': 'unsignedInt',
-  'l': 'long',
-  'L': 'unsignedLong',
-  'q': 'longLong',
-  'Q': 'unsignedLongLong',
-  'f': 'float',
-  'd': 'double',
-  'B': 'bool',
+Map<String, String> _nativeTypeNameMap = {
+  'unsigned_char': 'unsigned char',
+  'unsigned_short': 'unsigned short',
+  'unsigned_int': 'unsigned int',
+  'unsigned_long': 'unsigned long',
+  'long_long': 'long long',
+  'unsigned_long_long': 'unsigned long long',
 };
+
+List<String> _nativeTypeNames = [
+  'id',
+  'BOOL',
+  'int',
+  'unsigned int',
+  'void',
+  'char',
+  'unsigned char',
+  'short',
+  'unsigned short',
+  'long',
+  'unsigned long',
+  'long long',
+  'unsigned long long',
+  'float',
+  'double',
+  'bool',
+  'size_t',
+  'CGFloat',
+  'CGSize',
+  'CGRect',
+  'CGPoint',
+  'CGVector',
+  'NSRange',
+  'UIOffset',
+  'UIEdgeInsets',
+  'NSDirectionalEdgeInsets',
+  'CGAffineTransform',
+  'NSInteger',
+  'NSUInteger',
+  'Class',
+  'SEL',
+];
+
+List<String> dartTypeStringForFunction(Function function) {
+  String typeString = function.runtimeType.toString();
+  List<String> argsAndRet = typeString.split(' => ');
+  if (argsAndRet.length == 2) {
+    String args = argsAndRet.first;
+    String ret = argsAndRet.last.replaceAll('Null', 'void');
+    if (args.length > 2) {
+      args = args.substring(1, args.length - 1);
+      return '$ret, $args'.split(', ');
+    } else {
+      return [ret];
+    }
+  }
+  return [];
+}
+
+List<String> nativeTypeStringForDartTypes(List<String> types) {
+  return types.map((String s) {
+    s = _nativeTypeNameMap[s] ?? s;
+    if (s.contains('Pointer')) {
+      return 'ptr';
+    } else if (s.contains('CString')) {
+      return 'CString';
+    } else if (s.contains('Function')) {
+      return 'block';
+    } else if (!_nativeTypeNames.contains(s)) {
+      return 'NSObject';
+    }
+    return s;
+  }).toList();
+}

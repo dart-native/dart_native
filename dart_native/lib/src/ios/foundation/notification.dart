@@ -6,8 +6,12 @@ import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
-class NSNotification extends NSObject {}
+@NativeClass()
+class NSNotification extends NSObject {
+  NSNotification.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+}
 
 class NSNotificationCenter extends NSObject {
   static NSNotificationCenter _defaultCenter;
