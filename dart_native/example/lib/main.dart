@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:dart_native_gen/dart_native_gen.dart';
 import 'package:dart_native_example/main.dn.dart';
 
-@NativeClassRoot()
+@nativeRoot
 void main() {
   runDartNativeExample();
   runApp(Platform.isAndroid ? AndroidApp() : IOSApp());

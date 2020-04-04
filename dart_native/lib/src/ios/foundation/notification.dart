@@ -8,7 +8,7 @@ import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@NativeClass()
+@native
 class NSNotification extends NSObject {
   NSNotification.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }

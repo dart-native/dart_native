@@ -3,13 +3,10 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/channel_dispatch.dart';
-import 'package:dart_native/src/ios/common/callback_register.dart';
 import 'package:dart_native/src/ios/runtime/functions.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
-import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
 
@@ -43,14 +40,6 @@ class id implements NSObjectProtocol {
       }
     }
     ChannelDispatch().registerChannelCallbackIfNot('object_dealloc', _dealloc);
-  }
-
-  factory id.fromPointer(Pointer<Void> ptr) {
-    if (object_isClass(ptr) != 0) {
-      return Class.fromPointer(ptr);
-    } else {
-      return NSObject.fromPointer(ptr);
-    }
   }
 
   id retain() {
@@ -130,12 +119,14 @@ class id implements NSObjectProtocol {
 
   /// Returns a string that describes the contents of the receiver.
   String get description {
-    return perform(SEL('description'));
+    NSObject result = perform(SEL('description'));
+    return NSString.fromPointer(result.pointer).value;
   }
 
   /// Returns a string that describes the contents of the receiver for presentation in the debugger.
   String get debugDescription {
-    return perform(SEL('debugDescription'));
+    NSObject result = perform(SEL('debugDescription'));
+    return NSString.fromPointer(result.pointer).value;
   }
 
   /// Sends a specified message to the receiver and returns the result of the message.

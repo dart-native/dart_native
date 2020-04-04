@@ -4,13 +4,13 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@NativeClass()
+@native
 class RuntimeSon extends RuntimeStub {
   RuntimeSon([Class isa]) : super(Class('RuntimeSon'));
   RuntimeSon.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
-@NativeClass()
+@native
 class RuntimeStub extends NSObject {
   RuntimeStub([Class isa]) : super(Class('RuntimeStub'));
 

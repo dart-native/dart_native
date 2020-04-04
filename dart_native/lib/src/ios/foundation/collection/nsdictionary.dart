@@ -7,7 +7,7 @@ import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@NativeClass()
+@native
 class NSDictionary extends NSSubclass<Map> {
   NSDictionary(Map value) : super(value, _new) {
     value = Map.of(value);

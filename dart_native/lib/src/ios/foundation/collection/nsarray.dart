@@ -7,7 +7,7 @@ import 'package:dart_native/src/ios/runtime/nssubclass.dart';
 import 'package:ffi/ffi.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@NativeClass()
+@native
 class NSArray extends NSSubclass<List> {
   NSArray(List value) : super(value, _new) {
     value = List.of(value, growable: false);

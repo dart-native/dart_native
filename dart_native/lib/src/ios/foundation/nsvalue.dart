@@ -15,7 +15,7 @@ import 'package:dart_native/src/ios/runtime/message.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@NativeClass()
+@native
 class NSValue extends NSSubclass {
   NSValue(dynamic value) : super(value, _new);
 

@@ -1,7 +1,7 @@
 import 'package:dart_native/dart_native.dart';
 
 abstract class SampleDelegate implements BasicProtocol {
-  register() {
+  registerSampleDelegate() {
     registerProtocolCallback(this, callback, 'callback', SampleDelegate);
     registerProtocolCallback(this, callbackStruct, 'callbackStruct:', SampleDelegate);
   }
@@ -11,7 +11,11 @@ abstract class SampleDelegate implements BasicProtocol {
 
 class DelegateStub extends NSObject with SampleDelegate {
   DelegateStub() : super(Class('DelegateStub', type(of: NSObject))) {
-    super.register();
+    register();
+  }
+
+  register() {
+    super.registerSampleDelegate();
   }
 
   handleNotification(NSObject notification) {

@@ -5,7 +5,7 @@ import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@NativeClass()
+@native
 class NSString extends NSSubclass<String> {
   NSString(String value) : super(value, _new);
 
