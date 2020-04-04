@@ -19,4 +19,6 @@ jobs:
           # same with pubspec.yaml
           flutter-version: "1.12.13+hotfix.8"
       - run: flutter pub get
+        working-directory: dart_native
       - run: flutter test --no-pub test/
+        working-directory: dart_native

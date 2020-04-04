@@ -1,0 +1,28 @@
+targets:
+  $default:
+    builders:
+      dart_native_gen|type_builder:
+        enabled: true
+        generate_for:
+          exclude: ['**.dn.dart']
+      dart_native_gen|type_write_builder:
+        enabled: true
+        options: { 'write': true }
+        generate_for:
+          exclude: ['**.dn.dart']
+
+builders:
+  type_builder:
+    import: "package:dart_native_gen/builder.dart"
+    builder_factories: ["typeBuilder"]
+    build_extensions: {".dart": ['.dart_native_invalid.dart']}
+    auto_apply: root_package
+    runs_before: ['dart_native_gen|type_write_builder']
+    build_to: source
+  type_write_builder:
+    import: 'package:dart_native_gen/builder.dart'
+    builder_factories: ['typeWriteBuilder']
+    build_extensions: { '.dart': ['.dn.dart'] }
+    auto_apply: root_package
+    build_to: source
+  
