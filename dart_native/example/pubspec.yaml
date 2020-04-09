@@ -20,8 +20,6 @@ dev_dependencies:
 
   dart_native:
     path: ../
-  dart_native_gen:
-    path: ../../dart_native_gen
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
