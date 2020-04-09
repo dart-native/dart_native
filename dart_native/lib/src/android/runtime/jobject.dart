@@ -4,7 +4,6 @@ import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:ffi/ffi.dart';
 
 class JObject {
-
   //init target class
   void setTargetClass(String className) {
     final clsNamePtr = Utf8.toUtf8(className);
@@ -33,11 +32,10 @@ class JObject {
       pointers.elementAt(args.length).value = nullptr;
     }
     Pointer<Void> invokeMethod = invokeNativeMethod(methodPtr, pointers);
-    if(pointers != null) {
+    if (pointers != null) {
       free(pointers);
     }
     dynamic result = loadValueFromPointer(invokeMethod, returnType);
     return result;
   }
 }
-

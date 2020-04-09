@@ -31,7 +31,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
           title: const Text('Plugin example app'),
         ),
         body: FlatButton(
-          onPressed: (){
+          onPressed: () {
             testAndroid(stub);
           },
           child: Text('Using DartNative\n'),

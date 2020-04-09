@@ -9,16 +9,16 @@ dynamic storeValueToPointer(
   if (object == null) {
     return;
   }
-  if(isFloat) {
+  if (isFloat) {
     ptr.cast<Float>().value = object;
-  }else if (object is num || object is bool) {
+  } else if (object is num || object is bool) {
     if (object is bool) {
       // TODO: waiting for ffi bool type support.
       object = object ? 1 : 0;
       ptr.cast<Int32>().value = object;
-    } else if(object is int) {
+    } else if (object is int) {
       ptr.cast<Int32>().value = object;
-    } else if(object is double) {
+    } else if (object is double) {
       ptr.cast<Double>().value = object;
     }
 //    switch (object) {
@@ -28,13 +28,13 @@ dynamic storeValueToPointer(
 //        ptr.cast<Int32>().value = object;
 //        break;
 //    }
-  }else if (object is String) {
-      if (object.length > 1) {
-        throw '$object: Invalid String argument for native char type!';
-      }
-      int charC = utf8.encode(object).first;
-      ptr.cast<Uint16>().value = charC;
+  } else if (object is String) {
+    if (object.length > 1) {
+      throw '$object: Invalid String argument for native char type!';
     }
+    int charC = utf8.encode(object).first;
+    ptr.cast<Uint16>().value = charC;
+  }
 }
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
@@ -48,7 +48,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
     switch (encoding) {
-      case 'int' :
+      case 'int':
         result = data.getInt32(0, Endian.host);
         break;
       case 'boolean':
@@ -58,7 +58,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
         result = utf8.decode([data.getInt8(0)]);
         break;
       case 'uchar':
-          result = utf8.decode([data.getUint8(0)]);
+        result = utf8.decode([data.getUint8(0)]);
         break;
       case 'sint8':
         result = data.getInt8(0);

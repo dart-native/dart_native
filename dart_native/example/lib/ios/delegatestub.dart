@@ -3,8 +3,10 @@ import 'package:dart_native/dart_native.dart';
 abstract class SampleDelegate implements BasicProtocol {
   registerSampleDelegate() {
     registerProtocolCallback(this, callback, 'callback', SampleDelegate);
-    registerProtocolCallback(this, callbackStruct, 'callbackStruct:', SampleDelegate);
+    registerProtocolCallback(
+        this, callbackStruct, 'callbackStruct:', SampleDelegate);
   }
+
   callback();
   CGRect callbackStruct(CGRect rect);
 }

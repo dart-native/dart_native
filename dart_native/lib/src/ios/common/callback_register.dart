@@ -66,7 +66,7 @@ _callback(
       arg = boxingBasicValue(dartType, arg);
       arg = convertFromPointer(dartType, arg);
     }
-    
+
     args.add(arg);
   }
 

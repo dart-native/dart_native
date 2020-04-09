@@ -54,7 +54,6 @@ extension ToProtocol on String {
   Protocol toProtocol() => Protocol(this);
 }
 
-
 abstract class BasicProtocol {
   register();
 }

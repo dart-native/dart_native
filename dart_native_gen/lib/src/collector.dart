@@ -4,7 +4,7 @@ import 'package:source_gen/source_gen.dart';
 
 class Collector {
   Collector();
-  
+
   static String packageName;
   Set<String> classes = Set();
   Set<String> importFiles = Set();

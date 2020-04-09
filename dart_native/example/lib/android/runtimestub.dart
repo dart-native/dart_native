@@ -1,7 +1,6 @@
 import 'package:dart_native/dart_native.dart';
 
 class RuntimeStub extends JObject {
-
   double getFloat() {
     return invoke('getFloat', [8.65], true);
   }

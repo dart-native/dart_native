@@ -205,5 +205,3 @@ _asyncCallback(int argsAddr, int retAddr, int argCount, bool stret) {
   Pointer<Pointer<Void>> retPtrPtr = Pointer.fromAddress(retAddr);
   _callback(argsPtrPtrPtr, retPtrPtr, argCount, stret);
 }
-
-

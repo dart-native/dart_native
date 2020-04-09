@@ -1,3 +1,8 @@
+## 0.1.14
+
+* Support Android basic types.
+* Support automatic type conversions for callback(block/delegate/notification).
+
 ## 0.1.13
 
 * Fix iOS memory leak.
