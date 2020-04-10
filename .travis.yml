@@ -9,8 +9,9 @@ install:
   - export PATH=./flutter/bin:$PATH
   - flutter doctor
 
+before_script: cd project
+
 script:
-  - cd dart_native
   - flutter packages get
   - flutter test --no-pub test/
 
