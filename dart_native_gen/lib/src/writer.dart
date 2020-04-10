@@ -7,8 +7,7 @@ class Writer {
   String write() {
     String result = "import 'package:dart_native/dart_native.dart';";
     result += collector.importFiles.map((String importFile) {
-      return """import '$importFile';
-        """;
+      return "import '$importFile';";
     }).join('\n');
 
     String functionName = generateFunctionName(Collector.packageName);
