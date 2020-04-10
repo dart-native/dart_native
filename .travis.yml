@@ -4,12 +4,12 @@ dart:
   - stable
   - dev
 
+before_install: cd dart_native
+
 install:
   - git clone https://github.com/flutter/flutter.git -b stable --depth 1
   - export PATH=./flutter/bin:$PATH
   - flutter doctor
-
-before_script: cd dart_native
 
 script:
   - flutter packages get
