@@ -6,6 +6,7 @@ dart:
 
 install:
   - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+  - cd dart_native
   - export PATH=./flutter/bin:$PATH
   - flutter doctor
 
