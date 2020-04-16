@@ -176,6 +176,11 @@ API_AVAILABLE(ios(11.0)){
     return array;
 }
 
+- (NSMutableArray *)fooNSMutableArray:(NSMutableArray *)array {
+    DDLogInfo(@"%s %@", __FUNCTION__, array.description);
+    return array;
+}
+
 typedef NSObject *(^BarBlock)(NSObject *a);
 
 - (BarBlock)fooBlock:(BarBlock)block {
