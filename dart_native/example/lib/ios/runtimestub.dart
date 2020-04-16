@@ -121,9 +121,9 @@ class RuntimeStub extends NSObject {
     return perform(SEL('fooCGAffineTransform:'), args: [transform]);
   }
 
-  NSArray fooNSArray(List list) {
+  List fooNSArray(List list) {
     NSObject result = perform(SEL('fooNSArray:'), args: [list]);
-    return NSArray.fromPointer(result.pointer);
+    return NSArray.fromPointer(result.pointer).value;
   }
 
   Block fooBlock(Function func) {

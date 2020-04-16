@@ -84,8 +84,8 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
       stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
   print('fooCGAffineTransform result:$transform');
 
-  NSArray array = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
-  print(array);
+  List list = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
+  print('NSArray to List: $list');
 
   Block block = stub.fooBlock((NSString a) {
     print('hello block! ${a.toString()}');
