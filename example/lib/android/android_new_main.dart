@@ -19,7 +19,6 @@ class _AndroidNewApp extends State<AndroidNewApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    stub.setTargetClass("com/dartnative/dart_native_example/MainActivity");
     testAndroid(stub);
   }
 

@@ -63,7 +63,10 @@ extern "C" {
         return static_cast<jclass>(env->CallObjectMethod(gClassLoader, gFindClassMethod, env->NewStringUTF(name)));
     }
 
-    void setTargetClass(char *targetClassName) {
+    // todo 泄漏
+    static std::map<jobject , jclass> cache;
+
+    void * createTargetClass(char *targetClassName) {
         JNIEnv *curEnv;
         bool bShouldDetach = false;
 
@@ -73,20 +76,17 @@ extern "C" {
             bShouldDetach = true;
             NSLog("AttachCurrentThread : %d", error);
         }
-        jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
-        NSLog("class name : %s", targetClassName);
-        jclass targetClass = findClass(curEnv, targetClassName);
-        gTargetClass = curEnv->NewGlobalRef(targetClass);
-        if (cls != nullptr) {
-            jmethodID method = curEnv->GetStaticMethodID(cls, "setTargetClass", "(Ljava/lang/Class;)V");
-            if (method != nullptr) {
-                curEnv->CallStaticVoidMethod(cls, method, targetClass);
-            }
-        }
+
+        jclass cls = findClass(curEnv, targetClassName);
+        jmethodID constructor = curEnv->GetMethodID(cls, "<init>", "()V");
+        jobject newObject = curEnv->NewObject(cls, constructor);
+        cache[newObject] = cls;
 
         if (bShouldDetach) {
             gJvm->DetachCurrentThread();
         }
+
+        return newObject;
     }
 
     char *nativeMethodType(const char *methodName) {
@@ -167,7 +167,55 @@ extern "C" {
         return signature;
     }
 
-    void *invokeNativeMethod(char* methodName, void **args) {
+
+    void *invokeNativeMethod(void *classPtr , char* methodName, void **args, char* methodSignature) {
+         JNIEnv *curEnv;
+         bool bShouldDetach = false;
+         void *nativeRunResult = nullptr;
+
+         auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+         if (error < 0) {
+             error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+             bShouldDetach = true;
+             NSLog("AttachCurrentThread : %d", error);
+         }
+         jobject object = static_cast<jobject>(classPtr);
+         jclass cls = cache[object];
+         jmethodID method = curEnv->GetMethodID(cls, methodName, methodSignature);
+
+         // todo 解析args，拆分成jni类型
+        void **arrArgs = new void*[length];
+        for(jsize index(0); *args ; ++args, ++index) {
+            if (strcmp(arrArgTypes[index], "boolean") == 0
+                || strcmp(arrArgTypes[index], "int") == 0) {
+                NSLog("bool or int param %d", *((int *)args));
+                arrArgs[index] = (int *) args;
+            }
+
+            if (strcmp(arrArgTypes[index], "char") == 0) {
+                NSLog("char param : %s", (char *)args);
+                arrArgs[index] = (char *)args;
+            }
+
+            if (strcmp(arrArgTypes[index], "double") == 0) {
+                NSLog("double param : %f", *((double *)args));
+                arrArgs[index] = (double *)args;
+            }
+
+            if (strcmp(arrArgTypes[index], "float") == 0) {
+                NSLog("float param : %f", *((float *)args));
+                arrArgs[index] = (float *)args;
+            }
+        }
+
+         jobject ret = curEnv->CallObjectMethod(object, method , args);
+         if (bShouldDetach) {
+            gJvm->DetachCurrentThread();
+         }
+         return ret;
+    }
+
+    void *invokeNativeMethod(void *classPtr , char* methodName, void **args) {
         JNIEnv *curEnv;
         bool bShouldDetach = false;
         void *nativeRunResult = nullptr;
@@ -181,7 +229,10 @@ extern "C" {
 
         jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
 
+        jobject *classObject = (jobject *) classPtr;
+
         if (cls != nullptr) {
+            // curEnv->CallMeth
             jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodParams", "(Ljava/lang/String;)[Ljava/lang/String;");
             if (method != nullptr) {
                 jarray methodResult = (jarray)curEnv->CallStaticObjectMethod(cls, method, curEnv->NewStringUTF(methodName));

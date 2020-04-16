@@ -5,11 +5,11 @@ import 'package:ffi/ffi.dart';
 import 'dart:typed_data';
 
 dynamic storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr, bool isFloat) {
+    dynamic object, Pointer<Pointer<Void>> ptr) {
   if (object == null) {
     return;
   }
-  if(isFloat) {
+  if(false) {
     ptr.cast<Float>().value = object;
   }else if (object is num || object is bool) {
     if (object is bool) {

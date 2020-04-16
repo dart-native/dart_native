@@ -1,6 +1,8 @@
 import 'package:dart_native/dart_native.dart';
 
 class RuntimeStub extends JObject {
+  RuntimeStub() : super("com/dartnative/dart_native_example/RuntimeStub");
+
 
   double getFloat() {
     return invoke('getFloat', [8.65], true);
@@ -22,8 +24,8 @@ class RuntimeStub extends JObject {
     return invoke('getBool', [true]);
   }
 
-  void setJavaTargetClass(String className) {
-    setTargetClass(className);
+  JObject getObject(JObject object) {
+    return invoke('getObject', [object]);
   }
 
 //  int getByte() {

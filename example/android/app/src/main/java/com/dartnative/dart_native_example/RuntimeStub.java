@@ -2,21 +2,9 @@ package com.dartnative.dart_native_example;
 
 import androidx.annotation.NonNull;
 import io.flutter.Log;
-import io.flutter.embedding.android.FlutterActivity;
-import io.flutter.embedding.engine.FlutterEngine;
-import io.flutter.plugins.GeneratedPluginRegistrant;
 
-public class RuntimeStub extends FlutterActivity {
+public class RuntimeStub {
   public static final String TAG = "dart_java";
-
-  static{
-    System.loadLibrary("dart_native");
-  }
-
-  @Override
-  public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
-    GeneratedPluginRegistrant.registerWith(flutterEngine);
-  }
 
   public static int getInt(int i){
     Log.d(TAG, "getInt : " + i);
