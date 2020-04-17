@@ -87,7 +87,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   List list = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
   print('NSArray to List: $list');
 
-  list = stub.fooNSMutableArray(NSMutableArray([1, 2.345, 'I\'m String', rect]));
+  list = stub.fooNSMutableArray([1, 2.345, 'I\'m String', rect]);
   print('NSMutableArray to List: $list');
 
   Block block = stub.fooBlock((NSString a) {

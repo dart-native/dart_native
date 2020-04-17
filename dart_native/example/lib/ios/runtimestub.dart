@@ -126,8 +126,9 @@ class RuntimeStub extends NSObject {
     return NSArray.fromPointer(result.pointer).value;
   }
 
-  List fooNSMutableArray(NSMutableArray list) {
-    NSObject result = perform(SEL('fooNSMutableArray:'), args: [list]);
+  List fooNSMutableArray(List list) {
+    NSMutableArray array = NSMutableArray(list);
+    NSObject result = perform(SEL('fooNSMutableArray:'), args: [array]);
     return NSMutableArray.fromPointer(result.pointer).value;
   }
 
