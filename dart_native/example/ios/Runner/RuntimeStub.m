@@ -178,6 +178,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (NSMutableArray *)fooNSMutableArray:(NSMutableArray *)array {
     DDLogInfo(@"%s %@", __FUNCTION__, array.description);
+    [array addObject:@"mutable!"];
     return array;
 }
 

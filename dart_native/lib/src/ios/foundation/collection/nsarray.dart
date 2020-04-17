@@ -30,11 +30,8 @@ class NSArray extends NSSubclass<List> {
   }
 }
 
-extension ConvertToNSArray on List {
-  NSArray toNSArray() => NSArray(this);
-}
-
-/// Only for type casting. Elememts isn't growable.
+/// Only for type casting. It's unmodifiable.
+@native
 class NSMutableArray extends NSArray {
   NSMutableArray(List value) : super(value, init: _mutableCopy) {
     value = List.of(value, growable: true);
@@ -63,4 +60,9 @@ Pointer<Void> _new(dynamic value) {
   } else {
     throw 'Invalid param when initializing NSArray.';
   }
+}
+
+extension ConvertToNSArray on List {
+  NSArray toNSArray() => NSArray(this);
+  NSMutableArray toNSMutableArray() => NSMutableArray(this);
 }
