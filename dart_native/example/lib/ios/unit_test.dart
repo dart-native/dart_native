@@ -90,6 +90,18 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   list = stub.fooNSMutableArray([1, 2.345, 'I\'m String', rect]);
   print('NSMutableArray to List: $list');
 
+  Map map = stub.fooNSDictionary({'foo': 'bar'});
+  print('NSDictionary to Map: $map');
+
+  map = stub.fooNSMutableDictionary({'foo': 'bar'});
+  print('NSMutableDictionary to Map: $map');
+
+  Set set = stub.fooNSSet(Set.from([1, 2.345, 'I\'m String', rect]));
+  print('NSSet to Set: $set');
+
+  set = stub.fooNSMutableSet(Set.from([1, 2.345, 'I\'m String', rect]));
+  print('fooNSMutableSet to Set: $set');
+
   Block block = stub.fooBlock((NSString a) {
     print('hello block! ${a.toString()}');
     return a;
@@ -115,8 +127,11 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   stub.fooDelegate(delegate);
   stub.fooStructDelegate(delegate);
 
-  NSString resultNSString = stub.fooNSString('This is NSString');
+  String resultNSString = stub.fooNSString('This is NSString');
   print('fooNSString result:$resultNSString');
+
+  resultNSString = stub.fooNSMutableString('This is NSString');
+  print('fooNSMutableString result:$resultNSString');
 
   NSObject currentThread = Class('NSThread')
       .perform(SEL('currentThread'), onQueue: DispatchQueue.global());

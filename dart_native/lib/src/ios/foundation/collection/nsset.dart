@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 
 @native
 class NSSet extends NSSubclass<Set> {
-  NSSet(Set value, {InitSubclass init: _new}) : super(value, _new) {
+  NSSet(Set value, {InitSubclass init: _new}) : super(value, init) {
     value = Set.of(value);
   }
 

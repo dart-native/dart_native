@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 
 @native
 class NSString extends NSSubclass<String> {
-  NSString(String value, {InitSubclass init: _new}) : super(value, _new);
+  NSString(String value, {InitSubclass init: _new}) : super(value, init);
 
   NSString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     value = perform(SEL('UTF8String'));

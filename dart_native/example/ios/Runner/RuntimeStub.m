@@ -182,6 +182,28 @@ API_AVAILABLE(ios(11.0)){
     return array;
 }
 
+- (NSDictionary *)fooNSDictionary:(NSDictionary *)dict {
+    DDLogInfo(@"%s %@", __FUNCTION__, dict.description);
+    return dict;
+}
+
+- (NSMutableDictionary *)fooNSMutableDictionary:(NSMutableDictionary *)dict {
+    DDLogInfo(@"%s %@", __FUNCTION__, dict.description);
+    dict[@"newKey"] = @"mutable!";
+    return dict;
+}
+
+- (NSSet *)fooNSSet:(NSSet *)set {
+    DDLogInfo(@"%s %@", __FUNCTION__, set.description);
+    return set;
+}
+
+- (NSMutableSet *)fooNSMutableSet:(NSMutableSet *)set {
+    DDLogInfo(@"%s %@", __FUNCTION__, set.description);
+    [set addObject:@"mutable!"];
+    return set;
+}
+
 typedef NSObject *(^BarBlock)(NSObject *a);
 
 - (BarBlock)fooBlock:(BarBlock)block {
@@ -258,6 +280,12 @@ typedef char *(^CStringRetBlock)(char *a);
 - (NSString *)fooNSString:(NSString *)str {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
     return @"test nsstring";
+}
+
+- (NSMutableString *)fooNSMutableString:(NSMutableString *)str {
+    [str appendString:@" mutable!"];
+    DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
+    return str;
 }
 
 @end
