@@ -121,9 +121,37 @@ class RuntimeStub extends NSObject {
     return perform(SEL('fooCGAffineTransform:'), args: [transform]);
   }
 
-  NSArray fooNSArray(List list) {
+  List fooNSArray(List list) {
     NSObject result = perform(SEL('fooNSArray:'), args: [list]);
-    return NSArray.fromPointer(result.pointer);
+    return NSArray.fromPointer(result.pointer).value;
+  }
+
+  List fooNSMutableArray(List list) {
+    NSMutableArray array = NSMutableArray(list);
+    NSObject result = perform(SEL('fooNSMutableArray:'), args: [array]);
+    return NSMutableArray.fromPointer(result.pointer).value;
+  }
+
+  Map fooNSDictionary(Map map) {
+    NSObject result = perform(SEL('fooNSDictionary:'), args: [map]);
+    return NSDictionary.fromPointer(result.pointer).value;
+  }
+
+  Map fooNSMutableDictionary(Map map) {
+    NSMutableDictionary dict = NSMutableDictionary(map);
+    NSObject result = perform(SEL('fooNSMutableDictionary:'), args: [dict]);
+    return NSMutableDictionary.fromPointer(result.pointer).value;
+  }
+
+  Set fooNSSet(Set set) {
+    NSObject result = perform(SEL('fooNSSet:'), args: [set]);
+    return NSSet.fromPointer(result.pointer).value;
+  }
+
+  Set fooNSMutableSet(Set set) {
+    NSMutableSet s = NSMutableSet(set);
+    NSObject result = perform(SEL('fooNSMutableSet:'), args: [s]);
+    return NSMutableSet.fromPointer(result.pointer).value;
   }
 
   Block fooBlock(Function func) {
@@ -149,8 +177,14 @@ class RuntimeStub extends NSObject {
     perform(SEL('fooStructDelegate:'), args: [delegate]);
   }
 
-  NSString fooNSString(String string) {
+  String fooNSString(String string) {
     NSObject result = perform(SEL('fooNSString:'), args: [string]);
-    return NSString.fromPointer(result.pointer);
+    return NSString.fromPointer(result.pointer).value;
+  }
+
+  String fooNSMutableString(String string) {
+    NSMutableString s = NSMutableString(string);
+    NSObject result = perform(SEL('fooNSMutableString:'), args: [s]);
+    return NSMutableString.fromPointer(result.pointer).value;
   }
 }
