@@ -9,9 +9,8 @@ class JObject extends Class {
   Pointer _ptr;
 
   //init target class
-  JObject(String className) : super(className){
+  JObject(String className) : super(className) {
     _ptr = nativeCreateClass(super.classUtf8());
-    getMethodSignature(invoke);
   }
 
   dynamic invoke(String methodName, String methodSignature, List args) {
@@ -26,14 +25,17 @@ class JObject extends Class {
         if (arg == null) {
           throw 'One of args list is null';
         }
-        storeValueToPointer(arg, pointers.elementAt(i));
+        TypeDecoding argType = argumentSignatureDecoding(methodSignature, i);
+        storeValueToPointer(arg, pointers.elementAt(i), argType);
       }
       pointers.elementAt(args.length).value = nullptr;
     }
-    Pointer<Void> invokeMethodRet = nativeInvoke(_ptr ,methodNamePtr, pointers , methodSignaturePtr);
-    if(pointers != null) {
+    Pointer<Void> invokeMethodRet =
+        nativeInvoke(_ptr, methodNamePtr, pointers, methodSignaturePtr);
+    if (pointers != null) {
       free(pointers);
     }
+    TypeDecoding returnType = returnSignatureDecoding(methodSignature);
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     return result;
   }

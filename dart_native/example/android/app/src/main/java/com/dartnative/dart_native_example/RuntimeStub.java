@@ -4,41 +4,44 @@ import androidx.annotation.NonNull;
 import io.flutter.Log;
 
 public class RuntimeStub {
-  public static final String TAG = "dart_java";
+  private final String TAG = "dart_java";
 
-  public static int getInt(int i){
+  public int getInt(int i){
     Log.d(TAG, "getInt : " + i);
     return 100;
   }
 
-  public static double getDouble(double b) {
+  public double getDouble(double b) {
     Log.d(TAG, "getDouble : " + b);
     return 100.23;
   }
 
-  public static byte getByte() {
-    return 1;
+  public byte getByte(byte b) {
+    Log.d(TAG, "getByte : " + b);
+    return 2;
   }
 
-  public static float getFloat(float f) {
+  public float getFloat(float f) {
     Log.d(TAG, "getFloat : " + f);
     return 9.8f;
   }
 
-  public static char getChar(char c) {
+  public char getChar(char c) {
     Log.d(TAG, "getChar : " + c);
     return 'b';
   }
 
-  public static short getShort() {
+  public short getShort(short c) {
+    Log.d(TAG, "getShort : " + c);
     return 1;
   }
 
-  public static long getLong() {
-    return 1;
+  public long getLong(long l) {
+    Log.d(TAG, "getLong : " + l);
+    return 1000L;
   }
 
-  public static boolean getBool(boolean b) {
+  public boolean getBool(boolean b) {
     Log.d(TAG, "getBool : " + b);
     return false;
   }

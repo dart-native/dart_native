@@ -1,98 +1,107 @@
 import 'dart:convert';
 import 'dart:ffi';
-import 'package:dart_native/dart_native.dart';
-import 'package:ffi/ffi.dart';
 import 'dart:typed_data';
 
+enum TypeDecoding { char, int, double, float, byte, short, long, bool, v }
+
+Map<String, TypeDecoding> valueForTypeDecoding = {
+  'C': TypeDecoding.char,
+  'I': TypeDecoding.int,
+  'D': TypeDecoding.double,
+  'F': TypeDecoding.float,
+  'B': TypeDecoding.byte,
+  'S': TypeDecoding.short,
+  'J': TypeDecoding.long,
+  'Z': TypeDecoding.bool,
+  'V': TypeDecoding.v,
+};
+
+TypeDecoding argumentSignatureDecoding(String methodSignature, int argIndex) {
+  List args = methodSignature.split("");
+  TypeDecoding encoding = valueForTypeDecoding[args[argIndex + 1]];
+  return encoding == null ? TypeDecoding.v : encoding;
+}
+
+TypeDecoding returnSignatureDecoding(String methodSignature) {
+  List args = methodSignature.split("");
+  TypeDecoding encoding = valueForTypeDecoding[args[args.length - 1]];
+  return encoding == null ? TypeDecoding.v : encoding;
+}
+
 dynamic storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr) {
+    dynamic object, Pointer<Pointer<Void>> ptr, TypeDecoding encoding) {
   if (object == null) {
     return;
   }
-  if(false) {
-    ptr.cast<Float>().value = object;
-  }else if (object is num || object is bool) {
-    if (object is bool) {
-      // TODO: waiting for ffi bool type support.
+  switch (encoding) {
+    case TypeDecoding.char:
+      int char = utf8.encode(object).first;
+      ptr.cast<Uint16>().value = char;
+      break;
+    case TypeDecoding.int:
+      ptr.cast<Int32>().value = object;
+      break;
+    case TypeDecoding.double:
+      ptr.cast<Double>().value = object;
+      break;
+    case TypeDecoding.float:
+      ptr.cast<Float>().value = object;
+      break;
+    case TypeDecoding.byte:
+      ptr.cast<Int8>().value = object;
+      break;
+    case TypeDecoding.short:
+      ptr.cast<Int16>().value = object;
+      break;
+    case TypeDecoding.long:
+      ptr.cast<Int64>().value = object;
+      break;
+    case TypeDecoding.bool:
       object = object ? 1 : 0;
       ptr.cast<Int32>().value = object;
-    } else if(object is int) {
-      ptr.cast<Int32>().value = object;
-    } else if(object is double) {
-      ptr.cast<Double>().value = object;
-    }
-//    switch (object) {
-//      case Int32:
-//        ptr.cast<Int32>
-//      case int :
-//        ptr.cast<Int32>().value = object;
-//        break;
-//    }
-  }else if (object is String) {
-    if (object.length > 1) {
-      throw '$object: Invalid String argument for native char type!';
-    }
-    int charC = utf8.encode(object).first;
-    ptr.cast<Uint16>().value = charC;
+      break;
+    case TypeDecoding.v:
+      // TODO: Handle this case.
+      break;
+    default:
+      break;
   }
 }
 
-dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding) {
+dynamic loadValueFromPointer(Pointer<Void> ptr, TypeDecoding encoding) {
   dynamic result;
-  if (encoding.contains('int') ||
-      encoding.contains('float') ||
-      encoding.contains('double') ||
-      encoding == 'boolean' ||
-      encoding == 'char' ||
-      encoding == 'uchar') {
-    ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
-    ByteData data = ByteData.view(buffer);
-    switch (encoding) {
-      case 'int' :
-        result = data.getInt32(0, Endian.host);
-        break;
-      case 'boolean':
-        result = data.getInt8(0) != 0;
-        break;
-      case 'char':
-        result = utf8.decode([data.getInt8(0)]);
-        break;
-      case 'uchar':
-        result = utf8.decode([data.getUint8(0)]);
-        break;
-      case 'sint8':
-        result = data.getInt8(0);
-        break;
-      case 'sint16':
-        result = data.getInt16(0, Endian.host);
-        break;
-      case 'sint32':
-        result = data.getInt32(0, Endian.host);
-        break;
-      case 'sint64':
-        result = data.getInt64(0, Endian.host);
-        break;
-      case 'uint8':
-        result = data.getUint8(0);
-        break;
-      case 'uint16':
-        result = data.getUint16(0, Endian.host);
-        break;
-      case 'uint32':
-        result = data.getUint32(0, Endian.host);
-        break;
-      case 'uint64':
-        result = data.getUint64(0, Endian.host);
-        break;
-      case 'float':
-        result = data.getFloat32(0, Endian.host);
-        break;
-      case 'double':
-        result = data.getFloat64(0, Endian.host);
-        break;
-      default:
-        result = 0;
-    }
+  if (encoding == TypeDecoding.v) {
+    return;
+  }
+  ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
+  ByteData data = ByteData.view(buffer);
+  switch (encoding) {
+    case TypeDecoding.int:
+      result = data.getInt32(0, Endian.host);
+      break;
+    case TypeDecoding.bool:
+      result = data.getInt8(0) != 0;
+      break;
+    case TypeDecoding.char:
+      result = utf8.decode([data.getInt8(0)]);
+      break;
+    case TypeDecoding.float:
+      result = data.getFloat32(0, Endian.host);
+      break;
+    case TypeDecoding.double:
+      result = data.getFloat64(0, Endian.host);
+      break;
+    case TypeDecoding.byte:
+      result = data.getInt8(0);
+      break;
+    case TypeDecoding.short:
+      result = data.getInt16(0, Endian.host);
+      break;
+    case TypeDecoding.long:
+      result = data.getInt64(0, Endian.host);
+      break;
+    default:
+      result = 0;
   }
   return result;
 }

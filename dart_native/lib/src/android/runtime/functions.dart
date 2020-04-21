@@ -3,11 +3,6 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
-typedef NativeMethod = Pointer<Void> Function(Pointer<Utf8> signature);
-
-final NativeMethod nativeMethod =
-nativeDylib.lookupFunction<NativeMethod, NativeMethod>('nativeMethod');
-
 ///==============================================
 /// 创建native class
 /// input : className
