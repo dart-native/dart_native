@@ -288,6 +288,12 @@ typedef char *(^CStringRetBlock)(char *a);
     return str;
 }
 
+- (void)fooWithError:(out NSError **)error {
+    if (error) {
+        *error = [NSError errorWithDomain:@"com.dartnative.test" code:-1 userInfo:nil];
+    }
+}
+
 @end
 
 
