@@ -59,11 +59,20 @@ void registerTypeConvertor(String type, ConvertorFromPointer convertor) {
 }
 
 dynamic convertFromPointer(String type, dynamic arg) {
+  Pointer<Void> ptr;
   if (arg is NSObject) {
-    ConvertorFromPointer convertor = _convertorCache[type];
-    if (convertor != null) {
-      return convertor(arg.pointer);
-    }
+    ptr = arg.pointer;
+  } else if (arg is Pointer) {
+    ptr = arg;
+  } else {
+    return arg;
+  }
+
+  ConvertorFromPointer convertor = _convertorCache[type];
+  if (convertor != null) {
+    return convertor(ptr);
+  } else if (arg is Pointer) {
+    return NSObject.fromPointer(arg);
   }
   return arg;
 }

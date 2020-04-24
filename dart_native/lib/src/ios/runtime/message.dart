@@ -66,6 +66,8 @@ dynamic msgSend(id target, SEL selector,
   }
   nativeSignatureEncodingList(signaturePtr, typeEncodingsPtrPtr);
 
+  List<NSObjectRef> outRefArgs = [];
+
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
     pointers = allocate<Pointer<Void>>(count: argCount);
@@ -73,6 +75,8 @@ dynamic msgSend(id target, SEL selector,
       var arg = args[i];
       if (arg == null) {
         arg = nil;
+      } else if (arg is NSObjectRef) {
+        outRefArgs.add(arg);
       }
       Pointer<Utf8> argTypePtr =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
@@ -92,5 +96,6 @@ dynamic msgSend(id target, SEL selector,
   if (pointers != null) {
     free(pointers);
   }
+  outRefArgs.forEach((ref) => ref.syncValue());
   return result;
 }
