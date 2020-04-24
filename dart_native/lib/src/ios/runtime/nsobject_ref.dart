@@ -11,12 +11,13 @@ class NSObjectRef<T extends id> {
 
   NSObjectRef() {
     _ptr = allocate<Pointer<Void>>();
+    _ptr.value = nullptr;
   }
 
   NSObjectRef.fromPointer(this._ptr);
 
   syncValue() {
-    if (_ptr != null) {
+    if (_ptr != null && _ptr.value != nullptr) {
       value = convertFromPointer(T.toString(), _ptr.value);
       free(_ptr);
       _ptr = null;

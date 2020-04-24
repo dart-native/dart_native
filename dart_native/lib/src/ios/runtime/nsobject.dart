@@ -68,6 +68,10 @@ dynamic convertFromPointer(String type, dynamic arg) {
     return arg;
   }
 
+  if (ptr == nullptr) {
+    return arg;
+  }
+
   ConvertorFromPointer convertor = _convertorCache[type];
   if (convertor != null) {
     return convertor(ptr);
