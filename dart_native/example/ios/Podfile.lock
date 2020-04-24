@@ -12,7 +12,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
 
 SPEC REPOS:
-  https://cdn.cocoapods.org/:
+  trunk:
     - CocoaLumberjack
 
 EXTERNAL SOURCES:

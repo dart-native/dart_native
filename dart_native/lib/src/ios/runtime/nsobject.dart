@@ -71,7 +71,10 @@ dynamic convertFromPointer(String type, dynamic arg) {
   ConvertorFromPointer convertor = _convertorCache[type];
   if (convertor != null) {
     return convertor(ptr);
+  } else if (arg is Pointer) {
+    return NSObject.fromPointer(arg);
   }
+  return arg;
 }
 
 Map<String, ConvertorFromPointer> _convertorCache = {};

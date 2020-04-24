@@ -133,6 +133,10 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   resultNSString = stub.fooNSMutableString('This is NSString');
   print('fooNSMutableString result:$resultNSString');
 
+  NSObjectRef<NSObject> ref = NSObjectRef<NSObject>();
+  stub.fooWithError(ref);
+  print('fooWithError result:${ref.value}');
+
   NSObject currentThread = Class('NSThread')
       .perform(SEL('currentThread'), onQueue: DispatchQueue.global());
   NSObject description = currentThread.perform(SEL('description'));
