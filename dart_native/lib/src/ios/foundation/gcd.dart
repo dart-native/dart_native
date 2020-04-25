@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 
 class DispatchQoS {
