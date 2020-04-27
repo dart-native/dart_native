@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
-enum TypeDecoding { char, int, double, float, byte, short, long, bool, v }
+import 'package:ffi/ffi.dart';
+
+enum TypeDecoding { char, int, double, float, byte, short, long, bool, v, string }
 
 Map<String, TypeDecoding> valueForTypeDecoding = {
   'C': TypeDecoding.char,
@@ -14,17 +16,21 @@ Map<String, TypeDecoding> valueForTypeDecoding = {
   'J': TypeDecoding.long,
   'Z': TypeDecoding.bool,
   'V': TypeDecoding.v,
+  'Ljava/lang/String;': TypeDecoding.string
 };
 
 TypeDecoding argumentSignatureDecoding(String methodSignature, int argIndex) {
-  List args = methodSignature.split("");
-  TypeDecoding encoding = valueForTypeDecoding[args[argIndex + 1]];
+  RegExp reg = new RegExp(r'(C|I|D|F|B|S|J|Z|V|L.*?;).*?');
+  Iterable<Match> matches = reg.allMatches(methodSignature);
+  Match typeMatch = matches.elementAt(argIndex);
+  TypeDecoding encoding = valueForTypeDecoding[typeMatch.group(0)];
   return encoding == null ? TypeDecoding.v : encoding;
 }
 
 TypeDecoding returnSignatureDecoding(String methodSignature) {
-  List args = methodSignature.split("");
-  TypeDecoding encoding = valueForTypeDecoding[args[args.length - 1]];
+  RegExp reg = new RegExp(r'(C|I|D|F|B|S|J|Z|V|L.*?;).*?');
+  Iterable<Match> matches = reg.allMatches(methodSignature);
+  TypeDecoding encoding = valueForTypeDecoding[matches.last.group(0)];
   return encoding == null ? TypeDecoding.v : encoding;
 }
 
@@ -59,6 +65,11 @@ dynamic storeValueToPointer(
     case TypeDecoding.bool:
       object = object ? 1 : 0;
       ptr.cast<Int32>().value = object;
+      break;
+    case TypeDecoding.string:
+      Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+      print("string char $object");
+      ptr.cast<Pointer<Utf8>>().value = charPtr;
       break;
     case TypeDecoding.v:
       // TODO: Handle this case.
@@ -99,6 +110,10 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, TypeDecoding encoding) {
       break;
     case TypeDecoding.long:
       result = data.getInt64(0, Endian.host);
+      break;
+    case TypeDecoding.string:
+      Pointer<Utf8> temp = ptr.cast();
+      result = Utf8.fromUtf8(temp);
       break;
     default:
       result = 0;

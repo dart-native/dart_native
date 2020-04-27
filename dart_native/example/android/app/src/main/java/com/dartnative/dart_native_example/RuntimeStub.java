@@ -45,4 +45,9 @@ public class RuntimeStub {
     Log.d(TAG, "getBool : " + b);
     return false;
   }
+
+  public String getString(String s) {
+    Log.d(TAG, "getString : " + s);
+    return "test success";
+  }
 }
