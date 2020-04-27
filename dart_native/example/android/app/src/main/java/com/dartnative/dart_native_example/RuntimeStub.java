@@ -50,4 +50,9 @@ public class RuntimeStub {
     Log.d(TAG, "getString : " + s);
     return "test success";
   }
+
+  public int add(int a, int b) {
+    Log.d(TAG, "add :" + a + " + " + b);
+    return a + b;
+  }
 }

@@ -27,4 +27,7 @@ testAndroid(RuntimeStub stub) {
 
   String resultString = stub.getString("test is success?");
   print('getString result:$resultString');
+
+  int resultAdd = stub.add(10, 20);
+  print('add result:$resultAdd');
 }

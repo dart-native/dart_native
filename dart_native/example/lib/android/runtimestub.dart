@@ -38,6 +38,10 @@ class RuntimeStub extends JObject {
     return invoke('getString', '(Ljava/lang/String;)Ljava/lang/String;', [s]);
   }
 
+  int add(int a, int b) {
+    return invoke('add', '(II)I', [a, b]);
+  }
+
 //  JObject getObject(JObject object) {
 //    return invoke('getObject', [object]);
 //  }
