@@ -10,8 +10,8 @@ import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
 
 class NativeBox<T> {
-  T raw;
-  NativeBox(this.raw);
+  final T raw;
+  const NativeBox(this.raw);
 
   bool operator ==(other) {
     if (other == null) return false;

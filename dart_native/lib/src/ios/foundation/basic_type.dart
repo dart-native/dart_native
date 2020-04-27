@@ -6,8 +6,8 @@ mixin _ToAlias {}
 
 class BOOL = NativeBox<bool> with _ToAlias;
 
-class char extends NativeBox<int> with _ToAlias {
-  char(int value) : super(value);
+class char extends NativeBox<int> {
+  const char(int raw) : super(raw);
 
   @override
   String toString() {
@@ -29,3 +29,23 @@ class NSUInteger = NativeBox<int> with _ToAlias;
 class float = NativeBox<double> with _ToAlias;
 class CGFloat = NativeBox<double> with _ToAlias;
 class CString = NativeBox<String> with _ToAlias;
+
+class NSEnum extends NativeBox<int> {
+  const NSEnum(int raw) : super(raw);
+}
+
+const NSEnum a_NSEnum = NSEnum(0);
+
+class NSOptions<T> extends NativeBox<int> {
+  const NSOptions(int raw) : super(raw);
+  NSOptions operator |(NSOptions other) {
+    return NSOptions(this.raw|other.raw);
+  }
+}
+
+class TestOptions extends NSOptions {
+  const TestOptions(int raw) : super(raw);
+}
+
+const TestOptions a_NSOptions = TestOptions(1);
+const TestOptions b_NSOptions = TestOptions(2);

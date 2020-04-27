@@ -21,15 +21,15 @@ class NSMutableString extends NSString {
 
   NSMutableString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
-  static Pointer<Void> _mutableCopy(dynamic value) { 
+  static Pointer<Void> _mutableCopy(dynamic value) {
     return NSObject.fromPointer(_new(value)).mutableCopy().pointer;
   }
 }
 
 Pointer<Void> _new(dynamic value) {
   if (value is String) {
-    NSObject result = Class('NSString')
-        .perform(SEL('stringWithUTF8String:'), args: [value]);
+    NSObject result =
+        Class('NSString').perform(SEL('stringWithUTF8String:'), args: [value]);
     return result.pointer;
   } else {
     throw 'Invalid param when initializing NSString.';

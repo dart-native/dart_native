@@ -143,6 +143,8 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   String threadResult = NSString.fromPointer(description.pointer).raw;
   print('currentThread: $threadResult');
 
+  TestOptions c = a_NSOptions|b_NSOptions;
+
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);
 }

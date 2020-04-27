@@ -39,7 +39,7 @@ class NSMutableArray extends NSArray {
 
   NSMutableArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
-  static Pointer<Void> _mutableCopy(dynamic value) { 
+  static Pointer<Void> _mutableCopy(dynamic value) {
     return NSObject.fromPointer(_new(value)).mutableCopy().pointer;
   }
 }

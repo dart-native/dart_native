@@ -143,9 +143,7 @@ class id implements NSObjectProtocol {
   /// BasicProtocol
   /// All instances already implement these methods. Do nothing.
   @override
-  register() {
-    
-  }
+  register() {}
 
   @override
   String toString() {

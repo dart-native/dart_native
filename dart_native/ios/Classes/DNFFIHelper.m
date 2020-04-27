@@ -32,7 +32,9 @@ int DNTypeCount(const char *str) {
 }
 
 int DNTypeLengthWithTypeName(NSString *typeName) {
-    if (!typeName) return 0;
+    if (!typeName) {
+        return 0;
+    }
     static NSMutableDictionary *_typeLengthDict;
     if (!_typeLengthDict) {
         _typeLengthDict = [[NSMutableDictionary alloc] init];
@@ -82,7 +84,9 @@ int DNTypeLengthWithTypeName(NSString *typeName) {
 }
 
 NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
-    if (!typeName) return nil;
+    if (!typeName) {
+        return nil;
+    }
     static NSMutableDictionary *_typeEncodeDict;
     if (!_typeEncodeDict) {
         _typeEncodeDict = [[NSMutableDictionary alloc] init];
