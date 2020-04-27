@@ -140,7 +140,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   NSObject currentThread = Class('NSThread')
       .perform(SEL('currentThread'), onQueue: DispatchQueue.global());
   NSObject description = currentThread.perform(SEL('description'));
-  String threadResult = NSString.fromPointer(description.pointer).value;
+  String threadResult = NSString.fromPointer(description.pointer).raw;
   print('currentThread: $threadResult');
 
   NSNotificationCenter.defaultCenter.addObserver(

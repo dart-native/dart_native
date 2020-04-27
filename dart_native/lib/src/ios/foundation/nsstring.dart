@@ -10,7 +10,7 @@ class NSString extends NSSubclass<String> {
   NSString(String value, {InitSubclass init: _new}) : super(value, init);
 
   NSString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    value = perform(SEL('UTF8String'));
+    raw = perform(SEL('UTF8String'));
   }
 }
 

@@ -16,14 +16,14 @@ class NSDictionary extends NSSubclass<Map> {
   NSDictionary.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     NSObject keysObject = perform(SEL('allKeys'));
     NSArray keysArray = NSArray.fromPointer(keysObject.pointer);
-    List keysList = keysArray.value;
+    List keysList = keysArray.raw;
     Map temp = {};
     for (var i = 0; i < count; i++) {
       id key = keysArray.objectAtIndex(i);
       id value = objectForKey(key);
       temp[keysList[i]] = unboxingElementForDartCollection(value);
     }
-    value = temp;
+    raw = temp;
   }
 
   int get count => perform(SEL('count'));

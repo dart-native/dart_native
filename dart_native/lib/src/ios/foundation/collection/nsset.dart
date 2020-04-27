@@ -12,8 +12,8 @@ class NSSet extends NSSubclass<Set> {
   }
 
   NSSet.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    List elements = allObjects.value;
-    value = elements.toSet();
+    List elements = allObjects.raw;
+    raw = elements.toSet();
   }
 
   int get count => perform(SEL('count'));

@@ -11,7 +11,7 @@ class char extends NativeBox<int> with _ToAlias {
 
   @override
   String toString() {
-    return utf8.decode([value]);
+    return utf8.decode([raw]);
   }
 }
 

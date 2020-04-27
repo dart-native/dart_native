@@ -20,7 +20,7 @@ class NSArray extends NSSubclass<List> {
       id e = objectAtIndex(i);
       temp[i] = unboxingElementForDartCollection(e);
     }
-    value = temp;
+    raw = temp;
   }
 
   int get count => perform(SEL('count'));
