@@ -28,6 +28,54 @@ class NativeBox<T> {
   }
 }
 
+class NativeNumBox<T extends num> extends NativeBox<T> {
+  const NativeNumBox(num raw) : super(raw);
+
+  /// Addition operator.
+  T operator +(other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is T) {
+      return raw + other;
+    }
+    return raw + other.raw;
+  }
+
+  /// Subtraction operator.
+  T operator -(other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is T) {
+      return raw - other;
+    }
+    return raw - other.raw;
+  }
+
+  /// Multiplication operator.
+  T operator *(other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is T) {
+      return raw * other;
+    }
+    return raw * other.raw;
+  }
+
+  /// Division operator.
+  double operator /(other) {
+    if (other == null) {
+      return raw.toDouble();
+    }
+    if (other is T) {
+      return raw / other;
+    }
+    return raw / other.raw;
+  }
+}
+
 dynamic boxingBasicValue(String type, dynamic value) {
   switch (type) {
     case 'BOOL':

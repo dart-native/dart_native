@@ -6,7 +6,7 @@ mixin _ToAlias {}
 
 class BOOL = NativeBox<bool> with _ToAlias;
 
-class char extends NativeBox<int> {
+class char extends NativeNumBox<int> {
   const char(int raw) : super(raw);
 
   @override
@@ -16,24 +16,24 @@ class char extends NativeBox<int> {
 }
 
 class unsigned_char = char with _ToAlias;
-class short = NativeBox<int> with _ToAlias;
-class unsigned_short = NativeBox<int> with _ToAlias;
-class unsigned_int = NativeBox<int> with _ToAlias;
-class long = NativeBox<int> with _ToAlias;
-class unsigned_long = NativeBox<int> with _ToAlias;
-class long_long = NativeBox<int> with _ToAlias;
-class unsigned_long_long = NativeBox<int> with _ToAlias;
-class size_t = NativeBox<int> with _ToAlias;
-class NSInteger = NativeBox<int> with _ToAlias;
-class NSUInteger = NativeBox<int> with _ToAlias;
-class float = NativeBox<double> with _ToAlias;
-class CGFloat = NativeBox<double> with _ToAlias;
+class short = NativeNumBox<int> with _ToAlias;
+class unsigned_short = NativeNumBox<int> with _ToAlias;
+class unsigned_int = NativeNumBox<int> with _ToAlias;
+class long = NativeNumBox<int> with _ToAlias;
+class unsigned_long = NativeNumBox<int> with _ToAlias;
+class long_long = NativeNumBox<int> with _ToAlias;
+class unsigned_long_long = NativeNumBox<int> with _ToAlias;
+class size_t = NativeNumBox<int> with _ToAlias;
+class NSInteger = NativeNumBox<int> with _ToAlias;
+class NSUInteger = NativeNumBox<int> with _ToAlias;
+class float = NativeNumBox<double> with _ToAlias;
+class CGFloat = NativeNumBox<double> with _ToAlias;
 class CString = NativeBox<String> with _ToAlias;
 
-class NSEnum extends NativeBox<int> {
+class NSEnum extends NativeNumBox<int> {
   const NSEnum(int raw) : super(raw);
 }
 
-class NSOptions<T> extends NativeBox<int> {
+class NSOptions<T> extends NativeNumBox<int> {
   const NSOptions(int raw) : super(raw);
 }
