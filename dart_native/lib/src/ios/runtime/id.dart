@@ -120,13 +120,13 @@ class id implements NSObjectProtocol {
   /// Returns a string that describes the contents of the receiver.
   String get description {
     NSObject result = perform(SEL('description'));
-    return NSString.fromPointer(result.pointer).value;
+    return NSString.fromPointer(result.pointer).raw;
   }
 
   /// Returns a string that describes the contents of the receiver for presentation in the debugger.
   String get debugDescription {
     NSObject result = perform(SEL('debugDescription'));
-    return NSString.fromPointer(result.pointer).value;
+    return NSString.fromPointer(result.pointer).raw;
   }
 
   /// Sends a specified message to the receiver and returns the result of the message.
@@ -139,6 +139,11 @@ class id implements NSObjectProtocol {
   bool isProxy() {
     return perform(SEL('isProxy'));
   }
+
+  /// BasicProtocol
+  /// All instances already implement these methods. Do nothing.
+  @override
+  register() {}
 
   @override
   String toString() {

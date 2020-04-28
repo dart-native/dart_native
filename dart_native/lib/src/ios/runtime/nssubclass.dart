@@ -6,23 +6,25 @@ typedef Pointer<Void> InitSubclass(dynamic value);
 
 /// Dart Wrapper for subclass of NSObject. For example: NSString, NSArray, etc.
 class NSSubclass<T> extends NSObject {
-  T value;
+  T raw;
 
-  NSSubclass(this.value, InitSubclass init) : super.fromPointer(init(value));
+  NSSubclass(this.raw, InitSubclass init) : super.fromPointer(init(raw));
   NSSubclass.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   bool operator ==(other) {
-    if (other == null) return false;
+    if (other == null) {
+      return false;
+    }
     if (other == nil) return false;
-    if (other is T) return value == other;
-    return value == other.value;
+    if (other is T) return raw == other;
+    return raw == other.raw;
   }
 
   @override
-  int get hashCode => value.hashCode;
+  int get hashCode => raw.hashCode;
 
   @override
   String toString() {
-    return value.toString();
+    return raw.toString();
   }
 }

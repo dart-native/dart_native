@@ -109,7 +109,7 @@ dynamic storeValueToPointer(
   }
   if (object is num || object is bool || object is NativeBox) {
     if (object is NativeBox) {
-      object = object.value;
+      object = object.raw;
     }
     if (object is bool) {
       // TODO: waiting for ffi bool type support.

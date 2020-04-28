@@ -123,35 +123,35 @@ class RuntimeStub extends NSObject {
 
   List fooNSArray(List list) {
     NSObject result = perform(SEL('fooNSArray:'), args: [list]);
-    return NSArray.fromPointer(result.pointer).value;
+    return NSArray.fromPointer(result.pointer).raw;
   }
 
   List fooNSMutableArray(List list) {
     NSMutableArray array = NSMutableArray(list);
     NSObject result = perform(SEL('fooNSMutableArray:'), args: [array]);
-    return NSMutableArray.fromPointer(result.pointer).value;
+    return NSMutableArray.fromPointer(result.pointer).raw;
   }
 
   Map fooNSDictionary(Map map) {
     NSObject result = perform(SEL('fooNSDictionary:'), args: [map]);
-    return NSDictionary.fromPointer(result.pointer).value;
+    return NSDictionary.fromPointer(result.pointer).raw;
   }
 
   Map fooNSMutableDictionary(Map map) {
     NSMutableDictionary dict = NSMutableDictionary(map);
     NSObject result = perform(SEL('fooNSMutableDictionary:'), args: [dict]);
-    return NSMutableDictionary.fromPointer(result.pointer).value;
+    return NSMutableDictionary.fromPointer(result.pointer).raw;
   }
 
   Set fooNSSet(Set set) {
     NSObject result = perform(SEL('fooNSSet:'), args: [set]);
-    return NSSet.fromPointer(result.pointer).value;
+    return NSSet.fromPointer(result.pointer).raw;
   }
 
   Set fooNSMutableSet(Set set) {
     NSMutableSet s = NSMutableSet(set);
     NSObject result = perform(SEL('fooNSMutableSet:'), args: [s]);
-    return NSMutableSet.fromPointer(result.pointer).value;
+    return NSMutableSet.fromPointer(result.pointer).raw;
   }
 
   Block fooBlock(Function func) {
@@ -179,16 +179,37 @@ class RuntimeStub extends NSObject {
 
   String fooNSString(String string) {
     NSObject result = perform(SEL('fooNSString:'), args: [string]);
-    return NSString.fromPointer(result.pointer).value;
+    return NSString.fromPointer(result.pointer).raw;
   }
 
   String fooNSMutableString(String string) {
     NSMutableString s = NSMutableString(string);
     NSObject result = perform(SEL('fooNSMutableString:'), args: [s]);
-    return NSMutableString.fromPointer(result.pointer).value;
+    return NSMutableString.fromPointer(result.pointer).raw;
   }
 
   void fooWithError(NSObjectRef ref) {
     perform(SEL('fooWithError:'), args: [ref]);
   }
+
+  TestOptions fooWithOptions(TestOptions options) {
+    int result = perform(SEL('fooWithOptions:'), args: [options]);
+    return TestOptions(result);
+  }
 }
+
+class TestOptions extends NSOptions {
+  const TestOptions(int raw) : super(raw);
+
+  TestOptions operator |(TestOptions other) {
+    return TestOptions(this.raw|other.raw);
+  }
+
+  TestOptions operator &(TestOptions other) {
+    return TestOptions(this.raw&other.raw);
+  }
+}
+
+const TestOptions TestOptionsNone = TestOptions(0);
+const TestOptions TestOptionsOne = TestOptions(1 << 0);
+const TestOptions TestOptionsTwo = TestOptions(1 << 1);

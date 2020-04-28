@@ -10,21 +10,69 @@ import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
 
 class NativeBox<T> {
-  T value;
-  NativeBox(this.value);
+  final T raw;
+  const NativeBox(this.raw);
 
   bool operator ==(other) {
     if (other == null) return false;
-    if (other is T) return value == other;
-    return value == other.value;
+    if (other is T) return raw == other;
+    return raw == other.raw;
   }
 
   @override
-  int get hashCode => value.hashCode;
+  int get hashCode => raw.hashCode;
 
   @override
   String toString() {
-    return value.toString();
+    return raw.toString();
+  }
+}
+
+class NativeNumBox<T extends num> extends NativeBox<T> {
+  const NativeNumBox(num raw) : super(raw);
+
+  /// Addition operator.
+  T operator +(other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is T) {
+      return raw + other;
+    }
+    return raw + other.raw;
+  }
+
+  /// Subtraction operator.
+  T operator -(other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is T) {
+      return raw - other;
+    }
+    return raw - other.raw;
+  }
+
+  /// Multiplication operator.
+  T operator *(other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is T) {
+      return raw * other;
+    }
+    return raw * other.raw;
+  }
+
+  /// Division operator.
+  double operator /(other) {
+    if (other == null) {
+      return raw.toDouble();
+    }
+    if (other is T) {
+      return raw / other;
+    }
+    return raw / other.raw;
   }
 }
 
@@ -90,15 +138,15 @@ id boxingElementForNativeCollection(dynamic e) {
 dynamic unboxingElementForDartCollection(id e) {
   if (e is id) {
     if (e.isKind(of: type(of: NSValue))) {
-      return NSValue.fromPointer(e.pointer).value;
+      return NSValue.fromPointer(e.pointer).raw;
     } else if (e.isKind(of: type(of: NSString))) {
-      return NSString.fromPointer(e.pointer).value;
+      return NSString.fromPointer(e.pointer).raw;
     } else if (e.isKind(of: type(of: NSArray))) {
-      return NSArray.fromPointer(e.pointer).value;
+      return NSArray.fromPointer(e.pointer).raw;
     } else if (e.isKind(of: type(of: NSDictionary))) {
-      return NSDictionary.fromPointer(e.pointer).value;
+      return NSDictionary.fromPointer(e.pointer).raw;
     } else if (e.isKind(of: type(of: NSSet))) {
-      return NSSet.fromPointer(e.pointer).value;
+      return NSSet.fromPointer(e.pointer).raw;
     } else {
       return e;
     }

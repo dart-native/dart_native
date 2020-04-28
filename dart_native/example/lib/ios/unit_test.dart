@@ -137,10 +137,13 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   stub.fooWithError(ref);
   print('fooWithError result:${ref.value}');
 
+  TestOptions options = stub.fooWithOptions(TestOptionsOne|TestOptionsTwo);
+  print('fooWithOptions result:$options');
+
   NSObject currentThread = Class('NSThread')
       .perform(SEL('currentThread'), onQueue: DispatchQueue.global());
   NSObject description = currentThread.perform(SEL('description'));
-  String threadResult = NSString.fromPointer(description.pointer).value;
+  String threadResult = NSString.fromPointer(description.pointer).raw;
   print('currentThread: $threadResult');
 
   NSNotificationCenter.defaultCenter.addObserver(

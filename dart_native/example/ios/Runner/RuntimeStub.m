@@ -294,6 +294,10 @@ typedef char *(^CStringRetBlock)(char *a);
     }
 }
 
+- (TestOptions)fooWithOptions:(TestOptions)options {
+    return options;
+}
+
 @end
 
 

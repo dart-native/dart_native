@@ -12,8 +12,8 @@ class NSSet extends NSSubclass<Set> {
   }
 
   NSSet.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    List elements = allObjects.value;
-    value = elements.toSet();
+    List elements = allObjects.raw;
+    raw = elements.toSet();
   }
 
   int get count => perform(SEL('count'));
@@ -31,7 +31,7 @@ class NSMutableSet extends NSSet {
 
   NSMutableSet.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
-  static Pointer<Void> _mutableCopy(dynamic value) { 
+  static Pointer<Void> _mutableCopy(dynamic value) {
     return NSObject.fromPointer(_new(value)).mutableCopy().pointer;
   }
 }

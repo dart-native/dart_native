@@ -9,6 +9,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_OPTIONS(NSUInteger, TestOptions) {
+    TestOptionsNone = 0,
+    TestOptionsOne = 1 << 0,
+    TestOptionsTwo = 1 << 1,
+};
+
 @interface RuntimeStub : NSObject
 
 @end

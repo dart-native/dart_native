@@ -65,7 +65,9 @@ struct _DNBlock {
 };
 
 struct _DNBlockDescriptor3 * _dn_Block_descriptor_3(struct _DNBlock *aBlock) {
-    if (! (aBlock->flags & BLOCK_HAS_SIGNATURE)) return nil;
+    if (!(aBlock->flags & BLOCK_HAS_SIGNATURE)) {
+        return nil;
+    }
     uint8_t *desc = (uint8_t *)aBlock->descriptor;
     desc += sizeof(struct _DNBlockDescriptor1);
     if (aBlock->flags & BLOCK_HAS_COPY_DISPOSE) {
