@@ -18,7 +18,7 @@ public class MainActivity extends FlutterActivity {
     GeneratedPluginRegistrant.registerWith(flutterEngine);
   }
 
-  public static int getInt(int i){
+  public int getInt(int i){
     Log.d(TAG, "getInt : " + i);
     return 100;
   }
