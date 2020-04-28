@@ -34,6 +34,6 @@ class NSEnum extends NativeNumBox<int> {
   const NSEnum(int raw) : super(raw);
 }
 
-class NSOptions<T> extends NativeNumBox<int> {
+class NSOptions extends NativeNumBox<int> {
   const NSOptions(int raw) : super(raw);
 }
