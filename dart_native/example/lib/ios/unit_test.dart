@@ -137,7 +137,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   stub.fooWithError(ref);
   print('fooWithError result:${ref.value}');
 
-  TestOptions options = stub.fooWithOptions(TestOptionsOne|TestOptionsTwo);
+  TestOptions options = stub.fooWithOptions(TestOptions(TestOptionsOne|TestOptionsTwo));
   print('fooWithOptions result:$options');
 
   NSObject currentThread = Class('NSThread')

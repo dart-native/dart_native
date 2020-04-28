@@ -76,6 +76,58 @@ class NativeNumBox<T extends num> extends NativeBox<T> {
   }
 }
 
+class NativeIntBox extends NativeNumBox<int> {
+  const NativeIntBox(num raw) : super(raw);
+
+  int operator &(dynamic other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is int) {
+      return raw&other;
+    }
+    return raw&other.raw;
+  }
+
+  int operator |(dynamic other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is int) {
+      return raw|other;
+    }
+    return raw|other.raw;
+  }
+
+  int operator ^(dynamic other) {
+    if (other == null) {
+      return raw;
+    }
+    if (other is int) {
+      return raw^other;
+    }
+    return raw^other.raw;
+  }
+
+  int operator ~() {
+    return ~raw;
+  }
+
+  int operator <<(int shiftAmount) {
+    if (shiftAmount == null) {
+      return raw;
+    }
+    return raw<<shiftAmount;
+  }
+
+  int operator >>(int shiftAmount) {
+    if (shiftAmount == null) {
+      return raw;
+    }
+    return raw>>shiftAmount;
+  }
+}
+
 dynamic boxingBasicValue(String type, dynamic value) {
   switch (type) {
     case 'BOOL':

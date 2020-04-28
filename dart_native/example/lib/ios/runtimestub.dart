@@ -199,15 +199,7 @@ class RuntimeStub extends NSObject {
 }
 
 class TestOptions extends NSOptions {
-  const TestOptions(int raw) : super(raw);
-
-  TestOptions operator |(TestOptions other) {
-    return TestOptions(this.raw|other.raw);
-  }
-
-  TestOptions operator &(TestOptions other) {
-    return TestOptions(this.raw&other.raw);
-  }
+  const TestOptions(dynamic raw) : super(raw);
 }
 
 const TestOptions TestOptionsNone = TestOptions(0);
