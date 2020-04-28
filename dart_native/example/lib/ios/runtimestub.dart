@@ -191,4 +191,25 @@ class RuntimeStub extends NSObject {
   void fooWithError(NSObjectRef ref) {
     perform(SEL('fooWithError:'), args: [ref]);
   }
+
+  TestOptions fooWithOptions(TestOptions options) {
+    int result = perform(SEL('fooWithOptions:'), args: [options]);
+    return TestOptions(result);
+  }
 }
+
+class TestOptions extends NSOptions {
+  const TestOptions(int raw) : super(raw);
+
+  TestOptions operator |(TestOptions other) {
+    return TestOptions(this.raw|other.raw);
+  }
+
+  TestOptions operator &(TestOptions other) {
+    return TestOptions(this.raw&other.raw);
+  }
+}
+
+const TestOptions TestOptionsNone = TestOptions(0);
+const TestOptions TestOptionsOne = TestOptions(1 << 0);
+const TestOptions TestOptionsTwo = TestOptions(1 << 1);

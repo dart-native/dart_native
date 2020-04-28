@@ -34,18 +34,6 @@ class NSEnum extends NativeBox<int> {
   const NSEnum(int raw) : super(raw);
 }
 
-const NSEnum a_NSEnum = NSEnum(0);
-
 class NSOptions<T> extends NativeBox<int> {
   const NSOptions(int raw) : super(raw);
-  NSOptions operator |(NSOptions other) {
-    return NSOptions(this.raw|other.raw);
-  }
 }
-
-class TestOptions extends NSOptions {
-  const TestOptions(int raw) : super(raw);
-}
-
-const TestOptions a_NSOptions = TestOptions(1);
-const TestOptions b_NSOptions = TestOptions(2);
