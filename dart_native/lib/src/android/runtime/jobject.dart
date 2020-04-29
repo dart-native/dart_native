@@ -3,21 +3,19 @@ import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:ffi/ffi.dart';
 
-class JObject {
+import 'class.dart';
+
+class JObject extends Class {
+  Pointer _ptr;
+
   //init target class
-  void setTargetClass(String className) {
-    final clsNamePtr = Utf8.toUtf8(className);
-    targetClass(clsNamePtr);
+  JObject(String className) : super(className) {
+    _ptr = nativeCreateClass(super.classUtf8());
   }
 
-  //todo args nativeTypeEncoding
-  dynamic invoke(String method, List args, [bool isFloat = false]) {
-    final methodPtr = Utf8.toUtf8(method);
-
-    Pointer<Utf8> typePtr = nativeMethodType(methodPtr);
-    String returnType = Utf8.fromUtf8(typePtr);
-    print("returnType $returnType");
-    free(typePtr);
+  dynamic invoke(String methodName, String methodSignature, List args) {
+    final methodNamePtr = Utf8.toUtf8(methodName);
+    final methodSignaturePtr = Utf8.toUtf8(methodSignature);
 
     Pointer<Pointer<Void>> pointers;
     if (args != null) {
@@ -27,15 +25,18 @@ class JObject {
         if (arg == null) {
           throw 'One of args list is null';
         }
-        storeValueToPointer(arg, pointers.elementAt(i), isFloat);
+        TypeDecoding argType = argumentSignatureDecoding(methodSignature, i);
+        storeValueToPointer(arg, pointers.elementAt(i), argType);
       }
       pointers.elementAt(args.length).value = nullptr;
     }
-    Pointer<Void> invokeMethod = invokeNativeMethod(methodPtr, pointers);
+    Pointer<Void> invokeMethodRet =
+        nativeInvoke(_ptr, methodNamePtr, pointers, methodSignaturePtr);
     if (pointers != null) {
       free(pointers);
     }
-    dynamic result = loadValueFromPointer(invokeMethod, returnType);
+    TypeDecoding returnType = returnSignatureDecoding(methodSignature);
+    dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     return result;
   }
 }

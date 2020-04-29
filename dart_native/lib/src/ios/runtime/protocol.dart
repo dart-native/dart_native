@@ -60,6 +60,7 @@ abstract class BasicProtocol {
 
 /// Register callback function for selector in protocol.
 /// Protocol [protocolType] must be used in native code.
+/// This function is only used for pure Dart class which implements a objc protocol.
 bool registerProtocolCallback(
     dynamic target, Function callback, String selName, Type protocolType) {
   String protoName = protocolType.toString();

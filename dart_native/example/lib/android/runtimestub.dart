@@ -1,43 +1,48 @@
 import 'package:dart_native/dart_native.dart';
-
 class RuntimeStub extends JObject {
-  double getFloat() {
-    return invoke('getFloat', [8.65], true);
+  RuntimeStub() : super("com/dartnative/dart_native_example/RuntimeStub");
+
+  int getInt(int i) {
+    return invoke('getInt', '(I)I', [i]);
   }
 
-  double getDouble() {
-    return invoke('getDouble', [10.22]);
+  double getDouble(double b) {
+    return invoke('getDouble', '(D)D', [b]);
   }
 
-  String getChar() {
-    return invoke('getChar', ['a']);
+  int getByte(int b) {
+    return invoke('getByte', '(B)B', [b]);
   }
 
-  int getInt() {
-    return invoke('getInt', [10]);
+  double getFloat(double f) {
+    return invoke('getFloat', '(F)F', [f]);
   }
 
-  bool getBool() {
-    return invoke('getBool', [true]);
+  String getChar(String c) {
+    return invoke('getChar', '(C)C', [c]);
   }
 
-  void setJavaTargetClass(String className) {
-    setTargetClass(className);
+  int getShort(int s) {
+    return invoke('getShort', '(S)S', [s]);
   }
 
-//  int getByte() {
-//    return invoke('getByte');
-//  }
-//
-//  int getShort() {
-//    return invoke('getShort');
-//  }
-//
-//  int getLong() {
-//    return invoke('getLong');
-//  }
-//
-//  int getChar() {
-//    return invoke('getChar');
+  int getLong(int l) {
+    return invoke('getLong', '(J)J', [l]);
+  }
+
+  bool getBool(bool b) {
+    return invoke('getBool', '(Z)Z', [b]);
+  }
+
+  String getString(String s) {
+    return invoke('getString', '(Ljava/lang/String;)Ljava/lang/String;', [s]);
+  }
+
+  int add(int a, int b) {
+    return invoke('add', '(II)I', [a, b]);
+  }
+
+//  JObject getObject(JObject object) {
+//    return invoke('getObject', [object]);
 //  }
 }
