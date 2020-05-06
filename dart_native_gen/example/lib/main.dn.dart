@@ -5,16 +5,12 @@
 // **************************************************************************
 
 import 'package:dart_native/dart_native.dart';
-import 'package:dart_native_example/ios/runtimestub.dart';
+import 'package:dart_native_gen_example/native_test.dart';
 
-void runDartNativeExample() {
+void runDartNativeGenExample() {
   runDartNative();
 
-  registerTypeConvertor('RuntimeSon', (ptr) {
-    return RuntimeSon.fromPointer(ptr);
-  });
-
-  registerTypeConvertor('RuntimeStub', (ptr) {
-    return RuntimeStub.fromPointer(ptr);
+  registerTypeConvertor('NativeTestClass', (ptr) {
+    return NativeTestClass.fromPointer(ptr);
   });
 }
