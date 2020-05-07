@@ -135,8 +135,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
 
   NSObjectRef<NSError> ref = NSObjectRef<NSError>();
   stub.fooWithError(ref);
-  ref.value.localizedFailureReason;
-  print('fooWithError result:${ref.value.debugDescription}');
+  print('fooWithError result:${ref.value.description}');
 
   TestOptions options = stub.fooWithOptions(TestOptions(TestOptionsOne|TestOptionsTwo));
   print('fooWithOptions result:$options');
