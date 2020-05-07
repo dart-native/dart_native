@@ -35,7 +35,11 @@ Pointer<Void> _msgSend(
 Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
 dynamic msgSend(Pointer<Void> target, SEL selector,
-    {List args, bool auto = true, DispatchQueue onQueue, bool waitUntilDone, bool decodeRetVal = true}) {
+    {List args,
+    bool auto = true,
+    DispatchQueue onQueue,
+    bool waitUntilDone,
+    bool decodeRetVal = true}) {
   if (target == nullptr) {
     return;
   }
@@ -84,8 +88,8 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
     }
   }
 
-  Pointer<Void> resultPtr = _msgSend(target, selectorPtr, signaturePtr,
-      pointers, onQueue, waitUntilDone);
+  Pointer<Void> resultPtr = _msgSend(
+      target, selectorPtr, signaturePtr, pointers, onQueue, waitUntilDone);
 
   if (pointers != null) {
     free(pointers);
@@ -97,7 +101,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
     free(typeEncodingsPtrPtr);
 
     dynamic result = loadValueFromPointer(resultPtr, typeEncodings, auto);
-    
+
     outRefArgs.forEach((ref) => ref.syncValue());
     return result;
   } else {

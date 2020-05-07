@@ -122,35 +122,41 @@ class RuntimeStub extends NSObject {
   }
 
   List fooNSArray(List list) {
-    Pointer<Void> result = perform(SEL('fooNSArray:'), args: [list], decodeRetVal: false);
+    Pointer<Void> result =
+        perform(SEL('fooNSArray:'), args: [list], decodeRetVal: false);
     return NSArray.fromPointer(result).raw;
   }
 
   List fooNSMutableArray(List list) {
     NSMutableArray array = NSMutableArray(list);
-    Pointer<Void> result = perform(SEL('fooNSMutableArray:'), args: [array], decodeRetVal: false);
+    Pointer<Void> result =
+        perform(SEL('fooNSMutableArray:'), args: [array], decodeRetVal: false);
     return NSMutableArray.fromPointer(result).raw;
   }
 
   Map fooNSDictionary(Map map) {
-    Pointer<Void> result = perform(SEL('fooNSDictionary:'), args: [map], decodeRetVal: false);
+    Pointer<Void> result =
+        perform(SEL('fooNSDictionary:'), args: [map], decodeRetVal: false);
     return NSDictionary.fromPointer(result).raw;
   }
 
   Map fooNSMutableDictionary(Map map) {
     NSMutableDictionary dict = NSMutableDictionary(map);
-    Pointer<Void> result = perform(SEL('fooNSMutableDictionary:'), args: [dict], decodeRetVal: false);
+    Pointer<Void> result = perform(SEL('fooNSMutableDictionary:'),
+        args: [dict], decodeRetVal: false);
     return NSMutableDictionary.fromPointer(result).raw;
   }
 
   Set fooNSSet(Set set) {
-    Pointer<Void> result = perform(SEL('fooNSSet:'), args: [set], decodeRetVal: false);
+    Pointer<Void> result =
+        perform(SEL('fooNSSet:'), args: [set], decodeRetVal: false);
     return NSSet.fromPointer(result).raw;
   }
 
   Set fooNSMutableSet(Set set) {
     NSMutableSet s = NSMutableSet(set);
-    Pointer<Void> result = perform(SEL('fooNSMutableSet:'), args: [s], decodeRetVal: false);
+    Pointer<Void> result =
+        perform(SEL('fooNSMutableSet:'), args: [s], decodeRetVal: false);
     return NSMutableSet.fromPointer(result).raw;
   }
 
@@ -178,13 +184,15 @@ class RuntimeStub extends NSObject {
   }
 
   String fooNSString(String string) {
-    Pointer<Void> result = perform(SEL('fooNSString:'), args: [string], decodeRetVal: false);
+    Pointer<Void> result =
+        perform(SEL('fooNSString:'), args: [string], decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 
   String fooNSMutableString(String string) {
     NSMutableString s = NSMutableString(string);
-    Pointer<Void> result = perform(SEL('fooNSMutableString:'), args: [s], decodeRetVal: false);
+    Pointer<Void> result =
+        perform(SEL('fooNSMutableString:'), args: [s], decodeRetVal: false);
     return NSMutableString.fromPointer(result).raw;
   }
 
