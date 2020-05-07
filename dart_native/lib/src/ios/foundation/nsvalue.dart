@@ -21,9 +21,10 @@ class NSValue extends NSSubclass {
 
   NSValue.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     if (raw == null) {
+      // TODO: should raw be objCType?
       String encoding = perform(SEL('objCType'));
       String selName = _selNameForNativeValue(encoding);
-      raw = msgSend(this, SEL(selName), null, false);
+      raw = msgSend(this.pointer, SEL(selName), auto: false);
     }
   }
 

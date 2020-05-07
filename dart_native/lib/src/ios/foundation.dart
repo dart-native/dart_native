@@ -18,3 +18,4 @@ export 'foundation/struct/nsrange.dart';
 export 'foundation/struct/uiedgeinsets.dart';
 export 'foundation/struct/uioffset.dart';
 export 'foundation/notification.dart';
+export 'foundation/nserror.dart';

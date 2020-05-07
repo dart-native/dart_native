@@ -38,7 +38,7 @@ _objc_isTaggedPointer(const void *ptr) {
 @implementation DNObjectDealloc
 
 + (void)attachHost:(NSObject *)host {
-    if (objc_getAssociatedObject(host, @selector(initWithHost:))) {
+    if (!host || objc_getAssociatedObject(host, @selector(initWithHost:))) {
         return;
     }
     if (!_objc_isTaggedPointer((__bridge const void *)(host)) ||
