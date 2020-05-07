@@ -122,36 +122,36 @@ class RuntimeStub extends NSObject {
   }
 
   List fooNSArray(List list) {
-    NSObject result = perform(SEL('fooNSArray:'), args: [list]);
-    return NSArray.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSArray:'), args: [list], decodeRetVal: false);
+    return NSArray.fromPointer(result).raw;
   }
 
   List fooNSMutableArray(List list) {
     NSMutableArray array = NSMutableArray(list);
-    NSObject result = perform(SEL('fooNSMutableArray:'), args: [array]);
-    return NSMutableArray.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSMutableArray:'), args: [array], decodeRetVal: false);
+    return NSMutableArray.fromPointer(result).raw;
   }
 
   Map fooNSDictionary(Map map) {
-    NSObject result = perform(SEL('fooNSDictionary:'), args: [map]);
-    return NSDictionary.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSDictionary:'), args: [map], decodeRetVal: false);
+    return NSDictionary.fromPointer(result).raw;
   }
 
   Map fooNSMutableDictionary(Map map) {
     NSMutableDictionary dict = NSMutableDictionary(map);
-    NSObject result = perform(SEL('fooNSMutableDictionary:'), args: [dict]);
-    return NSMutableDictionary.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSMutableDictionary:'), args: [dict], decodeRetVal: false);
+    return NSMutableDictionary.fromPointer(result).raw;
   }
 
   Set fooNSSet(Set set) {
-    NSObject result = perform(SEL('fooNSSet:'), args: [set]);
-    return NSSet.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSSet:'), args: [set], decodeRetVal: false);
+    return NSSet.fromPointer(result).raw;
   }
 
   Set fooNSMutableSet(Set set) {
     NSMutableSet s = NSMutableSet(set);
-    NSObject result = perform(SEL('fooNSMutableSet:'), args: [s]);
-    return NSMutableSet.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSMutableSet:'), args: [s], decodeRetVal: false);
+    return NSMutableSet.fromPointer(result).raw;
   }
 
   Block fooBlock(Function func) {
@@ -178,17 +178,17 @@ class RuntimeStub extends NSObject {
   }
 
   String fooNSString(String string) {
-    NSObject result = perform(SEL('fooNSString:'), args: [string]);
-    return NSString.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSString:'), args: [string], decodeRetVal: false);
+    return NSString.fromPointer(result).raw;
   }
 
   String fooNSMutableString(String string) {
     NSMutableString s = NSMutableString(string);
-    NSObject result = perform(SEL('fooNSMutableString:'), args: [s]);
-    return NSMutableString.fromPointer(result.pointer).raw;
+    Pointer<Void> result = perform(SEL('fooNSMutableString:'), args: [s], decodeRetVal: false);
+    return NSMutableString.fromPointer(result).raw;
   }
 
-  void fooWithError(NSObjectRef ref) {
+  void fooWithError(NSObjectRef<NSError> ref) {
     perform(SEL('fooWithError:'), args: [ref]);
   }
 

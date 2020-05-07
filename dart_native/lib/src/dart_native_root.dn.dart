@@ -11,6 +11,7 @@ import 'package:dart_native/src/ios/foundation/collection/nsset.dart';
 import 'package:dart_native/src/ios/foundation/nsvalue.dart';
 import 'package:dart_native/src/ios/foundation/nsnumber.dart';
 import 'package:dart_native/src/ios/foundation/notification.dart';
+import 'package:dart_native/src/ios/foundation/nserror.dart';
 import 'package:dart_native/src/ios/foundation/nsstring.dart';
 
 bool _hadRanDartNative = false;
@@ -56,6 +57,10 @@ void runDartNative() {
 
   registerTypeConvertor('NSNotification', (ptr) {
     return NSNotification.fromPointer(ptr);
+  });
+
+  registerTypeConvertor('NSError', (ptr) {
+    return NSError.fromPointer(ptr);
   });
 
   registerTypeConvertor('NSString', (ptr) {

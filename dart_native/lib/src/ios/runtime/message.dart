@@ -3,7 +3,6 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/gcd.dart';
-import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
@@ -35,10 +34,10 @@ Pointer<Void> _msgSend(
 
 Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
-dynamic msgSend(id target, SEL selector,
-    [List args, bool auto = true, DispatchQueue queue, bool waitUntilDone]) {
-  if (target == nil) {
-    return nil;
+dynamic msgSend(Pointer<Void> target, SEL selector,
+    {List args, bool auto = true, DispatchQueue onQueue, bool waitUntilDone, bool decodeRetVal = true}) {
+  if (target == nullptr) {
+    return;
   }
 
   int argCount = (args?.length ?? 0);
@@ -50,7 +49,7 @@ dynamic msgSend(id target, SEL selector,
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
       allocate<Pointer<Utf8>>(count: argCount + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
-  Pointer isaPtr = object_getClass(target.pointer);
+  Pointer isaPtr = object_getClass(target);
   Map<SEL, Pointer> cache = _methodSignatureCache[isaPtr];
   if (cache == null) {
     cache = {};
@@ -85,17 +84,23 @@ dynamic msgSend(id target, SEL selector,
     }
   }
 
-  Pointer<Void> resultPtr = _msgSend(target.pointer, selectorPtr, signaturePtr,
-      pointers, queue, waitUntilDone);
+  Pointer<Void> resultPtr = _msgSend(target, selectorPtr, signaturePtr,
+      pointers, onQueue, waitUntilDone);
 
-  Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);
-  String typeEncodings = convertEncode(resultTypePtr);
-  free(typeEncodingsPtrPtr);
-
-  dynamic result = loadValueFromPointer(resultPtr, typeEncodings, auto);
   if (pointers != null) {
     free(pointers);
   }
-  outRefArgs.forEach((ref) => ref.syncValue());
-  return result;
+
+  if (decodeRetVal) {
+    Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);
+    String typeEncodings = convertEncode(resultTypePtr);
+    free(typeEncodingsPtrPtr);
+
+    dynamic result = loadValueFromPointer(resultPtr, typeEncodings, auto);
+    
+    outRefArgs.forEach((ref) => ref.syncValue());
+    return result;
+  } else {
+    return resultPtr;
+  }
 }
