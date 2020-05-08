@@ -133,8 +133,6 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   resultNSString = stub.fooNSMutableString('This is NSString');
   print('fooNSMutableString result:$resultNSString');
 
-  NSError error = NSError('test domain', 1);
-  error.description;
   NSObjectRef<NSError> ref = NSObjectRef<NSError>();
   stub.fooWithError(ref);
   print('fooWithError result:${ref.value.description}');

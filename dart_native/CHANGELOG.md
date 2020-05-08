@@ -1,3 +1,8 @@
+## 0.1.17
+
+* Support `NSError`
+* Fix bugs.
+
 ## 0.1.16
 
 ### Android
