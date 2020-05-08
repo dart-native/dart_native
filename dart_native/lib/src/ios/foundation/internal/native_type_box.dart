@@ -84,9 +84,9 @@ class NativeIntBox extends NativeNumBox<int> {
       return raw;
     }
     if (other is int) {
-      return raw&other;
+      return raw & other;
     }
-    return raw&other.raw;
+    return raw & other.raw;
   }
 
   int operator |(dynamic other) {
@@ -94,9 +94,9 @@ class NativeIntBox extends NativeNumBox<int> {
       return raw;
     }
     if (other is int) {
-      return raw|other;
+      return raw | other;
     }
-    return raw|other.raw;
+    return raw | other.raw;
   }
 
   int operator ^(dynamic other) {
@@ -104,9 +104,9 @@ class NativeIntBox extends NativeNumBox<int> {
       return raw;
     }
     if (other is int) {
-      return raw^other;
+      return raw ^ other;
     }
-    return raw^other.raw;
+    return raw ^ other.raw;
   }
 
   int operator ~() {
@@ -117,14 +117,14 @@ class NativeIntBox extends NativeNumBox<int> {
     if (shiftAmount == null) {
       return raw;
     }
-    return raw<<shiftAmount;
+    return raw << shiftAmount;
   }
 
   int operator >>(int shiftAmount) {
     if (shiftAmount == null) {
       return raw;
     }
-    return raw>>shiftAmount;
+    return raw >> shiftAmount;
   }
 }
 

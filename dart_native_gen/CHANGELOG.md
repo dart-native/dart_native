@@ -1,3 +1,7 @@
+## [0.1.0] - Fix empty content.
+
+## [0.0.6] - Fix `runDartNative`.
+
 ## [0.0.5] - Fix import.
 
 ## [0.0.4] - Fix import.

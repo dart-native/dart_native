@@ -4,7 +4,18 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 
-enum TypeDecoding { char, int, double, float, byte, short, long, bool, v, string }
+enum TypeDecoding {
+  char,
+  int,
+  double,
+  float,
+  byte,
+  short,
+  long,
+  bool,
+  v,
+  string
+}
 
 Map<String, TypeDecoding> valueForTypeDecoding = {
   'C': TypeDecoding.char,

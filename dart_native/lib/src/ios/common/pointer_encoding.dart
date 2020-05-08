@@ -112,7 +112,7 @@ dynamic storeValueToPointer(
       object = object.raw;
     }
     if (object is bool) {
-      // TODO: waiting for ffi bool type support.
+      // waiting for ffi bool type support.
       object = object ? 1 : 0;
     }
     switch (typeEncoding) {

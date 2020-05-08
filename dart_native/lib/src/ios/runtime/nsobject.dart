@@ -17,8 +17,6 @@ class NSObject extends id {
     }
   }
 
-  NSObject.alloc([Class isa]) : super(_alloc(isa));
-
   NSObject init() {
     return perform(SEL('init'));
   }
@@ -33,14 +31,6 @@ class NSObject extends id {
     return NSObject.fromPointer(result.autorelease().pointer);
   }
 
-  static Pointer<Void> _alloc(Class isa) {
-    if (isa == null) {
-      isa = Class('NSObject');
-    }
-    NSObject result = isa.perform(SEL('alloc'));
-    return result.autorelease().pointer;
-  }
-
   static Pointer<Void> _new(Class isa) {
     if (isa == null) {
       isa = Class('NSObject');
@@ -48,6 +38,14 @@ class NSObject extends id {
     NSObject result = isa.perform(SEL('new'));
     return result.autorelease().pointer;
   }
+}
+
+Pointer<Void> alloc(Class isa) {
+  if (isa == null) {
+    isa = Class('NSObject');
+  }
+  NSObject result = isa.perform(SEL('alloc'));
+  return result.autorelease().pointer;
 }
 
 typedef dynamic ConvertorFromPointer(Pointer<Void> ptr);
