@@ -35,7 +35,7 @@ class JObject extends Class {
     if (pointers != null) {
       free(pointers);
     }
-    TypeDecoding returnType = returnSignatureDecoding(methodSignature);
+    TypeDecoding returnType = argumentSignatureDecoding(methodSignature, 0, true);
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     return result;
   }

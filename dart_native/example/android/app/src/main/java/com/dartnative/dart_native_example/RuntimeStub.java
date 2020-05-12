@@ -55,4 +55,13 @@ public class RuntimeStub {
     Log.d(TAG, "add :" + a + " + " + b);
     return a + b;
   }
+
+  public void log(String tag, String message) {
+    Log.d(tag, message);
+  }
+
+  public boolean complexCall(String s, int i, char c, double d, float f, byte b, short sh, long l, boolean bool) {
+    Log.d(TAG, "tag :" + s + " + " + i + " + " + c + " + " + d + " + " + f + " + " + b + " + " + sh + " + " + l + " + " + bool);
+    return true;
+  }
 }

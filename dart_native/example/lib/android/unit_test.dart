@@ -30,4 +30,9 @@ testAndroid(RuntimeStub stub) {
 
   int resultAdd = stub.add(10, 20);
   print('add result:$resultAdd');
+
+  stub.log("testlog", "log test");
+
+  bool resultCall = stub.complexCall("test", 10, 'a', 10.0, 12.0, 1, 2, 10000, false);
+  print('call result:$resultCall');
 }
