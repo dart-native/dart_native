@@ -7,13 +7,18 @@ class NativeAvailable {
   const NativeAvailable({this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
 
+class NativePlatform {
+  const NativePlatform();
+}
+
+const NativePlatform ios = const NativePlatform();
+const NativePlatform macos = const NativePlatform();
+const NativePlatform tvos = const NativePlatform();
+const NativePlatform watchos = const NativePlatform();
+const NativePlatform android = const NativePlatform();
+
 class NativeUnavailable {
-  final String ios;
-  final String macos;
-  final String tvos;
-  final String watchos;
-  final String android;
-  const NativeUnavailable({this.ios, this.macos, this.tvos, this.watchos, this.android});
+  const NativeUnavailable(NativePlatform p0, [NativePlatform p1, NativePlatform p2]);
 }
 
 class NativeDeprecated {
