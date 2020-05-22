@@ -4,7 +4,8 @@ class NativeAvailable {
   final String tvos;
   final String watchos;
   final String android;
-  const NativeAvailable({this.ios, this.macos, this.tvos, this.watchos, this.android});
+  const NativeAvailable(
+      {this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
 
 class NativePlatform {
@@ -18,7 +19,8 @@ const NativePlatform watchos = const NativePlatform();
 const NativePlatform android = const NativePlatform();
 
 class NativeUnavailable {
-  const NativeUnavailable(NativePlatform p0, [NativePlatform p1, NativePlatform p2]);
+  const NativeUnavailable(NativePlatform p0,
+      [NativePlatform p1, NativePlatform p2]);
 }
 
 class NativeDeprecated {
@@ -27,5 +29,6 @@ class NativeDeprecated {
   final List<String> tvos;
   final List<String> watchos;
   final List<String> android;
-  const NativeDeprecated(String message, {this.ios, this.macos, this.tvos, this.watchos, this.android});
+  const NativeDeprecated(String message,
+      {this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
