@@ -160,18 +160,18 @@ class RuntimeStub extends NSObject {
     return NSMutableSet.fromPointer(result).raw;
   }
 
-  Block fooBlock(Function func) {
-    Block result = perform(SEL('fooBlock:'), args: [func]);
+  Block fooBlock(NSString block(NSString a)) {
+    Block result = perform(SEL('fooBlock:'), args: [block]);
     return result;
   }
 
-  Block fooStretBlock(Function func) {
-    Block result = perform(SEL('fooStretBlock:'), args: [func]);
+  Block fooStretBlock(CGAffineTransform block(CGAffineTransform a)) {
+    Block result = perform(SEL('fooStretBlock:'), args: [block]);
     return result;
   }
 
-  Block fooCStringBlock(Function func) {
-    Block result = perform(SEL('fooCStringBlock:'), args: [func]);
+  Block fooCStringBlock(CString block(CString a)) {
+    Block result = perform(SEL('fooCStringBlock:'), args: [block]);
     return result;
   }
 

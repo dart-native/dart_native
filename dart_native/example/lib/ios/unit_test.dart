@@ -109,7 +109,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   resultObj = block.invoke([stub]);
   print('fooBlock result:$resultObj');
 
-  Block blockStret = stub.fooStretBlock((CGRect a) {
+  Block blockStret = stub.fooStretBlock((CGAffineTransform a) {
     print('hello block stret! ${a.toString()}');
     return CGAffineTransform(12, 0, 12, 0, 12, 0);
   });
