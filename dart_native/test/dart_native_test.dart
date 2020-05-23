@@ -16,7 +16,7 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  // test('getPlatformVersion', () async {
-  //   expect(await DartNative.platformVersion, '42');
-  // });
+  test('getPlatformVersion', () async {
+    expect(await channel.invokeMethod('getPlatformVersion'), '42');
+  });
 }
