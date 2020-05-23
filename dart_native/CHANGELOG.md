@@ -1,3 +1,7 @@
+## 0.1.18
+
+* Support annotation for API availability.
+
 ## 0.1.17
 
 * Support `NSError`
