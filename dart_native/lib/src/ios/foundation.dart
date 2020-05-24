@@ -1,5 +1,3 @@
-library dart_objc.foundation;
-
 export 'foundation/basic_type.dart';
 export 'foundation/nsstring.dart';
 export 'foundation/nsvalue.dart';
