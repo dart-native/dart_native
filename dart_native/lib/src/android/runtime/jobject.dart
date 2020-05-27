@@ -35,8 +35,14 @@ class JObject extends Class {
     if (pointers != null) {
       free(pointers);
     }
-    TypeDecoding returnType = argumentSignatureDecoding(methodSignature, 0, true);
+    TypeDecoding returnType =
+        argumentSignatureDecoding(methodSignature, 0, true);
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     return result;
   }
+
+  release() {
+    // todo jni release
+  }
+
 }

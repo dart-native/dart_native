@@ -72,6 +72,7 @@ void *createTargetClass(char *targetClassName) {
     jobject newObject = curEnv->NewGlobalRef(curEnv->NewObject(cls, constructor));
     cache[newObject] = static_cast<jclass>(curEnv->NewGlobalRef(cls));
 
+
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
