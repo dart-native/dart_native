@@ -30,18 +30,11 @@ Map<String, TypeDecoding> valueForTypeDecoding = {
   'Ljava/lang/String;': TypeDecoding.string
 };
 
-TypeDecoding argumentSignatureDecoding(String methodSignature, int argIndex) {
+TypeDecoding argumentSignatureDecoding(String methodSignature, int argIndex, [bool isReturnType = false]) {
   RegExp reg = new RegExp(r'(C|I|D|F|B|S|J|Z|V|L.*?;).*?');
   Iterable<Match> matches = reg.allMatches(methodSignature);
-  Match typeMatch = matches.elementAt(argIndex);
+  Match typeMatch = !isReturnType ? matches.elementAt(argIndex) : matches.last;
   TypeDecoding encoding = valueForTypeDecoding[typeMatch.group(0)];
-  return encoding == null ? TypeDecoding.v : encoding;
-}
-
-TypeDecoding returnSignatureDecoding(String methodSignature) {
-  RegExp reg = new RegExp(r'(C|I|D|F|B|S|J|Z|V|L.*?;).*?');
-  Iterable<Match> matches = reg.allMatches(methodSignature);
-  TypeDecoding encoding = valueForTypeDecoding[matches.last.group(0)];
   return encoding == null ? TypeDecoding.v : encoding;
 }
 
@@ -79,7 +72,6 @@ dynamic storeValueToPointer(
       break;
     case TypeDecoding.string:
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-      print("string char $object");
       ptr.cast<Pointer<Utf8>>().value = charPtr;
       break;
     case TypeDecoding.v:

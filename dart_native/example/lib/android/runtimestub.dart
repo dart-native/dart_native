@@ -43,6 +43,14 @@ class RuntimeStub extends JObject {
     return invoke('add', '(II)I', [a, b]);
   }
 
+  void log(String a, String b) {
+    return invoke('log', '(Ljava/lang/String;Ljava/lang/String;)V', [a, b]);
+  }
+
+  bool complexCall(String s, int i, String c, double d, double f, int b, int sh, int l, bool boo) {
+    return invoke('complexCall', '(Ljava/lang/String;ICDFBSJZ)Z', [s, i, c, d, f, b, sh, l, boo]);
+  }
+
 //  JObject getObject(JObject object) {
 //    return invoke('getObject', [object]);
 //  }

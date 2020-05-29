@@ -15,18 +15,6 @@ static JavaVM *gJvm = nullptr;
 static jobject gClassLoader;
 static jmethodID gFindClassMethod;
 
-static std::map<char, char *> signature_decoding = {
-        {'C', "char"},
-        {'I', "int"},
-        {'D', "double"},
-        {'F', "float"},
-        {'B', "byte"},
-        {'S', "short"},
-        {'J', "long"},
-        {'Z', "boolean"},
-        {'V', "void"}
-};
-
 JNIEnv *getEnv() {
     JNIEnv *env;
     int status = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
@@ -84,6 +72,7 @@ void *createTargetClass(char *targetClassName) {
     jobject newObject = curEnv->NewGlobalRef(curEnv->NewObject(cls, constructor));
     cache[newObject] = static_cast<jclass>(curEnv->NewGlobalRef(cls));
 
+
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
@@ -91,7 +80,8 @@ void *createTargetClass(char *targetClassName) {
     return newObject;
 }
 
-char *nativeMethodType(const char *methodName) {
+
+void releaseTargetClass(void *classPtr) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
 
@@ -102,30 +92,18 @@ char *nativeMethodType(const char *methodName) {
         NSLog("AttachCurrentThread : %d", error);
     }
 
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
-    char *typeResult = nullptr;
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodType",
-                                                     "(Ljava/lang/String;)Ljava/lang/String;");
-        if (method != nullptr) {
-            jstring type = (jstring) curEnv->CallStaticObjectMethod(cls, method,
-                                                                    curEnv->NewStringUTF(
-                                                                            methodName));
-            typeResult = (char *) curEnv->GetStringUTFChars(type, 0);
-        }
-    }
+    jobject object = static_cast<jobject>(classPtr);
+    curEnv->DeleteGlobalRef(object);
+    cache[object] = NULL;
 
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
-
-    return typeResult;
 }
 
 void fillArgsToJvalue(void **args, char **signaturesType, jvalue *argValues, int argsLength, JNIEnv *curEnv) {
     NSLog("arg length : %d", argsLength);
-    for (jsize index(0); index < argsLength; ++index) {
+    for (jsize index(0); index < argsLength; ++index, ++args) {
         if (strlen(signaturesType[index]) > 1) {
             if (strcmp(signaturesType[index], "Ljava/lang/String;") == 0) {
                 char * stringArg = (char *)*args;
@@ -162,7 +140,6 @@ void fillArgsToJvalue(void **args, char **signaturesType, jvalue *argValues, int
             argValues[index].z = static_cast<jboolean>(*((int *) args));
         }
         else if(strcmp(signaturesType[index], "V") == 0) {}
-        ++args;
     }
 }
 
@@ -191,7 +168,10 @@ void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *me
         std::sregex_iterator itEnd;
         for (std::sregex_iterator i = itBegin; i != itEnd; ++i) {
             std::smatch match = *i;
-            signaturesType[argumentsCount] = const_cast<char *>(match.str().c_str());
+            char* type = const_cast<char *>(match.str().c_str());
+            jsize const typeLength = strlen(type);
+            signaturesType[argumentsCount] = new char[typeLength + 1];
+            strlcpy(signaturesType[argumentsCount], type, (size_t) typeLength + 1);
             ++argumentsCount;
         }
     }
@@ -252,7 +232,9 @@ void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *me
         auto nativeBool = curEnv->CallBooleanMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeBool;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "V") == 0) {}
+    else if(strcmp(signaturesType[argumentsCount - 1], "V") == 0) {
+        curEnv->CallVoidMethodA(object, method, argValues);
+    }
 
     free(argValues);
     free(signaturesType);
