@@ -80,6 +80,27 @@ void *createTargetClass(char *targetClassName) {
     return newObject;
 }
 
+
+void releaseTargetClass(void *classPtr) {
+    JNIEnv *curEnv;
+    bool bShouldDetach = false;
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        bShouldDetach = true;
+        NSLog("AttachCurrentThread : %d", error);
+    }
+
+    jobject object = static_cast<jobject>(classPtr);
+    curEnv->DeleteGlobalRef(object);
+    cache[object] = NULL;
+
+    if (bShouldDetach) {
+        gJvm->DetachCurrentThread();
+    }
+}
+
 void fillArgsToJvalue(void **args, char **signaturesType, jvalue *argValues, int argsLength, JNIEnv *curEnv) {
     NSLog("arg length : %d", argsLength);
     for (jsize index(0); index < argsLength; ++index, ++args) {

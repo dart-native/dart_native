@@ -3,14 +3,16 @@ import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:ffi/ffi.dart';
 
+import 'JObjectPool.dart';
 import 'class.dart';
 
-class JObject extends Class {
+class JObject extends Class{
   Pointer _ptr;
 
   //init target class
   JObject(String className) : super(className) {
     _ptr = nativeCreateClass(super.classUtf8());
+    JObjectPool.sInstance.retain(this);
   }
 
   dynamic invoke(String methodName, String methodSignature, List args) {
@@ -42,7 +44,16 @@ class JObject extends Class {
   }
 
   release() {
-    // todo jni release
+    if (JObjectPool.sInstance.release(this)) {
+      nativeReleaseClass(_ptr);
+    }
   }
 
+  @override
+  int compareTo(other) {
+    if (other is JObject && other._ptr == _ptr) {
+      return 0;
+    }
+    return 1;
+  }
 }

@@ -3,27 +3,32 @@ import 'dart:collection';
 import '../../../dart_native.dart';
 
 class JObjectPool {
-  var pool = new SplayTreeMap();
+  static JObjectPool sInstance = new JObjectPool();
+
+  var _pool = new SplayTreeMap();
 
   retain(JObject object) {
-    var curCount = pool[object];
+    var curCount = _pool[object];
     if (curCount == null) {
-      pool[object] = 1;
+      _pool[object] = 1;
     } else {
-      pool[object] = curCount + 1;
+      _pool[object] = curCount + 1;
     }
   }
 
-  release(JObject object) {
-    var curCount = pool[object];
+  bool release(JObject object) {
+    var curCount = _pool[object];
     if (curCount == null) {
       throw new Exception("release error , object has been released");
     } else {
       curCount--;
       if (curCount <= 0) {
-        pool.remove(object);
-        object.release();
-      } else {}
+        _pool.remove(object);
+        return true;
+      } else {
+        _pool[object] = curCount;
+        return false;
+      }
     }
   }
 }
