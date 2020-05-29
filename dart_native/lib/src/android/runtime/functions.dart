@@ -9,7 +9,7 @@ import 'package:ffi/ffi.dart';
 /// return : classObject
 final Pointer<Void> Function(Pointer<Utf8>) nativeCreateClass = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
-    "createTargetClass")
+        "createTargetClass")
     .asFunction();
 
 /// release class
@@ -18,7 +18,6 @@ final void Function(Pointer<Void> objectPtr) nativeReleaseClass = nativeDylib
     .lookup<NativeFunction<Void Function(Pointer<Void> objectPtr)>>(
     "releaseTargetClass")
     .asFunction();
-
 
 /// 调用native方法
 ///
@@ -29,13 +28,14 @@ final void Function(Pointer<Void> objectPtr) nativeReleaseClass = nativeDylib
 /// jniMethodSignature: jni函数指针
 ///
 /// @return: 返回值指针
-final Pointer<Void> Function(Pointer<Void> objectPtr,
-    Pointer<Utf8> methodName,
-    Pointer<Pointer<Void>> argsPtrs,
-    Pointer<Utf8> jniMethodSignature) nativeInvoke =
-nativeDylib.lookup<NativeFunction<Pointer<Void> Function(
-    Pointer<Void> objectPtr,
-    Pointer<Utf8> methodName,
-    Pointer<Pointer<Void>> argsPtrs,
-    Pointer<Utf8> jniMethodSignature)>>("invokeNativeMethod")
-    .asFunction();
+final Pointer<Void> Function(Pointer<Void> objectPtr, Pointer<Utf8> methodName,
+        Pointer<Pointer<Void>> argsPtrs, Pointer<Utf8> jniMethodSignature)
+    nativeInvoke = nativeDylib
+        .lookup<
+            NativeFunction<
+                Pointer<Void> Function(
+                    Pointer<Void> objectPtr,
+                    Pointer<Utf8> methodName,
+                    Pointer<Pointer<Void>> argsPtrs,
+                    Pointer<Utf8> jniMethodSignature)>>("invokeNativeMethod")
+        .asFunction();

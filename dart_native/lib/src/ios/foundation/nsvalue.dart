@@ -20,10 +20,11 @@ class NSValue extends NSSubclass {
   NSValue(dynamic value) : super(value, _new);
 
   NSValue.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    if (value == null) {
+    if (raw == null) {
+      // TODO: should raw be objCType?
       String encoding = perform(SEL('objCType'));
       String selName = _selNameForNativeValue(encoding);
-      value = msgSend(this, SEL(selName), null, false);
+      raw = msgSend(this.pointer, SEL(selName), auto: false);
     }
   }
 
@@ -60,7 +61,7 @@ class NSValue extends NSSubclass {
     String selName = 'valueWith${struct.runtimeType.toString()}:';
     NSObject result = type(of: NSValue).perform(SEL(selName), args: [struct]);
     NSValue value = NSValue.fromPointer(result.pointer);
-    value.value = struct;
+    value.raw = struct;
     return value;
   }
 }

@@ -109,10 +109,10 @@ dynamic storeValueToPointer(
   }
   if (object is num || object is bool || object is NativeBox) {
     if (object is NativeBox) {
-      object = object.value;
+      object = object.raw;
     }
     if (object is bool) {
-      // TODO: waiting for ffi bool type support.
+      // waiting for ffi bool type support.
       object = object ? 1 : 0;
     }
     switch (typeEncoding) {
@@ -179,13 +179,11 @@ dynamic storeValueToPointer(
     ptr.value = NSDictionary(object).pointer;
   } else if (object is Set && typeEncoding.maybeObject) {
     ptr.value = NSSet(object).pointer;
-  } else if (typeEncoding.maybeCString) {
-    if (object is Pointer<Utf8>) {
-      ptr.cast<Pointer<Utf8>>().value = object;
-    } else if (object is Pointer) {
-      Pointer<Void> tempPtr = object.cast<Void>();
-      ptr.value = tempPtr;
-    }
+  } else if (object is NSObjectRef && typeEncoding == TypeEncoding.pointer) {
+    ptr.value = object.pointer.cast<Void>();
+  } else if (object is Pointer && typeEncoding.maybeCString) {
+    Pointer<Void> tempPtr = object.cast<Void>();
+    ptr.value = tempPtr;
   } else if (typeEncoding == TypeEncoding.struct) {
     // ptr is struct pointer
     return storeStructToPointer(ptr, object);

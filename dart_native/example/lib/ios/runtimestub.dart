@@ -121,23 +121,57 @@ class RuntimeStub extends NSObject {
     return perform(SEL('fooCGAffineTransform:'), args: [transform]);
   }
 
-  NSArray fooNSArray(List list) {
-    NSObject result = perform(SEL('fooNSArray:'), args: [list]);
-    return NSArray.fromPointer(result.pointer);
+  List fooNSArray(List list) {
+    Pointer<Void> result =
+        perform(SEL('fooNSArray:'), args: [list], decodeRetVal: false);
+    return NSArray.fromPointer(result).raw;
   }
 
-  Block fooBlock(Function func) {
-    Block result = perform(SEL('fooBlock:'), args: [func]);
+  List fooNSMutableArray(List list) {
+    NSMutableArray array = NSMutableArray(list);
+    Pointer<Void> result =
+        perform(SEL('fooNSMutableArray:'), args: [array], decodeRetVal: false);
+    return NSMutableArray.fromPointer(result).raw;
+  }
+
+  Map fooNSDictionary(Map map) {
+    Pointer<Void> result =
+        perform(SEL('fooNSDictionary:'), args: [map], decodeRetVal: false);
+    return NSDictionary.fromPointer(result).raw;
+  }
+
+  Map fooNSMutableDictionary(Map map) {
+    NSMutableDictionary dict = NSMutableDictionary(map);
+    Pointer<Void> result = perform(SEL('fooNSMutableDictionary:'),
+        args: [dict], decodeRetVal: false);
+    return NSMutableDictionary.fromPointer(result).raw;
+  }
+
+  Set fooNSSet(Set set) {
+    Pointer<Void> result =
+        perform(SEL('fooNSSet:'), args: [set], decodeRetVal: false);
+    return NSSet.fromPointer(result).raw;
+  }
+
+  Set fooNSMutableSet(Set set) {
+    NSMutableSet s = NSMutableSet(set);
+    Pointer<Void> result =
+        perform(SEL('fooNSMutableSet:'), args: [s], decodeRetVal: false);
+    return NSMutableSet.fromPointer(result).raw;
+  }
+
+  Block fooBlock(NSString block(NSString a)) {
+    Block result = perform(SEL('fooBlock:'), args: [block]);
     return result;
   }
 
-  Block fooStretBlock(Function func) {
-    Block result = perform(SEL('fooStretBlock:'), args: [func]);
+  Block fooStretBlock(CGAffineTransform block(CGAffineTransform a)) {
+    Block result = perform(SEL('fooStretBlock:'), args: [block]);
     return result;
   }
 
-  Block fooCStringBlock(Function func) {
-    Block result = perform(SEL('fooCStringBlock:'), args: [func]);
+  Block fooCStringBlock(CString block(CString a)) {
+    Block result = perform(SEL('fooCStringBlock:'), args: [block]);
     return result;
   }
 
@@ -149,8 +183,33 @@ class RuntimeStub extends NSObject {
     perform(SEL('fooStructDelegate:'), args: [delegate]);
   }
 
-  NSString fooNSString(String string) {
-    NSObject result = perform(SEL('fooNSString:'), args: [string]);
-    return NSString.fromPointer(result.pointer);
+  String fooNSString(String string) {
+    Pointer<Void> result =
+        perform(SEL('fooNSString:'), args: [string], decodeRetVal: false);
+    return NSString.fromPointer(result).raw;
+  }
+
+  String fooNSMutableString(String string) {
+    NSMutableString s = NSMutableString(string);
+    Pointer<Void> result =
+        perform(SEL('fooNSMutableString:'), args: [s], decodeRetVal: false);
+    return NSMutableString.fromPointer(result).raw;
+  }
+
+  void fooWithError(NSObjectRef<NSError> ref) {
+    perform(SEL('fooWithError:'), args: [ref]);
+  }
+
+  TestOptions fooWithOptions(TestOptions options) {
+    int result = perform(SEL('fooWithOptions:'), args: [options]);
+    return TestOptions(result);
   }
 }
+
+class TestOptions extends NSOptions {
+  const TestOptions(dynamic raw) : super(raw);
+}
+
+const TestOptions TestOptionsNone = TestOptions(0);
+const TestOptions TestOptionsOne = TestOptions(1 << 0);
+const TestOptions TestOptionsTwo = TestOptions(1 << 1);

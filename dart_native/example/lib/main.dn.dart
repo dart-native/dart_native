@@ -9,6 +9,7 @@ import 'package:dart_native_example/ios/runtimestub.dart';
 
 void runDartNativeExample() {
   runDartNative();
+
   registerTypeConvertor('RuntimeSon', (ptr) {
     return RuntimeSon.fromPointer(ptr);
   });

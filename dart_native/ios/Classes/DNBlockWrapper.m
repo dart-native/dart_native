@@ -65,7 +65,9 @@ struct _DNBlock {
 };
 
 struct _DNBlockDescriptor3 * _dn_Block_descriptor_3(struct _DNBlock *aBlock) {
-    if (! (aBlock->flags & BLOCK_HAS_SIGNATURE)) return nil;
+    if (!(aBlock->flags & BLOCK_HAS_SIGNATURE)) {
+        return nil;
+    }
     uint8_t *desc = (uint8_t *)aBlock->descriptor;
     desc += sizeof(struct _DNBlockDescriptor1);
     if (aBlock->flags & BLOCK_HAS_COPY_DISPOSE) {
@@ -335,8 +337,10 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         int64_t argsAddr = (int64_t)(invocation.realArgs);
         [invocation retainArguments];
         
+        BOOL voidRet = strcmp(wrapper.typeEncodings[0], "v") == 0;
+        
         dispatch_semaphore_t sema;
-        if (!NSThread.isMainThread) {
+        if (!NSThread.isMainThread && !voidRet) {
             sema = dispatch_semaphore_create(0);
         }
         // TODO: Queue is ignored cause we use channel. We need replace it with ffi async callback.

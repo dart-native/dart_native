@@ -1,5 +1,3 @@
-library dart_objc.foundation;
-
 export 'foundation/basic_type.dart';
 export 'foundation/nsstring.dart';
 export 'foundation/nsvalue.dart';
@@ -18,3 +16,4 @@ export 'foundation/struct/nsrange.dart';
 export 'foundation/struct/uiedgeinsets.dart';
 export 'foundation/struct/uioffset.dart';
 export 'foundation/notification.dart';
+export 'foundation/nserror.dart';

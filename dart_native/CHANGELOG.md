@@ -1,3 +1,21 @@
+## 0.1.18
+
+* Support annotation for API availability.
+
+## 0.1.17
+
+* Support `NSError`
+* Fix bugs.
+
+## 0.1.16
+
+### Android
+* Support string type.
+### iOS
+* Support `NSObject **` type for argument type.
+* Support mutable collection types.
+* Support `NS_ENUM` and `NS_OPTIONS`
+
 ## 0.1.15
 
 * Fix CI.

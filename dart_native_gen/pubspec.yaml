@@ -1,6 +1,6 @@
 name: dart_native_gen
-description: Annotation for dart_native.
-version: 0.0.5
+description: Automatic type conversion solution for dart_native based on source_gen through annotation.
+version: 0.1.0
 homepage: https://github.com/dart-native/dart_native/
 
 environment:
