@@ -114,6 +114,10 @@ void fillArgsToJvalue(void **args, char **signaturesType, jvalue *argValues, int
                 jstring encoding = curEnv->NewStringUTF("utf-8");
                 argValues[index].l = (jstring) curEnv->NewObject(strClass, strMethodID, bytes, encoding);
             }
+            else {
+                jobject object = static_cast<jobject>(*args);
+                argValues[index].l = object;
+            }
         }
         else if (strcmp(signaturesType[index], "C") == 0) {
             argValues[index].c = (jchar) *(char *) args;
@@ -196,6 +200,15 @@ void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *me
             }
             curEnv->ReleaseByteArrayElements(byteArr, rbyte, 0);
             nativeInvokeResult = (void *) toChar;
+        }
+        else {
+            jobject obj = curEnv->NewGlobalRef(curEnv->CallObjectMethodA(object, method, argValues));
+            //store class value
+            char* clsName= new char[strlen(signaturesType[argumentsCount - 1] - 2)];
+            strlcpy(clsName, signaturesType[argumentsCount - 1] + 1, strlen(signaturesType[argumentsCount - 1]) - 1);
+            cache[obj] = static_cast<jclass>(curEnv->NewGlobalRef(findClass(curEnv, clsName)));
+            free(clsName);
+            nativeInvokeResult = obj;
         }
     }
     else if (strcmp(signaturesType[argumentsCount - 1], "C") == 0) {

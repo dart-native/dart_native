@@ -1,7 +1,10 @@
+import 'dart:ffi';
+
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native_example/android/entity.dart';
 
 class RuntimeStub extends JObject {
-  RuntimeStub() : super("com/dartnative/dart_native_example/RuntimeStub");
+  RuntimeStub([Pointer ptr]) : super("com/dartnative/dart_native_example/RuntimeStub", ptr);
 
   int getInt(int i) {
     return invoke('getInt', '(I)I', [i]);
@@ -49,6 +52,14 @@ class RuntimeStub extends JObject {
 
   bool complexCall(String s, int i, String c, double d, double f, int b, int sh, int l, bool boo) {
     return invoke('complexCall', '(Ljava/lang/String;ICDFBSJZ)Z', [s, i, c, d, f, b, sh, l, boo]);
+  }
+
+  Entity createEntity() {
+    return new Entity(invoke('createEntity', '()Lcom/dartnative/dart_native_example/Entity;', []));
+  }
+
+  int getTime(Entity entity) {
+    return invoke('getTime', '(Lcom/dartnative/dart_native_example/Entity;)J', [entity]);
   }
 
 //  JObject getObject(JObject object) {

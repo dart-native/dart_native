@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:ffi/ffi.dart';
 
 enum TypeDecoding {
@@ -14,10 +15,11 @@ enum TypeDecoding {
   long,
   bool,
   v,
-  string
+  string,
+  cls
 }
 
-Map<String, TypeDecoding> valueForTypeDecoding = {
+Map<String, TypeDecoding> basicValueForTypeDecoding = {
   'C': TypeDecoding.char,
   'I': TypeDecoding.int,
   'D': TypeDecoding.double,
@@ -27,14 +29,19 @@ Map<String, TypeDecoding> valueForTypeDecoding = {
   'J': TypeDecoding.long,
   'Z': TypeDecoding.bool,
   'V': TypeDecoding.v,
-  'Ljava/lang/String;': TypeDecoding.string
 };
 
+Map<String, TypeDecoding> clsValueForTypeDecoding = {
+  'Ljava/lang/String;': TypeDecoding.string,
+};
+
+RegExp reg = new RegExp(r'(C|I|D|F|B|S|J|Z|V|L.*?;).*?');
 TypeDecoding argumentSignatureDecoding(String methodSignature, int argIndex, [bool isReturnType = false]) {
-  RegExp reg = new RegExp(r'(C|I|D|F|B|S|J|Z|V|L.*?;).*?');
   Iterable<Match> matches = reg.allMatches(methodSignature);
   Match typeMatch = !isReturnType ? matches.elementAt(argIndex) : matches.last;
-  TypeDecoding encoding = valueForTypeDecoding[typeMatch.group(0)];
+  TypeDecoding encoding = basicValueForTypeDecoding[typeMatch.group(0)];
+  if(encoding == null) encoding = clsValueForTypeDecoding[typeMatch.group(0)];
+  if(encoding == null) encoding = TypeDecoding.cls;
   return encoding == null ? TypeDecoding.v : encoding;
 }
 
@@ -73,6 +80,11 @@ dynamic storeValueToPointer(
     case TypeDecoding.string:
       Pointer<Utf8> charPtr = Utf8.toUtf8(object);
       ptr.cast<Pointer<Utf8>>().value = charPtr;
+      break;
+    case TypeDecoding.cls:
+      if(object is JObject) {
+        ptr.value = object.pointer;
+      }
       break;
     case TypeDecoding.v:
       // TODO: Handle this case.
@@ -117,6 +129,9 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, TypeDecoding encoding) {
     case TypeDecoding.string:
       Pointer<Utf8> temp = ptr.cast();
       result = Utf8.fromUtf8(temp);
+      break;
+    case TypeDecoding.cls:
+      result = ptr;
       break;
     default:
       result = 0;

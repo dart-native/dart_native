@@ -10,9 +10,14 @@ class JObject extends Class{
   Pointer _ptr;
 
   //init target class
-  JObject(String className) : super(className) {
-    _ptr = nativeCreateClass(super.classUtf8());
+  JObject(String className, Pointer ptr) : super(className) {
+    print("ptr value ${ptr == null}");
+    _ptr = ptr == null ? nativeCreateClass(super.classUtf8()) : ptr;
     JObjectPool.sInstance.retain(this);
+  }
+
+  Pointer get pointer{
+    return _ptr;
   }
 
   dynamic invoke(String methodName, String methodSignature, List args) {
