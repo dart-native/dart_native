@@ -15,7 +15,7 @@ class RuntimeStub extends JObject {
     int startTime = new DateTime.now().millisecondsSinceEpoch;
     for(int i = 0; i < 10000; i ++){
       invoke("getInt", [x]);
-      print("west flutter get result ${invoke("getInt", [x])}");
+//      print("west flutter get result ${invoke("getInt", [x])}");
     }
     print("west call 10000 time:${new DateTime.now().millisecondsSinceEpoch - startTime}");
     return "aaa";

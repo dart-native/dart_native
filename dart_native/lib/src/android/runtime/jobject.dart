@@ -27,8 +27,6 @@ class JObject extends Class {
   dynamic invoke(String methodName, List args) {
     encodeToParamBuffer(args);
 
-    int startTime = new DateTime.now().millisecondsSinceEpoch;
-
     //对象引用
     Pointer<Int32> hashCodeParamPointer = allocate<Int32>(count: 1);
     hashCodeParamPointer.value = _javaObjectHashCode;
