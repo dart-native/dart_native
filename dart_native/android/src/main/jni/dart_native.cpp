@@ -15,6 +15,10 @@ static JavaVM *gJvm = nullptr;
 static jobject gClassLoader;
 static jmethodID gFindClassMethod;
 
+static jbyteArray gJbyteArray;
+char* paramsBuffer;
+int paramsBufferLength = 0;
+
 JNIEnv *getEnv() {
     JNIEnv *env;
     int status = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
@@ -28,7 +32,7 @@ JNIEnv *getEnv() {
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
-    NSLog("JNI_OnLoad");
+    NSLog("west JNI_OnLoad");
     gJvm = pjvm;  // cache the JavaVM pointer
     auto env = getEnv();
     //replace with one of your classes in the line below
@@ -41,7 +45,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
     gFindClassMethod = env->GetMethodID(classLoaderClass, "findClass",
                                         "(Ljava/lang/String;)Ljava/lang/Class;");
 
-    NSLog("JNI_OnLoad finish");
+    NSLog("west JNI_OnLoad finish");
     return JNI_VERSION_1_6;
 }
 
@@ -241,7 +245,144 @@ void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *me
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
+
     return nativeInvokeResult;
+}
+
+
+
+void *generateParamBuffer(int* size) {
+    paramsBuffer = (char*)malloc(*size);
+    paramsBufferLength = *size;
+    return (void *)paramsBuffer;
+}
+
+
+static jclass gStringClass;
+static jmethodID gStringMethod;
+jstring toJstring(char * stringArg, JNIEnv *curEnv){
+    if(gStringClass == NULL){
+        gStringClass = curEnv->FindClass("java/lang/String");
+        gStringMethod = curEnv->GetMethodID(gStringClass, "<init>","([BLjava/lang/String;)V");
+    }
+
+    jbyteArray bytes = curEnv->NewByteArray(strlen(stringArg));
+    curEnv->SetByteArrayRegion(bytes, 0, strlen(stringArg), (jbyte *) stringArg);
+    jstring encoding = curEnv->NewStringUTF("utf-8");
+
+    jstring result = (jstring) curEnv->NewObject(gStringClass, gStringMethod, bytes, encoding);
+
+    curEnv->DeleteLocalRef(bytes);
+    curEnv->DeleteLocalRef(encoding);
+    return result;
+}
+
+void* newJavaObject(char *className) {
+    JNIEnv *curEnv;
+
+    NSLog("west newJavaObject1:%s", className);
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        NSLog("west AttachCurrentThread : %d", error);
+    }
+
+    jstring classNameJstr = toJstring(className, curEnv);
+
+    //找到相关的类 注意路径是带反斜杆  不是带.
+    jclass cls_First = findClass(curEnv, "com/dartnative/dart_native_example/FlutterJavaBridge");
+    if(cls_First == NULL){
+        return NULL;
+    }
+
+    /**
+    方法参数：类名，方法名，方法签名
+    */
+    //找到对应的方法  注意签名后面有冒号
+    jmethodID mtd_static_method = curEnv->GetStaticMethodID(cls_First,"newObject","(Ljava/lang/String;[B)I");
+    if(mtd_static_method == NULL){
+        NSLog("west mtd_static_method null");
+        return NULL;
+    }
+
+
+    //参数
+    gJbyteArray = curEnv->NewByteArray(paramsBufferLength);
+    curEnv->SetByteArrayRegion(gJbyteArray, 0, paramsBufferLength, (jbyte *) paramsBuffer);
+
+    //调用java层静态方法
+    auto hashCode =
+            curEnv->CallStaticIntMethod(cls_First, mtd_static_method, classNameJstr, gJbyteArray);
+
+    //删除引用
+    curEnv->DeleteLocalRef(cls_First);
+    curEnv->DeleteLocalRef(gJbyteArray);
+    curEnv->DeleteLocalRef(classNameJstr);
+
+    return (void*)hashCode;
+}
+
+
+static jclass gFlutterJavaBirdgeClass;
+static jmethodID gFlutterJavaInvokeMethod;
+void *invokeJavaMethod(int* javaObjectHashCode, char *methodName) {
+    JNIEnv *curEnv;
+
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        NSLog("west AttachCurrentThread : %d", error);
+    }
+
+    //找到相关的类 注意路径是带反斜杆  不是带.
+    if(gFlutterJavaBirdgeClass == NULL){
+        gFlutterJavaBirdgeClass = findClass(curEnv, "com/dartnative/dart_native_example/FlutterJavaBridge");
+    }
+
+    if(gFlutterJavaBirdgeClass == NULL){
+        NSLog("west can not find class FlutterJavaBridge");
+        return NULL;
+    }
+
+    if(gFlutterJavaInvokeMethod == NULL){
+        //找到对应的方法  注意签名后面有冒号
+        gFlutterJavaInvokeMethod = curEnv->GetStaticMethodID(gFlutterJavaBirdgeClass,"invoke","(ILjava/lang/String;[B)[B");
+
+    }
+
+    if(gFlutterJavaInvokeMethod == NULL){
+        NSLog("west not find method : invoke");
+        return NULL;
+    }
+
+    gJbyteArray = curEnv->NewByteArray(paramsBufferLength);
+    curEnv->SetByteArrayRegion(gJbyteArray, 0, paramsBufferLength, (jbyte *) paramsBuffer);
+    jstring methodNameStr = toJstring(methodName, curEnv);
+
+    //调用java层静态方法
+    jbyteArray resultBuffer = static_cast<jbyteArray>(curEnv ->CallStaticObjectMethod(gFlutterJavaBirdgeClass,gFlutterJavaInvokeMethod,(jint) *((int *) javaObjectHashCode),methodNameStr, gJbyteArray));
+
+    if(resultBuffer == NULL){
+        NSLog("west resultBuffer is NULL");
+        return NULL;
+    }
+
+    jbyte * bytePointer  = curEnv->GetByteArrayElements(resultBuffer, 0);
+
+    //删除引用
+    curEnv->DeleteLocalRef(gJbyteArray);
+    curEnv->DeleteLocalRef(methodNameStr);
+    curEnv->DeleteLocalRef(resultBuffer);
+
+    return bytePointer;
+
+}
+
+
+void *releaseParamBuffer() {
+    free(paramsBuffer);
+    return NULL;
 }
 
 }

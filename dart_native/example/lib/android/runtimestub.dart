@@ -1,57 +1,23 @@
+import 'dart:convert';
+
 import 'package:dart_native/dart_native.dart';
+import 'dart:ffi';
+
+import 'package:dart_native/src/android/common/library.dart';
+import 'package:ffi/ffi.dart';
+import 'package:dart_native/src/android/runtime/functions.dart';
+import 'dart:typed_data';
 
 class RuntimeStub extends JObject {
-  RuntimeStub() : super("com/dartnative/dart_native_example/RuntimeStub");
+  RuntimeStub() : super("com.dartnative.dart_native_example.RuntimeStub");
 
-  int getInt(int i) {
-    return invoke('getInt', '(I)I', [i]);
+  String getInt(int x) {
+    int startTime = new DateTime.now().millisecondsSinceEpoch;
+    for(int i = 0; i < 10000; i ++){
+      invoke("getInt", [x]);
+      print("west flutter get result ${invoke("getInt", [x])}");
+    }
+    print("west call 10000 time:${new DateTime.now().millisecondsSinceEpoch - startTime}");
+    return "aaa";
   }
-
-  double getDouble(double b) {
-    return invoke('getDouble', '(D)D', [b]);
-  }
-
-  int getByte(int b) {
-    return invoke('getByte', '(B)B', [b]);
-  }
-
-  double getFloat(double f) {
-    return invoke('getFloat', '(F)F', [f]);
-  }
-
-  String getChar(String c) {
-    return invoke('getChar', '(C)C', [c]);
-  }
-
-  int getShort(int s) {
-    return invoke('getShort', '(S)S', [s]);
-  }
-
-  int getLong(int l) {
-    return invoke('getLong', '(J)J', [l]);
-  }
-
-  bool getBool(bool b) {
-    return invoke('getBool', '(Z)Z', [b]);
-  }
-
-  String getString(String s) {
-    return invoke('getString', '(Ljava/lang/String;)Ljava/lang/String;', [s]);
-  }
-
-  int add(int a, int b) {
-    return invoke('add', '(II)I', [a, b]);
-  }
-
-  void log(String a, String b) {
-    return invoke('log', '(Ljava/lang/String;Ljava/lang/String;)V', [a, b]);
-  }
-
-  bool complexCall(String s, int i, String c, double d, double f, int b, int sh, int l, bool boo) {
-    return invoke('complexCall', '(Ljava/lang/String;ICDFBSJZ)Z', [s, i, c, d, f, b, sh, l, boo]);
-  }
-
-//  JObject getObject(JObject object) {
-//    return invoke('getObject', [object]);
-//  }
 }

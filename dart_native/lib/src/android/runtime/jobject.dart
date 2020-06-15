@@ -2,56 +2,97 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:ffi/ffi.dart';
-
+import 'package:dart_native/src/android/common/library.dart';
+import 'package:dart_native/src/android/runtime/functions.dart';
+import 'dart:typed_data';
 import 'JObjectPool.dart';
 import 'class.dart';
 
-class JObject extends Class{
-  Pointer _ptr;
+const TYPE_DECODE = {
+  int: 0,
+};
+
+class JObject extends Class {
+
+  int _javaObjectHashCode;
 
   //init target class
   JObject(String className) : super(className) {
-    _ptr = nativeCreateClass(super.classUtf8());
-    JObjectPool.sInstance.retain(this);
+    _javaObjectHashCode = loadValueFromPointer(
+        newJavaObject(super.classUtf8()), TypeDecoding.int);
+    print("west new java object: ${super
+        .classUtf8()}, object hashCode:${_javaObjectHashCode}");
   }
 
-  dynamic invoke(String methodName, String methodSignature, List args) {
-    final methodNamePtr = Utf8.toUtf8(methodName);
-    final methodSignaturePtr = Utf8.toUtf8(methodSignature);
+  dynamic invoke(String methodName, List args) {
+    encodeToParamBuffer(args);
 
-    Pointer<Pointer<Void>> pointers;
-    if (args != null) {
-      pointers = allocate<Pointer<Void>>(count: args.length + 1);
-      for (var i = 0; i < args.length; i++) {
-        var arg = args[i];
-        if (arg == null) {
-          throw 'One of args list is null';
-        }
-        TypeDecoding argType = argumentSignatureDecoding(methodSignature, i);
-        storeValueToPointer(arg, pointers.elementAt(i), argType);
+    int startTime = new DateTime.now().millisecondsSinceEpoch;
+
+    //对象引用
+    Pointer<Int32> hashCodeParamPointer = allocate<Int32>(count: 1);
+    hashCodeParamPointer.value = _javaObjectHashCode;
+
+    Pointer<Void> resultPointer = invokeJavaMethod(
+        hashCodeParamPointer, Utf8.toUtf8(methodName));
+
+    releaseParamBuffer();
+
+    return decodeResultBuffer(resultPointer);
+  }
+
+  decodeResultBuffer(Pointer<Void> resultPointer) {
+    Pointer<Int8> temp = resultPointer.cast();
+    Int8List resultBuffer = temp.asTypedList(8);
+    
+    if (resultBuffer[0] == TYPE_DECODE[int]) {
+      return resultBuffer[ 1] | (resultBuffer[ 2] << 8) | (resultBuffer[ 3] <<
+          16) | (resultBuffer[ 4] << 24);
+    }
+    return 0;
+  }
+
+  void encodeToParamBuffer(List args) {
+    List list = List();
+    args.forEach((param) {
+      print(param.runtimeType);
+      //先放类型
+      list.add(TYPE_DECODE[param.runtimeType]);
+      //根据类型放数值
+      switch (param.runtimeType) {
+        case int:
+          list.add(param & 0xff);
+          list.add((param >> 8) & 0xff);
+          list.add((param >> 16) & 0xff);
+          list.add((param >> 24) & 0xff);
+          break;
       }
-      pointers.elementAt(args.length).value = nullptr;
-    }
-    Pointer<Void> invokeMethodRet =
-        nativeInvoke(_ptr, methodNamePtr, pointers, methodSignaturePtr);
-    if (pointers != null) {
-      free(pointers);
-    }
-    TypeDecoding returnType =
-        argumentSignatureDecoding(methodSignature, 0, true);
-    dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
-    return result;
+    });
+
+    //申请参数编码存放的内存
+    int encodeBufferLength = list.length;
+    Pointer<Int32> pointers = allocate<Int32>(count: 1);
+    pointers.value = encodeBufferLength;
+    Pointer<Void> paramPointer = generateParamBuffer(pointers);
+
+    //将申请的内存以Int8List的形式操作
+    Pointer<Int8> temp = paramPointer.cast();
+    Int8List paramInt8List = temp.asTypedList(encodeBufferLength);
+
+    int curIndex = 0;
+    list.forEach((element) {
+      paramInt8List[curIndex] = list[curIndex];
+      curIndex++;
+    });
+
   }
 
   release() {
-    if (JObjectPool.sInstance.release(this)) {
-      nativeReleaseClass(_ptr);
-    }
   }
 
   @override
   int compareTo(other) {
-    if (other is JObject && other._ptr == _ptr) {
+    if (other is JObject && other._javaObjectHashCode == _javaObjectHashCode) {
       return 0;
     }
     return 1;

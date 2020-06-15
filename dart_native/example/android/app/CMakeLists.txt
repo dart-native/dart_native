@@ -3,6 +3,7 @@
     # your build.
 
 cmake_minimum_required(VERSION 3.4.1)
+set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI})
 
