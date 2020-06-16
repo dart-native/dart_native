@@ -101,9 +101,9 @@ void releaseTargetClass(void *classPtr) {
     }
 }
 
-void fillArgsToJvalue(void **args, char **signaturesType, jvalue *argValues, int argsLength, JNIEnv *curEnv) {
+void fillArgsToJvalue(void **args, std::map<int, char*>signaturesType, jvalue *argValues, int argsLength, JNIEnv *curEnv) {
     NSLog("arg length : %d", argsLength);
-    for (jsize index(0); index < argsLength; ++index, ++args) {
+    for (jsize index(0); index < argsLength - 1; ++index, ++args) {
         if (strlen(signaturesType[index]) > 1) {
             if (strcmp(signaturesType[index], "Ljava/lang/String;") == 0) {
                 char * stringArg = (char *)*args;
@@ -147,6 +147,9 @@ void fillArgsToJvalue(void **args, char **signaturesType, jvalue *argValues, int
     }
 }
 
+std::regex regexSignature("(C|I|D|F|B|S|J|Z|V|L.*?;)");
+std::map<char *, std::map<int, char*>> paramsTypeCache;
+
 void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *methodSignature) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
@@ -162,29 +165,33 @@ void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *me
     jclass cls = cache[object];
     jmethodID method = curEnv->GetMethodID(cls, methodName, methodSignature);
 
-    //todo ** length
-    char **signaturesType = new char*[strlen(methodSignature)];
-    int argumentsCount = 0;
-    {
-        std::string strSignature = methodSignature;
-        std::regex regexSignature("(C|I|D|F|B|S|J|Z|V|L.*?;)");
-        std::sregex_iterator itBegin(strSignature.begin(), strSignature.end(), regexSignature);
-        std::sregex_iterator itEnd;
-        for (std::sregex_iterator i = itBegin; i != itEnd; ++i) {
-            std::smatch match = *i;
-            char* type = const_cast<char *>(match.str().c_str());
-            jsize const typeLength = strlen(type);
-            signaturesType[argumentsCount] = new char[typeLength + 1];
-            strlcpy(signaturesType[argumentsCount], type, (size_t) typeLength + 1);
-            ++argumentsCount;
+    std::map<int, char*> signaturesType;
+    if(paramsTypeCache.find(methodSignature) != paramsTypeCache.end()) {
+        signaturesType = paramsTypeCache[methodSignature];
+    } else {
+        int argumentsCount = 0;
+        {
+            std::string strSignature = methodSignature;
+            std::sregex_iterator itBegin(strSignature.begin(), strSignature.end(), regexSignature);
+            std::sregex_iterator itEnd;
+            for (std::sregex_iterator i = itBegin; i != itEnd; ++i) {
+                std::smatch match = *i;
+                char *type = const_cast<char *>(match.str().c_str());
+                jsize const typeLength = strlen(type);
+                signaturesType[argumentsCount] = new char[typeLength + 1];
+                strlcpy(signaturesType[argumentsCount], type, (size_t) typeLength + 1);
+                ++argumentsCount;
+            }
         }
+        paramsTypeCache[methodSignature] = signaturesType;
     }
 
-    jvalue *argValues = new jvalue[argumentsCount - 1];
-    fillArgsToJvalue(args, signaturesType, argValues, argumentsCount - 1, curEnv);
+    jvalue *argValues = new jvalue[signaturesType.size() - 1];
+    fillArgsToJvalue(args, signaturesType, argValues, signaturesType.size(), curEnv);
 
-    if (strlen(signaturesType[argumentsCount - 1]) > 1) {
-        if (strcmp(signaturesType[argumentsCount - 1], "Ljava/lang/String;") == 0) {
+    int lastParamIndex = signaturesType.size() - 1;
+    if (strlen(signaturesType[lastParamIndex]) > 1) {
+        if (strcmp(signaturesType[lastParamIndex], "Ljava/lang/String;") == 0) {
             jstring nativeString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
             char *toChar = NULL;
             jclass clsstring = curEnv->FindClass("java/lang/String");
@@ -204,53 +211,52 @@ void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *me
         else {
             jobject obj = curEnv->NewGlobalRef(curEnv->CallObjectMethodA(object, method, argValues));
             //store class value
-            char* clsName= new char[strlen(signaturesType[argumentsCount - 1] - 2)];
-            strlcpy(clsName, signaturesType[argumentsCount - 1] + 1, strlen(signaturesType[argumentsCount - 1]) - 1);
+            char* clsName= new char[strlen(signaturesType[lastParamIndex] - 2)];
+            strlcpy(clsName, signaturesType[lastParamIndex] + 1, strlen(signaturesType[lastParamIndex]) - 1);
             cache[obj] = static_cast<jclass>(curEnv->NewGlobalRef(findClass(curEnv, clsName)));
             free(clsName);
             nativeInvokeResult = obj;
         }
     }
-    else if (strcmp(signaturesType[argumentsCount - 1], "C") == 0) {
+    else if (strcmp(signaturesType[lastParamIndex], "C") == 0) {
         auto nativeChar = curEnv->CallCharMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeChar;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "I") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "I") == 0) {
         auto nativeInt = curEnv->CallIntMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeInt;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "D") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "D") == 0) {
         auto nativeDouble = curEnv->CallDoubleMethodA(object, method, argValues);
         double cDouble = (double) nativeDouble;
         memcpy(&nativeInvokeResult, &cDouble, sizeof(double));
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "F") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "F") == 0) {
         auto nativeDouble = curEnv->CallFloatMethodA(object, method, argValues);
         float cDouble = (float) nativeDouble;
         memcpy(&nativeInvokeResult, &cDouble, sizeof(float));
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "B") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "B") == 0) {
         auto nativeByte = curEnv->CallByteMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeByte;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "S") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "S") == 0) {
         auto nativeShort = curEnv->CallShortMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeShort;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "J") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "J") == 0) {
         auto nativeLong = curEnv->CallLongMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeLong;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "Z") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "Z") == 0) {
         auto nativeBool = curEnv->CallBooleanMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeBool;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "V") == 0) {
+    else if(strcmp(signaturesType[lastParamIndex], "V") == 0) {
         curEnv->CallVoidMethodA(object, method, argValues);
     }
 
     free(argValues);
-    free(signaturesType);
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }

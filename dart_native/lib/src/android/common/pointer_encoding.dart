@@ -36,13 +36,23 @@ Map<String, TypeDecoding> clsValueForTypeDecoding = {
 };
 
 RegExp reg = new RegExp(r'(C|I|D|F|B|S|J|Z|V|L.*?;).*?');
+Map<String, Map<int, TypeDecoding>> _paramsTypeCache = {};
+
 TypeDecoding argumentSignatureDecoding(String methodSignature, int argIndex, [bool isReturnType = false]) {
-  Iterable<Match> matches = reg.allMatches(methodSignature);
-  Match typeMatch = !isReturnType ? matches.elementAt(argIndex) : matches.last;
-  TypeDecoding encoding = basicValueForTypeDecoding[typeMatch.group(0)];
-  if(encoding == null) encoding = clsValueForTypeDecoding[typeMatch.group(0)];
-  if(encoding == null) encoding = TypeDecoding.cls;
-  return encoding == null ? TypeDecoding.v : encoding;
+  Map<int, TypeDecoding> cache = _paramsTypeCache[methodSignature];
+  if(cache == null) {
+    cache = {};
+    Iterable<Match> matches = reg.allMatches(methodSignature);
+    int typeCount = 0;
+    for(var typeMatch in matches) {
+      TypeDecoding encoding = basicValueForTypeDecoding[typeMatch.group(0)];
+      if(encoding == null) encoding = clsValueForTypeDecoding[typeMatch.group(0)];
+      if(encoding == null) encoding = TypeDecoding.cls;
+      cache[typeCount++] = encoding == null ? TypeDecoding.v : encoding;
+    }
+    _paramsTypeCache[methodSignature] = cache;
+  }
+  return !isReturnType ? cache[argIndex] : cache[cache.length - 1];
 }
 
 dynamic storeValueToPointer(

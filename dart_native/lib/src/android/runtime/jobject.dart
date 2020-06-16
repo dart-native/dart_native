@@ -8,6 +8,8 @@ import 'class.dart';
 
 class JObject extends Class{
   Pointer _ptr;
+  Map<String, Pointer> _methodNameCache = {};
+  Map<String, Pointer> _methodSignatureCache = {};
 
   //init target class
   JObject(String className, Pointer ptr) : super(className) {
@@ -21,8 +23,17 @@ class JObject extends Class{
   }
 
   dynamic invoke(String methodName, String methodSignature, List args) {
-    final methodNamePtr = Utf8.toUtf8(methodName);
-    final methodSignaturePtr = Utf8.toUtf8(methodSignature);
+    Pointer<Utf8> methodNamePtr = _methodNameCache[methodName];
+    if(methodNamePtr == null) {
+      methodNamePtr = Utf8.toUtf8(methodName);
+      _methodNameCache[methodName] = methodNamePtr;
+    }
+
+    Pointer<Utf8> methodSignaturePtr = _methodSignatureCache[methodSignature];
+    if(methodSignaturePtr == null) {
+      methodSignaturePtr = Utf8.toUtf8(methodSignature);
+      _methodSignatureCache[methodSignature] = methodSignaturePtr;
+    }
 
     Pointer<Pointer<Void>> pointers;
     if (args != null) {
