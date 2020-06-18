@@ -106,13 +106,7 @@ void fillArgsToJvalue(void **args, std::map<int, char*>signaturesType, jvalue *a
     for (jsize index(0); index < argsLength - 1; ++index, ++args) {
         if (strlen(signaturesType[index]) > 1) {
             if (strcmp(signaturesType[index], "Ljava/lang/String;") == 0) {
-                char * stringArg = (char *)*args;
-                jclass strClass = curEnv->FindClass("java/lang/String");
-                jmethodID strMethodID = curEnv->GetMethodID(strClass, "<init>","([BLjava/lang/String;)V");
-                jbyteArray bytes = curEnv->NewByteArray(strlen(stringArg));
-                curEnv->SetByteArrayRegion(bytes, 0, strlen(stringArg), (jbyte *) stringArg);
-                jstring encoding = curEnv->NewStringUTF("utf-8");
-                argValues[index].l = (jstring) curEnv->NewObject(strClass, strMethodID, bytes, encoding);
+                argValues[index].l = curEnv->NewStringUTF((char *)*args);
             }
             else {
                 jobject object = static_cast<jobject>(*args);
@@ -192,21 +186,9 @@ void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *me
     int lastParamIndex = signaturesType.size() - 1;
     if (strlen(signaturesType[lastParamIndex]) > 1) {
         if (strcmp(signaturesType[lastParamIndex], "Ljava/lang/String;") == 0) {
-            jstring nativeString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
-            char *toChar = NULL;
-            jclass clsstring = curEnv->FindClass("java/lang/String");
-            jstring strencode = curEnv->NewStringUTF("utf-8");
-            jmethodID strMethodID = curEnv->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
-            jbyteArray byteArr = (jbyteArray) curEnv->CallObjectMethod(nativeString, strMethodID, strencode);
-            jsize jsLength = curEnv->GetArrayLength(byteArr);
-            jbyte *rbyte = curEnv->GetByteArrayElements(byteArr, JNI_FALSE);
-            if (jsLength > 0) {
-                toChar = (char *) malloc(static_cast<size_t>(jsLength + 1));
-                memcpy(toChar, rbyte, static_cast<size_t>(jsLength));
-                toChar[jsLength] = 0;
-            }
-            curEnv->ReleaseByteArrayElements(byteArr, rbyte, 0);
-            nativeInvokeResult = (void *) toChar;
+            jstring javaString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
+            nativeInvokeResult = (char *) curEnv->GetStringUTFChars(javaString, 0);
+            curEnv->DeleteLocalRef(javaString);
         }
         else {
             jobject obj = curEnv->NewGlobalRef(curEnv->CallObjectMethodA(object, method, argValues));
