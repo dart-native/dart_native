@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
+import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/runtime.dart';
-import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
 import 'package:ffi/ffi.dart';
@@ -18,7 +18,7 @@ class NSArray extends NSSubclass<List> {
     List temp = List(count);
     for (var i = 0; i < count; i++) {
       id e = objectAtIndex(i);
-      temp[i] = unboxingElementForDartCollection(e);
+      temp[i] = unboxingObjCType(e);
     }
     raw = temp;
   }
@@ -47,7 +47,7 @@ class NSMutableArray extends NSArray {
 Pointer<Void> _new(dynamic value) {
   if (value is List) {
     List boxValues = value.map((e) {
-      return boxingElementForNativeCollection(e);
+      return boxingObjCType(e);
     }).toList();
     Pointer<Pointer<Void>> listPtr = allocate(count: boxValues.length);
     for (var i = 0; i < boxValues.length; i++) {
