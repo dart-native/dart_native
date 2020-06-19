@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/runtime.dart';
-import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
+import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/foundation/collection/nsarray.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
@@ -21,7 +21,7 @@ class NSDictionary extends NSSubclass<Map> {
     for (var i = 0; i < count; i++) {
       id key = keysArray.objectAtIndex(i);
       id value = objectForKey(key);
-      temp[keysList[i]] = unboxingElementForDartCollection(value);
+      temp[keysList[i]] = unboxingObjCType(value);
     }
     raw = temp;
   }

@@ -1,4 +1,4 @@
-export 'foundation/basic_type.dart';
+export 'foundation/objc_basic_type.dart';
 export 'foundation/nsstring.dart';
 export 'foundation/nsvalue.dart';
 export 'foundation/nsnumber.dart';

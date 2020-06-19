@@ -15,13 +15,6 @@
   static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif
 
-@protocol SampleDelegate <NSObject>
-
-- (NSObject *)callback;
-- (CGRect)callbackStruct:(CGRect)rect;
-
-@end
-
 @interface RuntimeStub ()<SampleDelegate>
 
 @property (nonatomic) id object;
@@ -204,8 +197,6 @@ API_AVAILABLE(ios(11.0)){
     return set;
 }
 
-typedef NSObject *(^BarBlock)(NSObject *a);
-
 - (BarBlock)fooBlock:(BarBlock)block {
     NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
@@ -223,8 +214,6 @@ typedef NSObject *(^BarBlock)(NSObject *a);
     return bar;
 }
 
-typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
-
 - (StretBlock)fooStretBlock:(StretBlock)block {
     CGAffineTransform arg = CGAffineTransformMake(1.1, 2.2, 3.3, 4.4, 5.5, 6.6);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
@@ -241,8 +230,6 @@ typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
     
     return bar;
 }
-
-typedef char *(^CStringRetBlock)(char *a);
 
 - (CStringRetBlock)fooCStringBlock:(CStringRetBlock)block {
     char *arg = "test c-string";
