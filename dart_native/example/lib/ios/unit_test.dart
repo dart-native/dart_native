@@ -102,8 +102,8 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   set = stub.fooNSMutableSet(Set.from([1, 2.345, 'I\'m String', rect]));
   print('fooNSMutableSet to Set: $set');
 
-  Block block = stub.fooBlock((NSString a) {
-    print('hello block! ${a.toString()}');
+  Block block = stub.fooBlock((NSObject a) {
+    print('hello block! ${a.description}');
     return a;
   });
   resultObj = block.invoke([stub]);

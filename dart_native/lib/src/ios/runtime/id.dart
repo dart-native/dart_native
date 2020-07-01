@@ -155,11 +155,6 @@ class id implements NSObjectProtocol {
     return perform(SEL('isProxy'));
   }
 
-  /// BasicProtocol
-  /// All instances already implement these methods. Do nothing.
-  @override
-  register() {}
-
   @override
   String toString() {
     return '<${isa.name}: $_address>';

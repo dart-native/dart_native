@@ -197,7 +197,7 @@ API_AVAILABLE(ios(11.0)){
     return set;
 }
 
-- (BarBlock)fooBlock:(BarBlock)block {
+- (void)fooBlock:(BarBlock)block {
     NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
@@ -205,16 +205,9 @@ API_AVAILABLE(ios(11.0)){
             DDLogInfo(@"%s result: %@", __FUNCTION__, result);
         }
     });
-    
-    BarBlock bar = ^(NSObject *a) {
-        DDLogInfo(@"bar block arg: %@ %@", a, arg);
-        return arg;
-    };
-    
-    return bar;
 }
 
-- (StretBlock)fooStretBlock:(StretBlock)block {
+- (void)fooStretBlock:(StretBlock)block {
     CGAffineTransform arg = CGAffineTransformMake(1.1, 2.2, 3.3, 4.4, 5.5, 6.6);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
@@ -222,16 +215,9 @@ API_AVAILABLE(ios(11.0)){
             DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGAffineTransform(result));
         }
     });
-    
-    StretBlock bar = ^(CGAffineTransform a) {
-        DDLogInfo(@"bar block arg: %@ %@", NSStringFromCGAffineTransform(a), NSStringFromCGAffineTransform(arg));
-        return arg;
-    };
-    
-    return bar;
 }
 
-- (CStringRetBlock)fooCStringBlock:(CStringRetBlock)block {
+- (void)fooCStringBlock:(CStringRetBlock)block {
     char *arg = "test c-string";
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
@@ -239,13 +225,6 @@ API_AVAILABLE(ios(11.0)){
             DDLogInfo(@"%s result: %s", __FUNCTION__, result);
         }
     });
-    
-    CStringRetBlock bar = ^(char *a) {
-        DDLogInfo(@"bar block arg: %s %s", a, arg);
-        return "return c-string";
-    };
-    
-    return bar;
 }
 
 - (void)fooDelegate:(id<SampleDelegate>)delegate {

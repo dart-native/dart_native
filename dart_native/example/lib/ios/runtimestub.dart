@@ -1,14 +1,33 @@
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
-import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@native
-class RuntimeSon extends RuntimeStub {
-  RuntimeSon([Class isa]) : super(Class('RuntimeSon'));
-  RuntimeSon.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+class TestOptions extends NSOptions {
+  const TestOptions(dynamic raw) : super(raw);
+  TestOptions.fromPointer(Pointer<Void> ptr) : super(ptr.address);
 }
+
+const TestOptions TestOptionsNone = TestOptions(0);
+const TestOptions TestOptionsOne = TestOptions(1 << 0);
+const TestOptions TestOptionsTwo = TestOptions(1 << 1);
+
+abstract class SampleDelegate {
+  registerSampleDelegate() {
+    registerProtocolCallback(this, callback, 'callback', SampleDelegate);
+    registerProtocolCallback(
+        this, callbackStruct, 'callbackStruct:', SampleDelegate);
+  }
+
+  NSObject callback();
+  CGRect callbackStruct(CGRect rect);
+}
+
+typedef NSObject BarBlock(NSObject a);
+
+typedef CGAffineTransform StretBlock(CGAffineTransform a);
+
+typedef CString CStringRetBlock(CString a);
 
 @native
 class RuntimeStub extends NSObject {
@@ -65,15 +84,21 @@ class RuntimeStub extends NSObject {
   }
 
   Class fooClass(Class cls) {
-    return perform(SEL('fooClass:'), args: [cls]);
+    Pointer<Void> result =
+        perform(SEL('fooClass:'), args: [cls], decodeRetVal: false);
+    return Class.fromPointer(result);
   }
 
   SEL fooSEL(SEL sel) {
-    return perform(SEL('fooSEL:'), args: [sel]);
+    Pointer<Void> result =
+        perform(SEL('fooSEL:'), args: [sel], decodeRetVal: false);
+    return SEL.fromPointer(result);
   }
 
   NSObject fooObject(NSObject object) {
-    return perform(SEL('fooObject:'), args: [object]);
+    Pointer<Void> result =
+        perform(SEL('fooObject:'), args: [object], decodeRetVal: false);
+    return NSObject.fromPointer(result);
   }
 
   Pointer<Void> fooPointer(Pointer<Void> p) {
@@ -85,65 +110,84 @@ class RuntimeStub extends NSObject {
   }
 
   CGSize fooCGSize(CGSize size) {
-    return perform(SEL('fooCGSize:'), args: [size]);
+    Pointer<Void> result =
+        perform(SEL('fooCGSize:'), args: [size], decodeRetVal: false);
+    return CGSize.fromPointer(result);
   }
 
   CGPoint fooCGPoint(CGPoint point) {
-    return perform(SEL('fooCGPoint:'), args: [point]);
+    Pointer<Void> result =
+        perform(SEL('fooCGPoint:'), args: [point], decodeRetVal: false);
+    return CGPoint.fromPointer(result);
   }
 
   CGVector fooCGVector(CGVector vector) {
-    return perform(SEL('fooCGVector:'), args: [vector]);
+    Pointer<Void> result =
+        perform(SEL('fooCGVector:'), args: [vector], decodeRetVal: false);
+    return CGVector.fromPointer(result);
   }
 
   CGRect fooCGRect(CGRect rect) {
-    return perform(SEL('fooCGRect:'), args: [rect]);
+    Pointer<Void> result =
+        perform(SEL('fooCGRect:'), args: [rect], decodeRetVal: false);
+    return CGRect.fromPointer(result);
   }
 
   NSRange fooNSRange(NSRange range) {
-    return perform(SEL('fooNSRange:'), args: [range]);
+    Pointer<Void> result =
+        perform(SEL('fooNSRange:'), args: [range], decodeRetVal: false);
+    return NSRange.fromPointer(result);
   }
 
   UIOffset fooUIOffset(UIOffset offset) {
-    return perform(SEL('fooUIOffset:'), args: [offset]);
+    Pointer<Void> result =
+        perform(SEL('fooUIOffset:'), args: [offset], decodeRetVal: false);
+    return UIOffset.fromPointer(result);
   }
 
   UIEdgeInsets fooUIEdgeInsets(UIEdgeInsets insets) {
-    return perform(SEL('fooUIEdgeInsets:'), args: [insets]);
+    Pointer<Void> result =
+        perform(SEL('fooUIEdgeInsets:'), args: [insets], decodeRetVal: false);
+    return UIEdgeInsets.fromPointer(result);
   }
 
+  @NativeAvailable(ios: '11.0')
   NSDirectionalEdgeInsets fooNSDirectionalEdgeInsets(
       NSDirectionalEdgeInsets insets) {
-    return perform(SEL('fooNSDirectionalEdgeInsets:'), args: [insets]);
+    Pointer<Void> result = perform(SEL('fooNSDirectionalEdgeInsets:'),
+        args: [insets], decodeRetVal: false);
+    return NSDirectionalEdgeInsets.fromPointer(result);
   }
 
   CGAffineTransform fooCGAffineTransform(CGAffineTransform transform) {
-    return perform(SEL('fooCGAffineTransform:'), args: [transform]);
+    Pointer<Void> result = perform(SEL('fooCGAffineTransform:'),
+        args: [transform], decodeRetVal: false);
+    return CGAffineTransform.fromPointer(result);
   }
 
-  List fooNSArray(List list) {
+  List fooNSArray(List array) {
     Pointer<Void> result =
-        perform(SEL('fooNSArray:'), args: [list], decodeRetVal: false);
+        perform(SEL('fooNSArray:'), args: [array], decodeRetVal: false);
     return NSArray.fromPointer(result).raw;
   }
 
-  List fooNSMutableArray(List list) {
-    NSMutableArray array = NSMutableArray(list);
+  List fooNSMutableArray(List array) {
+    NSMutableArray _array = NSMutableArray(array);
     Pointer<Void> result =
-        perform(SEL('fooNSMutableArray:'), args: [array], decodeRetVal: false);
+        perform(SEL('fooNSMutableArray:'), args: [_array], decodeRetVal: false);
     return NSMutableArray.fromPointer(result).raw;
   }
 
-  Map fooNSDictionary(Map map) {
+  Map fooNSDictionary(Map dict) {
     Pointer<Void> result =
-        perform(SEL('fooNSDictionary:'), args: [map], decodeRetVal: false);
+        perform(SEL('fooNSDictionary:'), args: [dict], decodeRetVal: false);
     return NSDictionary.fromPointer(result).raw;
   }
 
-  Map fooNSMutableDictionary(Map map) {
-    NSMutableDictionary dict = NSMutableDictionary(map);
+  Map fooNSMutableDictionary(Map dict) {
+    NSMutableDictionary _dict = NSMutableDictionary(dict);
     Pointer<Void> result = perform(SEL('fooNSMutableDictionary:'),
-        args: [dict], decodeRetVal: false);
+        args: [_dict], decodeRetVal: false);
     return NSMutableDictionary.fromPointer(result).raw;
   }
 
@@ -154,25 +198,22 @@ class RuntimeStub extends NSObject {
   }
 
   Set fooNSMutableSet(Set set) {
-    NSMutableSet s = NSMutableSet(set);
+    NSMutableSet _set = NSMutableSet(set);
     Pointer<Void> result =
-        perform(SEL('fooNSMutableSet:'), args: [s], decodeRetVal: false);
+        perform(SEL('fooNSMutableSet:'), args: [_set], decodeRetVal: false);
     return NSMutableSet.fromPointer(result).raw;
   }
 
-  Block fooBlock(NSString block(NSString a)) {
-    Block result = perform(SEL('fooBlock:'), args: [block]);
-    return result;
+  void fooBlock(BarBlock block) {
+    perform(SEL('fooBlock:'), args: [block]);
   }
 
-  Block fooStretBlock(CGAffineTransform block(CGAffineTransform a)) {
-    Block result = perform(SEL('fooStretBlock:'), args: [block]);
-    return result;
+  void fooStretBlock(StretBlock block) {
+    perform(SEL('fooStretBlock:'), args: [block]);
   }
 
-  Block fooCStringBlock(CString block(CString a)) {
-    Block result = perform(SEL('fooCStringBlock:'), args: [block]);
-    return result;
+  void fooCStringBlock(CStringRetBlock block) {
+    perform(SEL('fooCStringBlock:'), args: [block]);
   }
 
   fooDelegate(SampleDelegate delegate) {
@@ -189,27 +230,20 @@ class RuntimeStub extends NSObject {
     return NSString.fromPointer(result).raw;
   }
 
-  String fooNSMutableString(String string) {
-    NSMutableString s = NSMutableString(string);
+  String fooNSMutableString(String str) {
+    NSMutableString s = NSMutableString(str);
     Pointer<Void> result =
         perform(SEL('fooNSMutableString:'), args: [s], decodeRetVal: false);
     return NSMutableString.fromPointer(result).raw;
   }
 
-  void fooWithError(NSObjectRef<NSError> ref) {
-    perform(SEL('fooWithError:'), args: [ref]);
+  void fooWithError(NSObjectRef<NSError> error) {
+    perform(SEL('fooWithError:'), args: [error]);
   }
 
   TestOptions fooWithOptions(TestOptions options) {
-    int result = perform(SEL('fooWithOptions:'), args: [options]);
-    return TestOptions(result);
+    Pointer<Void> result =
+        perform(SEL('fooWithOptions:'), args: [options], decodeRetVal: false);
+    return TestOptions.fromPointer(result);
   }
 }
-
-class TestOptions extends NSOptions {
-  const TestOptions(dynamic raw) : super(raw);
-}
-
-const TestOptions TestOptionsNone = TestOptions(0);
-const TestOptions TestOptionsOne = TestOptions(1 << 0);
-const TestOptions TestOptionsTwo = TestOptions(1 << 1);
