@@ -114,13 +114,13 @@ extension NSValueUIGeometry on NSValue {
   CGAffineTransform get CGAffineTransformValue =>
       perform(SEL('CGAffineTransformValue'));
 
-  static NSValue valueWithNSDirectionalEdgeInsets(
+  static NSValue valueWithDirectionalEdgeInsets(
       NSDirectionalEdgeInsets insets) {
     return NSValue.valueWithStruct(insets);
   }
 
-  NSDirectionalEdgeInsets get NSDirectionalEdgeInsetsValue =>
-      perform(SEL('NSDirectionalEdgeInsetsValue'));
+  NSDirectionalEdgeInsets get directionalEdgeInsetsValue =>
+      perform(SEL('directionalEdgeInsetsValue'));
 
   static NSValue valueWithUIOffset(UIOffset insets) {
     return NSValue.valueWithStruct(insets);
@@ -136,3 +136,5 @@ extension NSValueRange on NSValue {
 
   NSRange get rangeValue => perform(SEL('rangeValue'));
 }
+
+// TODO: CATransform3D
