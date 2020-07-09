@@ -3,14 +3,14 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 class UIOffset extends CGFloatx2Wrapper {
-  double get horizontal => a;
+  double get horizontal => d1;
   set horizontal(double width) {
-    a = width;
+    d1 = width;
   }
 
-  double get vertical => b;
+  double get vertical => d2;
   set vertical(double height) {
-    b = height;
+    d2 = height;
   }
 
   UIOffset(double horizontal, double vertical) : super(horizontal, vertical);
