@@ -31,7 +31,7 @@ typedef CString CStringRetBlock(CString a);
 
 @native
 class RuntimeStub extends NSObject {
-  RuntimeStub([Class isa]) : super(Class('RuntimeStub'));
+  RuntimeStub([Class isa]) : super(isa ?? Class('RuntimeStub'));
 
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
