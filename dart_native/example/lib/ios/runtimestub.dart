@@ -165,6 +165,12 @@ class RuntimeStub extends NSObject {
     return CGAffineTransform.fromPointer(result);
   }
 
+  CATransform3D fooCATransform3D(CATransform3D transform3D) {
+    Pointer<Void> result = perform(SEL('fooCATransform3D:'),
+        args: [transform3D], decodeRetVal: false);
+    return CATransform3D.fromPointer(result);
+  }
+
   List fooNSArray(List array) {
     Pointer<Void> result =
         perform(SEL('fooNSArray:'), args: [array], decodeRetVal: false);

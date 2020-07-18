@@ -84,6 +84,10 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
       stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
   print('fooCGAffineTransform result:$transform');
 
+  CATransform3D transform3D = stub.fooCATransform3D(
+      CATransform3D(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1));
+  print('fooCATransform3D result:$transform3D');
+
   List list = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
   print('NSArray to List: $list');
 

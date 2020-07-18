@@ -69,7 +69,7 @@ class id implements NSObjectProtocol {
   id autorelease() {
     id temp = perform(SEL('autorelease'));
     _ptr = temp._ptr;
-    // decrease retainCount 
+    // decrease retainCount
     _retainCount--;
     return this;
   }

@@ -55,6 +55,7 @@ typedef char * _Nonnull (^CStringRetBlock)(char *a);
 - (NSDirectionalEdgeInsets)fooNSDirectionalEdgeInsets:(NSDirectionalEdgeInsets)insets
     API_AVAILABLE(ios(11.0));
 - (CGAffineTransform)fooCGAffineTransform:(CGAffineTransform)transform;
+- (CATransform3D)fooCATransform3D:(CATransform3D)transform3D;
 - (NSArray *)fooNSArray:(NSArray *)array;
 - (NSMutableArray *)fooNSMutableArray:(NSMutableArray *)array;
 - (NSDictionary *)fooNSDictionary:(NSDictionary *)dict;
