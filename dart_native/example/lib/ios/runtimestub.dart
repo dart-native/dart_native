@@ -10,7 +10,9 @@ class TestOptions extends NSOptions {
 }
 
 const TestOptions TestOptionsNone = TestOptions(0);
+
 const TestOptions TestOptionsOne = TestOptions(1 << 0);
+
 const TestOptions TestOptionsTwo = TestOptions(1 << 1);
 
 abstract class SampleDelegate {
@@ -30,14 +32,15 @@ typedef CGAffineTransform StretBlock(CGAffineTransform a);
 
 typedef CString CStringRetBlock(CString a);
 
+typedef CGFloat CGFloatRetBlock(CGFloat a);
+
 @native
 class RuntimeStub extends NSObject {
   RuntimeStub([Class isa]) : super(Class('RuntimeStub'));
-
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
-  bool fooBool(bool b) {
-    return perform('fooBOOL:'.toSEL(), args: [b]);
+  bool fooBOOL(bool b) {
+    return perform(SEL('fooBOOL:'), args: [b]);
   }
 
   int fooInt8(int int8) {
@@ -49,7 +52,7 @@ class RuntimeStub extends NSObject {
   }
 
   int fooInt32(int int32) {
-    return perform(SEL('fooInt16:'), args: [int32]);
+    return perform(SEL('fooInt32:'), args: [int32]);
   }
 
   int fooInt64(int int64) {
@@ -65,7 +68,7 @@ class RuntimeStub extends NSObject {
   }
 
   int fooUInt32(int uint32) {
-    return perform(SEL('fooUInt16:'), args: [uint32]);
+    return perform(SEL('fooUInt32:'), args: [uint32]);
   }
 
   int fooUInt64(int uint64) {
@@ -217,24 +220,24 @@ class RuntimeStub extends NSObject {
     perform(SEL('fooCStringBlock:'), args: [block]);
   }
 
-  fooDelegate(SampleDelegate delegate) {
+  void fooDelegate(SampleDelegate delegate) {
     perform(SEL('fooDelegate:'), args: [delegate]);
   }
 
-  fooStructDelegate(SampleDelegate delegate) {
+  void fooStructDelegate(SampleDelegate delegate) {
     perform(SEL('fooStructDelegate:'), args: [delegate]);
   }
 
-  String fooNSString(String string) {
+  String fooNSString(String str) {
     Pointer<Void> result =
-        perform(SEL('fooNSString:'), args: [string], decodeRetVal: false);
+        perform(SEL('fooNSString:'), args: [str], decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 
   String fooNSMutableString(String str) {
-    NSMutableString s = NSMutableString(str);
+    NSMutableString _str = NSMutableString(str);
     Pointer<Void> result =
-        perform(SEL('fooNSMutableString:'), args: [s], decodeRetVal: false);
+        perform(SEL('fooNSMutableString:'), args: [_str], decodeRetVal: false);
     return NSMutableString.fromPointer(result).raw;
   }
 
