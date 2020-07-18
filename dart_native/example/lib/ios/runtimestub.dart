@@ -36,7 +36,8 @@ typedef CGFloat CGFloatRetBlock(CGFloat a);
 
 @native
 class RuntimeStub extends NSObject {
-  RuntimeStub([Class isa]) : super(Class('RuntimeStub'));
+  RuntimeStub([Class isa]) : super(isa ?? Class('RuntimeStub'));
+
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   bool fooBOOL(bool b) {
@@ -167,6 +168,12 @@ class RuntimeStub extends NSObject {
     Pointer<Void> result = perform(SEL('fooCGAffineTransform:'),
         args: [transform], decodeRetVal: false);
     return CGAffineTransform.fromPointer(result);
+  }
+
+  CATransform3D fooCATransform3D(CATransform3D transform3D) {
+    Pointer<Void> result = perform(SEL('fooCATransform3D:'),
+        args: [transform3D], decodeRetVal: false);
+    return CATransform3D.fromPointer(result);
   }
 
   List fooNSArray(List array) {

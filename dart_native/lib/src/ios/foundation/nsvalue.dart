@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:dart_native/src/ios/foundation/struct/catransform3d.dart';
 import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
@@ -82,7 +83,7 @@ Map<String, String> _encodingToNativeValueName = {
   'B': 'bool',
 };
 
-extension NSValueUIGeometry on NSValue {
+extension NSValueUIGeometryExtensions on NSValue {
   static NSValue valueWithCGPoint(CGPoint point) {
     return NSValue.valueWithStruct(point);
   }
@@ -114,13 +115,13 @@ extension NSValueUIGeometry on NSValue {
   CGAffineTransform get CGAffineTransformValue =>
       perform(SEL('CGAffineTransformValue'));
 
-  static NSValue valueWithNSDirectionalEdgeInsets(
+  static NSValue valueWithDirectionalEdgeInsets(
       NSDirectionalEdgeInsets insets) {
     return NSValue.valueWithStruct(insets);
   }
 
-  NSDirectionalEdgeInsets get NSDirectionalEdgeInsetsValue =>
-      perform(SEL('NSDirectionalEdgeInsetsValue'));
+  NSDirectionalEdgeInsets get directionalEdgeInsetsValue =>
+      perform(SEL('directionalEdgeInsetsValue'));
 
   static NSValue valueWithUIOffset(UIOffset insets) {
     return NSValue.valueWithStruct(insets);
@@ -129,10 +130,18 @@ extension NSValueUIGeometry on NSValue {
   UIOffset get UIOffsetValue => perform(SEL('UIOffsetValue'));
 }
 
-extension NSValueRange on NSValue {
+extension NSValueRangeExtensions on NSValue {
   static NSValue valueWithRange(NSRange range) {
     return NSValue.valueWithStruct(range);
   }
 
   NSRange get rangeValue => perform(SEL('rangeValue'));
+}
+
+extension CATransform3DAdditions on NSValue {
+  static NSValue valueWithCATransform3D(CATransform3D transform) {
+    return NSValue.valueWithStruct(transform);
+  }
+
+  CATransform3D get CATransform3DValue => perform(SEL('CATransform3DValue'));
 }

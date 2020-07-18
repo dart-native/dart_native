@@ -164,6 +164,11 @@ API_AVAILABLE(ios(11.0)){
     return (CGAffineTransform){1.1, 2.2, 3.3, 4.4, 5.5, 6.6};
 }
 
+- (CATransform3D)fooCATransform3D:(CATransform3D)transform3D {
+    DDLogInfo(@"%s %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", __FUNCTION__, transform3D.m11, transform3D.m12, transform3D.m13, transform3D.m14, transform3D.m21, transform3D.m22, transform3D.m23, transform3D.m24, transform3D.m31, transform3D.m32, transform3D.m33, transform3D.m34, transform3D.m41, transform3D.m42, transform3D.m43, transform3D.m44);
+    return (CATransform3D){1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4};
+}
+
 - (NSArray *)fooNSArray:(NSArray *)array {
     DDLogInfo(@"%s %@", __FUNCTION__, array.description);
     return array;
@@ -198,7 +203,6 @@ API_AVAILABLE(ios(11.0)){
 }
 
 - (void)fooBlock:(BarBlock)block {
-    NSObject *arg = [NSObject new];
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             NSObject *result = block(@"123123");

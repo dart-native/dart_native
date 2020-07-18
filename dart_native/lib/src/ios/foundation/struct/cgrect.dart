@@ -3,24 +3,24 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 class CGRect extends CGFloatx4Wrapper {
-  double get x => a;
+  double get x => d1;
   set x(double x) {
-    a = x;
+    d1 = x;
   }
 
-  double get y => b;
+  double get y => d2;
   set y(double y) {
-    b = y;
+    d2 = y;
   }
 
-  double get width => c;
+  double get width => d3;
   set width(double width) {
-    c = width;
+    d3 = width;
   }
 
-  double get height => d;
+  double get height => d4;
   set height(double height) {
-    d = height;
+    d4 = height;
   }
 
   CGRect(double x, double y, double width, double height)

@@ -3,24 +3,24 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 class UIEdgeInsets extends CGFloatx4Wrapper {
-  double get top => a;
+  double get top => d1;
   set top(double top) {
-    a = top;
+    d1 = top;
   }
 
-  double get left => b;
+  double get left => d2;
   set left(double left) {
-    b = left;
+    d2 = left;
   }
 
-  double get bottom => c;
+  double get bottom => d3;
   set bottom(double bottom) {
-    c = bottom;
+    d3 = bottom;
   }
 
-  double get right => d;
+  double get right => d4;
   set right(double right) {
-    d = right;
+    d4 = right;
   }
 
   UIEdgeInsets(double top, double left, double bottom, double right)
