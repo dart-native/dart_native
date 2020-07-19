@@ -337,10 +337,10 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         int64_t argsAddr = (int64_t)(invocation.realArgs);
         [invocation retainArguments];
         
-        BOOL voidRet = strcmp(wrapper.typeEncodings[0], "v") == 0;
+//        BOOL voidRet = strcmp(wrapper.typeEncodings[0], "v") == 0;
         
         dispatch_semaphore_t sema;
-        if (!NSThread.isMainThread && !voidRet) {
+        if (!NSThread.isMainThread) {
             sema = dispatch_semaphore_create(0);
         }
         // TODO: Queue is ignored cause we use channel. We need replace it with ffi async callback.

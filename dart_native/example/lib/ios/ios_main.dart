@@ -1,5 +1,5 @@
 import 'package:dart_native_example/ios/delegatestub.dart';
-import 'package:dart_native_example/ios/runtimestub.dart';
+import 'package:dart_native_example/ios/runtimeson.dart';
 import 'package:dart_native_example/ios/unit_test.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';

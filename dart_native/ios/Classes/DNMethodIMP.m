@@ -166,10 +166,10 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         
         [invocation retainArguments];
         
-        BOOL voidRet = strcmp(types[0], "void") == 0;
+//        BOOL voidRet = strcmp(types[0], "void") == 0;
         
         dispatch_semaphore_t sema;
-        if (!NSThread.isMainThread && !voidRet) {
+        if (!NSThread.isMainThread) {
             sema = dispatch_semaphore_create(0);
         }
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{

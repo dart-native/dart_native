@@ -3,24 +3,24 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 class NSDirectionalEdgeInsets extends CGFloatx4Wrapper {
-  double get top => a;
+  double get top => d1;
   set top(double top) {
-    a = top;
+    d1 = top;
   }
 
-  double get leading => b;
+  double get leading => d2;
   set leading(double leading) {
-    b = leading;
+    d2 = leading;
   }
 
-  double get bottom => c;
+  double get bottom => d3;
   set bottom(double bottom) {
-    c = bottom;
+    d3 = bottom;
   }
 
-  double get trailing => d;
+  double get trailing => d4;
   set trailing(double trailing) {
-    d = trailing;
+    d4 = trailing;
   }
 
   NSDirectionalEdgeInsets(

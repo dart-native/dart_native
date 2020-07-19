@@ -54,10 +54,6 @@ extension ToProtocol on String {
   Protocol toProtocol() => Protocol(this);
 }
 
-abstract class BasicProtocol {
-  register();
-}
-
 /// Register callback function for selector in protocol.
 /// Protocol [protocolType] must be used in native code.
 /// This function is only used for pure Dart class which implements a objc protocol.

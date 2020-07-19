@@ -15,13 +15,6 @@
   static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif
 
-@protocol SampleDelegate <NSObject>
-
-- (NSObject *)callback;
-- (CGRect)callbackStruct:(CGRect)rect;
-
-@end
-
 @interface RuntimeStub ()<SampleDelegate>
 
 @property (nonatomic) id object;
@@ -171,6 +164,11 @@ API_AVAILABLE(ios(11.0)){
     return (CGAffineTransform){1.1, 2.2, 3.3, 4.4, 5.5, 6.6};
 }
 
+- (CATransform3D)fooCATransform3D:(CATransform3D)transform3D {
+    DDLogInfo(@"%s %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", __FUNCTION__, transform3D.m11, transform3D.m12, transform3D.m13, transform3D.m14, transform3D.m21, transform3D.m22, transform3D.m23, transform3D.m24, transform3D.m31, transform3D.m32, transform3D.m33, transform3D.m34, transform3D.m41, transform3D.m42, transform3D.m43, transform3D.m44);
+    return (CATransform3D){1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4};
+}
+
 - (NSArray *)fooNSArray:(NSArray *)array {
     DDLogInfo(@"%s %@", __FUNCTION__, array.description);
     return array;
@@ -204,28 +202,16 @@ API_AVAILABLE(ios(11.0)){
     return set;
 }
 
-typedef NSObject *(^BarBlock)(NSObject *a);
-
-- (BarBlock)fooBlock:(BarBlock)block {
-    NSObject *arg = [NSObject new];
+- (void)fooBlock:(BarBlock)block {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             NSObject *result = block(@"123123");
             DDLogInfo(@"%s result: %@", __FUNCTION__, result);
         }
     });
-    
-    BarBlock bar = ^(NSObject *a) {
-        DDLogInfo(@"bar block arg: %@ %@", a, arg);
-        return arg;
-    };
-    
-    return bar;
 }
 
-typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
-
-- (StretBlock)fooStretBlock:(StretBlock)block {
+- (void)fooStretBlock:(StretBlock)block {
     CGAffineTransform arg = CGAffineTransformMake(1.1, 2.2, 3.3, 4.4, 5.5, 6.6);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
@@ -233,18 +219,9 @@ typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
             DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGAffineTransform(result));
         }
     });
-    
-    StretBlock bar = ^(CGAffineTransform a) {
-        DDLogInfo(@"bar block arg: %@ %@", NSStringFromCGAffineTransform(a), NSStringFromCGAffineTransform(arg));
-        return arg;
-    };
-    
-    return bar;
 }
 
-typedef char *(^CStringRetBlock)(char *a);
-
-- (CStringRetBlock)fooCStringBlock:(CStringRetBlock)block {
+- (void)fooCStringBlock:(CStringRetBlock)block {
     char *arg = "test c-string";
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
@@ -252,13 +229,6 @@ typedef char *(^CStringRetBlock)(char *a);
             DDLogInfo(@"%s result: %s", __FUNCTION__, result);
         }
     });
-    
-    CStringRetBlock bar = ^(char *a) {
-        DDLogInfo(@"bar block arg: %s %s", a, arg);
-        return "return c-string";
-    };
-    
-    return bar;
 }
 
 - (void)fooDelegate:(id<SampleDelegate>)delegate {

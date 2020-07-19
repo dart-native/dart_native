@@ -6,6 +6,7 @@
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
+import 'package:dart_native_example/ios/runtimeson.dart';
 
 void runDartNativeExample() {
   runDartNative();

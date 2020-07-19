@@ -3,14 +3,14 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 class CGPoint extends CGFloatx2Wrapper {
-  double get x => a;
+  double get x => d1;
   set x(double x) {
-    a = x;
+    d1 = x;
   }
 
-  double get y => b;
+  double get y => d2;
   set y(double y) {
-    b = y;
+    d2 = y;
   }
 
   CGPoint(double x, double y) : super(x, y);
