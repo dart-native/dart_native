@@ -25,7 +25,7 @@ typedef NS_OPTIONS(NSUInteger, TestOptions) {
 typedef NSObject * _Nonnull (^BarBlock)(NSObject *a);
 typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
 typedef char * _Nonnull (^CStringRetBlock)(char *a);
-typedef CGFloat _Nonnull (^CGFloatRetBlock)(CGFloat a);
+typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 
 @interface RuntimeStub : NSObject
 
