@@ -68,7 +68,7 @@ public class RuntimeStub {
     return new Entity();
   }
 
-  public long getTime(Entity entity) {
+  public int getTime(Entity entity) {
     return entity.getCurrentTime();
   }
 }

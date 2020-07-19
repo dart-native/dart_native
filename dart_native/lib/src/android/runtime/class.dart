@@ -9,6 +9,10 @@ class Class extends Comparable<dynamic>{
     _className = className;
   }
 
+  String get className {
+    return _className;
+  }
+
   Pointer<Utf8> classUtf8() {
     return Utf8.toUtf8(_className);
   }

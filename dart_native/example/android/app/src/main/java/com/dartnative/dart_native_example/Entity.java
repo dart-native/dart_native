@@ -5,7 +5,7 @@ package com.dartnative.dart_native_example;
  */
 public class Entity {
 
-    public long getCurrentTime() {
-        return System.currentTimeMillis();
+    public int getCurrentTime() {
+        return (int) System.currentTimeMillis();
     }
 }
