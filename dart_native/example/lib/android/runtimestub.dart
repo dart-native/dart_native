@@ -15,23 +15,23 @@ class RuntimeStub extends JObject {
   }
 
   int getByte(int b) {
-    return invoke('getByte', [b], "B");
+    return invoke('getByte', [byte(b)], "B");
   }
 
   double getFloat(double f) {
-    return invoke('getFloat', [f], "F");
+    return invoke('getFloat', [float(f)], "F");
   }
 
   String getChar(String c) {
-    return invoke('getChar', [c], "C");
+    return invoke('getChar', [char(c.codeUnitAt(0))], "C");
   }
 
   int getShort(int s) {
-    return invoke('getShort', [s], "S");
+    return invoke('getShort', [short(s)], "S");
   }
 
   int getLong(int l) {
-    return invoke('getLong', [l], "J");
+    return invoke('getLong', [long(l)], "J");
   }
 
   bool getBool(bool b) {
@@ -49,11 +49,11 @@ class RuntimeStub extends JObject {
   void log(String a, String b) {
     return invoke('log', [a, b], "V");
   }
-//
-//  bool complexCall(String s, int i, String c, double d, double f, int b, int sh, int l, bool boo) {
-//    return invoke('complexCall', '(Ljava/lang/String;ICDFBSJZ)Z', [s, i, c, d, f, b, sh, l, boo]);
-//  }
-//
+
+  bool complexCall(String s, int i, String c, double d, double f, int b, int sh, int l, bool boo) {
+    return invoke('complexCall', [s, i, char(c.codeUnitAt(0)), d, float(f), byte(b), short(sh), long(l), boo], "Z");
+  }
+
   Entity createEntity() {
     return new Entity(invoke('createEntity', [], "Lcom/dartnative/dart_native_example/Entity;"));
   }

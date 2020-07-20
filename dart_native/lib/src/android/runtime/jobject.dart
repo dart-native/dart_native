@@ -24,10 +24,10 @@ class JObject extends Class{
     Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
 
     Pointer<Pointer<Void>> pointers;
-    Pointer<Pointer<Void>> typePointers;
+    Pointer<Pointer<Utf8>> typePointers;
     if (args != null) {
       pointers = allocate<Pointer<Void>>(count: args.length + 1);
-      typePointers = allocate<Pointer<Void>>(count: args.length + 1);
+      typePointers = allocate<Pointer<Utf8>>(count: args.length + 1);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (arg == null) {

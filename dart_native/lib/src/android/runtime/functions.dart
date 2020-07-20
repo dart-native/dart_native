@@ -30,7 +30,7 @@ final void Function(Pointer<Void> objectPtr) nativeReleaseClass = nativeDylib
 ///
 /// @return: 返回值指针
 final Pointer<Void> Function(Pointer<Void> objectPtr, Pointer<Utf8> methodName,
-    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Void>> typePtrs, Pointer<Utf8> returnType)
+    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Utf8>> typePtrs, Pointer<Utf8> returnType)
 nativeInvokeNeo = nativeDylib
     .lookup<
     NativeFunction<
@@ -38,6 +38,6 @@ nativeInvokeNeo = nativeDylib
             Pointer<Void> objectPtr,
             Pointer<Utf8> methodName,
             Pointer<Pointer<Void>> argsPtrs,
-            Pointer<Pointer<Void>> typePtrs,
+            Pointer<Pointer<Utf8>> typePtrs,
             Pointer<Utf8> returnType)>>("invokeNativeMethodNeo")
     .asFunction();

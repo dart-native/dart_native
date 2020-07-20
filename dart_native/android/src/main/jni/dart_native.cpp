@@ -118,18 +118,18 @@ char *spliceChar(char *dest, char *src) {
     return result;
 }
 
-char *generateSignature(void **argTypes) {
+char *generateSignature(char **argTypes) {
     char *signature = const_cast<char *>("(");
     int argCount = 0;
     for(; *argTypes ; ++argTypes, ++argCount) {
-        signature = spliceChar(signature, static_cast<char *>(*argTypes));
+        signature = spliceChar(signature, *argTypes);
     }
     return spliceChar(signature, const_cast<char *>(")"));
 }
 
-void fillArgs(void **args, void **argTypes, jvalue *argValues, JNIEnv *curEnv) {
+void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
     for(jsize index(0); *args ; ++args, ++index, ++argTypes) {
-        char *argType = (char *) *argTypes;
+        char *argType = *argTypes;
         if (strlen(argType) > 1) {
             if (strcmp(argType, "Ljava/lang/String;") == 0) {
                 argValues[index].l = curEnv->NewStringUTF((char *)*args);
@@ -168,7 +168,7 @@ void fillArgs(void **args, void **argTypes, jvalue *argValues, JNIEnv *curEnv) {
 }
 
 
-void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, void **argTypes, char *returnType) {
+void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, char *returnType) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
     void *nativeInvokeResult = nullptr;
