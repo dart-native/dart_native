@@ -128,7 +128,7 @@ char *generateSignature(char **argTypes) {
 }
 
 void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
-    for(jsize index(0); *args ; ++args, ++index, ++argTypes) {
+    for(jsize index(0); *argTypes ; ++args, ++index, ++argTypes) {
         char *argType = *argTypes;
         if (strlen(argType) > 1) {
             if (strcmp(argType, "Ljava/lang/String;") == 0) {
