@@ -1,8 +1,13 @@
 package com.dartnative.dart_native;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 public class DartNative {
@@ -38,7 +43,7 @@ public class DartNative {
 
   public static Method getMethod(String method) {
     try {
-      return targetClass.getDeclaredMethod(method);
+      return targetClass.getDeclaredMethod(method, double.class);
     } catch (NoSuchMethodException e) {
       throw new NoSuchElementException(e.getMessage());
     }
@@ -64,5 +69,33 @@ public class DartNative {
       count++;
     }
     return methodTypes;
+  }
+
+  private static Map<String, Class> basicClassMap = new HashMap<String, Class>(){{
+    put("I", int.class);
+  }};
+
+  public static String getMethodReturnType(Class cls, String methodName, String[] argTypes) {
+    try {
+      Class[] parameterTypes = new Class[argTypes.length];
+      for (int index = 0; index < argTypes.length; index++) {
+        String type = argTypes[index];
+        if (basicClassMap.containsKey(type)) {
+          parameterTypes[index] = basicClassMap.get(type);
+          continue;
+        }
+
+        parameterTypes[index] = Class.forName(type);
+      }
+      Method findMethod =  cls.getMethod(methodName, parameterTypes);
+      String type = findMethod.getReturnType().toString();
+      Log.d("HUIZZ", "type info " + type);
+      return type;
+    } catch (NoSuchMethodException ignored) {
+
+    } catch (ClassNotFoundException ignored) {
+
+    }
+    return null;
   }
 }

@@ -19,7 +19,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    testAndroid(stub);
+//    testAndroid(stub);
   }
 
   @override

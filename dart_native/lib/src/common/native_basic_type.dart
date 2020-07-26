@@ -14,6 +14,7 @@ class char extends NativeIntBox {
 }
 
 class unsigned_char = char with _ToAlias;
+class byte = NativeIntBox with _ToAlias;
 class short = NativeIntBox with _ToAlias;
 class unsigned_short = NativeIntBox with _ToAlias;
 class unsigned_int = NativeIntBox with _ToAlias;
