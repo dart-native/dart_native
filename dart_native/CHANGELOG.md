@@ -1,3 +1,8 @@
+## 0.2.0
+
+* Performance optimization and more feature for Android.
+* Fix bugs.
+
 ## 0.1.18
 
 * Support annotation for API availability.
