@@ -15,18 +15,6 @@ static JavaVM *gJvm = nullptr;
 static jobject gClassLoader;
 static jmethodID gFindClassMethod;
 
-static std::map<char, char *> signature_decoding = {
-        {'C', "char"},
-        {'I', "int"},
-        {'D', "double"},
-        {'F', "float"},
-        {'B', "byte"},
-        {'S', "short"},
-        {'J', "long"},
-        {'Z', "boolean"},
-        {'V', "void"}
-};
-
 JNIEnv *getEnv() {
     JNIEnv *env;
     int status = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
@@ -84,6 +72,7 @@ void *createTargetClass(char *targetClassName) {
     jobject newObject = curEnv->NewGlobalRef(curEnv->NewObject(cls, constructor));
     cache[newObject] = static_cast<jclass>(curEnv->NewGlobalRef(cls));
 
+
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
@@ -91,7 +80,8 @@ void *createTargetClass(char *targetClassName) {
     return newObject;
 }
 
-char *nativeMethodType(const char *methodName) {
+
+void releaseTargetClass(void *classPtr) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
 
@@ -102,160 +92,156 @@ char *nativeMethodType(const char *methodName) {
         NSLog("AttachCurrentThread : %d", error);
     }
 
-    jclass cls = findClass(curEnv, "com/dartnative/dart_native/DartNative");
-    char *typeResult = nullptr;
-
-    if (cls != nullptr) {
-        jmethodID method = curEnv->GetStaticMethodID(cls, "getMethodType",
-                                                     "(Ljava/lang/String;)Ljava/lang/String;");
-        if (method != nullptr) {
-            jstring type = (jstring) curEnv->CallStaticObjectMethod(cls, method,
-                                                                    curEnv->NewStringUTF(
-                                                                            methodName));
-            typeResult = (char *) curEnv->GetStringUTFChars(type, 0);
-        }
-    }
+    jobject object = static_cast<jobject>(classPtr);
+    curEnv->DeleteGlobalRef(object);
+    cache[object] = NULL;
 
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
-
-    return typeResult;
 }
 
-void fillArgsToJvalue(void **args, char **signaturesType, jvalue *argValues, int argsLength, JNIEnv *curEnv) {
-    NSLog("arg length : %d", argsLength);
-    for (jsize index(0); index < argsLength; ++index) {
-        if (strlen(signaturesType[index]) > 1) {
-            if (strcmp(signaturesType[index], "Ljava/lang/String;") == 0) {
-                char * stringArg = (char *)*args;
-                jclass strClass = curEnv->FindClass("java/lang/String");
-                jmethodID strMethodID = curEnv->GetMethodID(strClass, "<init>","([BLjava/lang/String;)V");
-                jbyteArray bytes = curEnv->NewByteArray(strlen(stringArg));
-                curEnv->SetByteArrayRegion(bytes, 0, strlen(stringArg), (jbyte *) stringArg);
-                jstring encoding = curEnv->NewStringUTF("utf-8");
-                argValues[index].l = (jstring) curEnv->NewObject(strClass, strMethodID, bytes, encoding);
+char *findReturnType(JNIEnv *curEnv, jclass cls, jobject object, char* methondName, char **argType) {
+    jclass nativeClass = curEnv->FindClass("com/dartnative/dart_native/DartNative");
+    jmethodID nativeMethodID = curEnv->GetStaticMethodID(nativeClass,
+            "getMethodReturnType", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
+
+//    jobjectArray stringArray = new jobjectArray()
+
+//    curEnv->CallStaticObjectMethodA(nativeClass, nativeMethodID, argType);
+}
+
+char *spliceChar(char *dest, char *src) {
+    char *result = (char *)malloc(strlen(dest) + strlen(src));
+    strcpy(result, dest);
+    strcat(result, src);
+    return result;
+}
+
+char *generateSignature(char **argTypes) {
+    char *signature = const_cast<char *>("(");
+    int argCount = 0;
+    for(; *argTypes ; ++argTypes, ++argCount) {
+        signature = spliceChar(signature, *argTypes);
+    }
+    return spliceChar(signature, const_cast<char *>(")"));
+}
+
+void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
+    for(jsize index(0); *argTypes ; ++args, ++index, ++argTypes) {
+        char *argType = *argTypes;
+        if (strlen(argType) > 1) {
+            if (strcmp(argType, "Ljava/lang/String;") == 0) {
+                argValues[index].l = curEnv->NewStringUTF((char *)*args);
+            }
+            else {
+                jobject object = static_cast<jobject>(*args);
+                argValues[index].l = object;
             }
         }
-        else if (strcmp(signaturesType[index], "C") == 0) {
+        else if (strcmp(argType, "C") == 0) {
             argValues[index].c = (jchar) *(char *) args;
         }
-        else if(strcmp(signaturesType[index], "I") == 0) {
+        else if(strcmp(argType, "I") == 0) {
             argValues[index].i = (jint) *((int *) args);
         }
-        else if(strcmp(signaturesType[index], "D") == 0) {
+        else if(strcmp(argType, "D") == 0) {
             argValues[index].d = (jdouble) *((double *) args);
         }
-        else if(strcmp(signaturesType[index], "F") == 0) {
+        else if(strcmp(argType, "F") == 0) {
             argValues[index].f = (jfloat) *((float *) args);
         }
-        else if(strcmp(signaturesType[index], "B") == 0) {
+        else if(strcmp(argType, "B") == 0) {
             argValues[index].b = (jbyte) *((int8_t *) args);
         }
-        else if(strcmp(signaturesType[index], "S") == 0) {
+        else if(strcmp(argType, "S") == 0) {
             argValues[index].s = (jshort) *((int16_t *) args);
         }
-        else if(strcmp(signaturesType[index], "J") == 0) {
+        else if(strcmp(argType, "J") == 0) {
             argValues[index].j = (jlong) *((int64_t *) args);
         }
-        else if(strcmp(signaturesType[index], "Z") == 0) {
+        else if(strcmp(argType, "Z") == 0) {
             argValues[index].z = static_cast<jboolean>(*((int *) args));
         }
-        else if(strcmp(signaturesType[index], "V") == 0) {}
-        ++args;
+        else if(strcmp(argType, "V") == 0) {}
     }
 }
 
-void *invokeNativeMethod(void *classPtr, char *methodName, void **args, char *methodSignature) {
+
+void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, char *returnType) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
     void *nativeInvokeResult = nullptr;
 
     auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
     if (error < 0) {
-        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        gJvm->AttachCurrentThread(&curEnv, nullptr);
         bShouldDetach = true;
-        NSLog("AttachCurrentThread : %d", error);
     }
     jobject object = static_cast<jobject>(classPtr);
     jclass cls = cache[object];
-    jmethodID method = curEnv->GetMethodID(cls, methodName, methodSignature);
 
-    //todo ** length
-    char **signaturesType = new char*[strlen(methodSignature)];
-    int argumentsCount = 0;
-    {
-        std::string strSignature = methodSignature;
-        std::regex regexSignature("(C|I|D|F|B|S|J|Z|V|L.*?;)");
-        std::sregex_iterator itBegin(strSignature.begin(), strSignature.end(), regexSignature);
-        std::sregex_iterator itEnd;
-        for (std::sregex_iterator i = itBegin; i != itEnd; ++i) {
-            std::smatch match = *i;
-            signaturesType[argumentsCount] = const_cast<char *>(match.str().c_str());
-            ++argumentsCount;
+    char *signature = generateSignature(argTypes);
+    jvalue *argValues = new jvalue[strlen(signature) - 2];
+    fillArgs(args, argTypes, argValues, curEnv);
+    jmethodID method = curEnv->GetMethodID(cls, methodName, spliceChar(signature, returnType));
+
+    if (strlen(returnType) > 1) {
+        if (strcmp(returnType, "Ljava/lang/String;") == 0) {
+            jstring javaString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
+            nativeInvokeResult = (char *) curEnv->GetStringUTFChars(javaString, 0);
+            curEnv->DeleteLocalRef(javaString);
+        }
+        else {
+            jobject obj = curEnv->NewGlobalRef(curEnv->CallObjectMethodA(object, method, argValues));
+            //store class value
+            char* clsName= new char[strlen(returnType)];
+            strlcpy(clsName, returnType + 1, strlen(returnType) - 1);
+            cache[obj] = static_cast<jclass>(curEnv->NewGlobalRef(findClass(curEnv, clsName)));
+            free(clsName);
+            nativeInvokeResult = obj;
         }
     }
-
-    jvalue *argValues = new jvalue[argumentsCount - 1];
-    fillArgsToJvalue(args, signaturesType, argValues, argumentsCount - 1, curEnv);
-
-    if (strlen(signaturesType[argumentsCount - 1]) > 1) {
-        if (strcmp(signaturesType[argumentsCount - 1], "Ljava/lang/String;") == 0) {
-            jstring nativeString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
-            char *toChar = NULL;
-            jclass clsstring = curEnv->FindClass("java/lang/String");
-            jstring strencode = curEnv->NewStringUTF("utf-8");
-            jmethodID strMethodID = curEnv->GetMethodID(clsstring, "getBytes", "(Ljava/lang/String;)[B");
-            jbyteArray byteArr = (jbyteArray) curEnv->CallObjectMethod(nativeString, strMethodID, strencode);
-            jsize jsLength = curEnv->GetArrayLength(byteArr);
-            jbyte *rbyte = curEnv->GetByteArrayElements(byteArr, JNI_FALSE);
-            if (jsLength > 0) {
-                toChar = (char *) malloc(static_cast<size_t>(jsLength + 1));
-                memcpy(toChar, rbyte, static_cast<size_t>(jsLength));
-                toChar[jsLength] = 0;
-            }
-            curEnv->ReleaseByteArrayElements(byteArr, rbyte, 0);
-            nativeInvokeResult = (void *) toChar;
-        }
-    }
-    else if (strcmp(signaturesType[argumentsCount - 1], "C") == 0) {
+    else if (strcmp(returnType, "C") == 0) {
         auto nativeChar = curEnv->CallCharMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeChar;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "I") == 0) {
+    else if(strcmp(returnType, "I") == 0) {
         auto nativeInt = curEnv->CallIntMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeInt;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "D") == 0) {
+    else if(strcmp(returnType, "D") == 0) {
         auto nativeDouble = curEnv->CallDoubleMethodA(object, method, argValues);
         double cDouble = (double) nativeDouble;
         memcpy(&nativeInvokeResult, &cDouble, sizeof(double));
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "F") == 0) {
+    else if(strcmp(returnType, "F") == 0) {
         auto nativeDouble = curEnv->CallFloatMethodA(object, method, argValues);
         float cDouble = (float) nativeDouble;
         memcpy(&nativeInvokeResult, &cDouble, sizeof(float));
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "B") == 0) {
+    else if(strcmp(returnType, "B") == 0) {
         auto nativeByte = curEnv->CallByteMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeByte;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "S") == 0) {
+    else if(strcmp(returnType, "S") == 0) {
         auto nativeShort = curEnv->CallShortMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeShort;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "J") == 0) {
+    else if(strcmp(returnType, "J") == 0) {
         auto nativeLong = curEnv->CallLongMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeLong;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "Z") == 0) {
+    else if(strcmp(returnType, "Z") == 0) {
         auto nativeBool = curEnv->CallBooleanMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeBool;
     }
-    else if(strcmp(signaturesType[argumentsCount - 1], "V") == 0) {}
+    else if(strcmp(returnType, "V") == 0) {
+        curEnv->CallVoidMethodA(object, method, argValues);
+    }
 
     free(argValues);
-    free(signaturesType);
+    free(signature);
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }

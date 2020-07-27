@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
-import 'package:dart_native/src/ios/foundation/internal/native_type_box.dart';
+import 'package:dart_native/src/common/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:ffi/ffi.dart';
 
@@ -367,6 +367,14 @@ List<String> _nativeTypeNames = [
   'double',
   'bool',
   'size_t',
+  'int8_t',
+  'int16_t',
+  'int32_t',
+  'int64_t',
+  'uint8_t',
+  'uint16_t',
+  'uint32_t',
+  'uint64_t',
   'CGFloat',
   'CGSize',
   'CGRect',

@@ -1,6 +1,5 @@
 package com.dartnative.dart_native_example;
 
-import androidx.annotation.NonNull;
 import io.flutter.Log;
 
 public class RuntimeStub {
@@ -54,5 +53,22 @@ public class RuntimeStub {
   public int add(int a, int b) {
     Log.d(TAG, "add :" + a + " + " + b);
     return a + b;
+  }
+
+  public void log(String tag, String message) {
+    Log.d(tag, message);
+  }
+
+  public boolean complexCall(String s, int i, char c, double d, float f, byte b, short sh, long l, boolean bool) {
+    Log.d(TAG, "tag :" + s + " + " + i + " + " + c + " + " + d + " + " + f + " + " + b + " + " + sh + " + " + l + " + " + bool);
+    return true;
+  }
+
+  public Entity createEntity() {
+    return new Entity();
+  }
+
+  public int getTime(Entity entity) {
+    return entity.getCurrentTime();
   }
 }

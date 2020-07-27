@@ -18,7 +18,8 @@ dev_dependencies:
     sdk: flutter
   build_runner:
 
-  dart_native: ^0.1.16
+  dart_native:
+    path: ../../dart_native
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

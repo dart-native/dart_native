@@ -3,14 +3,14 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 class CGVector extends CGFloatx2Wrapper {
-  double get dx => a;
+  double get dx => d1;
   set dx(double dx) {
-    a = dx;
+    d1 = dx;
   }
 
-  double get dy => b;
+  double get dy => d2;
   set dy(double dy) {
-    b = dy;
+    d2 = dy;
   }
 
   CGVector(double dx, double dy) : super(dx, dy);

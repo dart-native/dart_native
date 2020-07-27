@@ -59,20 +59,28 @@ class id implements NSObjectProtocol {
         Block_release(this.pointer);
       }
       _retainCount--;
+      if (_retainCount == 0) {
+        // Don't need waiting for native callback.
+        dealloc();
+      }
     }
   }
 
   id autorelease() {
     id temp = perform(SEL('autorelease'));
     _ptr = temp._ptr;
+    // decrease retainCount
+    _retainCount--;
     return this;
   }
 
   /// Clean NSObject instance.
   /// Subclass can override this method and call release on its dart properties.
   dealloc() {
-    CallbackManager.shared.clearAllCallbackOnTarget(this);
-    _ptr = nullptr;
+    if (_ptr != nullptr) {
+      CallbackManager.shared.clearAllCallbackOnTarget(this);
+      _ptr = nullptr;
+    }
   }
 
   // NSObjectProtocol
@@ -146,11 +154,6 @@ class id implements NSObjectProtocol {
   bool isProxy() {
     return perform(SEL('isProxy'));
   }
-
-  /// BasicProtocol
-  /// All instances already implement these methods. Do nothing.
-  @override
-  register() {}
 
   @override
   String toString() {

@@ -5,7 +5,7 @@ import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
 
 testIOS(RuntimeStub stub, DelegateStub delegate) {
-  bool resultBool = stub.fooBool(false);
+  bool resultBool = stub.fooBOOL(false);
   print('fooBool result:$resultBool');
 
   int resultInt8 = stub.fooInt8(-123);
@@ -84,6 +84,10 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
       stub.fooCGAffineTransform(CGAffineTransform(6, 5, 4, 3, 2, 1));
   print('fooCGAffineTransform result:$transform');
 
+  CATransform3D transform3D = stub.fooCATransform3D(
+      CATransform3D(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1));
+  print('fooCATransform3D result:$transform3D');
+
   List list = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
   print('NSArray to List: $list');
 
@@ -102,27 +106,20 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   set = stub.fooNSMutableSet(Set.from([1, 2.345, 'I\'m String', rect]));
   print('fooNSMutableSet to Set: $set');
 
-  Block block = stub.fooBlock((NSString a) {
-    print('hello block! ${a.toString()}');
+  stub.fooBlock((NSObject a) {
+    print('hello block! ${a.description}');
     return a;
   });
-  resultObj = block.invoke([stub]);
-  print('fooBlock result:$resultObj');
 
-  Block blockStret = stub.fooStretBlock((CGAffineTransform a) {
+  stub.fooStretBlock((CGAffineTransform a) {
     print('hello block stret! ${a.toString()}');
     return CGAffineTransform(12, 0, 12, 0, 12, 0);
   });
-  CGAffineTransform resultStret =
-      blockStret.invoke([CGAffineTransform(6, 5, 4, 3, 2, 1)]);
-  print('fooStretBlock result:$resultStret');
 
-  Block blockCString = stub.fooCStringBlock((CString a) {
+  stub.fooCStringBlock((CString a) {
     print('hello block cstring! $a');
     return CString('test return cstring');
   });
-  String resultCString = blockCString.invoke(['test cstring arg']);
-  print('fooCStringBlock result:$resultCString');
 
   stub.fooDelegate(delegate);
   stub.fooStructDelegate(delegate);
