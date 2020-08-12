@@ -13,7 +13,7 @@ Write native code using Dart. This package liberates you from native code and lo
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'DartNative' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*', 'libffi/*.h'
+  s.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
   s.public_header_files = 'Classes/DartNativePlugin.h'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
