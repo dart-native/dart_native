@@ -7,7 +7,7 @@
 
 #import "RuntimeStub.h"
 #import <UIKit/UIKit.h>
-@import CocoaLumberjack;
+#import <CocoaLumberjack/CocoaLumberjack.h>
 
 #ifdef DEBUG
   static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
