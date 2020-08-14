@@ -39,6 +39,7 @@ class id implements NSObjectProtocol {
         list.add(this);
       }
     }
+    passObjectToC(this, _ptr);
     ChannelDispatch().registerChannelCallbackIfNot('object_dealloc', _dealloc);
   }
 

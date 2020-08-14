@@ -56,7 +56,7 @@ final void Function(Pointer<Void>) Block_release = nativeDylib
     .lookup<NativeFunction<Void Function(Pointer<Void>)>>('_Block_release')
     .asFunction();
 
-final Object Function(Object) passObjectToC = nativeDylib
-    .lookup<NativeFunction<Handle Function(Handle)>>(
+final void Function(Object, Pointer<Void>) passObjectToC = nativeDylib
+    .lookup<NativeFunction<Void Function(Handle, Pointer<Void>)>>(
         "PassObjectToCUseDynamicLinking")
     .asFunction();

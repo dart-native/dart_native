@@ -6,8 +6,6 @@ import 'runtimestub.dart';
 
 @native
 class RuntimeSon extends RuntimeStub {
-  RuntimeSon([Class isa]) : super(isa ?? Class('RuntimeSon')) {
-    passObjectToC(this);
-  }
+  RuntimeSon([Class isa]) : super(isa ?? Class('RuntimeSon'));
   RuntimeSon.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
