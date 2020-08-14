@@ -11,6 +11,10 @@ DynamicLibrary get runtimeLib {
     // static linking
     _runtimeLib = nativeDylib;
   }
+  final initializeApi = _runtimeLib.lookupFunction<
+      IntPtr Function(Pointer<Void>),
+      int Function(Pointer<Void>)>("InitDartApiDL");
+  initializeApi(NativeApi.initializeApiDLData);
   return _runtimeLib;
 }
 

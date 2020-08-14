@@ -1,16 +1,15 @@
+#include "finalizer.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include "../include/dart_api.h"
 #include "../include/dart_native_api.h"
-
 #include "../include/dart_api_dl.h"
 
 static void RunFinalizer(void* isolate_callback_data,
                          Dart_WeakPersistentHandle handle,
                          void* peer) {
-  
+    NSLog(@"Dart object finalizer!");
 }
 
 // Tests that passing handles through FFI calls works, and that the FFI call
@@ -45,18 +44,22 @@ static void RunFinalizer(void* isolate_callback_data,
 //  return return_value;
 //}
 
-DART_EXPORT Dart_Handle PassObjectToCUseDynamicLinking(Dart_Handle h) {
-  auto persistent_handle = Dart_NewPersistentHandle_DL(h);
-
-  Dart_Handle handle_2 = Dart_HandleFromPersistent_DL(persistent_handle);
-  Dart_SetPersistentHandle_DL(persistent_handle, h);
-  Dart_DeletePersistentHandle_DL(persistent_handle);
+Dart_Handle PassObjectToCUseDynamicLinking(Dart_Handle h) {
+//  auto persistent_handle = Dart_NewPersistentHandle_DL(h);
+//
+//  Dart_Handle handle_2 = Dart_HandleFromPersistent_DL(persistent_handle);
+//  Dart_SetPersistentHandle_DL(persistent_handle, h);
+//  Dart_DeletePersistentHandle_DL(persistent_handle);
 
   auto weak_handle = Dart_NewWeakPersistentHandle_DL(
-      handle_2, reinterpret_cast<void*>(0x1234), 64, RunFinalizer);
+      h, reinterpret_cast<void*>(0x1234), 64, RunFinalizer);
   Dart_Handle return_value = Dart_HandleFromWeakPersistent_DL(weak_handle);
-
-  Dart_DeleteWeakPersistentHandle_DL(weak_handle);
+//
+//  Dart_DeleteWeakPersistentHandle_DL(weak_handle);
 
   return return_value;
+}
+
+intptr_t InitDartApiDL(void *data) {
+  return Dart_InitializeApiDL(data);
 }
