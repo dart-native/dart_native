@@ -6,6 +6,7 @@
 //
 
 #import "DNMacro.h"
+#import "dart_api_dl.h"
 
 #ifndef native_runtime_h
 #define native_runtime_h
@@ -56,6 +57,10 @@ _dispatch_get_main_queue(void);
 
 DN_EXTERN void
 native_mark_autoreleasereturn_object(id object);
+
+// Finalizer
+DN_EXTERN intptr_t InitDartApiDL(void *data);
+DN_EXTERN void PassObjectToCUseDynamicLinking(Dart_Handle h, void *native_object);
 
 NS_ASSUME_NONNULL_END
 

@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/channel_dispatch.dart';
@@ -39,7 +40,9 @@ class id implements NSObjectProtocol {
         list.add(this);
       }
     }
-    passObjectToC(this, _ptr);
+    if (dartAPIResult == 0) {
+      passObjectToC(this, _ptr);
+    }
     ChannelDispatch().registerChannelCallbackIfNot('object_dealloc', _dealloc);
   }
 

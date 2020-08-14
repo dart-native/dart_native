@@ -367,3 +367,17 @@ native_mark_autoreleasereturn_object(id object) {
         NSThread.currentThread.threadDictionary[@(address)] = object;
     }];
 }
+
+intptr_t InitDartApiDL(void *data) {
+  return Dart_InitializeApiDL(data);
+}
+
+static void RunFinalizer(void *isolate_callback_data,
+                         Dart_WeakPersistentHandle handle,
+                         void *peer) {
+    NSLog(@"Dart object finalizer! %p", peer);
+}
+
+void PassObjectToCUseDynamicLinking(Dart_Handle h, void *native_object) {
+    Dart_NewWeakPersistentHandle_DL(h, reinterpret_cast<void*>(native_object), 64, RunFinalizer);
+}
