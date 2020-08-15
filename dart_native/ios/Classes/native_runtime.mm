@@ -1,5 +1,6 @@
 #import "native_runtime.h"
 #include <stdlib.h>
+#include <functional>
 #import <objc/runtime.h>
 #import <Foundation/Foundation.h>
 #import "DNBlockWrapper.h"
@@ -7,6 +8,7 @@
 #import "DNMethodIMP.h"
 #import "DNObjectDealloc.h"
 #import "NSThread+DartNative.h"
+#import "DNPointerWrapper.h"
 
 NSMethodSignature *
 native_method_signature(Class cls, SEL selector) {
@@ -368,16 +370,74 @@ native_mark_autoreleasereturn_object(id object) {
     }];
 }
 
-intptr_t InitDartApiDL(void *data) {
-  return Dart_InitializeApiDL(data);
+#pragma mark Dart VM API Init
+
+Dart_Port native_callback_send_port;
+intptr_t InitDartApiDL(void *data, Dart_Port port) {
+    native_callback_send_port = port;
+    return Dart_InitializeApiDL(data);
 }
+
+#pragma mark - Async Callback
+
+typedef std::function<void()> Work;
+
+void NotifyDart(Dart_Port send_port, const Work* work) {
+  const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
+
+  Dart_CObject dart_object;
+  dart_object.type = Dart_CObject_kInt64;
+  dart_object.value.as_int64 = work_addr;
+
+  const bool result = Dart_PostCObject_DL(send_port, &dart_object);
+  if (!result) {
+      NSLog(@"Native callback to Dart failed! Invalid port or isolate died");
+  }
+}
+
+DN_EXTERN
+void ExecuteCallback(Work* work_ptr) {
+  const Work work = *work_ptr;
+  work();
+  delete work_ptr;
+}
+
+#pragma mark - Native Dealloc Callback
+
+void (*native_dealloc_callback)(intptr_t);
+
+void RegisterDeallocCallback(void (*callback)(intptr_t)) {
+    native_dealloc_callback = callback;
+}
+
+void NotifyDeallocToDart(intptr_t address) {
+    auto callback = native_dealloc_callback;  // Define storage duration.
+    const Work work = [address, callback]() { callback(address); };
+    // Copy to heap to make it outlive the function scope.
+    const Work* work_ptr = new Work(work);
+    NotifyDart(native_callback_send_port, work_ptr);
+}
+
+#pragma mark - Dart Finalizer
 
 static void RunFinalizer(void *isolate_callback_data,
                          Dart_WeakPersistentHandle handle,
                          void *peer) {
-    NSLog(@"Dart object finalizer! %p", peer);
+    SEL selector = NSSelectorFromString(@"release");
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    [(__bridge id)peer performSelector:selector];
+    #pragma clang diagnostic pop
 }
 
-void PassObjectToCUseDynamicLinking(Dart_Handle h, void *native_object) {
-    Dart_NewWeakPersistentHandle_DL(h, reinterpret_cast<void*>(native_object), 64, RunFinalizer);
+void PassObjectToCUseDynamicLinking(Dart_Handle h, id object) {
+    // Only Block handles lifetime of BlockWrapper. So we can't transfer it to Dart.
+    if (Dart_IsError_DL(h) || [object isKindOfClass:DNBlockWrapper.class]) {
+        return;
+    }
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    [object performSelector:NSSelectorFromString(@"retain")];
+    #pragma clang diagnostic pop
+    Dart_NewWeakPersistentHandle_DL(h, (__bridge void *)(object), 8, RunFinalizer);
 }

@@ -1,9 +1,6 @@
 import 'dart:ffi';
 
-import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
-import 'package:dart_native/src/ios/common/callback_manager.dart';
-import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/runtime/functions.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
@@ -30,21 +27,7 @@ class id implements NSObjectProtocol {
   String get _address =>
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
-  id(this._ptr) {
-    if (_ptr != null && _ptr != nullptr) {
-      List<id> list = _objects[_ptr.address];
-      if (list == null) {
-        list = [this];
-        _objects[_ptr.address] = list;
-      } else {
-        list.add(this);
-      }
-    }
-    if (dartAPIResult == 0) {
-      passObjectToC(this, _ptr);
-    }
-    ChannelDispatch().registerChannelCallbackIfNot('object_dealloc', _dealloc);
-  }
+  id(this._ptr);
 
   id retain() {
     if (this is NSObject) {
@@ -63,10 +46,6 @@ class id implements NSObjectProtocol {
         Block_release(this.pointer);
       }
       _retainCount--;
-      if (_retainCount == 0) {
-        // Don't need waiting for native callback.
-        dealloc();
-      }
     }
   }
 
@@ -76,15 +55,6 @@ class id implements NSObjectProtocol {
     // decrease retainCount
     _retainCount--;
     return this;
-  }
-
-  /// Clean NSObject instance.
-  /// Subclass can override this method and call release on its dart properties.
-  dealloc() {
-    if (_ptr != nullptr) {
-      CallbackManager.shared.clearAllCallbackOnTarget(this);
-      _ptr = nullptr;
-    }
   }
 
   // NSObjectProtocol
@@ -171,15 +141,5 @@ class id implements NSObjectProtocol {
 
   int get hashCode {
     return pointer.hashCode;
-  }
-}
-
-Map<int, List<id>> _objects = {};
-
-_dealloc(int addr) {
-  List<id> list = _objects[addr];
-  if (list != null) {
-    list.forEach((f) => f.dealloc());
-    _objects.remove(addr);
   }
 }

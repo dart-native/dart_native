@@ -58,9 +58,24 @@ _dispatch_get_main_queue(void);
 DN_EXTERN void
 native_mark_autoreleasereturn_object(id object);
 
-// Finalizer
-DN_EXTERN intptr_t InitDartApiDL(void *data);
-DN_EXTERN void PassObjectToCUseDynamicLinking(Dart_Handle h, void *native_object);
+#pragma mark - Dart VM API
+
+DN_EXTERN
+intptr_t InitDartApiDL(void *data, Dart_Port port);
+
+#pragma mark - Async Callback
+
+DN_EXTERN
+void NotifyDeallocToDart(intptr_t address);
+
+#pragma mark - Memory Management
+
+DN_EXTERN
+void PassObjectToCUseDynamicLinking(Dart_Handle h, id object);
+
+DN_EXTERN
+void RegisterDeallocCallback(void (*callback)(intptr_t));
+
 
 NS_ASSUME_NONNULL_END
 

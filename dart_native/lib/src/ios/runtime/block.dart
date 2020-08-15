@@ -89,12 +89,6 @@ class Block extends id {
     return result;
   }
 
-  dealloc() {
-    _wrapper = null;
-    _blockForAddress.remove(pointer.address);
-    super.dealloc();
-  }
-
   dynamic invoke([List args]) {
     if (pointer == nullptr) {
       return null;
@@ -204,4 +198,12 @@ _asyncCallback(int argsAddr, int retAddr, int argCount, bool stret) {
   Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr = Pointer.fromAddress(argsAddr);
   Pointer<Pointer<Void>> retPtrPtr = Pointer.fromAddress(retAddr);
   _callback(argsPtrPtrPtr, retPtrPtr, argCount, stret);
+}
+
+void removeBlockOnAddress(int addr) {
+  Block block = _blockForAddress[addr];
+  if (block != null) {
+    block._wrapper = null;
+    _blockForAddress.remove(addr);
+  }
 }

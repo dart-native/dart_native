@@ -25,6 +25,9 @@ class Class extends id {
   }
 
   factory Class.fromPointer(Pointer<Void> ptr) {
+    if (ptr == nullptr) {
+      return null;
+    }
     int key = ptr.address;
     if (_cache.containsKey(key)) {
       return _cache[key];

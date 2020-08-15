@@ -102,7 +102,10 @@ static void DNHandleReturnValue(void *ret, void **args, DNMethodIMP *methodIMP, 
         [invocation setReturnValue:*(void **)args[0]];
     } else if (methodIMP.typeEncoding[0] == '{') {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
-        memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+        if (pointerWrapper) {
+            memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+        }
+        
     } else if (methodIMP.typeEncoding[0] == '*') {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         const char *origCString = (const char *)pointerWrapper.pointer;

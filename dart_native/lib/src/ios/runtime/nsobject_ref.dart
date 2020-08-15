@@ -13,7 +13,7 @@ class NSObjectRef<T extends id> {
   NSObjectRef() {
     _ptr = allocate<Pointer<Void>>();
     _ptr.value = nullptr;
-    PointerWrapper wrapper = PointerWrapper(_dealloc);
+    PointerWrapper wrapper = PointerWrapper();
     wrapper.value = _ptr.cast<Void>();
   }
 
@@ -23,9 +23,5 @@ class NSObjectRef<T extends id> {
     if (_ptr != null && _ptr.value != nullptr) {
       value = convertFromPointer(T.toString(), _ptr.value);
     }
-  }
-
-  _dealloc() {
-    _ptr = null;
   }
 }

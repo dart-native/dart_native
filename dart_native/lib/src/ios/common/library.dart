@@ -1,5 +1,8 @@
 import 'dart:ffi';
 
+import 'package:dart_native/src/ios/common/callback_manager.dart';
+import 'package:dart_native/src/ios/runtime/nsobject.dart';
+
 DynamicLibrary _runtimeLib;
 DynamicLibrary get runtimeLib {
   if (_runtimeLib != null) {
@@ -11,12 +14,16 @@ DynamicLibrary get runtimeLib {
     // static linking
     _runtimeLib = nativeDylib;
   }
+  registerDeallocCallback(nativeObjectDeallocPtr.cast());
   return _runtimeLib;
 }
 
 final DynamicLibrary nativeDylib = DynamicLibrary.process();
 
-final initializeApi = runtimeLib.lookupFunction<IntPtr Function(Pointer<Void>),
-    int Function(Pointer<Void>)>("InitDartApiDL");
+final initializeApi = runtimeLib.lookupFunction<
+    IntPtr Function(Pointer<Void>, Int64),
+    int Function(Pointer<Void>, int)>("InitDartApiDL");
 
-final dartAPIResult = initializeApi(NativeApi.initializeApiDLData);
+final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData, nativePort);
+
+final initDartAPISuccess = _dartAPIResult == 0;

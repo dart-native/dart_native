@@ -10,8 +10,6 @@ class IOSApp extends StatefulWidget {
 }
 
 class _IOSAppState extends State<IOSApp> {
-  DelegateStub delegate = DelegateStub().retain();
-
   @override
   void initState() {
     super.initState();
@@ -21,6 +19,7 @@ class _IOSAppState extends State<IOSApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     RuntimeSon stub = RuntimeSon();
+    DelegateStub delegate = DelegateStub();
     testIOS(stub, delegate);
   }
 
@@ -36,11 +35,5 @@ class _IOSAppState extends State<IOSApp> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    delegate.release();
-    super.dispose();
   }
 }
