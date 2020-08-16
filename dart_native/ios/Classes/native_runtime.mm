@@ -42,7 +42,7 @@ native_add_method(id target, SEL selector, char *types, void *callback) {
         return NO;
     }
     if (types != NULL) {
-        DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types callback:callback]; // DNMethodIMP always exists.
+        DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types callback:(NativeMethodCallback)callback]; // DNMethodIMP always exists.
         class_replaceMethod(cls, selector, [methodIMP imp], types);
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return YES;
@@ -149,7 +149,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
 
 void *
 native_block_create(char *types, void *callback) {
-    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types callback:callback];
+    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types callback:(NativeBlockCallback)callback];
     return (__bridge void *)wrapper;
 }
 
@@ -378,7 +378,7 @@ intptr_t InitDartApiDL(void *data, Dart_Port port) {
     return Dart_InitializeApiDL(data);
 }
 
-#pragma mark - Async Callback
+#pragma mark - Async Callback Basic
 
 typedef std::function<void()> Work;
 
@@ -402,6 +402,59 @@ void ExecuteCallback(Work* work_ptr) {
   delete work_ptr;
 }
 
+#pragma mark - Async Block Callback
+
+void NotifyBlockInvokeToDart(DNBlockWrapper *wrapper,
+                             void **args,
+                             void *ret,
+                             int numberOfArguments,
+                             BOOL stret) {
+    BOOL blocking = strcmp(wrapper.typeEncodings[0], "v") != 0;
+    dispatch_semaphore_t sema;
+    if (blocking) {
+        sema = dispatch_semaphore_create(0);
+    }
+    NativeBlockCallback callback = wrapper.callback;
+    const Work work = [args, ret, numberOfArguments, stret, callback, sema]() {
+        callback(args, ret, numberOfArguments, stret);
+        if (sema) {
+            dispatch_semaphore_signal(sema);
+        }
+    };
+    const Work* work_ptr = new Work(work);
+    NotifyDart(native_callback_send_port, work_ptr);
+    if (sema) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    }
+}
+
+#pragma mark - Async Method Callback
+
+void NotifyMethodPerformToDart(DNMethodIMP *methodIMP,
+                               void **args,
+                               void *ret,
+                               int numberOfArguments,
+                               const char **types,
+                               BOOL stret) {
+    BOOL blocking = strcmp(types[0], "v") != 0;
+    dispatch_semaphore_t sema;
+    if (blocking) {
+        sema = dispatch_semaphore_create(0);
+    }
+    NativeMethodCallback callback = methodIMP.callback;
+    const Work work = [args, ret, numberOfArguments, types, stret, callback, sema]() {
+        callback(args, ret, numberOfArguments, types, stret);
+        if (sema) {
+            dispatch_semaphore_signal(sema);
+        }
+    };
+    const Work* work_ptr = new Work(work);
+    NotifyDart(native_callback_send_port, work_ptr);
+    if (sema) {
+        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    }
+}
+
 #pragma mark - Native Dealloc Callback
 
 void (*native_dealloc_callback)(intptr_t);
@@ -411,9 +464,8 @@ void RegisterDeallocCallback(void (*callback)(intptr_t)) {
 }
 
 void NotifyDeallocToDart(intptr_t address) {
-    auto callback = native_dealloc_callback;  // Define storage duration.
+    auto callback = native_dealloc_callback;
     const Work work = [address, callback]() { callback(address); };
-    // Copy to heap to make it outlive the function scope.
     const Work* work_ptr = new Work(work);
     NotifyDart(native_callback_send_port, work_ptr);
 }

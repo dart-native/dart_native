@@ -1,7 +1,6 @@
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
-import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
@@ -39,7 +38,7 @@ class Block extends id {
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
-    Block result = Block._internal(Pointer.fromAddress(blockAddr));
+    Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
     free(typeStringPtr);
     result.types = dartTypes;
     result._wrapper = blockWrapper;
@@ -48,14 +47,7 @@ class Block extends id {
     return result;
   }
 
-  factory Block.fromPointer(Pointer<Void> ptr) {
-    return Block._internal(ptr);
-  }
-
-  Block._internal(Pointer<Void> ptr) : super(ptr) {
-    ChannelDispatch()
-        .registerChannelCallbackIfNot('block_invoke', _asyncCallback);
-  }
+  Block.fromPointer(Pointer<Void> ptr) : super(ptr);
 
   Class get superclass {
     return isa.perform(SEL('superclass'));
@@ -78,7 +70,7 @@ class Block extends id {
     if (newPtr == pointer) {
       return this;
     }
-    Block result = Block._internal(newPtr);
+    Block result = Block.fromPointer(newPtr);
     // Block created by function.
     if (function != null) {
       result._wrapper = _wrapper;
@@ -192,12 +184,6 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
 void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr, int argCount, int stret) {
   _callback(argsPtrPtr, retPtr, argCount, stret != 0);
-}
-
-_asyncCallback(int argsAddr, int retAddr, int argCount, bool stret) {
-  Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr = Pointer.fromAddress(argsAddr);
-  Pointer<Pointer<Void>> retPtrPtr = Pointer.fromAddress(retAddr);
-  _callback(argsPtrPtrPtr, retPtrPtr, argCount, stret);
 }
 
 void removeBlockOnAddress(int addr) {

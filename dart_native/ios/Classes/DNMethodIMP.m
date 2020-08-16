@@ -7,7 +7,6 @@
 
 #import "DNMethodIMP.h"
 #import "DNFFIHelper.h"
-#import "DartNativePlugin.h"
 #import "native_runtime.h"
 #import "DNInvocation.h"
 #import "NSThread+DartNative.h"
@@ -25,7 +24,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) char *typeEncoding;
 @property (nonatomic) NSThread *thread;
-@property (nonatomic) void *callback;
+@property (nonatomic, readwrite) NativeMethodCallback callback;
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSMethodSignature *signature;
 @property (nonatomic, getter=hasStret) BOOL stret;
@@ -34,7 +33,8 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @implementation DNMethodIMP
 
-- (instancetype)initWithTypeEncoding:(const char *)typeEncoding callback:(void *)callback {
+- (instancetype)initWithTypeEncoding:(const char *)typeEncoding
+                            callback:(NativeMethodCallback)callback {
     self = [super init];
     if (self) {
         _helper = [DNFFIHelper new];
@@ -116,8 +116,7 @@ static void DNHandleReturnValue(void *ret, void **args, DNMethodIMP *methodIMP, 
 
 static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DNMethodIMP *methodIMP = (__bridge DNMethodIMP *)userdata;
-    FlutterMethodChannel *channel = DartNativePlugin.channel;
-    
+
     void *userRet = ret;
     void **userArgs = args;
     // handle struct return: should pass pointer to struct
@@ -159,43 +158,13 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         void(*callback)(void **args, void *ret, int numberOfArguments, const char **types, BOOL stret) = methodIMP.callback;
         // args: target, selector, realArgs...
         callback(args, ret, numberOfArguments, types, methodIMP.hasStret);
-        free(types);
-        retObjectAddr = (int64_t)*(void **)retAddr;
-        DNHandleReturnValue(ret, args, methodIMP, invocation);
     } else {
-        
-        int64_t argsAddr = (int64_t)(invocation.realArgs);
-        int64_t typesAddr = (int64_t)types;
-        
         [invocation retainArguments];
-        
-//        BOOL voidRet = strcmp(types[0], "void") == 0;
-        
-        dispatch_semaphore_t sema;
-        if (!NSThread.isMainThread) {
-            sema = dispatch_semaphore_create(0);
-        }
-        dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-            [channel invokeMethod:@"method_callback"
-                        arguments:@[@(argsAddr),
-                                    @(retAddr),
-                                    @(numberOfArguments),
-                                    @(typesAddr),
-                                    @(methodIMP.hasStret)]
-                           result:^(id  _Nullable result) {
-                retObjectAddr = (int64_t)*(void **)retAddr;
-                DNHandleReturnValue(ret, args, methodIMP, invocation);
-                invocation = nil;
-                if (sema) {
-                    dispatch_semaphore_signal(sema);
-                }
-                free(types);
-            }];
-        });
-        if (sema) {
-            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-        }
+        NotifyMethodPerformToDart(methodIMP, args, ret, numberOfArguments, types, methodIMP.hasStret);
     }
+    free(types);
+    retObjectAddr = (int64_t)*(void **)retAddr;
+    DNHandleReturnValue(ret, args, methodIMP, invocation);
     [methodIMP.thread dn_performBlock:^{
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
     }];

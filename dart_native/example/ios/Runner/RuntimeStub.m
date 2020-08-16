@@ -223,7 +223,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooCStringBlock:(CStringRetBlock)block {
     char *arg = "test c-string";
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         if (block) {
             char *result = block(arg);
             DDLogInfo(@"%s result: %s", __FUNCTION__, result);
