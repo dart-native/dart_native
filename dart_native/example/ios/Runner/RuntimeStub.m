@@ -221,6 +221,15 @@ API_AVAILABLE(ios(11.0)){
     });
 }
 
+- (void)fooCompletion:(void (^)(void))block {
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (block) {
+            block();
+            DDLogInfo(@"%s", __FUNCTION__);
+        }
+    });
+}
+
 - (void)fooCStringBlock:(CStringRetBlock)block {
     char *arg = "test c-string";
     dispatch_async(dispatch_get_main_queue(), ^{

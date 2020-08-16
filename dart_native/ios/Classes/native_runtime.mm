@@ -9,6 +9,7 @@
 #import "DNObjectDealloc.h"
 #import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
+#import "DNInvocation.h"
 
 NSMethodSignature *
 native_method_signature(Class cls, SEL selector) {
@@ -404,19 +405,20 @@ void ExecuteCallback(Work* work_ptr) {
 
 #pragma mark - Async Block Callback
 
-void NotifyBlockInvokeToDart(DNBlockWrapper *wrapper,
-                             void **args,
-                             void *ret,
-                             int numberOfArguments,
-                             BOOL stret) {
+void NotifyBlockInvokeToDart(DNInvocation *invocation,
+                             DNBlockWrapper *wrapper,
+                             int numberOfArguments) {
     BOOL blocking = strcmp(wrapper.typeEncodings[0], "v") != 0;
     dispatch_semaphore_t sema;
     if (blocking) {
         sema = dispatch_semaphore_create(0);
     }
     NativeBlockCallback callback = wrapper.callback;
-    const Work work = [args, ret, numberOfArguments, stret, callback, sema]() {
-        callback(args, ret, numberOfArguments, stret);
+    const Work work = [wrapper, numberOfArguments, callback, sema, invocation]() {
+        callback(invocation.realArgs,
+                 invocation.realRetValue,
+                 numberOfArguments,
+                 wrapper.hasStret);
         if (sema) {
             dispatch_semaphore_signal(sema);
         }
@@ -430,20 +432,22 @@ void NotifyBlockInvokeToDart(DNBlockWrapper *wrapper,
 
 #pragma mark - Async Method Callback
 
-void NotifyMethodPerformToDart(DNMethodIMP *methodIMP,
-                               void **args,
-                               void *ret,
+void NotifyMethodPerformToDart(DNInvocation *invocation,
+                               DNMethodIMP *methodIMP,
                                int numberOfArguments,
-                               const char **types,
-                               BOOL stret) {
+                               const char **types) {
     BOOL blocking = strcmp(types[0], "v") != 0;
     dispatch_semaphore_t sema;
     if (blocking) {
         sema = dispatch_semaphore_create(0);
     }
     NativeMethodCallback callback = methodIMP.callback;
-    const Work work = [args, ret, numberOfArguments, types, stret, callback, sema]() {
-        callback(args, ret, numberOfArguments, types, stret);
+    const Work work = [invocation, methodIMP, numberOfArguments, types, callback, sema]() {
+        callback(invocation.realArgs,
+                 invocation.realRetValue,
+                 numberOfArguments,
+                 types,
+                 methodIMP.stret);
         if (sema) {
             dispatch_semaphore_signal(sema);
         }

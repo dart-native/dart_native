@@ -139,6 +139,10 @@
 #pragma mark - Private Helper
 
 - (void *)_copyPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key {
+    // Struct is already copied to heap. Transfer it's life time to Dart.
+    if (encode[0] == '{') {
+        return pointer;
+    }
     NSUInteger pointerSize;
     NSGetSizeAndAlignment(encode, &pointerSize, NULL);
     NSMutableData *pointerData = [NSMutableData dataWithLength:pointerSize];

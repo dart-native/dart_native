@@ -18,6 +18,7 @@ typedef void (*NativeMethodCallback)(void *_Nullable *_Null_unspecified args,
 @interface DNMethodIMP : NSObject
 
 @property (nonatomic, readonly) NativeMethodCallback callback;
+@property (nonatomic, getter=hasStret, readonly) BOOL stret;
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncodings
                             callback:(NativeMethodCallback)callback;

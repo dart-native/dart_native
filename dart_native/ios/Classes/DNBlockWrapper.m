@@ -109,7 +109,7 @@ void dispose_helper(struct _DNBlock *src) {
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic, readwrite) const char **typeEncodings;
-@property (nonatomic, getter=hasStret) BOOL stret;
+@property (nonatomic, getter=hasStret, readwrite) BOOL stret;
 @property (nonatomic) NSMethodSignature *signature;
 @property (nonatomic, readwrite) NativeBlockCallback callback;
 @property (nonatomic) NSThread *thread;
@@ -273,18 +273,24 @@ void dispose_helper(struct _DNBlock *src) {
 
 @end
 
-static void DNHandleReturnValue(void *ret, void **args, DNBlockWrapper *wrapper, DNInvocation *invocation) {
+static void DNHandleReturnValue(DNBlockWrapper *wrapper, DNInvocation *invocation) {
+    void *ret = invocation.realRetValue;
+    void **args = invocation.realArgs;
     if (wrapper.hasStret) {
         // synchronize stret value from first argument.
         [invocation setReturnValue:*(void **)args[0]];
     } else if ([wrapper.typeString hasPrefix:@"{"]) {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
-        memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+        if (pointerWrapper) {
+            memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+        }
     } else if ([wrapper.typeString hasPrefix:@"*"]) {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
-        const char *origCString = (const char *)pointerWrapper.pointer;
-        const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
-        *(const char **)ret = temp;
+        if (pointerWrapper) {
+            const char *origCString = (const char *)pointerWrapper.pointer;
+            const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
+            *(const char **)ret = temp;
+        }
     }
 }
 
@@ -330,10 +336,10 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         wrapper.callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
     } else {
         [invocation retainArguments];
-        NotifyBlockInvokeToDart(wrapper, args, ret, (int)numberOfArguments, wrapper.hasStret);
+        NotifyBlockInvokeToDart(invocation, wrapper, (int)numberOfArguments);
     }
     retObjectAddr = (int64_t)*(void **)retAddr;
-    DNHandleReturnValue(ret, args, wrapper, invocation);
+    DNHandleReturnValue(wrapper, invocation);
     [wrapper.thread dn_performBlock:^{
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
     }];

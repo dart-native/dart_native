@@ -227,6 +227,10 @@ class RuntimeStub extends NSObject {
     perform(SEL('fooStretBlock:'), args: [block]);
   }
 
+  void fooCompletion(void block()) {
+    perform(SEL('fooCompletion:'), args: [block]);
+  }
+
   void fooCStringBlock(CStringRetBlock block) {
     perform(SEL('fooCStringBlock:'), args: [block]);
   }

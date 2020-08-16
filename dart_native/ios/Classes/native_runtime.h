@@ -10,6 +10,7 @@
 
 @class DNBlockWrapper;
 @class DNMethodIMP;
+@class DNInvocation;
 
 #ifndef native_runtime_h
 #define native_runtime_h
@@ -69,21 +70,17 @@ intptr_t InitDartApiDL(void *data, Dart_Port port);
 #pragma mark - Async Block Callback
 
 DN_EXTERN
-void NotifyBlockInvokeToDart(DNBlockWrapper *wrapper,
-                             void *_Nullable *_Null_unspecified args,
-                             void *ret,
-                             int numberOfArguments,
-                             BOOL stret);
+void NotifyBlockInvokeToDart(DNInvocation *invocation,
+                             DNBlockWrapper *wrapper,
+                             int numberOfArguments);
 
 #pragma mark - Async Method Callback
 
 DN_EXTERN
-void NotifyMethodPerformToDart(DNMethodIMP *methodIMP,
-                               void *_Nullable *_Null_unspecified args,
-                               void *ret,
+void NotifyMethodPerformToDart(DNInvocation *invocation,
+                               DNMethodIMP *methodIMP,
                                int numberOfArguments,
-                               const char *_Nonnull *_Nonnull types,
-                               BOOL stret);
+                               const char *_Nonnull *_Nonnull types);
 
 #pragma mark - Memory Management
 
