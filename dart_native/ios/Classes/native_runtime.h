@@ -6,6 +6,11 @@
 //
 
 #import "DNMacro.h"
+#import "dart_api_dl.h"
+
+@class DNBlockWrapper;
+@class DNMethodIMP;
+@class DNInvocation;
 
 #ifndef native_runtime_h
 #define native_runtime_h
@@ -56,6 +61,38 @@ _dispatch_get_main_queue(void);
 
 DN_EXTERN void
 native_mark_autoreleasereturn_object(id object);
+
+#pragma mark - Dart VM API
+
+DN_EXTERN
+intptr_t InitDartApiDL(void *data, Dart_Port port);
+
+#pragma mark - Async Block Callback
+
+DN_EXTERN
+void NotifyBlockInvokeToDart(DNInvocation *invocation,
+                             DNBlockWrapper *wrapper,
+                             int numberOfArguments);
+
+#pragma mark - Async Method Callback
+
+DN_EXTERN
+void NotifyMethodPerformToDart(DNInvocation *invocation,
+                               DNMethodIMP *methodIMP,
+                               int numberOfArguments,
+                               const char *_Nonnull *_Nonnull types);
+
+#pragma mark - Memory Management
+
+DN_EXTERN
+void PassObjectToCUseDynamicLinking(Dart_Handle h, id object);
+
+DN_EXTERN
+void NotifyDeallocToDart(intptr_t address);
+
+DN_EXTERN
+void RegisterDeallocCallback(void (*callback)(intptr_t));
+
 
 NS_ASSUME_NONNULL_END
 

@@ -10,7 +10,7 @@ abstract class NativeStruct {
   PointerWrapper _wrapper;
   PointerWrapper get wrapper {
     if (_wrapper == null) {
-      _wrapper = PointerWrapper(dealloc);
+      _wrapper = PointerWrapper();
     }
     Pointer<Void> result = addressOf.cast<Void>();
     _wrapper.value = result;
@@ -23,8 +23,6 @@ abstract class NativeStruct {
   }
 
   release() => wrapper.release();
-
-  dealloc() {}
 }
 
 class NSUInteger32x2 extends Struct {

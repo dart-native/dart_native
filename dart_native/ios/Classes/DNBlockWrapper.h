@@ -13,11 +13,18 @@ NS_ASSUME_NONNULL_BEGIN
 DN_EXTERN
 const char *DNBlockTypeEncodeString(id blockObj);
 
+typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, void *ret, int numberOfArguments, BOOL stret);
+
 @interface DNBlockWrapper : NSObject
+
+@property (nonatomic, readonly) const char *_Nonnull *_Nonnull typeEncodings;
+@property (nonatomic, readonly) NativeBlockCallback callback;
+@property (nonatomic, getter=hasStret, readonly) BOOL stret;
 
 - (int64_t)blockAddress;
 
-- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback;
+- (instancetype)initWithTypeString:(char *)typeString
+                          callback:(NativeBlockCallback)callback;
 
 @end
 

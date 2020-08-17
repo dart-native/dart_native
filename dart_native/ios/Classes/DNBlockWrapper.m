@@ -8,12 +8,12 @@
 #import "DNBlockWrapper.h"
 #import "ffi.h"
 #import <Flutter/Flutter.h>
-#import "DartNativePlugin.h"
 #import "DNFFIHelper.h"
 #import "DNInvocation.h"
 #import <objc/runtime.h>
 #import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
+#import "native_runtime.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -108,10 +108,10 @@ void dispose_helper(struct _DNBlock *src) {
 @property (nonatomic) int64_t blockAddress;
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
-@property (nonatomic) const char **typeEncodings;
-@property (nonatomic, getter=hasStret) BOOL stret;
+@property (nonatomic, readwrite) const char **typeEncodings;
+@property (nonatomic, getter=hasStret, readwrite) BOOL stret;
 @property (nonatomic) NSMethodSignature *signature;
-@property (nonatomic) void *callback;
+@property (nonatomic, readwrite) NativeBlockCallback callback;
 @property (nonatomic) NSThread *thread;
 @property (nonatomic, nullable) dispatch_queue_t queue;
 
@@ -121,7 +121,8 @@ void dispose_helper(struct _DNBlock *src) {
 
 @implementation DNBlockWrapper
 
-- (instancetype)initWithTypeString:(char *)typeString callback:(void *)callback {
+- (instancetype)initWithTypeString:(char *)typeString
+                          callback:(NativeBlockCallback)callback {
     self = [super init];
     if (self) {
         _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
@@ -136,8 +137,6 @@ void dispose_helper(struct _DNBlock *src) {
     ffi_closure_free(_closure);
     free(_descriptor);
     free(_typeEncodings);
-    // TODO: replace with ffi callback.
-    [DartNativePlugin.channel invokeMethod:@"object_dealloc" arguments:@[@([self blockAddress])]];
 }
 
 - (void)initBlock {
@@ -274,24 +273,29 @@ void dispose_helper(struct _DNBlock *src) {
 
 @end
 
-static void DNHandleReturnValue(void *ret, void **args, DNBlockWrapper *wrapper, DNInvocation *invocation) {
+static void DNHandleReturnValue(DNBlockWrapper *wrapper, DNInvocation *invocation) {
+    void *ret = invocation.realRetValue;
+    void **args = invocation.realArgs;
     if (wrapper.hasStret) {
         // synchronize stret value from first argument.
         [invocation setReturnValue:*(void **)args[0]];
     } else if ([wrapper.typeString hasPrefix:@"{"]) {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
-        memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+        if (pointerWrapper) {
+            memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+        }
     } else if ([wrapper.typeString hasPrefix:@"*"]) {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
-        const char *origCString = (const char *)pointerWrapper.pointer;
-        const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
-        *(const char **)ret = temp;
+        if (pointerWrapper) {
+            const char *origCString = (const char *)pointerWrapper.pointer;
+            const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
+            *(const char **)ret = temp;
+        }
     }
 }
 
 static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)userdata;
-    FlutterMethodChannel *channel = DartNativePlugin.channel;
     
     void *userRet = ret;
     void **userArgs = args;
@@ -329,39 +333,13 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     int64_t retAddr = (int64_t)(invocation.realRetValue);
     
     if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
-        void(*callback)(void **args, void *ret, int numberOfArguments, BOOL stret) = wrapper.callback;
-        callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
-        retObjectAddr = (int64_t)*(void **)userRet;
-        DNHandleReturnValue(ret, args, wrapper, invocation);
+        wrapper.callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
     } else {
-        int64_t argsAddr = (int64_t)(invocation.realArgs);
         [invocation retainArguments];
-        
-//        BOOL voidRet = strcmp(wrapper.typeEncodings[0], "v") == 0;
-        
-        dispatch_semaphore_t sema;
-        if (!NSThread.isMainThread) {
-            sema = dispatch_semaphore_create(0);
-        }
-        // TODO: Queue is ignored cause we use channel. We need replace it with ffi async callback.
-        dispatch_queue_t queue = wrapper.queue;
-        if (!queue) {
-            queue = dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0);
-        }
-        dispatch_async(queue, ^{
-            [channel invokeMethod:@"block_invoke" arguments:@[@(argsAddr), @(retAddr), @(numberOfArguments), @(wrapper.hasStret)] result:^(id  _Nullable result) {
-                retObjectAddr = (int64_t)*(void **)retAddr;
-                DNHandleReturnValue(ret, args, wrapper, invocation);
-                invocation = nil;
-                if (sema) {
-                    dispatch_semaphore_signal(sema);
-                }
-            }];
-        });
-        if (sema) {
-            dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
-        }
+        NotifyBlockInvokeToDart(invocation, wrapper, (int)numberOfArguments);
     }
+    retObjectAddr = (int64_t)*(void **)retAddr;
+    DNHandleReturnValue(wrapper, invocation);
     [wrapper.thread dn_performBlock:^{
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
     }];

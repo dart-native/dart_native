@@ -1,6 +1,6 @@
 #import "AppDelegate.h"
 #import "GeneratedPluginRegistrant.h"
-@import CocoaLumberjack;
+#import <CocoaLumberjack/CocoaLumberjack.h>
 
 @implementation AppDelegate
 
