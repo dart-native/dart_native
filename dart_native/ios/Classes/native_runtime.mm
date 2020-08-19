@@ -384,23 +384,23 @@ intptr_t InitDartApiDL(void *data, Dart_Port port) {
 typedef std::function<void()> Work;
 
 void NotifyDart(Dart_Port send_port, const Work* work) {
-  const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
+    const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
 
-  Dart_CObject dart_object;
-  dart_object.type = Dart_CObject_kInt64;
-  dart_object.value.as_int64 = work_addr;
+    Dart_CObject dart_object;
+    dart_object.type = Dart_CObject_kInt64;
+    dart_object.value.as_int64 = work_addr;
 
-  const bool result = Dart_PostCObject_DL(send_port, &dart_object);
-  if (!result) {
+    const bool result = Dart_PostCObject_DL(send_port, &dart_object);
+    if (!result) {
       NSLog(@"Native callback to Dart failed! Invalid port or isolate died");
-  }
+    }
 }
 
 DN_EXTERN
 void ExecuteCallback(Work* work_ptr) {
-  const Work work = *work_ptr;
-  work();
-  delete work_ptr;
+    const Work work = *work_ptr;
+    work();
+    delete work_ptr;
 }
 
 #pragma mark - Async Block Callback

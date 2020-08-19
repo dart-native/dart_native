@@ -203,9 +203,9 @@ API_AVAILABLE(ios(11.0)){
 }
 
 - (void)fooBlock:(BarBlock)block {
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
-            NSObject *result = block(@"123123");
+            NSObject *result = block(@"This is a Objective-C block created from Dart function!");
             DDLogInfo(@"%s result: %@", __FUNCTION__, result);
         }
     });
@@ -213,7 +213,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooStretBlock:(StretBlock)block {
     CGAffineTransform arg = CGAffineTransformMake(1.1, 2.2, 3.3, 4.4, 5.5, 6.6);
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             CGAffineTransform result = block(arg);
             DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGAffineTransform(result));
@@ -232,7 +232,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooCStringBlock:(CStringRetBlock)block {
     char *arg = "test c-string";
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (block) {
             char *result = block(arg);
             DDLogInfo(@"%s result: %s", __FUNCTION__, result);
@@ -242,7 +242,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSObject *result = [delegate callback];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, result);
     });
@@ -250,7 +250,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooStructDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         CGRect result = [delegate callbackStruct:CGRectMake(1.1, 2.2, 3.3, 4.4)];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, NSStringFromCGRect(result));
     });
