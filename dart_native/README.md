@@ -10,7 +10,7 @@ Write native code using Dart. This package liberates you from native code and lo
 
 ## Requirements
 
-Flutter 1.12.13 (Dart 2.7.0)
+Flutter 1.20.2 (Dart 2.9.1)
 
 ## Usage
 
@@ -22,7 +22,7 @@ Flutter 1.12.13 (Dart 2.7.0)
 
 ## Installation
 
-add packages to dependencies in your pubspec.yaml
+Add packages to dependencies in your pubspec.yaml
 
 example:
 

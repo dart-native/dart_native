@@ -22,40 +22,10 @@ class id implements NSObjectProtocol {
     return _ptr;
   }
 
-  int _retainCount = 0;
-
   String get _address =>
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
   id(this._ptr);
-
-  id retain() {
-    if (this is NSObject) {
-      _retainCount++;
-      id temp = perform(SEL('retain'));
-      _ptr = temp._ptr;
-    }
-    return this;
-  }
-
-  release() {
-    if (_retainCount > 0) {
-      if (this is NSObject) {
-        perform(SEL('release'));
-      } else if (this is Block) {
-        Block_release(this.pointer);
-      }
-      _retainCount--;
-    }
-  }
-
-  id autorelease() {
-    id temp = perform(SEL('autorelease'));
-    _ptr = temp._ptr;
-    // decrease retainCount
-    _retainCount--;
-    return this;
-  }
 
   // NSObjectProtocol
 

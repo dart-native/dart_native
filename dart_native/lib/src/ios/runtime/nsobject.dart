@@ -45,6 +45,10 @@ class NSObject extends id {
     return NSObject.fromPointer(result.autorelease().pointer);
   }
 
+  NSObject autorelease() {
+    return perform(SEL('autorelease'));
+  }
+
   static Pointer<Void> _new(Class isa) {
     if (isa == null) {
       isa = Class('NSObject');

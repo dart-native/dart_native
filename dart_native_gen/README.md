@@ -28,14 +28,13 @@ void main() {
 }
 ```
 
-3. just run the command below in your workspace
-build:
+3. Run this command to generate files into your source directory:
 
 ```bash
 flutter packages pub run build_runner build --delete-conflicting-outputs
 ```
 
-suggest you running the clean command before build:
+Suggest you running the clean command before build:
 
 ```bash
 flutter packages pub run build_runner clean
@@ -43,7 +42,7 @@ flutter packages pub run build_runner clean
 
 ## Installation
 
-add packages to dependencies in your pubspec.yaml
+Add packages to dependencies in your pubspec.yaml
 example:
 
 ```yaml

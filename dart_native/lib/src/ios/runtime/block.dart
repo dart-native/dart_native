@@ -26,7 +26,7 @@ class Block extends id {
   NSObject _wrapper; // Block hold wrapper
   List<String> types = [];
 
-  /// TODO: This is not working. Waiting for ffi async callback.
+  /// TODO: This is not working when block is created by function.
   // set queue(Pointer<Void> queue) {
   //   _wrapper.perform(Selector('setQueue:'), args: [queue]);
   // }
