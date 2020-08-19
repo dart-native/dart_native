@@ -16,13 +16,6 @@ abstract class NativeStruct {
     _wrapper.value = result;
     return _wrapper;
   }
-
-  NativeStruct retain() {
-    wrapper.retain();
-    return this;
-  }
-
-  release() => wrapper.release();
 }
 
 class NSUInteger32x2 extends Struct {

@@ -48,7 +48,7 @@ class DispatchQueue {
 
   DispatchQueue._internal(this._queue);
 
-  /// TODO: This is not working. Waiting for ffi async callback.
+  /// TODO: This is not working.
   // void async(DispatchWorkItem workItem) {
   //   Block block = Block(workItem);
   //   block.queue = _queue;

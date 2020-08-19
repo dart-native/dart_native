@@ -1,3 +1,8 @@
+## 0.3.0
+
+* Automatic lifecycle management for iOS platform. 
+* Fix bugs.
+
 ## 0.2.0
 
 * Performance optimization and more feature for Android.
