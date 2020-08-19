@@ -3,7 +3,6 @@ import 'dart:ffi';
 import 'dart:isolate';
 
 import 'package:dart_native/src/ios/common/library.dart';
-import 'package:dart_native/src/ios/runtime/nsobject.dart';
 
 class CallbackManager {
   // target->selector->function
