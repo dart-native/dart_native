@@ -21,7 +21,7 @@ typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, voi
 @property (nonatomic, readonly) NativeBlockCallback callback;
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
 
-- (int64_t)blockAddress;
+- (intptr_t)blockAddress;
 
 - (instancetype)initWithTypeString:(char *)typeString
                           callback:(NativeBlockCallback)callback;

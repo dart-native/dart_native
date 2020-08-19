@@ -95,26 +95,26 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @end
 
-
-static void DNHandleReturnValue(DNMethodIMP *methodIMP, DNInvocation *invocation) {
+static void DNHandleReturnValue(void *origRet, DNMethodIMP *methodIMP, DNInvocation *invocation) {
     void *ret = invocation.realRetValue;
-    void **args = invocation.realArgs;
     if (methodIMP.hasStret) {
-        // synchronize stret value from first argument.
-        [invocation setReturnValue:*(void **)args[0]];
+        // synchronize stret value from first argument. `origRet` is not the target.
+        [invocation setReturnValue:*(void **)invocation.realArgs[0]];
+        return;
     } else if (methodIMP.typeEncoding[0] == '{') {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
-            memcpy(ret, pointerWrapper.pointer, invocation.methodSignature.methodReturnLength);
+            [invocation setReturnValue:pointerWrapper.pointer];
         }
     } else if (methodIMP.typeEncoding[0] == '*') {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
             const char *origCString = (const char *)pointerWrapper.pointer;
             const char *temp = [NSString stringWithUTF8String:origCString].UTF8String;
-            *(const char **)ret = temp;
+            [invocation setReturnValue:&temp];
         }
     }
+    [invocation getReturnValue:origRet];
 }
 
 static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
@@ -149,7 +149,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
     
     DNInvocation *invocation = [[DNInvocation alloc] initWithSignature:methodIMP.signature
-                                                                      hasStret:methodIMP.hasStret];
+                                                              hasStret:methodIMP.hasStret];
     invocation.args = userArgs;
     invocation.retValue = userRet;
     invocation.realArgs = args;
@@ -167,7 +167,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     }
     free(types);
     retObjectAddr = (int64_t)*(void **)retAddr;
-    DNHandleReturnValue(methodIMP, invocation);
+    DNHandleReturnValue(ret, methodIMP, invocation);
     [methodIMP.thread dn_performBlock:^{
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
     }];
