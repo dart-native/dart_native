@@ -1,6 +1,5 @@
 package com.dartnative.dart_native;
 
-import androidx.annotation.NonNull;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -11,7 +10,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 /** DartNativePlugin */
 public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
   @Override
-  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+  public void onAttachedToEngine(FlutterPluginBinding flutterPluginBinding) {
     final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "dart_native");
     channel.setMethodCallHandler(new DartNativePlugin());
   }
@@ -31,7 +30,7 @@ public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
   }
 
   @Override
-  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
+  public void onMethodCall(MethodCall call, Result result) {
     if (call.method.equals("getPlatformVersionInt")) {
       result.success(1);
     }else if (call.method.equals("getPlatformVersionDouble")) {
@@ -50,6 +49,6 @@ public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
   }
 
   @Override
-  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+  public void onDetachedFromEngine(FlutterPluginBinding binding) {
   }
 }

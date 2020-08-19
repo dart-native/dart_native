@@ -1,8 +1,6 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/dart_objc.dart';
-import 'package:dart_native/src/ios/common/callback_manager.dart';
-import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/runtime/functions.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
@@ -24,64 +22,10 @@ class id implements NSObjectProtocol {
     return _ptr;
   }
 
-  int _retainCount = 0;
-
   String get _address =>
       '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
 
-  id(this._ptr) {
-    if (_ptr != null && _ptr != nullptr) {
-      List<id> list = _objects[_ptr.address];
-      if (list == null) {
-        list = [this];
-        _objects[_ptr.address] = list;
-      } else {
-        list.add(this);
-      }
-    }
-    ChannelDispatch().registerChannelCallbackIfNot('object_dealloc', _dealloc);
-  }
-
-  id retain() {
-    if (this is NSObject) {
-      _retainCount++;
-      id temp = perform(SEL('retain'));
-      _ptr = temp._ptr;
-    }
-    return this;
-  }
-
-  release() {
-    if (_retainCount > 0) {
-      if (this is NSObject) {
-        perform(SEL('release'));
-      } else if (this is Block) {
-        Block_release(this.pointer);
-      }
-      _retainCount--;
-      if (_retainCount == 0) {
-        // Don't need waiting for native callback.
-        dealloc();
-      }
-    }
-  }
-
-  id autorelease() {
-    id temp = perform(SEL('autorelease'));
-    _ptr = temp._ptr;
-    // decrease retainCount
-    _retainCount--;
-    return this;
-  }
-
-  /// Clean NSObject instance.
-  /// Subclass can override this method and call release on its dart properties.
-  dealloc() {
-    if (_ptr != nullptr) {
-      CallbackManager.shared.clearAllCallbackOnTarget(this);
-      _ptr = nullptr;
-    }
-  }
+  id(this._ptr);
 
   // NSObjectProtocol
 
@@ -167,15 +111,5 @@ class id implements NSObjectProtocol {
 
   int get hashCode {
     return pointer.hashCode;
-  }
-}
-
-Map<int, List<id>> _objects = {};
-
-_dealloc(int addr) {
-  List<id> list = _objects[addr];
-  if (list != null) {
-    list.forEach((f) => f.dealloc());
-    _objects.remove(addr);
   }
 }

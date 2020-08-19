@@ -6,6 +6,7 @@ class DelegateStub extends NSObject with SampleDelegate {
     super.registerSampleDelegate();
   }
 
+  // handle notification posted from native.
   handleNotification(NSObject notification) {
     print('receive notification!');
   }

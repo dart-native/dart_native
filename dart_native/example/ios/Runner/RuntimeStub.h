@@ -65,6 +65,7 @@ typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 - (NSMutableSet *)fooNSMutableSet:(NSMutableSet *)set;
 - (void)fooBlock:(BarBlock)block;
 - (void)fooStretBlock:(StretBlock)block;
+- (void)fooCompletion:(void(^)(void))block;
 - (void)fooCStringBlock:(CStringRetBlock)block;
 - (void)fooDelegate:(id<SampleDelegate>)delegate;
 - (void)fooStructDelegate:(id<SampleDelegate>)delegate;

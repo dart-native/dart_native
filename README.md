@@ -13,7 +13,7 @@ This is the blue part(DartNative Bridge) in the picture below:
 
 ## Requirements
 
-Flutter 1.12.13 (Dart 2.7.0)
+Flutter 1.20.2 (Dart 2.9.1)
 
 ## Getting Started
 
@@ -57,17 +57,19 @@ typedef int(^BarBlock)(NSObject *a);
 1. [dart_native README.md](/dart_native/README.md)
 2. [dart_native_gen README.md](/dart_native_gen/README.md)
 
-## TODO List
-
-- [ ] Unit test.
-- [ ] Documents.
-
 ## Article
 
+- [告别 Flutter Channel，调用 Native API 仅需一行代码！](http://yulingtianxia.com/blog/2020/06/25/Codegen-for-DartNative/)
+- [如何实现一行命令自动生成 Flutter 插件](http://yulingtianxia.com/blog/2020/07/25/How-to-Implement-Codegen/)
 - [用 Dart 来写 Objective-C 代码](http://yulingtianxia.com/blog/2019/10/27/Write-Objective-C-Code-using-Dart/)
-- [谈谈 dart_objc 混合编程引擎的设计](http://yulingtianxia.com/blog/2019/11/28/DartObjC-Design/)
+- [谈谈 dart_native 混合编程引擎的设计](http://yulingtianxia.com/blog/2019/11/28/DartObjC-Design/)
 - [DartNative Memory Management: Object](http://yulingtianxia.com/blog/2019/12/26/DartObjC-Memory-Management-Object/)
 - [DartNative Memory Management: C++ Non-Object](http://yulingtianxia.com/blog/2020/01/31/DartNative-Memory-Management-Cpp-Non-Object/)
 - [DartNative Struct](http://yulingtianxia.com/blog/2020/02/24/DartNative-Struct/)
 - [在 Flutter 中玩转 Objective-C Block](http://yulingtianxia.com/blog/2020/03/28/Using-Objective-C-Block-in-Flutter/)
 - [Passing Out Parameter in DartNative](http://yulingtianxia.com/blog/2020/04/25/Passing-Out-Parameter-in-DartNative/)
+
+## TODO List
+
+- [ ] Unit test.
+- [ ] Documents.

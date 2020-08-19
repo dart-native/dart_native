@@ -1,6 +1,9 @@
 import 'dart:ffi';
 
-import 'package:dart_native/src/ios/runtime/id.dart';
+import 'dart:isolate';
+
+import 'package:dart_native/src/ios/common/library.dart';
+import 'package:dart_native/src/ios/runtime/nsobject.dart';
 
 class CallbackManager {
   // target->selector->function
@@ -31,7 +34,27 @@ class CallbackManager {
     return methodsMap[selectorPtr];
   }
 
-  clearAllCallbackOnTarget(id target) {
-    _callbackManager.remove(target.pointer);
+  clearAllCallbackOnTarget(Pointer<Void> ptr) {
+    _callbackManager.remove(ptr);
   }
+}
+
+final registerDeallocCallback = runtimeLib.lookupFunction<
+        Void Function(
+            Pointer<NativeFunction<Void Function(IntPtr)>> functionPointer),
+        void Function(
+            Pointer<NativeFunction<Void Function(IntPtr)>> functionPointer)>(
+    'RegisterDeallocCallback');
+
+final interactiveCppRequests = ReceivePort()..listen(requestExecuteCallback);
+final int nativePort = interactiveCppRequests.sendPort.nativePort;
+final executeCallback = runtimeLib.lookupFunction<Void Function(Pointer<Work>),
+    void Function(Pointer<Work>)>('ExecuteCallback');
+
+class Work extends Struct {}
+
+void requestExecuteCallback(dynamic message) {
+  final int workAddress = message;
+  final work = Pointer<Work>.fromAddress(workAddress);
+  executeCallback(work);
 }

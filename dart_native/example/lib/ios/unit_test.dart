@@ -121,7 +121,12 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
     return CString('test return cstring');
   });
 
+  stub.fooCompletion(() {
+    print('hello completion block!');
+  });
+
   stub.fooDelegate(delegate);
+
   stub.fooStructDelegate(delegate);
 
   String resultNSString = stub.fooNSString('This is NSString');

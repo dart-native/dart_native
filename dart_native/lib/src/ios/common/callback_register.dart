@@ -1,7 +1,6 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/callback_manager.dart';
-import 'package:dart_native/src/ios/common/channel_dispatch.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
@@ -18,8 +17,6 @@ bool registerMethodCallback(
   CallbackManager.shared
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
   int result = nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr);
-  ChannelDispatch()
-      .registerChannelCallbackIfNot('method_callback', _asyncCallback);
   return result != 0;
 }
 
@@ -66,7 +63,6 @@ _callback(
       arg = boxingObjCBasicValue(dartType, arg);
       arg = convertFromPointer(dartType, arg);
     }
-
     args.add(arg);
   }
 
