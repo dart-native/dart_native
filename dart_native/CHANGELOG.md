@@ -1,3 +1,7 @@
+## 0.3.1
+
+* Fix issue for pub.dev.
+
 ## 0.3.0
 
 * Automatic lifecycle management for iOS platform. 
