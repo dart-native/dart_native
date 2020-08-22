@@ -7,7 +7,6 @@
 
 #import "DNObjectDealloc.h"
 #import <objc/runtime.h>
-#import "DartNativePlugin.h"
 #import "native_runtime.h"
 
 #if TARGET_OS_OSX && __x86_64__

@@ -14,16 +14,19 @@ class DispatchQoS {
   DispatchQoS._internal(this._class);
 }
 
+// ignore: non_constant_identifier_names
 final void Function(Pointer<Void>, Pointer<Void>) dispatch_async = nativeDylib
     .lookup<NativeFunction<Void Function(Pointer<Void>, Pointer<Void>)>>(
         'dispatch_async')
     .asFunction();
 
+// ignore: non_constant_identifier_names
 final Pointer<Void> Function(int, int) dispatch_get_global_queue = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function(Int64, Uint64)>>(
         'dispatch_get_global_queue')
     .asFunction();
 
+// ignore: non_constant_identifier_names
 final Pointer<Void> Function() dispatch_get_main_queue = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function()>>(
         '_dispatch_get_main_queue')
