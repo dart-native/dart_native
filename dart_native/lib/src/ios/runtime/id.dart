@@ -8,6 +8,7 @@ import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
 
+// ignore: camel_case_types
 class id implements NSObjectProtocol {
   Class get isa {
     if (_ptr == null) {
