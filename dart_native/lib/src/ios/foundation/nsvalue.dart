@@ -88,30 +88,35 @@ extension NSValueUIGeometryExtensions on NSValue {
     return NSValue.valueWithStruct(point);
   }
 
+  // ignore: non_constant_identifier_names
   CGPoint get CGPointValue => perform(SEL('CGPointValue'));
 
   static NSValue valueWithCGVector(CGVector vector) {
     return NSValue.valueWithStruct(vector);
   }
 
+  // ignore: non_constant_identifier_names
   CGVector get CGVectorValue => perform(SEL('CGVectorValue'));
 
   static NSValue valueWithCGSize(CGSize size) {
     return NSValue.valueWithStruct(size);
   }
 
+  // ignore: non_constant_identifier_names
   CGSize get CGSizeValue => perform(SEL('CGSizeValue'));
 
   static NSValue valueWithCGRect(CGRect rect) {
     return NSValue.valueWithStruct(rect);
   }
 
+  // ignore: non_constant_identifier_names
   CGRect get CGRectValue => perform(SEL('CGRectValue'));
 
   static NSValue valueWithCGAffineTransform(CGAffineTransform transform) {
     return NSValue.valueWithStruct(transform);
   }
 
+  // ignore: non_constant_identifier_names
   CGAffineTransform get CGAffineTransformValue =>
       perform(SEL('CGAffineTransformValue'));
 
@@ -127,6 +132,7 @@ extension NSValueUIGeometryExtensions on NSValue {
     return NSValue.valueWithStruct(insets);
   }
 
+  // ignore: non_constant_identifier_names
   UIOffset get UIOffsetValue => perform(SEL('UIOffsetValue'));
 }
 
@@ -143,5 +149,6 @@ extension CATransform3DAdditions on NSValue {
     return NSValue.valueWithStruct(transform);
   }
 
+  // ignore: non_constant_identifier_names
   CATransform3D get CATransform3DValue => perform(SEL('CATransform3DValue'));
 }

@@ -4,6 +4,7 @@ import 'package:dart_native/src/common/native_type_box.dart';
 
 mixin _ToAlias {}
 
+// ignore: camel_case_types
 class char extends NativeIntBox {
   const char(int raw) : super(raw);
 

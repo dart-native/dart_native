@@ -13,8 +13,8 @@ class NSNumber extends NSValue {
 
   static Pointer<Void> _new(dynamic value) {
     String typeName = value.runtimeType.toString();
-    if (_NSNumberCreationForBoxType.containsKey(typeName)) {
-      String selName = 'numberWith${_NSNumberCreationForBoxType[typeName]}:';
+    if (_numberCreationForBoxType.containsKey(typeName)) {
+      String selName = 'numberWith${_numberCreationForBoxType[typeName]}:';
       NSObject result = type(of: NSNumber).perform(SEL(selName), args: [value]);
       return result.pointer;
     } else {
@@ -23,7 +23,7 @@ class NSNumber extends NSValue {
   }
 }
 
-Map<String, String> _NSNumberCreationForBoxType = {
+Map<String, String> _numberCreationForBoxType = {
   'char': 'Char',
   'unsigned_char': 'UnsignedChar',
   'short': 'Short',
