@@ -1,3 +1,7 @@
+## 0.3.2
+
+* Expose `id.dart` and `message.dart` in iOS.
+
 ## 0.3.1
 
 * Fix issue for pub.dev.
