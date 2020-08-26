@@ -50,7 +50,7 @@ Pointer<Void> _new(dynamic value) {
     NSArray keys = value.keys.toList(growable: false).toNSArray();
     NSArray values = value.values.toList(growable: false).toNSArray();
     NSObject result = Class('NSDictionary')
-        .perform(SEL('dictionaryWithObjects:forKeys:'), args: [keys, values]);
+        .perform(SEL('dictionaryWithObjects:forKeys:'), args: [values, keys]);
     return result.pointer;
   } else {
     throw 'Invalid param when initializing NSDictionary.';
