@@ -1,3 +1,7 @@
+## 0.3.3
+
+* Fix bug for NSDictionary.
+
 ## 0.3.2
 
 * Expose `id.dart` and `message.dart` in iOS.
