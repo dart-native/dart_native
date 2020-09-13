@@ -1,9 +1,11 @@
 import 'dart:ffi';
+import 'dart:typed_data';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
+import 'package:ffi/ffi.dart';
 
 @native
 class NSString extends NSSubclass<String> {
@@ -28,8 +30,15 @@ class NSMutableString extends NSString {
 
 Pointer<Void> _new(dynamic value) {
   if (value is String) {
-    NSObject result =
-        Class('NSString').perform(SEL('stringWithUTF8String:'), args: [value]);
+    final units = value.codeUnits;
+    final Pointer<Uint16> charPtr = allocate<Uint16>(count: units.length + 1);
+    final Uint16List nativeString = charPtr.asTypedList(units.length + 1);
+    nativeString.setAll(0, units);
+    nativeString[units.length] = 0;
+    NSObject result = Class('NSString').perform(
+        SEL('stringWithCharacters:length:'),
+        args: [charPtr, units.length]);
+    free(charPtr);
     return result.pointer;
   } else {
     throw 'Invalid param when initializing NSString.';
