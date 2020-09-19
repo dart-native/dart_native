@@ -100,3 +100,9 @@ final void Function(Pointer<Void>) markAutoreleasereturnObject = nativeDylib
     .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
         'native_mark_autoreleasereturn_object')
     .asFunction();
+
+typedef ConvertNSStringToUTF16 = Pointer<Void> Function(
+    Pointer<Void>, Pointer<Uint64>);
+final ConvertNSStringToUTF16 convertNSStringToUTF16 =
+    nativeDylib.lookupFunction<ConvertNSStringToUTF16, ConvertNSStringToUTF16>(
+        'native_convert_nsstring_to_utf16');
