@@ -62,6 +62,9 @@ _dispatch_get_main_queue(void);
 DN_EXTERN void
 native_mark_autoreleasereturn_object(id object);
 
+DN_EXTERN const void *
+native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length);
+
 #pragma mark - Dart VM API
 
 DN_EXTERN

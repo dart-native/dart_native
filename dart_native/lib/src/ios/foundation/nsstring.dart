@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/runtime.dart';
+import 'package:dart_native/src/ios/runtime/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 import 'package:ffi/ffi.dart';
@@ -12,7 +13,11 @@ class NSString extends NSSubclass<String> {
   NSString(String value, {InitSubclass init: _new}) : super(value, init);
 
   NSString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    raw = perform(SEL('UTF8String'));
+    Pointer<Uint64> length = allocate<Uint64>();
+    Pointer<Void> result = convertNSStringToUTF16(ptr, length);
+    Uint16List list = result.cast<Uint16>().asTypedList(length.value);
+    free(length);
+    raw = String.fromCharCodes(list);
   }
 }
 
