@@ -6,105 +6,72 @@ import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 import 'package:dart_native/src/common/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
+import 'package:dart_native/src/ios/runtime/native_runtime.dart';
 import 'package:ffi/ffi.dart';
 
 // TODO: change encoding hard code string to const var.
-enum TypeEncoding {
-  v, // void
-  bool, // bool, BOOL, Bool
-  sint8, // char, int8_t
-  uint8, // unsigned char, uint8_t
-  sint16, // short, int16_t
-  uint16, // unsigned short, uint16_t
-  sint32, // int, int32_t
-  uint32, // unsigned int, uint32_t
-  sint64, // long long, int64_t
-  uint64, // unsigned long long, uint64_t
-  float32, // float
-  float64, // double
-  cstring, // char *
-  object, // NSObject
-  cls, // Class
-  block, // Block
-  pointer, // void *
-  selector, // SEL, selector
-  struct, // struct
-}
+extension TypeEncodings on Pointer<Utf8> {
+  static Pointer<Pointer<Utf8>> _typeEncodings = nativeAllTypeEncodings();
+  static final Pointer<Utf8> sint8 = _typeEncodings.elementAt(0).value;
+  static final Pointer<Utf8> sint16 = _typeEncodings.elementAt(1).value;
+  static final Pointer<Utf8> sint32 = _typeEncodings.elementAt(2).value;
+  static final Pointer<Utf8> sint64 = _typeEncodings.elementAt(3).value;
+  static final Pointer<Utf8> uint8 = _typeEncodings.elementAt(4).value;
+  static final Pointer<Utf8> uint16 = _typeEncodings.elementAt(5).value;
+  static final Pointer<Utf8> uint32 = _typeEncodings.elementAt(6).value;
+  static final Pointer<Utf8> uint64 = _typeEncodings.elementAt(7).value;
+  static final Pointer<Utf8> float32 = _typeEncodings.elementAt(8).value;
+  static final Pointer<Utf8> float64 = _typeEncodings.elementAt(9).value;
+  static final Pointer<Utf8> object = _typeEncodings.elementAt(10).value;
+  static final Pointer<Utf8> cls = _typeEncodings.elementAt(11).value;
+  static final Pointer<Utf8> selector = _typeEncodings.elementAt(12).value;
+  static final Pointer<Utf8> block = _typeEncodings.elementAt(13).value;
+  static final Pointer<Utf8> cstring = _typeEncodings.elementAt(14).value;
+  static final Pointer<Utf8> v = _typeEncodings.elementAt(15).value;
+  static final Pointer<Utf8> pointer = _typeEncodings.elementAt(16).value;
+  static final Pointer<Utf8> b = _typeEncodings.elementAt(17).value;
 
-Map<String, TypeEncoding> _valueForTypeEncoding = {
-  'void': TypeEncoding.v,
-  'bool': TypeEncoding.bool,
-  'sint8': TypeEncoding.sint8,
-  'sint16': TypeEncoding.sint16,
-  'sint32': TypeEncoding.sint32,
-  'sint64': TypeEncoding.sint64,
-  'uint8': TypeEncoding.uint8,
-  'uint16': TypeEncoding.uint16,
-  'uint32': TypeEncoding.uint32,
-  'uint64': TypeEncoding.uint64,
-  'float32': TypeEncoding.float32,
-  'float64': TypeEncoding.float64,
-  'char *': TypeEncoding.cstring,
-  'object': TypeEncoding.object,
-  'class': TypeEncoding.cls,
-  'block': TypeEncoding.block,
-  'ptr': TypeEncoding.pointer,
-  'selector': TypeEncoding.selector,
-};
-
-extension Helper on TypeEncoding {
   bool get isNum {
-    bool result = this == TypeEncoding.sint8 ||
-        this == TypeEncoding.sint16 ||
-        this == TypeEncoding.sint32 ||
-        this == TypeEncoding.sint64 ||
-        this == TypeEncoding.uint8 ||
-        this == TypeEncoding.uint16 ||
-        this == TypeEncoding.uint32 ||
-        this == TypeEncoding.uint64 ||
-        this == TypeEncoding.float32 ||
-        this == TypeEncoding.float64;
+    bool result = this == TypeEncodings.sint8 ||
+        this == TypeEncodings.sint16 ||
+        this == TypeEncodings.sint32 ||
+        this == TypeEncodings.sint64 ||
+        this == TypeEncodings.uint8 ||
+        this == TypeEncodings.uint16 ||
+        this == TypeEncodings.uint32 ||
+        this == TypeEncodings.uint64 ||
+        this == TypeEncodings.float32 ||
+        this == TypeEncodings.float64;
     return result;
   }
 
   bool get maybeObject {
-    return this == TypeEncoding.pointer || this == TypeEncoding.object;
+    return this == TypeEncodings.pointer || this == TypeEncodings.object;
   }
 
   bool get maybeBlock {
-    return this == TypeEncoding.block || maybeObject;
+    return this == TypeEncodings.block || maybeObject;
   }
 
   bool get maybeId {
-    return this == TypeEncoding.cls || maybeBlock;
+    return this == TypeEncodings.cls || maybeBlock;
   }
 
   bool get maybeSEL {
-    return this == TypeEncoding.selector || this == TypeEncoding.pointer;
+    return this == TypeEncodings.selector || this == TypeEncodings.pointer;
   }
 
   bool get maybeCString {
-    return this == TypeEncoding.cstring || this == TypeEncoding.pointer;
-  }
-}
-
-extension TypeEncodingExtension on String {
-  TypeEncoding get typeEncoding {
-    TypeEncoding encoding = _valueForTypeEncoding[this];
-    if (encoding == null && startsWith('{')) {
-      encoding = TypeEncoding.struct;
-    }
-    return encoding;
+    return this == TypeEncodings.cstring || this == TypeEncodings.pointer;
   }
 }
 
 /// Store [object] to [ptr] which using [encoding] for automatic type conversion.
 /// Returns a wrapper if [encoding] is some struct or pointer.
 dynamic storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr, String encoding,
+    dynamic object, Pointer<Pointer<Void>> ptr, Pointer<Utf8> encoding,
     [bool auto = true]) {
-  TypeEncoding typeEncoding = encoding.typeEncoding;
-  if (object == null && typeEncoding == TypeEncoding.v) {
+  if (object == null && encoding == TypeEncodings.v) {
     return;
   }
   if (object is num || object is bool || object is NativeBox) {
@@ -115,51 +82,51 @@ dynamic storeValueToPointer(
       // waiting for ffi bool type support.
       object = object ? 1 : 0;
     }
-    switch (typeEncoding) {
-      case TypeEncoding.bool:
-      case TypeEncoding.sint8:
+    switch (encoding) {
+      case TypeEncodings.b:
+      case TypeEncodings.sint8:
         ptr.cast<Int8>().value = object;
         break;
-      case TypeEncoding.sint16:
+      case TypeEncodings.sint16:
         ptr.cast<Int16>().value = object;
         break;
-      case TypeEncoding.sint32:
+      case TypeEncodings.sint32:
         ptr.cast<Int32>().value = object;
         break;
-      case TypeEncoding.sint64:
+      case TypeEncodings.sint64:
         ptr.cast<Int64>().value = object;
         break;
-      case TypeEncoding.uint8:
+      case TypeEncodings.uint8:
         ptr.cast<Uint8>().value = object;
         break;
-      case TypeEncoding.uint16:
+      case TypeEncodings.uint16:
         ptr.cast<Uint16>().value = object;
         break;
-      case TypeEncoding.uint32:
+      case TypeEncodings.uint32:
         ptr.cast<Uint32>().value = object;
         break;
-      case TypeEncoding.uint64:
+      case TypeEncodings.uint64:
         ptr.cast<Uint64>().value = object;
         break;
-      case TypeEncoding.float32:
+      case TypeEncodings.float32:
         ptr.cast<Float>().value = object;
         break;
-      case TypeEncoding.float64:
+      case TypeEncodings.float64:
         ptr.cast<Double>().value = object;
         break;
-      case TypeEncoding.cstring:
+      case TypeEncodings.cstring:
         return storeCStringToPointer(object, ptr);
         break;
       default:
         throw '$object not match type $encoding!';
     }
-  } else if (object is Pointer<Void> && !typeEncoding.isNum) {
+  } else if (object is Pointer<Void> && !encoding.isNum) {
     ptr.value = object;
-  } else if (object is Block && typeEncoding.maybeBlock) {
+  } else if (object is Block && encoding.maybeBlock) {
     ptr.value = object.pointer;
-  } else if (object is id && typeEncoding.maybeId) {
+  } else if (object is id && encoding.maybeId) {
     ptr.value = object.pointer;
-  } else if (object is SEL && typeEncoding.maybeSEL) {
+  } else if (object is SEL && encoding.maybeSEL) {
     ptr.value = object.toPointer();
   } else if (object is Protocol) {
     ptr.value = object.toPointer();
@@ -167,24 +134,24 @@ dynamic storeValueToPointer(
     Block block = Block(object);
     ptr.value = block.pointer;
   } else if (object is String) {
-    if (typeEncoding.maybeCString) {
+    if (encoding.maybeCString) {
       return storeCStringToPointer(object, ptr);
-    } else if (typeEncoding.maybeObject) {
+    } else if (encoding.maybeObject) {
       NSString string = NSString(object);
       ptr.value = string.pointer;
     }
-  } else if (object is List && typeEncoding.maybeObject) {
+  } else if (object is List && encoding.maybeObject) {
     ptr.value = NSArray(object).pointer;
-  } else if (object is Map && typeEncoding.maybeObject) {
+  } else if (object is Map && encoding.maybeObject) {
     ptr.value = NSDictionary(object).pointer;
-  } else if (object is Set && typeEncoding.maybeObject) {
+  } else if (object is Set && encoding.maybeObject) {
     ptr.value = NSSet(object).pointer;
-  } else if (object is NSObjectRef && typeEncoding == TypeEncoding.pointer) {
+  } else if (object is NSObjectRef && encoding == TypeEncodings.pointer) {
     ptr.value = object.pointer.cast<Void>();
-  } else if (object is Pointer && typeEncoding.maybeCString) {
+  } else if (object is Pointer && encoding.maybeCString) {
     Pointer<Void> tempPtr = object.cast<Void>();
     ptr.value = tempPtr;
-  } else if (typeEncoding == TypeEncoding.struct) {
+  } else if (encoding == TypeEncodings.struct) {
     // ptr is struct pointer
     return storeStructToPointer(ptr, object);
   } else {
@@ -203,51 +170,51 @@ dynamic storeCStringToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
 dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
     [bool auto = true]) {
   dynamic result = nil;
-  TypeEncoding typeEncoding = encoding.typeEncoding;
-  if (typeEncoding == TypeEncoding.struct) {
+  TypeEncodings typeEncoding = encoding.typeEncoding;
+  if (typeEncoding == TypeEncodings.struct) {
     // ptr is struct pointer
     result = loadStructFromPointer(ptr, encoding);
-  } else if (typeEncoding.isNum || typeEncoding == TypeEncoding.bool) {
+  } else if (typeEncoding.isNum || typeEncoding == TypeEncodings.bool) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
-    Map<TypeEncoding, Function> functionForNumEncoding = {
-      TypeEncoding.bool: data.getInt8,
-      TypeEncoding.sint8: data.getInt8,
-      TypeEncoding.sint16: data.getInt16,
-      TypeEncoding.sint32: data.getInt32,
-      TypeEncoding.sint64: data.getInt64,
-      TypeEncoding.uint8: data.getUint8,
-      TypeEncoding.uint16: data.getUint16,
-      TypeEncoding.uint32: data.getUint32,
-      TypeEncoding.uint64: data.getUint64,
-      TypeEncoding.float32: data.getFloat32,
-      TypeEncoding.float64: data.getFloat64,
+    Map<TypeEncodings, Function> functionForNumEncoding = {
+      TypeEncodings.bool: data.getInt8,
+      TypeEncodings.sint8: data.getInt8,
+      TypeEncodings.sint16: data.getInt16,
+      TypeEncodings.sint32: data.getInt32,
+      TypeEncodings.sint64: data.getInt64,
+      TypeEncodings.uint8: data.getUint8,
+      TypeEncodings.uint16: data.getUint16,
+      TypeEncodings.uint32: data.getUint32,
+      TypeEncodings.uint64: data.getUint64,
+      TypeEncodings.float32: data.getFloat32,
+      TypeEncodings.float64: data.getFloat64,
     };
     List args = [0];
-    if (typeEncoding != TypeEncoding.bool &&
-        typeEncoding != TypeEncoding.sint8 &&
-        typeEncoding != TypeEncoding.uint8) {
+    if (typeEncoding != TypeEncodings.bool &&
+        typeEncoding != TypeEncodings.sint8 &&
+        typeEncoding != TypeEncodings.uint8) {
       args.add(Endian.host);
     }
     result = Function.apply(functionForNumEncoding[typeEncoding], args);
-    if (typeEncoding == TypeEncoding.bool) {
+    if (typeEncoding == TypeEncodings.bool) {
       result = result != 0;
     }
   } else {
     switch (typeEncoding) {
-      case TypeEncoding.object:
+      case TypeEncodings.object:
         result = NSObject.fromPointer(ptr);
         break;
-      case TypeEncoding.cls:
+      case TypeEncodings.cls:
         result = Class.fromPointer(ptr);
         break;
-      case TypeEncoding.selector:
+      case TypeEncodings.selector:
         result = SEL.fromPointer(ptr);
         break;
-      case TypeEncoding.block:
+      case TypeEncodings.block:
         result = Block.fromPointer(ptr);
         break;
-      case TypeEncoding.cstring:
+      case TypeEncodings.cstring:
         Pointer<Utf8> temp = ptr.cast();
         if (auto) {
           result = Utf8.fromUtf8(temp);
@@ -256,9 +223,9 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
           result = temp;
         }
         break;
-      case TypeEncoding.v:
+      case TypeEncodings.v:
         break;
-      case TypeEncoding.pointer:
+      case TypeEncodings.pointer:
       default:
         result = ptr;
     }

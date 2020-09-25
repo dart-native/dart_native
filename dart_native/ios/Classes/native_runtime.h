@@ -41,6 +41,9 @@ native_block_create(char *types, void *callback);
 DN_EXTERN void *
 native_block_invoke(void *block, void * _Nonnull * _Nullable args);
 
+DN_EXTERN const char * _Nonnull * _Nonnull
+native_all_type_encodings(void);
+
 DN_EXTERN const char *
 native_type_encoding(const char *str);
 

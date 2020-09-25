@@ -180,6 +180,12 @@ native_block_invoke(void *block, void **args) {
 // Use pointer as key of encoding string cache (on dart side).
 static const char *typeList[18] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool"};
 
+const char **
+native_all_type_encodings() {
+    return typeList;
+}
+
+
 #define SINT(type) do { \
     if (str[0] == @encode(type)[0]) \
     { \
