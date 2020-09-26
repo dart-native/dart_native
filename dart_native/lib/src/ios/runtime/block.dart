@@ -104,16 +104,16 @@ class Block extends id {
         if (arg == null) {
           arg = nil;
         }
-        String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 2).value);
-        storeValueToPointer(arg, argsPtrPtr.elementAt(i), encoding);
+        storeValueToPointer(
+            arg, argsPtrPtr.elementAt(i), typesPtrPtr.elementAt(i + 2).value);
       }
     }
     Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
     if (argsPtrPtr != nullptr.cast()) {
       free(argsPtrPtr);
     }
-    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(0).value);
-    dynamic result = loadValueFromPointer(resultPtr, encoding);
+    dynamic result =
+        loadValueFromPointer(resultPtr, typesPtrPtr.elementAt(0).value);
     return result;
   }
 }
@@ -143,12 +143,11 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     // Get block args encoding. First is return type.
     Pointer<Utf8> argTypePtr =
         nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).value);
-    String encoding = convertEncode(argTypePtr);
     Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
-    if (!encoding.startsWith('{')) {
+    if (argTypePtr.encodingForStruct == null) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    dynamic arg = loadValueFromPointer(ptr, encoding);
+    dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
       arg = boxingObjCBasicValue(dartType, arg);
@@ -162,16 +161,15 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   if (result != null) {
     Pointer<Utf8> resultTypePtr =
         nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
-    String encoding = convertEncode(resultTypePtr);
     Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
     if (stret) {
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
       PointerWrapper wrapper =
-          storeValueToPointer(result, realRetPtrPtr, encoding);
+          storeValueToPointer(result, realRetPtrPtr, resultTypePtr);
       if (wrapper != null) {
-        storeValueToPointer(wrapper, retPtrPtr, 'object');
+        storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);
         result = wrapper;
       }
     }
