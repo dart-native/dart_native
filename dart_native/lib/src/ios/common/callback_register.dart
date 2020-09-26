@@ -52,12 +52,12 @@ _callback(
   List<String> dartTypes = dartTypeStringForFunction(function);
   for (var i = 0; i < argCount; i++) {
     // types: ret, self, _cmd, args...
-    String encoding = Utf8.fromUtf8(typesPtrPtr.elementAt(i + 3).value);
+    Pointer<Utf8> argTypePtr = typesPtrPtr.elementAt(i + 3).value;
     Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
-    if (!encoding.startsWith('{')) {
+    if (argTypePtr.encodingForStruct == null) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    dynamic arg = loadValueFromPointer(ptr, encoding);
+    dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < dartTypes.length) {
       String dartType = dartTypes[i + 1];
       arg = boxingObjCBasicValue(dartType, arg);
@@ -69,16 +69,15 @@ _callback(
   dynamic result = Function.apply(function, args);
 
   if (result != null) {
-    String encoding = convertEncode(typesPtrPtr.elementAt(0).value);
     Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
     if (stret) {
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
-      PointerWrapper wrapper =
-          storeValueToPointer(result, realRetPtrPtr, encoding);
+      PointerWrapper wrapper = storeValueToPointer(
+          result, realRetPtrPtr, typesPtrPtr.elementAt(0).value);
       if (wrapper != null) {
-        storeValueToPointer(wrapper, retPtrPtr, 'object');
+        storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);
         result = wrapper;
       }
     }

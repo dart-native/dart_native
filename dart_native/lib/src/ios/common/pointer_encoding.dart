@@ -31,6 +31,15 @@ extension TypeEncodings on Pointer<Utf8> {
   static final Pointer<Utf8> pointer = _typeEncodings.elementAt(16).value;
   static final Pointer<Utf8> b = _typeEncodings.elementAt(17).value;
 
+  // Return encoding only if type is struct.
+  String get encodingForStruct {
+    String result = Utf8.fromUtf8(this);
+    if (result.startsWith('{')) {
+      return result;
+    }
+    return null;
+  }
+
   bool get isNum {
     bool result = this == TypeEncodings.sint8 ||
         this == TypeEncodings.sint16 ||
@@ -66,6 +75,48 @@ extension TypeEncodings on Pointer<Utf8> {
   }
 }
 
+Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
+  TypeEncodings.b: (Pointer ptr, dynamic object) {
+    ptr.cast<Int8>().value = object;
+  },
+  TypeEncodings.sint8: (Pointer ptr, dynamic object) {
+    ptr.cast<Int8>().value = object;
+  },
+  TypeEncodings.sint16: (Pointer ptr, dynamic object) {
+    ptr.cast<Int16>().value = object;
+  },
+  TypeEncodings.sint32: (Pointer ptr, dynamic object) {
+    ptr.cast<Int32>().value = object;
+  },
+  TypeEncodings.sint64: (Pointer ptr, dynamic object) {
+    ptr.cast<Int64>().value = object;
+  },
+  TypeEncodings.uint8: (Pointer ptr, dynamic object) {
+    ptr.cast<Uint8>().value = object;
+  },
+  TypeEncodings.uint16: (Pointer ptr, dynamic object) {
+    ptr.cast<Uint16>().value = object;
+  },
+  TypeEncodings.uint32: (Pointer ptr, dynamic object) {
+    ptr.cast<Uint32>().value = object;
+  },
+  TypeEncodings.uint64: (Pointer ptr, dynamic object) {
+    ptr.cast<Uint64>().value = object;
+  },
+  TypeEncodings.float32: (Pointer ptr, dynamic object) {
+    ptr.cast<Float>().value = object;
+  },
+  TypeEncodings.float64: (Pointer ptr, dynamic object) {
+    ptr.cast<Double>().value = object;
+  },
+  TypeEncodings.float64: (Pointer ptr, dynamic object) {
+    ptr.cast<Double>().value = object;
+  },
+  TypeEncodings.cstring: (Pointer ptr, dynamic object) {
+    return storeCStringToPointer(object, ptr);
+  },
+};
+
 /// Store [object] to [ptr] which using [encoding] for automatic type conversion.
 /// Returns a wrapper if [encoding] is some struct or pointer.
 dynamic storeValueToPointer(
@@ -76,49 +127,18 @@ dynamic storeValueToPointer(
   }
   if (object is num || object is bool || object is NativeBox) {
     if (object is NativeBox) {
+      // unwrap from box.
       object = object.raw;
     }
     if (object is bool) {
       // waiting for ffi bool type support.
       object = object ? 1 : 0;
     }
-    switch (encoding) {
-      case TypeEncodings.b:
-      case TypeEncodings.sint8:
-        ptr.cast<Int8>().value = object;
-        break;
-      case TypeEncodings.sint16:
-        ptr.cast<Int16>().value = object;
-        break;
-      case TypeEncodings.sint32:
-        ptr.cast<Int32>().value = object;
-        break;
-      case TypeEncodings.sint64:
-        ptr.cast<Int64>().value = object;
-        break;
-      case TypeEncodings.uint8:
-        ptr.cast<Uint8>().value = object;
-        break;
-      case TypeEncodings.uint16:
-        ptr.cast<Uint16>().value = object;
-        break;
-      case TypeEncodings.uint32:
-        ptr.cast<Uint32>().value = object;
-        break;
-      case TypeEncodings.uint64:
-        ptr.cast<Uint64>().value = object;
-        break;
-      case TypeEncodings.float32:
-        ptr.cast<Float>().value = object;
-        break;
-      case TypeEncodings.float64:
-        ptr.cast<Double>().value = object;
-        break;
-      case TypeEncodings.cstring:
-        return storeCStringToPointer(object, ptr);
-        break;
-      default:
-        throw '$object not match type $encoding!';
+    Function strategy = _storeValueStrategyMap[encoding];
+    if (strategy == null) {
+      throw '$object not match type $encoding!';
+    } else {
+      return strategy(ptr, object);
     }
   } else if (object is Pointer<Void> && !encoding.isNum) {
     ptr.value = object;
@@ -130,7 +150,7 @@ dynamic storeValueToPointer(
     ptr.value = object.toPointer();
   } else if (object is Protocol) {
     ptr.value = object.toPointer();
-  } else if (object is Function && typeEncoding.maybeBlock) {
+  } else if (object is Function && encoding.maybeBlock) {
     Block block = Block(object);
     ptr.value = block.pointer;
   } else if (object is String) {
@@ -151,86 +171,12 @@ dynamic storeValueToPointer(
   } else if (object is Pointer && encoding.maybeCString) {
     Pointer<Void> tempPtr = object.cast<Void>();
     ptr.value = tempPtr;
-  } else if (encoding == TypeEncodings.struct) {
+  } else if (encoding.encodingForStruct != null) {
     // ptr is struct pointer
     return storeStructToPointer(ptr, object);
   } else {
     throw '$object not match type $encoding!';
   }
-}
-
-dynamic storeCStringToPointer(dynamic object, Pointer<Pointer<Void>> ptr) {
-  Pointer<Utf8> charPtr = Utf8.toUtf8(object);
-  PointerWrapper wrapper = PointerWrapper();
-  wrapper.value = charPtr.cast<Void>();
-  ptr.cast<Pointer<Utf8>>().value = charPtr;
-  return wrapper;
-}
-
-dynamic loadValueFromPointer(Pointer<Void> ptr, String encoding,
-    [bool auto = true]) {
-  dynamic result = nil;
-  TypeEncodings typeEncoding = encoding.typeEncoding;
-  if (typeEncoding == TypeEncodings.struct) {
-    // ptr is struct pointer
-    result = loadStructFromPointer(ptr, encoding);
-  } else if (typeEncoding.isNum || typeEncoding == TypeEncodings.bool) {
-    ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
-    ByteData data = ByteData.view(buffer);
-    Map<TypeEncodings, Function> functionForNumEncoding = {
-      TypeEncodings.bool: data.getInt8,
-      TypeEncodings.sint8: data.getInt8,
-      TypeEncodings.sint16: data.getInt16,
-      TypeEncodings.sint32: data.getInt32,
-      TypeEncodings.sint64: data.getInt64,
-      TypeEncodings.uint8: data.getUint8,
-      TypeEncodings.uint16: data.getUint16,
-      TypeEncodings.uint32: data.getUint32,
-      TypeEncodings.uint64: data.getUint64,
-      TypeEncodings.float32: data.getFloat32,
-      TypeEncodings.float64: data.getFloat64,
-    };
-    List args = [0];
-    if (typeEncoding != TypeEncodings.bool &&
-        typeEncoding != TypeEncodings.sint8 &&
-        typeEncoding != TypeEncodings.uint8) {
-      args.add(Endian.host);
-    }
-    result = Function.apply(functionForNumEncoding[typeEncoding], args);
-    if (typeEncoding == TypeEncodings.bool) {
-      result = result != 0;
-    }
-  } else {
-    switch (typeEncoding) {
-      case TypeEncodings.object:
-        result = NSObject.fromPointer(ptr);
-        break;
-      case TypeEncodings.cls:
-        result = Class.fromPointer(ptr);
-        break;
-      case TypeEncodings.selector:
-        result = SEL.fromPointer(ptr);
-        break;
-      case TypeEncodings.block:
-        result = Block.fromPointer(ptr);
-        break;
-      case TypeEncodings.cstring:
-        Pointer<Utf8> temp = ptr.cast();
-        if (auto) {
-          result = Utf8.fromUtf8(temp);
-        } else {
-          // TODO: malloc and strcpy
-          result = temp;
-        }
-        break;
-      case TypeEncodings.v:
-        break;
-      case TypeEncodings.pointer:
-      default:
-        result = ptr;
-    }
-  }
-  return result;
 }
 
 PointerWrapper storeStructToPointer(
@@ -241,6 +187,101 @@ PointerWrapper storeStructToPointer(
     return object.wrapper;
   }
   return null;
+}
+
+dynamic storeCStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
+  Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+  PointerWrapper wrapper = PointerWrapper();
+  wrapper.value = charPtr.cast<Void>();
+  ptr.cast<Pointer<Utf8>>().value = charPtr;
+  return wrapper;
+}
+
+Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
+  TypeEncodings.b: (ByteData data) {
+    return data.getInt8(0);
+  },
+  TypeEncodings.sint8: (ByteData data) {
+    return data.getInt8(0);
+  },
+  TypeEncodings.sint16: (ByteData data) {
+    return data.getInt16(0, Endian.host);
+  },
+  TypeEncodings.sint32: (ByteData data) {
+    return data.getInt32(0, Endian.host);
+  },
+  TypeEncodings.sint64: (ByteData data) {
+    return data.getInt64(0, Endian.host);
+  },
+  TypeEncodings.uint8: (ByteData data) {
+    return data.getUint8(0);
+  },
+  TypeEncodings.uint16: (ByteData data) {
+    return data.getUint16(0, Endian.host);
+  },
+  TypeEncodings.uint32: (ByteData data) {
+    return data.getUint32(0, Endian.host);
+  },
+  TypeEncodings.uint64: (ByteData data) {
+    return data.getUint64(0, Endian.host);
+  },
+  TypeEncodings.float32: (ByteData data) {
+    return data.getFloat32(0, Endian.host);
+  },
+  TypeEncodings.float64: (ByteData data) {
+    return data.getFloat64(0, Endian.host);
+  },
+  TypeEncodings.object: (Pointer<Void> ptr, bool auto) {
+    return NSObject.fromPointer(ptr);
+  },
+  TypeEncodings.cls: (Pointer<Void> ptr, bool auto) {
+    return Class.fromPointer(ptr);
+  },
+  TypeEncodings.selector: (Pointer<Void> ptr, bool auto) {
+    return SEL.fromPointer(ptr);
+  },
+  TypeEncodings.block: (Pointer<Void> ptr, bool auto) {
+    return Block.fromPointer(ptr);
+  },
+  TypeEncodings.cstring: (Pointer<Void> ptr, bool auto) {
+    Pointer<Utf8> temp = ptr.cast();
+    if (auto) {
+      return Utf8.fromUtf8(temp);
+    } else {
+      // TODO: malloc and strcpy
+      return temp;
+    }
+  },
+  TypeEncodings.v: (Pointer<Void> ptr, bool auto) {
+    return;
+  },
+};
+
+dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
+    [bool auto = true]) {
+  dynamic result = nil;
+  if (encoding.isNum || encoding == TypeEncodings.b) {
+    ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
+    ByteData data = ByteData.view(buffer);
+    result = Function.apply(_loadValueStrategyMap[encoding], [data]);
+    if (encoding == TypeEncodings.b) {
+      result = result != 0;
+    }
+  } else {
+    Function strategy = _loadValueStrategyMap[encoding];
+    if (strategy != null) {
+      result = strategy(ptr, auto);
+    } else {
+      String structEncoding = encoding.encodingForStruct;
+      if (structEncoding == null) {
+        result = ptr;
+      } else {
+        // ptr is struct pointer
+        result = loadStructFromPointer(ptr, structEncoding);
+      }
+    }
+  }
+  return result;
 }
 
 String structNameForEncoding(String encoding) {
@@ -293,19 +334,6 @@ NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {
   }
   return result..wrapper;
 }
-
-String convertEncode(Pointer<Utf8> ptr) {
-  if (_encodeCache.containsKey(ptr)) {
-    return _encodeCache[ptr];
-  }
-  String result = Utf8.fromUtf8(ptr);
-  if (!result.startsWith('{')) {
-    _encodeCache[ptr] = result;
-  }
-  return result;
-}
-
-Map<Pointer<Utf8>, String> _encodeCache = {};
 
 Map<String, String> _nativeTypeNameMap = {
   'unsigned_char': 'unsigned char',
