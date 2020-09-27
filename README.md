@@ -13,7 +13,10 @@ This is the blue part(DartNative Bridge) in the picture below:
 
 ## Requirements
 
-Flutter 1.20.2 (Dart 2.9.1)
+| DartNative Version | Requirements |
+| --- | --- |
+| 0.3.0 | Flutter 1.20.0 (Dart 2.9.1) |
+| 0.2.0 | Flutter 1.12.13 (Dart 2.7) |
 
 ## Getting Started
 
@@ -38,7 +41,6 @@ CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
 print(rect);
 
 ```
-
 Objective-C code:
 
 ```objc
@@ -68,6 +70,16 @@ typedef int(^BarBlock)(NSObject *a);
 - [DartNative Struct](http://yulingtianxia.com/blog/2020/02/24/DartNative-Struct/)
 - [在 Flutter 中玩转 Objective-C Block](http://yulingtianxia.com/blog/2020/03/28/Using-Objective-C-Block-in-Flutter/)
 - [Passing Out Parameter in DartNative](http://yulingtianxia.com/blog/2020/04/25/Passing-Out-Parameter-in-DartNative/)
+
+## Q&A
+
+Q: Failed to lookup symbol (dlsym(RTLD_DEFAULT, InitDartApiDL): symbol not found) on iOS archive.
+
+There are two Workarounds:
+
+1. Use dynamic library: Add `use_frameworks!` in Podfile.
+2. Select Target Runner -> Build Settings -> Strip Style -> change from "All
+Symbols" to "Non-Global Symbols"
 
 ## TODO List
 

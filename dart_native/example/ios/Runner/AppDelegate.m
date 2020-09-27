@@ -7,12 +7,12 @@
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    FlutterViewController* controller = (FlutterViewController*)self.window.rootViewController;
+    FlutterViewController *controller = (FlutterViewController*)self.window.rootViewController;
 
-    FlutterMethodChannel* batteryChannel = [FlutterMethodChannel methodChannelWithName:@"sample.dartnative.com"
+    FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:@"sample.dartnative.com"
                                                                        binaryMessenger:controller.binaryMessenger];
     RuntimeSon *son = [RuntimeSon new];
-    [batteryChannel setMethodCallHandler:^(FlutterMethodCall* call, FlutterResult result) {
+    [channel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
         if ([call.method isEqualToString:@"fooNSString:"]) {
             result([son fooNSString:call.arguments]);
         }
