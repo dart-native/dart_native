@@ -19,13 +19,13 @@ jobs:
           # same with pubspec.yaml
           flutter-version: "1.20.2"
       - run: flutter pub get
-        working-directory: dart_native
+        working-directory: dart_native/example
       - run: flutter analyze --no-pub --no-current-package lib/ test/
-        working-directory: dart_native
+        working-directory: dart_native/example
       - run: flutter test --no-pub test/
-        working-directory: dart_native
+        working-directory: dart_native/example
       - run: flutter build apk
-        working-directory: dart_native
+        working-directory: dart_native/example
       - uses: softprops/action-gh-release@v1
         with:
           files: build/app/outputs/apk/release/app-release.apk

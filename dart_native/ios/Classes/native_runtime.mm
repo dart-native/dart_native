@@ -180,6 +180,12 @@ native_block_invoke(void *block, void **args) {
 // Use pointer as key of encoding string cache (on dart side).
 static const char *typeList[18] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool"};
 
+const char **
+native_all_type_encodings() {
+    return typeList;
+}
+
+
 #define SINT(type) do { \
     if (str[0] == @encode(type)[0]) \
     { \
@@ -369,6 +375,14 @@ native_mark_autoreleasereturn_object(id object) {
     [NSThread.currentThread dn_performWaitingUntilDone:YES block:^{
         NSThread.currentThread.threadDictionary[@(address)] = object;
     }];
+}
+
+const void *
+native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length) {
+    NSData *data = [string dataUsingEncoding:NSUTF16StringEncoding];
+    // UTF16, 2-byte per unit
+    *length = data.length / 2;
+    return data.bytes;
 }
 
 #pragma mark Dart VM API Init

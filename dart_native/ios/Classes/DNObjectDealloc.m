@@ -18,14 +18,14 @@
 #endif
 
 #if OBJC_MSB_TAGGED_POINTERS
-#   define _OBJC_TAG_MASK (1ULL<<63)
+#   define _OBJC_TAG_MASK (1UL<<63)
 #else
-#   define _OBJC_TAG_MASK 1
+#   define _OBJC_TAG_MASK 1UL
 #endif
 
 static inline bool
 _objc_isTaggedPointer(const void *ptr) {
-    return ((intptr_t)ptr & _OBJC_TAG_MASK) == _OBJC_TAG_MASK;
+    return ((uintptr_t)ptr & _OBJC_TAG_MASK) == _OBJC_TAG_MASK;
 }
 
 @interface DNObjectDealloc ()

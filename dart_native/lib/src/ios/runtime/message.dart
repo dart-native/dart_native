@@ -63,6 +63,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
   if (signaturePtr == null) {
     signaturePtr = nativeMethodSignature(isaPtr, selectorPtr);
     if (signaturePtr.address == 0) {
+      free(typeEncodingsPtrPtr);
       throw 'signature for [$target $selector] is NULL.';
     }
     cache[selector] = signaturePtr;
@@ -83,8 +84,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
       }
       Pointer<Utf8> argTypePtr =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
-      String typeEncodings = convertEncode(argTypePtr);
-      storeValueToPointer(arg, pointers.elementAt(i), typeEncodings, auto);
+      storeValueToPointer(arg, pointers.elementAt(i), argTypePtr, auto);
     }
   }
 
@@ -97,14 +97,14 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
 
   if (decodeRetVal) {
     Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);
-    String typeEncodings = convertEncode(resultTypePtr);
     free(typeEncodingsPtrPtr);
 
-    dynamic result = loadValueFromPointer(resultPtr, typeEncodings, auto);
+    dynamic result = loadValueFromPointer(resultPtr, resultTypePtr, auto);
 
     outRefArgs.forEach((ref) => ref.syncValue());
     return result;
   } else {
+    free(typeEncodingsPtrPtr);
     return resultPtr;
   }
 }

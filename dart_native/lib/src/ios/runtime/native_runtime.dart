@@ -65,6 +65,11 @@ typedef MethodIMPCallbackC = Void Function(
     Pointer<Pointer<Utf8>> types,
     Int32 stret);
 
+typedef AllTypeEncodings = Pointer<Pointer<Utf8>> Function();
+final AllTypeEncodings nativeAllTypeEncodings =
+    runtimeLib.lookupFunction<AllTypeEncodings, AllTypeEncodings>(
+        'native_all_type_encodings');
+
 typedef TypeEncodingC = Pointer<Utf8> Function(Pointer<Utf8> str);
 typedef TypeEncodingD = Pointer<Utf8> Function(Pointer<Utf8> str);
 final TypeEncodingD nativeTypeEncoding = runtimeLib
@@ -100,3 +105,9 @@ final void Function(Pointer<Void>) markAutoreleasereturnObject = nativeDylib
     .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
         'native_mark_autoreleasereturn_object')
     .asFunction();
+
+typedef ConvertNSStringToUTF16 = Pointer<Void> Function(
+    Pointer<Void>, Pointer<Uint64>);
+final ConvertNSStringToUTF16 convertNSStringToUTF16 =
+    nativeDylib.lookupFunction<ConvertNSStringToUTF16, ConvertNSStringToUTF16>(
+        'native_convert_nsstring_to_utf16');

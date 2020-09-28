@@ -41,6 +41,9 @@ native_block_create(char *types, void *callback);
 DN_EXTERN void *
 native_block_invoke(void *block, void * _Nonnull * _Nullable args);
 
+DN_EXTERN const char * _Nonnull * _Nonnull
+native_all_type_encodings(void);
+
 DN_EXTERN const char *
 native_type_encoding(const char *str);
 
@@ -61,6 +64,9 @@ _dispatch_get_main_queue(void);
 
 DN_EXTERN void
 native_mark_autoreleasereturn_object(id object);
+
+DN_EXTERN const void *
+native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length);
 
 #pragma mark - Dart VM API
 
