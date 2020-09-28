@@ -1,6 +1,11 @@
+## 0.3.4
+
+* Performance optimization for iOS `NSString`.
+* Fix bugs. 
+
 ## 0.3.3
 
-* Fix bug for NSDictionary.
+* Fix bug for `NSDictionary`.
 
 ## 0.3.2
 
