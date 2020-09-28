@@ -63,6 +63,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
   if (signaturePtr == null) {
     signaturePtr = nativeMethodSignature(isaPtr, selectorPtr);
     if (signaturePtr.address == 0) {
+      free(typeEncodingsPtrPtr);
       throw 'signature for [$target $selector] is NULL.';
     }
     cache[selector] = signaturePtr;
@@ -103,6 +104,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
     outRefArgs.forEach((ref) => ref.syncValue());
     return result;
   } else {
+    free(typeEncodingsPtrPtr);
     return resultPtr;
   }
 }
