@@ -1,20 +1,55 @@
-language: dart
+jobs:
+  include:
+    - os: linux
+      language: android
+      android:
+        components:
+          - tools
+          - platform-tools
+          - build-tools-25.0.3
+          - android-25
+          - sys-img-armeabi-v7a-google_apis-25
+          - extra-android-m2repository
+          - extra-google-m2repository
+          - extra-google-android-support
+      jdk: oraclejdk8
+      addons:
+        apt:
+          # Flutter depends on /usr/lib/x86_64-linux-gnu/libstdc++.so.6 version GLIBCXX_3.4.18
+          sources:
+            - ubuntu-toolchain-r-test # if we don't specify this, the libstdc++6 we get is the wrong version
+          packages:
+            - libstdc++6
+            - fonts-droid
+      before_install: cd dart_native/example
+      before_script:
+        - wget https://services.gradle.org/distributions/gradle-3.5-bin.zip
+        - unzip -qq gradle-3.5-bin.zip
+        - export GRADLE_HOME=$PWD/gradle-3.5
+        - export PATH=$GRADLE_HOME/bin:$PATH
+        - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+        - export PATH=./flutter/bin:$PATH
+        - flutter doctor
+        - yes | sdkmanager "platforms;android-29"
+        - yes | sdkmanager "build-tools;28.0.3"
+      script:
+        - flutter -v build apk
 
-dart:
-  - stable
-  - dev
-
-before_install: cd dart_native
-
-install:
-  - git clone https://github.com/flutter/flutter.git -b stable --depth 1
-  - export PATH=./flutter/bin:$PATH
-  - flutter doctor
-
-script:
-  - flutter packages get
-  - flutter test --no-pub test/
+    - os: osx
+      language: generic
+      osx_image: xcode12
+      before_install: cd dart_native/example
+      before_script:
+        - brew update
+        - brew install --HEAD libimobiledevice
+        - brew install ideviceinstaller
+        - brew install ios-deploy
+        - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+        - export PATH=./flutter/bin:$PATH
+        - flutter doctor
+      script:
+        - flutter -v build ios --no-codesign
 
 cache:
   directories:
-    - "$HOME/.pub-cache"
+    - $HOME/.pub-cache
