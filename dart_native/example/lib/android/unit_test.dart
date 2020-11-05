@@ -40,7 +40,6 @@ testAndroid(RuntimeStub stub) {
   Entity entity = stub.createEntity();
   print('entity get time : ${entity.getCurrentTime()}');
   print('stub get time : ${stub.getTime(entity)}');
-  entity.release();
 
   print('new entity get time : ${stub.getTime(new Entity())}');
 }

@@ -12,13 +12,6 @@ final Pointer<Void> Function(Pointer<Utf8>) nativeCreateClass = nativeDylib
         "createTargetClass")
     .asFunction();
 
-/// release class
-/// objectPtr: 对象指针
-final void Function(Pointer<Void> objectPtr) nativeReleaseClass = nativeDylib
-    .lookup<NativeFunction<Void Function(Pointer<Void> objectPtr)>>(
-    "releaseTargetClass")
-    .asFunction();
-
 /// 调用native方法
 ///
 /// @param:
@@ -40,4 +33,9 @@ nativeInvokeNeo = nativeDylib
             Pointer<Pointer<Void>> argsPtrs,
             Pointer<Pointer<Utf8>> typePtrs,
             Pointer<Utf8> returnType)>>("invokeNativeMethodNeo")
+    .asFunction();
+
+final void Function(Object, Pointer<Void>) passJObjectToC = nativeDylib
+    .lookup<NativeFunction<Void Function(Handle, Pointer<Void>)>>(
+    "PassObjectToCUseDynamicLinking")
     .asFunction();
