@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <regex>
+#include <dart_api_dl.h>
 
 extern "C" {
 
@@ -246,6 +247,10 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
         gJvm->DetachCurrentThread();
     }
     return nativeInvokeResult;
+}
+
+intptr_t InitDartApiDL(void *data, Dart_Port port) {
+    return Dart_InitializeApiDL(data);
 }
 
 }

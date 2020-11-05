@@ -19,6 +19,7 @@ add_library( # Specifies the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
+             src/main/jni/include/dart_api_dl.c
              src/main/jni/dart_native.cpp )
 
     find_library( # Sets the name of the path variable.
@@ -34,3 +35,5 @@ add_library( # Specifies the name of the library.
             # Links the target library to the log library
             # included in the NDK.
             ${log-lib} )
+
+    include_directories(src/main/jni/include)
