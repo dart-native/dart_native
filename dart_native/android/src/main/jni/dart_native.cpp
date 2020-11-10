@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <regex>
+#include <dart_api_dl.h>
 
 extern "C" {
 
@@ -53,8 +54,8 @@ jclass findClass(JNIEnv *env, const char *name) {
                                                      env->NewStringUTF(name)));
 }
 
-// todo 泄漏
 static std::map<jobject, jclass> cache;
+static std::map<jobject, int> referenceCount;
 
 void *createTargetClass(char *targetClassName) {
     JNIEnv *curEnv;
@@ -99,6 +100,27 @@ void releaseTargetClass(void *classPtr) {
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
+}
+
+void retain(void *classPtr) {
+    jobject object = static_cast<jobject>(classPtr);
+    int refCount = referenceCount[object] == NULL ? 1 : referenceCount[object] + 1;
+    referenceCount[object] = refCount;
+}
+
+void release(void *classPtr) {
+    jobject object = static_cast<jobject>(classPtr);
+    if (referenceCount[object] == NULL) {
+        NSLog("not contain object");
+        return;
+    }
+    int count = referenceCount[object];
+    if (count <= 1) {
+        releaseTargetClass(classPtr);
+        referenceCount[object] = NULL;
+        return;
+    }
+    referenceCount[object] = count - 1;
 }
 
 char *findReturnType(JNIEnv *curEnv, jclass cls, jobject object, char* methondName, char **argType) {
@@ -246,6 +268,27 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
         gJvm->DetachCurrentThread();
     }
     return nativeInvokeResult;
+}
+
+intptr_t InitDartApiDL(void *data, Dart_Port port) {
+    return Dart_InitializeApiDL(data);
+}
+
+static void RunFinalizer(void *isolate_callback_data,
+                         Dart_WeakPersistentHandle handle,
+                         void *peer) {
+    NSLog("finalizer");
+    release(peer);
+}
+
+void PassObjectToCUseDynamicLinking(Dart_Handle h, void *classPtr) {
+    if (Dart_IsError_DL(h)) {
+        return;
+    }
+    NSLog("retain");
+    retain(classPtr);
+    intptr_t size = 8;
+    Dart_NewWeakPersistentHandle_DL(h, classPtr, size, RunFinalizer);
 }
 
 }
