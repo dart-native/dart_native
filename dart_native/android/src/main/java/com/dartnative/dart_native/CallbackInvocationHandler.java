@@ -13,8 +13,13 @@ public class CallbackInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Log.d(TAG, "method: " + method.getName());
-
-        return null;
+        Log.d(TAG, "method: " + method.toGenericString());
+        Object dartObject = CallbackManager.getInstance().getRegisterObject(proxy);
+        if (dartObject != null) {
+            hookCallback(dartObject);
+        }
+        return proxy;
     }
+
+    static native void hookCallback(Object dartObject);
 }

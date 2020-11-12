@@ -289,13 +289,14 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
     }
 
     jclass callbackManager = findClass(curEnv, "com/dartnative/dart_native/CallbackManager");
-    jmethodID registerCallback = curEnv->GetStaticMethodID(callbackManager, "registerCallback", "(Ljava/lang/String;)Ljava/lang/Object;");
-    jvalue *argValues = new jvalue[1];
-    argValues[0].l = curEnv->NewStringUTF(targetName);
+    jmethodID registerCallback = curEnv->GetStaticMethodID(callbackManager, "registerCallback", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
+    jvalue *argValues = new jvalue[2];
+    argValues[0].l = static_cast<jobject>(target);
+    argValues[1].l = curEnv->NewStringUTF(targetName);
     jobject callbackOJ = curEnv->CallStaticObjectMethodA(callbackManager, registerCallback, argValues);
     callbackCache[target] = curEnv->NewGlobalRef(callbackOJ);
     curEnv->DeleteLocalRef(callbackManager);
-
+    free(argValues);
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
@@ -344,9 +345,9 @@ void ExecuteCallback(Work* work_ptr) {
     delete work_ptr;
 }
 
-JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackManager_hookCallback(JNIEnv *env,
-                                                                                     jclass clazz,
-                                                                                     jobject oj) {
+JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
+                                                                                               jclass clazz,
+                                                                                               jobject dartObject) {
     NSLog("call back from native");
 }
 
