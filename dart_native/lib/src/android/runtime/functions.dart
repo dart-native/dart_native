@@ -4,9 +4,8 @@ import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
 typedef MethodNativeCallback = Void Function(
-    Pointer<Void> targetPtr,
-    Pointer<Utf8> funNamePtr,
-    Pointer<Pointer<Void>> argsPtr);
+    Pointer<Utf8> test
+    );
 
 ///==============================================
 /// 创建native class

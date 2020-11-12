@@ -8,13 +8,6 @@
 #include <regex>
 #include <dart_api_dl.h>
 
-class MethodNativeCallback
-{
-    public:
-        jclass clz;
-        jobject oj;
-};
-
 extern "C" {
 
 #define NSLog(...)  __android_log_print(ANDROID_LOG_DEBUG,"Native",__VA_ARGS__)
@@ -277,8 +270,11 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     return nativeInvokeResult;
 }
 
+typedef void (*NativeMethodCallback)(char* test);
+
+NativeMethodCallback nativeCallback;
+
 void registerNativeCallback(void *target, char* targetName, char *funName, void *callback) {
-    NSLog("funname %s", funName);
     JNIEnv *curEnv;
     bool bShouldDetach = false;
     auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
@@ -287,6 +283,8 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
         bShouldDetach = true;
         NSLog("AttachCurrentThread : %d", error);
     }
+
+    nativeCallback = (NativeMethodCallback)callback;
 
     jclass callbackManager = findClass(curEnv, "com/dartnative/dart_native/CallbackManager");
     jmethodID registerCallback = curEnv->GetStaticMethodID(callbackManager, "registerCallback", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
@@ -303,7 +301,10 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
 }
 
 // Dart extensions
+Dart_Port native_callback_send_port;
+
 intptr_t InitDartApiDL(void *data, Dart_Port port) {
+    native_callback_send_port = port;
     return Dart_InitializeApiDL(data);
 }
 
@@ -340,6 +341,7 @@ void NotifyDart(Dart_Port send_port, const Work* work) {
 }
 
 void ExecuteCallback(Work* work_ptr) {
+    NSLog("ExecuteCallback");
     const Work work = *work_ptr;
     work();
     delete work_ptr;
@@ -349,6 +351,12 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
                                                                                                jclass clazz,
                                                                                                jobject dartObject) {
     NSLog("call back from native");
+    const Work work = []() {
+        NSLog("call work");
+        nativeCallback(const_cast<char *>("1"));
+    };
+    const Work* work_ptr = new Work(work);
+    NotifyDart(native_callback_send_port, work_ptr);
 }
 
 }

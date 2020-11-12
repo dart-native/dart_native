@@ -20,21 +20,14 @@ void registerCallback(dynamic target, Function function, String functionName) {
 Pointer<NativeFunction<MethodNativeCallback>> _callbackPtr =
   Pointer.fromFunction(_syncCallback);
 
-_callback(
-    Pointer<Void> targetPtr,
-    Pointer<Utf8> funNamePtr,
-    Pointer<Pointer<Void>> argsPtr
-    ) {
-  Function function = CallBackManager.instance.getCallbackFunctionOnTarget(targetPtr, funNamePtr);
-
-  dynamic result = Function.apply(function, [1]);
-  print("function result: $result");
+_callback() {
+//  Function function = CallBackManager.instance.getCallbackFunctionOnTarget(targetPtr, funNamePtr);
+//
+//  dynamic result = Function.apply(function, [1]);
+  print("function result: ");
 }
 
-void _syncCallback(
-    Pointer<Void> targetPtr,
-    Pointer<Utf8> funNamePtr,
-    Pointer<Pointer<Void>> argsPtr
-    ) {
-  _callback(targetPtr, funNamePtr, argsPtr);
+void _syncCallback(Pointer<Utf8> test) {
+//  _callback(targetPtr);
+  print("function result: $test");
 }
