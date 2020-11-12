@@ -3,6 +3,17 @@ import 'dart:ffi';
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/entity.dart';
 
+abstract class SampleDelegate {
+  registerSampleDelegate() {
+    registerCallback(this, callbackInt, 'callbackInt');
+//    registerCallback(this, callbackFloat, 'callbackFloat');
+//    registerCallback(this, callbackString, 'callbackString');
+  }
+  callbackInt(int i);
+  callbackFloat(float f);
+  callbackString(String s);
+}
+
 class RuntimeStub extends JObject {
   RuntimeStub([Pointer ptr]) : super("com/dartnative/dart_native_example/RuntimeStub", ptr);
 
@@ -60,5 +71,9 @@ class RuntimeStub extends JObject {
 
   int getTime(Entity entity) {
     return invoke('getTime', [entity], "I");
+  }
+
+  void setDelegateListener(SampleDelegate delegate) {
+    invoke('setDelegateListener', [delegate], "V");
   }
 }

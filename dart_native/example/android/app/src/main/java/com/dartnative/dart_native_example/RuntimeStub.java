@@ -1,5 +1,10 @@
 package com.dartnative.dart_native_example;
 
+import android.os.Handler;
+import android.os.Looper;
+
+import com.dartnative.dart_native.CallbackManager;
+
 import io.flutter.Log;
 
 public class RuntimeStub {
@@ -70,5 +75,16 @@ public class RuntimeStub {
 
   public int getTime(Entity entity) {
     return entity.getCurrentTime();
+  }
+
+  public void setDelegateListener(SampleDelegate delegate) {
+    Log.d(TAG, "invoke setDelegateListener");
+    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+      Log.d(TAG, "time to callback");
+      if (delegate != null) {
+        Log.d(TAG, "time to instance");
+        delegate.callbackInt(10);
+      }
+    }, 2000);
   }
 }

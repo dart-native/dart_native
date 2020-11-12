@@ -8,6 +8,13 @@
 #include <regex>
 #include <dart_api_dl.h>
 
+class MethodNativeCallback
+{
+    public:
+        jclass clz;
+        jobject oj;
+};
+
 extern "C" {
 
 #define NSLog(...)  __android_log_print(ANDROID_LOG_DEBUG,"Native",__VA_ARGS__)
@@ -56,6 +63,7 @@ jclass findClass(JNIEnv *env, const char *name) {
 
 static std::map<jobject, jclass> cache;
 static std::map<jobject, int> referenceCount;
+static std::map<void *, jobject> callbackCache;
 
 void *createTargetClass(char *targetClassName) {
     JNIEnv *curEnv;
@@ -123,16 +131,6 @@ void release(void *classPtr) {
     referenceCount[object] = count - 1;
 }
 
-char *findReturnType(JNIEnv *curEnv, jclass cls, jobject object, char* methondName, char **argType) {
-    jclass nativeClass = curEnv->FindClass("com/dartnative/dart_native/DartNative");
-    jmethodID nativeMethodID = curEnv->GetStaticMethodID(nativeClass,
-            "getMethodReturnType", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/String;)Ljava/lang/String;");
-
-//    jobjectArray stringArray = new jobjectArray()
-
-//    curEnv->CallStaticObjectMethodA(nativeClass, nativeMethodID, argType);
-}
-
 char *spliceChar(char *dest, char *src) {
     char *result = (char *)malloc(strlen(dest) + strlen(src));
     strcpy(result, dest);
@@ -157,7 +155,16 @@ void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
                 argValues[index].l = curEnv->NewStringUTF((char *)*args);
             }
             else {
-                jobject object = static_cast<jobject>(*args);
+                jobject object;
+                if (callbackCache.count(*args)) {
+                    NSLog("HUIZZ cache has register");
+                    object = callbackCache[*args];
+                } else {
+                    object = static_cast<jobject>(*args);
+                }
+                if (object == NULL) {
+                    NSLog("HUIZZ oj is null");
+                }
                 argValues[index].l = object;
             }
         }
@@ -270,6 +277,31 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     return nativeInvokeResult;
 }
 
+void registerNativeCallback(void *target, char* targetName, char *funName, void *callback) {
+    NSLog("funname %s", funName);
+    JNIEnv *curEnv;
+    bool bShouldDetach = false;
+    auto error = gJvm->GetEnv((void **) &curEnv, JNI_VERSION_1_6);
+    if (error < 0) {
+        error = gJvm->AttachCurrentThread(&curEnv, nullptr);
+        bShouldDetach = true;
+        NSLog("AttachCurrentThread : %d", error);
+    }
+
+    jclass callbackManager = findClass(curEnv, "com/dartnative/dart_native/CallbackManager");
+    jmethodID registerCallback = curEnv->GetStaticMethodID(callbackManager, "registerCallback", "(Ljava/lang/String;)Ljava/lang/Object;");
+    jvalue *argValues = new jvalue[1];
+    argValues[0].l = curEnv->NewStringUTF(targetName);
+    jobject callbackOJ = curEnv->CallStaticObjectMethodA(callbackManager, registerCallback, argValues);
+    callbackCache[target] = curEnv->NewGlobalRef(callbackOJ);
+    curEnv->DeleteLocalRef(callbackManager);
+
+    if (bShouldDetach) {
+        gJvm->DetachCurrentThread();
+    }
+}
+
+// Dart extensions
 intptr_t InitDartApiDL(void *data, Dart_Port port) {
     return Dart_InitializeApiDL(data);
 }
@@ -289,6 +321,33 @@ void PassObjectToCUseDynamicLinking(Dart_Handle h, void *classPtr) {
     retain(classPtr);
     intptr_t size = 8;
     Dart_NewWeakPersistentHandle_DL(h, classPtr, size, RunFinalizer);
+}
+
+typedef std::function<void()> Work;
+
+void NotifyDart(Dart_Port send_port, const Work* work) {
+    const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
+
+    Dart_CObject dart_object;
+    dart_object.type = Dart_CObject_kInt64;
+    dart_object.value.as_int64 = work_addr;
+
+    const bool result = Dart_PostCObject_DL(send_port, &dart_object);
+    if (!result) {
+        NSLog("Native callback to Dart failed! Invalid port or isolate died");
+    }
+}
+
+void ExecuteCallback(Work* work_ptr) {
+    const Work work = *work_ptr;
+    work();
+    delete work_ptr;
+}
+
+JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackManager_hookCallback(JNIEnv *env,
+                                                                                     jclass clazz,
+                                                                                     jobject oj) {
+    NSLog("call back from native");
 }
 
 }
