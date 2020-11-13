@@ -15,7 +15,7 @@ public class CallbackManager {
     private static CallbackManager sCallbackManager;
 
     private CallbackInvocationHandler mCallbackHandler = new CallbackInvocationHandler();
-    private HashMap<Integer, Object> mObjectMap = new HashMap<>();
+    private HashMap<Integer, Long> mObjectMap = new HashMap<>();
 
     static CallbackManager getInstance() {
         if (sCallbackManager == null) {
@@ -29,7 +29,7 @@ public class CallbackManager {
     }
 
     @Nullable
-    public static Object registerCallback(Object dartObject, String clsName) {
+    public static Object registerCallback(long dartAddr, String clsName) {
         try {
             Class<?> clz = Class.forName(clsName.replace("/", "."));
             Object proxyObject = Proxy.newProxyInstance(
@@ -37,7 +37,7 @@ public class CallbackManager {
                     new Class[] { clz },
                     getInstance().mCallbackHandler);
 
-            getInstance().mObjectMap.put(System.identityHashCode(proxyObject), dartObject);
+            getInstance().mObjectMap.put(System.identityHashCode(proxyObject), dartAddr);
             return proxyObject;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -45,13 +45,13 @@ public class CallbackManager {
         return null;
     }
 
-    @Nullable
-    Object getRegisterObject(Object proxyObject) {
+    long getRegisterDartAddr(Object proxyObject) {
         if (proxyObject == null) {
-            return null;
+            return 0L;
         }
 
-        return getInstance().mObjectMap.get(System.identityHashCode(proxyObject));
+        Long dartAddress = getInstance().mObjectMap.get(System.identityHashCode(proxyObject));
+        return dartAddress == null ? 0L : dartAddress;
     }
 
 }

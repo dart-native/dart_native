@@ -54,9 +54,12 @@ jclass findClass(JNIEnv *env, const char *name) {
                                                      env->NewStringUTF(name)));
 }
 
+typedef void (*NativeMethodCallback)(char* test);
+
 static std::map<jobject, jclass> cache;
 static std::map<jobject, int> referenceCount;
 static std::map<void *, jobject> callbackCache;
+static std::map<jlong, NativeMethodCallback> methodCache;
 
 void *createTargetClass(char *targetClassName) {
     JNIEnv *curEnv;
@@ -148,16 +151,7 @@ void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
                 argValues[index].l = curEnv->NewStringUTF((char *)*args);
             }
             else {
-                jobject object;
-                if (callbackCache.count(*args)) {
-                    NSLog("HUIZZ cache has register");
-                    object = callbackCache[*args];
-                } else {
-                    object = static_cast<jobject>(*args);
-                }
-                if (object == NULL) {
-                    NSLog("HUIZZ oj is null");
-                }
+                jobject object = callbackCache.count(*args) ? callbackCache[*args] : static_cast<jobject>(*args);
                 argValues[index].l = object;
             }
         }
@@ -270,10 +264,6 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     return nativeInvokeResult;
 }
 
-typedef void (*NativeMethodCallback)(char* test);
-
-NativeMethodCallback nativeCallback;
-
 void registerNativeCallback(void *target, char* targetName, char *funName, void *callback) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
@@ -284,15 +274,15 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
         NSLog("AttachCurrentThread : %d", error);
     }
 
-    nativeCallback = (NativeMethodCallback)callback;
-
     jclass callbackManager = findClass(curEnv, "com/dartnative/dart_native/CallbackManager");
-    jmethodID registerCallback = curEnv->GetStaticMethodID(callbackManager, "registerCallback", "(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;");
+    jmethodID registerCallback = curEnv->GetStaticMethodID(callbackManager, "registerCallback", "(JLjava/lang/String;)Ljava/lang/Object;");
+    jlong target_addr = (jlong)target;
     jvalue *argValues = new jvalue[2];
-    argValues[0].l = static_cast<jobject>(target);
+    argValues[0].j = target_addr;
     argValues[1].l = curEnv->NewStringUTF(targetName);
-    jobject callbackOJ = curEnv->CallStaticObjectMethodA(callbackManager, registerCallback, argValues);
-    callbackCache[target] = curEnv->NewGlobalRef(callbackOJ);
+    jobject callbackOJ = curEnv->NewGlobalRef(curEnv->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
+    callbackCache[target] = callbackOJ;
+    methodCache[target_addr] = (NativeMethodCallback) callback;
     curEnv->DeleteLocalRef(callbackManager);
     free(argValues);
     if (bShouldDetach) {
@@ -341,7 +331,6 @@ void NotifyDart(Dart_Port send_port, const Work* work) {
 }
 
 void ExecuteCallback(Work* work_ptr) {
-    NSLog("ExecuteCallback");
     const Work work = *work_ptr;
     work();
     delete work_ptr;
@@ -349,11 +338,14 @@ void ExecuteCallback(Work* work_ptr) {
 
 JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
                                                                                                jclass clazz,
-                                                                                               jobject dartObject) {
-    NSLog("call back from native");
-    const Work work = []() {
-        NSLog("call work");
-        nativeCallback(const_cast<char *>("1"));
+                                                                                               jlong dartObject,
+                                                                                               jstring fun_name,
+                                                                                               jobjectArray args) {
+    const Work work = [dartObject]() {
+        NativeMethodCallback methodCallback = methodCache[dartObject];
+        if (methodCallback != NULL) {
+            methodCallback(const_cast<char *>("1"));
+        }
     };
     const Work* work_ptr = new Work(work);
     NotifyDart(native_callback_send_port, work_ptr);
