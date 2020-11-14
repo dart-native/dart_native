@@ -4,7 +4,11 @@ import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
 typedef MethodNativeCallback = Void Function(
-    Pointer<Utf8> test
+    Pointer<Void> targetPtr,
+    Pointer<Utf8> funNamePtr,
+    Pointer<Pointer<Void>> argsPtrPtr,
+    Pointer<Pointer<Utf8>> argTypesPtrPtr,
+    Int32 argCount
     );
 
 ///==============================================

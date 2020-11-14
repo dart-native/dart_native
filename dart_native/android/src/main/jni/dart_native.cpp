@@ -54,12 +54,20 @@ jclass findClass(JNIEnv *env, const char *name) {
                                                      env->NewStringUTF(name)));
 }
 
-typedef void (*NativeMethodCallback)(char* test);
+typedef void (*NativeMethodCallback)(
+        void *targetPtr,
+        char *funNamePtr,
+        void **args,
+        char **argTypes,
+        int argCount
+        );
 
 static std::map<jobject, jclass> cache;
 static std::map<jobject, int> referenceCount;
 static std::map<void *, jobject> callbackCache;
 static std::map<jlong, NativeMethodCallback> methodCache;
+static std::map<jlong, void *> targetCache;
+static std::map<jlong, char *> funNameCache;
 
 void *createTargetClass(char *targetClassName) {
     JNIEnv *curEnv;
@@ -283,6 +291,8 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
     jobject callbackOJ = curEnv->NewGlobalRef(curEnv->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
     callbackCache[target] = callbackOJ;
     methodCache[target_addr] = (NativeMethodCallback) callback;
+    targetCache[target_addr] = target;
+    funNameCache[target_addr] = funName;
     curEnv->DeleteLocalRef(callbackManager);
     free(argValues);
     if (bShouldDetach) {
@@ -340,11 +350,52 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
                                                                                                jclass clazz,
                                                                                                jlong dartObject,
                                                                                                jstring fun_name,
+                                                                                               jint arg_count,
+                                                                                               jobjectArray arg_types,
                                                                                                jobjectArray args) {
-    const Work work = [dartObject]() {
+    jsize argTypeLength = env->GetArrayLength(arg_types);
+    char **argTypes = new char *[argTypeLength];
+    void **arguments = new void *[argTypeLength];
+    //todo 二级指针赋值失败
+    for (int i = 0; i < argTypeLength; ++i) {
+        jobject argType = env->GetObjectArrayElement(arg_types, i);
+        jobject argument = env->GetObjectArrayElement(args, i);
+
+        jstring argTypeString = (jstring) argType;
+        *argTypes = (char *) env->GetStringUTFChars(argTypeString, 0);
+        env->DeleteLocalRef(argTypeString);
+        //todo optimization
+//        if(strcmp(typeChar, "I") == 0) {
+//            jclass cls = env->FindClass("java/lang/Integer");
+//            if (env->IsInstanceOf(argument, cls) == JNI_TRUE) {
+//                jmethodID integerToInt = env->GetMethodID(cls, reinterpret_cast<const char *>('intValue'), "()I");
+////                jint result = env->CallIntMethod(argument, integerToInt);
+////                NSLog("rsult %d", result);
+////                *arguments = (void *) result;
+//            }
+//            env->DeleteLocalRef(cls);
+//        }
+//        else if (strcmp(typeChar, "F") == 0) {
+//
+//        }
+//        else
+            if (strcmp(*argTypes, "Ljava/lang/String;") == 0) {
+            jstring argString = (jstring) argument;
+            *arguments = (char *) env->GetStringUTFChars(argString, 0);
+            env->DeleteLocalRef(argString);
+        }
+
+        if (i != argTypeLength - 1) {
+            ++argTypes;
+            ++arguments;
+        }
+    }
+    const Work work = [dartObject, argTypes, arguments, arg_count]() {
         NativeMethodCallback methodCallback = methodCache[dartObject];
-        if (methodCallback != NULL) {
-            methodCallback(const_cast<char *>("1"));
+        void *target = targetCache[dartObject];
+        char *funName = funNameCache[dartObject];
+        if (methodCallback != NULL && target != nullptr) {
+            methodCallback(target, funName, arguments, argTypes, arg_count);
         }
     };
     const Work* work_ptr = new Work(work);

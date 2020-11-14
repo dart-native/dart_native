@@ -81,7 +81,7 @@ public class RuntimeStub {
     Log.d(TAG, "invoke setDelegateListener");
     new Handler(Looper.getMainLooper()).postDelayed(() -> {
       Log.d(TAG, "time to callback");
-      delegate.callbackInt(10);
+      delegate.callbackInt("hahahhah");
     }, 2000);
   }
 }
