@@ -6,12 +6,14 @@ import 'package:dart_native_example/android/entity.dart';
 abstract class SampleDelegate {
   registerSampleDelegate() {
     registerCallback(this, callbackInt, 'callbackInt');
-//    registerCallback(this, callbackFloat, 'callbackFloat');
+    registerCallback(this, callbackFloat, 'callbackFloat');
     registerCallback(this, callbackString, 'callbackString');
+    registerCallback(this, callbackDouble, 'callbackDouble');
   }
-  callbackInt(String i);
-  callbackFloat(float f);
+  callbackInt(int i);
+  callbackFloat(double f);
   callbackString(String s);
+  callbackDouble(double d);
 }
 
 class RuntimeStub extends JObject {

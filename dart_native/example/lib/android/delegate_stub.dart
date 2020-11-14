@@ -10,17 +10,22 @@ class DelegateStub extends JObject with SampleDelegate {
   }
 
   @override
-  callbackFloat(float f) {
+  callbackFloat(double f) {
     print("callback from native $f");
   }
 
   @override
-  callbackInt(String i) {
+  callbackInt(int i) {
     print("callbackInt from native $i");
   }
 
   @override
   callbackString(String s) {
     print("callbackString from native $s");
+  }
+
+  @override
+  callbackDouble(double d) {
+    print("callbackDouble from native $d");
   }
 }
