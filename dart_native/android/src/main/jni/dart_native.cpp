@@ -7,6 +7,7 @@
 #include <string>
 #include <regex>
 #include <dart_api_dl.h>
+#include <semaphore.h>
 
 extern "C" {
 
@@ -64,10 +65,12 @@ typedef void (*NativeMethodCallback)(
 
 static std::map<jobject, jclass> cache;
 static std::map<jobject, int> referenceCount;
-static std::map<void *, jobject> callbackCache;
-static std::map<jlong, NativeMethodCallback> methodCache;
+
+// todo too many cache
+// for callback
+static std::map<void *, jobject> callbackObjCache;
+static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackManagerCache;
 static std::map<jlong, void *> targetCache;
-static std::map<jlong, char *> funNameCache;
 
 void *createTargetClass(char *targetClassName) {
     JNIEnv *curEnv;
@@ -159,7 +162,7 @@ void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
                 argValues[index].l = curEnv->NewStringUTF((char *)*args);
             }
             else {
-                jobject object = callbackCache.count(*args) ? callbackCache[*args] : static_cast<jobject>(*args);
+                jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
                 argValues[index].l = object;
             }
         }
@@ -272,6 +275,28 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     return nativeInvokeResult;
 }
 
+void registerCallbackManager(jlong targetAddr, char *functionName, void *callback) {
+    std::map<std::string, NativeMethodCallback> methodsMap;
+    if (!callbackManagerCache.count(targetAddr)) {
+        methodsMap[functionName] = (NativeMethodCallback) callback;
+        callbackManagerCache[targetAddr] = methodsMap;
+        return;
+    }
+
+    methodsMap = callbackManagerCache[targetAddr];
+    methodsMap[functionName] = (NativeMethodCallback) callback;
+    callbackManagerCache[targetAddr] = methodsMap;
+}
+
+NativeMethodCallback getCallbackMethod(jlong targetAddr, char *functionName) {
+    if (!callbackManagerCache.count(targetAddr)) {
+        NSLog("getCallbackMethod error not register %s", functionName);
+        return NULL;
+    }
+    std::map<std::string, NativeMethodCallback> methodsMap = callbackManagerCache[targetAddr];
+    return methodsMap[functionName];
+}
+
 void registerNativeCallback(void *target, char* targetName, char *funName, void *callback) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
@@ -284,15 +309,15 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
 
     jclass callbackManager = findClass(curEnv, "com/dartnative/dart_native/CallbackManager");
     jmethodID registerCallback = curEnv->GetStaticMethodID(callbackManager, "registerCallback", "(JLjava/lang/String;)Ljava/lang/Object;");
-    jlong target_addr = (jlong)target;
+    jlong targetAddr = (jlong)target;
     jvalue *argValues = new jvalue[2];
-    argValues[0].j = target_addr;
+    argValues[0].j = targetAddr;
     argValues[1].l = curEnv->NewStringUTF(targetName);
     jobject callbackOJ = curEnv->NewGlobalRef(curEnv->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
-    callbackCache[target] = callbackOJ;
-    methodCache[target_addr] = (NativeMethodCallback) callback;
-    targetCache[target_addr] = target;
-    funNameCache[target_addr] = funName;
+    callbackObjCache[target] = callbackOJ;
+    targetCache[targetAddr] = target;
+
+    registerCallbackManager(targetAddr, funName, callback);
     curEnv->DeleteLocalRef(callbackManager);
     free(argValues);
     if (bShouldDetach) {
@@ -369,9 +394,9 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
 //            jclass cls = env->FindClass("java/lang/Integer");
 //            if (env->IsInstanceOf(argument, cls) == JNI_TRUE) {
 //                jmethodID integerToInt = env->GetMethodID(cls, reinterpret_cast<const char *>('intValue'), "()I");
-////                jint result = env->CallIntMethod(argument, integerToInt);
-////                NSLog("rsult %d", result);
-////                *arguments = (void *) result;
+//                jint result = env->CallIntMethod(argument, integerToInt);
+//                NSLog("rsult %d", result);
+//                *arguments = (void *) result;
 //            }
 //            env->DeleteLocalRef(cls);
 //        }
@@ -390,13 +415,14 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
             ++arguments;
         }
     }
-    const Work work = [dartObject, argTypes, arguments, arg_count]() {
-        NativeMethodCallback methodCallback = methodCache[dartObject];
+    char *funName = (char *) env->GetStringUTFChars(fun_name, 0);
+    const Work work = [dartObject, argTypes, arguments, arg_count, funName]() {
+        NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
         void *target = targetCache[dartObject];
-        char *funName = funNameCache[dartObject];
         if (methodCallback != NULL && target != nullptr) {
             methodCallback(target, funName, arguments, argTypes, arg_count);
         }
+        return true;
     };
     const Work* work_ptr = new Work(work);
     NotifyDart(native_callback_send_port, work_ptr);

@@ -5,5 +5,6 @@ package com.dartnative.dart_native_example;
  */
 public interface SampleDelegate {
     void callbackInt(String s1);
+    void callbackString(String s);
     boolean callbackComplete(int i, float f, String s);
 }

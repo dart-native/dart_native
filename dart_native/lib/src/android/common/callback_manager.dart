@@ -6,30 +6,30 @@ import 'package:ffi/ffi.dart';
 import 'library.dart';
 
 class CallBackManager {
-  Map<Pointer<Void>, Map<Pointer<Utf8>, Function>> _callbackManager = {};
+  Map<Pointer<Void>, Map<String, Function>> _callbackManager = {};
 
   static final CallBackManager _instance = CallBackManager._internal();
   CallBackManager._internal();
   factory CallBackManager() => _instance;
   static CallBackManager get instance => _instance;
 
-  registerCallBack(Pointer<Void> targetPtr, Pointer<Utf8> funNamePtr, Function function) {
-    Map<Pointer<Utf8>, Function> methodsMap = _callbackManager[targetPtr];
+  registerCallBack(Pointer<Void> targetPtr, String functionName, Function function) {
+    Map<String, Function> methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
-      methodsMap = {funNamePtr : function};
+      methodsMap = {functionName : function};
     } else {
-      methodsMap[funNamePtr] = function;
+      methodsMap[functionName] = function;
     }
     _callbackManager[targetPtr] = methodsMap;
   }
 
   Function getCallbackFunctionOnTarget(
-      Pointer<Void> targetPtr, Pointer<Utf8> funNamePtr) {
-    Map<Pointer<Utf8>, Function> methodsMap = _callbackManager[targetPtr];
+      Pointer<Void> targetPtr, String functionName) {
+    Map<String, Function> methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
       return null;
     }
-    return methodsMap[funNamePtr];
+    return methodsMap[functionName];
   }
 }
 

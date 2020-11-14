@@ -7,7 +7,7 @@ abstract class SampleDelegate {
   registerSampleDelegate() {
     registerCallback(this, callbackInt, 'callbackInt');
 //    registerCallback(this, callbackFloat, 'callbackFloat');
-//    registerCallback(this, callbackString, 'callbackString');
+    registerCallback(this, callbackString, 'callbackString');
   }
   callbackInt(String i);
   callbackFloat(float f);

@@ -16,11 +16,11 @@ class DelegateStub extends JObject with SampleDelegate {
 
   @override
   callbackInt(String i) {
-    print("callback from native $i");
+    print("callbackInt from native $i");
   }
 
   @override
   callbackString(String s) {
-    print("callback from native $s");
+    print("callbackString from native $s");
   }
 }

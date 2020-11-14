@@ -82,6 +82,9 @@ public class RuntimeStub {
     new Handler(Looper.getMainLooper()).postDelayed(() -> {
       Log.d(TAG, "time to callback");
       delegate.callbackInt("hahahhah");
+      new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        delegate.callbackString("wawawawa");
+      }, 3000);
     }, 2000);
   }
 }
