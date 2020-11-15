@@ -21,16 +21,26 @@ final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
 
 Map<int, Block> _blockForAddress = {};
 
+/// A wrapper class for Objective-C Block. [Block] can be used as an argument
+/// to a method and as a callback.
+///
+/// You can create [Block] from Dart [Function], or just obtain [Block] from
+/// native pointer address.
 class Block extends id {
   Function function;
   NSObject _wrapper; // Block hold wrapper
   List<String> types = [];
 
-  /// TODO: This is not working when block is created by function.
+  // TODO: This is not working when block is created by function.
   // set queue(Pointer<Void> queue) {
   //   _wrapper.perform(Selector('setQueue:'), args: [queue]);
   // }
 
+  /// Creating a [Block] from a [Function].
+  ///
+  /// NOTE: The arguments of [function] should be wrapper class which can
+  /// represent native type, such as [unsigned_int] or custom wrapper class with
+  /// the same name.
   factory Block(Function function) {
     List<String> dartTypes = dartTypeStringForFunction(function);
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
