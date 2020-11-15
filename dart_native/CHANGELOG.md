@@ -1,3 +1,8 @@
+## 0.3.5
+
+* [Feature] Object lifecycle management for Android.
+* [Feature] Callback from Android to Flutter.
+
 ## 0.3.4
 
 * Performance optimization for iOS `NSString`.
