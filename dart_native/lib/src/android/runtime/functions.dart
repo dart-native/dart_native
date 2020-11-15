@@ -3,6 +3,14 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
+typedef MethodNativeCallback = Void Function(
+    Pointer<Void> targetPtr,
+    Pointer<Utf8> funNamePtr,
+    Pointer<Pointer<Void>> argsPtrPtr,
+    Pointer<Pointer<Utf8>> argTypesPtrPtr,
+    Int32 argCount
+    );
+
 ///==============================================
 /// 创建native class
 /// input : className
@@ -10,13 +18,6 @@ import 'package:ffi/ffi.dart';
 final Pointer<Void> Function(Pointer<Utf8>) nativeCreateClass = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
         "createTargetClass")
-    .asFunction();
-
-/// release class
-/// objectPtr: 对象指针
-final void Function(Pointer<Void> objectPtr) nativeReleaseClass = nativeDylib
-    .lookup<NativeFunction<Void Function(Pointer<Void> objectPtr)>>(
-    "releaseTargetClass")
     .asFunction();
 
 /// 调用native方法
@@ -40,4 +41,20 @@ nativeInvokeNeo = nativeDylib
             Pointer<Pointer<Void>> argsPtrs,
             Pointer<Pointer<Utf8>> typePtrs,
             Pointer<Utf8> returnType)>>("invokeNativeMethodNeo")
+    .asFunction();
+
+final void Function(Object, Pointer<Void>) passJObjectToC = nativeDylib
+    .lookup<NativeFunction<Void Function(Handle, Pointer<Void>)>>(
+    "PassObjectToCUseDynamicLinking")
+    .asFunction();
+
+final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>, Pointer<NativeFunction<MethodNativeCallback>>)
+  registerNativeCallback = nativeDylib
+    .lookup<
+    NativeFunction<
+        Void Function(
+            Pointer<Void> targetPtr,
+            Pointer<Utf8> targetName,
+            Pointer<Utf8> funName,
+            Pointer<NativeFunction<MethodNativeCallback>> funcation)>>("registerNativeCallback")
     .asFunction();

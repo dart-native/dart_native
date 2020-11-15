@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../android/jniLibs/${ANDROID_ABI})
 
     # Specifies a library name, specifies whether the library is STATIC or
     # SHARED, and provides relative paths to the source code. You can
@@ -19,7 +19,8 @@ add_library( # Specifies the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             ../../../android/src/main/jni/dart_native.cpp )
+             src/main/jni/include/dart_api_dl.c
+             src/main/jni/dart_native.cpp )
 
     find_library( # Sets the name of the path variable.
             log-lib
@@ -34,3 +35,5 @@ add_library( # Specifies the name of the library.
             # Links the target library to the log library
             # included in the NDK.
             ${log-lib} )
+
+    include_directories(src/main/jni/include)

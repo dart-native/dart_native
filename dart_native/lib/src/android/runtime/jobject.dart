@@ -1,10 +1,18 @@
 import 'dart:ffi';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
+import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
-import 'JObjectPool.dart';
 import 'class.dart';
+
+void passJObjectToNative(JObject obj) {
+  if (initDartAPISuccess && obj != null) {
+    passJObjectToC(obj, obj.pointer);
+  } else {
+    print('pass object to native failed! address=${obj?.pointer}');
+  }
+}
 
 class JObject extends Class{
   Pointer _ptr;
@@ -12,10 +20,10 @@ class JObject extends Class{
   //init target class
   JObject(String className, Pointer ptr) : super(className) {
     _ptr = ptr == null ? nativeCreateClass(super.classUtf8()) : ptr;
-    JObjectPool.sInstance.retain(this);
+    passJObjectToNative(this);
   }
 
-  Pointer get pointer{
+  Pointer get pointer {
     return _ptr;
   }
 
@@ -48,12 +56,6 @@ class JObject extends Class{
       free(typePointers);
     }
     return result;
-  }
-
-  release() {
-    if (JObjectPool.sInstance.release(this)) {
-      nativeReleaseClass(_ptr);
-    }
   }
 
   @override
