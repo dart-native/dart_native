@@ -381,55 +381,47 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
     jsize argTypeLength = env->GetArrayLength(arg_types);
     char **argTypes = new char *[argTypeLength];
     void **arguments = new void *[argTypeLength];
-    //todo 二级指针赋值失败
     for (int i = 0; i < argTypeLength; ++i) {
         jobject argType = env->GetObjectArrayElement(arg_types, i);
         jobject argument = env->GetObjectArrayElement(args, i);
 
         jstring argTypeString = (jstring) argType;
-        *argTypes = (char *) env->GetStringUTFChars(argTypeString, 0);
+        argTypes[i] = (char *) env->GetStringUTFChars(argTypeString, 0);
         env->DeleteLocalRef(argTypeString);
         //todo optimization
-        if(strcmp(*argTypes, "I") == 0) {
+        if(strcmp(argTypes[i], "I") == 0) {
             jclass cls = env->FindClass("java/lang/Integer");
             if (env->IsInstanceOf(argument, cls) == JNI_TRUE) {
                 jmethodID integerToInt = env->GetMethodID(cls, "intValue", "()I");
                 jint result = env->CallIntMethod(argument, integerToInt);
-                *arguments = (void *) result;
+                arguments[i] = (void *) result;
             }
             env->DeleteLocalRef(cls);
         }
-        else if (strcmp(*argTypes, "F") == 0) {
+        else if (strcmp(argTypes[i], "F") == 0) {
             jclass cls = env->FindClass("java/lang/Float");
             if (env->IsInstanceOf(argument, cls) == JNI_TRUE) {
                 jmethodID toJfloat = env->GetMethodID(cls, "floatValue", "()F");
                 jfloat result = env->CallFloatMethod(argument, toJfloat);
                 float templeFloat = (float) result;
-                NSLog("float %f", templeFloat);
-                memcpy(&*arguments, &templeFloat, sizeof(float));
+                memcpy(&arguments[i], &templeFloat, sizeof(float));
             }
             env->DeleteLocalRef(cls);
         }
-        else if (strcmp(*argTypes, "D") == 0) {
+        else if (strcmp(argTypes[i], "D") == 0) {
             jclass cls = env->FindClass("java/lang/Double");
             if (env->IsInstanceOf(argument, cls) == JNI_TRUE) {
                 jmethodID toJfloat = env->GetMethodID(cls, "doubleValue", "()D");
                 jdouble result = env->CallDoubleMethod(argument, toJfloat);
                 double templeDouble = (double) result;
-                NSLog("float %f", templeDouble);
-                memcpy(&*arguments, &templeDouble, sizeof(double));
+                memcpy(&arguments[i], &templeDouble, sizeof(double));
             }
             env->DeleteLocalRef(cls);
         }
-        else if (strcmp(*argTypes, "Ljava/lang/String;") == 0) {
+        else if (strcmp(argTypes[i], "Ljava/lang/String;") == 0) {
             jstring argString = (jstring) argument;
-            *arguments = (char *) env->GetStringUTFChars(argString, 0);
+            arguments[i] = (char *) env->GetStringUTFChars(argString, 0);
             env->DeleteLocalRef(argString);
-        }
-
-        if (i != argTypeLength - 1) {
-            ++argTypes;
-            ++arguments;
         }
     }
     char *funName = (char *) env->GetStringUTFChars(fun_name, 0);
@@ -437,10 +429,8 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
         NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
         void *target = targetCache[dartObject];
         if (methodCallback != NULL && target != nullptr) {
-            NSLog("run");
             methodCallback(target, funName, arguments, argTypes, arg_count);
         }
-        return true;
     };
     const Work* work_ptr = new Work(work);
     NotifyDart(native_callback_send_port, work_ptr);

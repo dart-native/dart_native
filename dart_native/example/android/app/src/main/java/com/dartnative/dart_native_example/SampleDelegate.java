@@ -8,4 +8,5 @@ public interface SampleDelegate {
     void callbackString(String s);
     void callbackFloat(float f);
     void callbackDouble(double d);
+    void callbackComplex(int i, double d, String s);
 }

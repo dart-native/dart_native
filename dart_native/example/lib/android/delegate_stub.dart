@@ -28,4 +28,9 @@ class DelegateStub extends JObject with SampleDelegate {
   callbackDouble(double d) {
     print("callbackDouble from native $d");
   }
+
+  @override
+  callbackComplex(int i, double d, String s) {
+    print("callbackComplex from native $i $d $s");
+  }
 }

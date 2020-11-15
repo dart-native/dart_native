@@ -9,11 +9,13 @@ abstract class SampleDelegate {
     registerCallback(this, callbackFloat, 'callbackFloat');
     registerCallback(this, callbackString, 'callbackString');
     registerCallback(this, callbackDouble, 'callbackDouble');
+    registerCallback(this, callbackComplex, 'callbackComplex');
   }
   callbackInt(int i);
   callbackFloat(double f);
   callbackString(String s);
   callbackDouble(double d);
+  callbackComplex(int i, double d, String s);
 }
 
 class RuntimeStub extends JObject {
