@@ -1,3 +1,4 @@
+import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
 
@@ -42,4 +43,6 @@ testAndroid(RuntimeStub stub) {
   print('stub get time : ${stub.getTime(entity)}');
 
   print('new entity get time : ${stub.getTime(new Entity())}');
+
+  stub.setDelegateListener(DelegateStub());
 }
