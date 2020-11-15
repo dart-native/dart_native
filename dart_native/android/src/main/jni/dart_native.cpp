@@ -7,7 +7,6 @@
 #include <string>
 #include <regex>
 #include <dart_api_dl.h>
-#include <semaphore.h>
 
 extern "C" {
 
