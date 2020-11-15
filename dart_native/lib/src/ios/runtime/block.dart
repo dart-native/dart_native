@@ -57,6 +57,9 @@ class Block extends id {
     return result;
   }
 
+  /// Creating a [Block] from a [Pointer].
+  ///
+  /// [Block] created by this method do NOT have [function] property.
   Block.fromPointer(Pointer<Void> ptr) : super(ptr);
 
   Class get superclass {
@@ -75,6 +78,7 @@ class Block extends id {
     return hashCode;
   }
 
+  /// Copy a new [Block] by calling `Block_copy` function.
   Block copy() {
     Pointer<Void> newPtr = Block_copy(pointer);
     if (newPtr == pointer) {
@@ -91,6 +95,7 @@ class Block extends id {
     return result;
   }
 
+  /// Invoke the block synchronously.
   dynamic invoke([List args]) {
     if (pointer == nullptr) {
       return null;
@@ -194,6 +199,7 @@ void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
   _callback(argsPtrPtr, retPtr, argCount, stret != 0);
 }
 
+// TODO: hide this method.
 void removeBlockOnAddress(int addr) {
   Block block = _blockForAddress[addr];
   if (block != null) {
