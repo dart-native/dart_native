@@ -7,6 +7,7 @@
 #include <string>
 #include <regex>
 #include <dart_api_dl.h>
+#include <semaphore.h>
 
 extern "C" {
 
@@ -377,6 +378,10 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
                                                                                                jint arg_count,
                                                                                                jobjectArray arg_types,
                                                                                                jobjectArray args) {
+    sem_t sem;
+    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+
+    char *funName = (char *) env->GetStringUTFChars(fun_name, 0);
     jsize argTypeLength = env->GetArrayLength(arg_types);
     char **argTypes = new char *[argTypeLength];
     void **arguments = new void *[argTypeLength];
@@ -423,16 +428,31 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
             env->DeleteLocalRef(argString);
         }
     }
-    char *funName = (char *) env->GetStringUTFChars(fun_name, 0);
-    const Work work = [dartObject, argTypes, arguments, arg_count, funName]() {
+
+    const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess]() {
         NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
         void *target = targetCache[dartObject];
         if (methodCallback != NULL && target != nullptr) {
             methodCallback(target, funName, arguments, argTypes, arg_count);
         }
+        if (isSemInitSuccess) {
+            sem_post(&sem);
+            NSLog("post");
+        }
     };
+
     const Work* work_ptr = new Work(work);
     NotifyDart(native_callback_send_port, work_ptr);
+
+    if (isSemInitSuccess) {
+        NSLog("wait");
+        sem_wait(&sem);
+        NSLog("proccess");
+        free(funName);
+        free(argTypes);
+        free(arguments);
+        sem_destroy(&sem);
+    }
 }
 
 }

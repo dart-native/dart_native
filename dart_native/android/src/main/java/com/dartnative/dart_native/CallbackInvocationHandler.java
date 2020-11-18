@@ -30,7 +30,8 @@ public class CallbackInvocationHandler implements InvocationHandler {
         String funName = method.getName();
         long dartObjectAddr = CallbackManager.getInstance().getRegisterDartAddr(proxy);
         hookCallback(dartObjectAddr, funName, paramTypes.length, params, args);
-        return proxy;
+        return true;
+
     }
 
     static native void hookCallback(long dartObjectAddr, String funName, int argCount, String[] argTypes, Object[] args);
