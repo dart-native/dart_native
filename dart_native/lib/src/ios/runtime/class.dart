@@ -1,12 +1,12 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/runtime.dart';
-import 'package:dart_native/src/ios/runtime/functions.dart';
+import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:ffi/ffi.dart';
 
-/// A wrapper class for Objective-C `Class`.
+/// Stands for `Class` in Objective-C.
 class Class extends id {
   String name;
 

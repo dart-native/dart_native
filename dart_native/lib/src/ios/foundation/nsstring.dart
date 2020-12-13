@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/runtime.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
-import 'package:dart_native/src/ios/runtime/nssubclass.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 import 'package:ffi/ffi.dart';
 

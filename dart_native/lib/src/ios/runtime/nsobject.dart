@@ -2,10 +2,11 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
-import 'package:dart_native/src/ios/runtime/block.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
-import 'package:dart_native/src/ios/runtime/functions.dart';
+import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
+import 'package:dart_native/src/ios/runtime/internal/block_lifecycle.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 
 final id nil = id(nullptr);

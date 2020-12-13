@@ -4,7 +4,7 @@ import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/foundation/collection/nsarray.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/nssubclass.dart';
+import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 @native

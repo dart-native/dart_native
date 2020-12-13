@@ -3,7 +3,8 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/gcd.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/functions.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
@@ -34,6 +35,14 @@ Pointer<Void> _msgSend(
 
 Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
+/// Send a message to [target], which should be an instance in Objective-C.
+///
+/// The message will consist of a [selector] and zero or more [args].
+/// Return value will be converted to Dart types when [decodeRetVal] is `true`.
+/// `C-String` will be converted to Dart `String` when [auto] is `true`.
+///
+/// You can send message asynchronously to GCD queues using [onQueue]. It will
+/// block waiting for the returned result when [waitUntilDone] is `ture`.
 dynamic msgSend(Pointer<Void> target, SEL selector,
     {List args,
     bool auto = true,
@@ -84,7 +93,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
       }
       Pointer<Utf8> argTypePtr =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
-      storeValueToPointer(arg, pointers.elementAt(i), argTypePtr, auto);
+      storeValueToPointer(arg, pointers.elementAt(i), argTypePtr);
     }
   }
 
