@@ -3,39 +3,71 @@ import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
 
 testAndroid(RuntimeStub stub) {
+  int ms = currentTimeMillis();
   double resultDouble = stub.getDouble(10.0);
-  print('getDouble result:$resultDouble');
+  int use = currentTimeMillis() - ms;
+  print('getDouble result:$resultDouble , cost:$use');
 
+  ms = currentTimeMillis();
   String resultChar = stub.getChar('a');
-  print('getChar result:$resultChar');
+  use = currentTimeMillis() - ms;
+  print('getChar result:$resultChar , cost:$use');
 
+  ms = currentTimeMillis();
   int resultInt = stub.getInt(10);
-  print('getInt result:$resultInt');
+  use = currentTimeMillis() - ms;
+  print('getInt result:$resultInt , cost:$use');
 
+  ms = currentTimeMillis();
   bool resultBool = stub.getBool(true);
-  print('getBool result:$resultBool');
+  use = currentTimeMillis() - ms;
+  print('getBool result:$resultBool , cost:$use');
 
+  ms = currentTimeMillis();
   double resultFloat = stub.getFloat(10.5);
-  print('getFloat result:$resultFloat');
+  use = currentTimeMillis() - ms;
+  print('getFloat result:$resultFloat , cost:$use');
 
+  ms = currentTimeMillis();
   int resultByte = stub.getByte(1);
-  print('getByte result:$resultByte');
+  use = currentTimeMillis() - ms;
+  print('getByte result:$resultByte , cost:$use');
 
+  ms = currentTimeMillis();
   int resultShort = stub.getShort(1);
-  print('getShort result:$resultShort');
+  use = currentTimeMillis() - ms;
+  print('getShort result:$resultShort , cost:$use');
 
+  ms = currentTimeMillis();
   int resultLong = stub.getLong(100);
-  print('getLong result:$resultLong');
+  use = currentTimeMillis() - ms;
+  print('getLong result:$resultLong , cost:$use');
 
+  ms = currentTimeMillis();
   String resultString = stub.getString("test is success?");
-  print('getString result:$resultString');
+  use = currentTimeMillis() - ms;
+  print('getString result:$resultString, cost:$use');
 
+  ms = currentTimeMillis();
   int resultAdd = stub.add(10, 20);
-  print('add result:$resultAdd');
+  use = currentTimeMillis() - ms;
+  print('add result:$resultAdd, cost:$use');
 
+  ms = currentTimeMillis();
   stub.log("testlog", "log test");
+  use = currentTimeMillis() - ms;
+  print('testlog, cost:$use');
 
-  bool resultCall = stub.complexCall("test", 10, 'a', 10.0, 12.0, 1, 2, 10000, false);
+  bool resultCall = stub.complexCall(
+      "test",
+      10,
+      'a',
+      10.0,
+      12.0,
+      1,
+      2,
+      10000,
+      false);
   print('call result:$resultCall');
 
   Entity entity = stub.createEntity();
@@ -45,4 +77,8 @@ testAndroid(RuntimeStub stub) {
   print('new entity get time : ${stub.getTime(new Entity())}');
 
   stub.setDelegateListener(DelegateStub());
+}
+
+int currentTimeMillis() {
+  return new DateTime.now().millisecondsSinceEpoch;
 }
