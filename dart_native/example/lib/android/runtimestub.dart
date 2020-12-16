@@ -26,7 +26,13 @@ class RuntimeStub extends JObject {
   }
 
   double getDouble(double b) {
-    return invoke('getDouble', [b], "D");
+    int start = currentTimeMillis();
+    print('getDouble in deep currentTimeMillis: $start');
+    double ret = invoke('getDouble', [b], "D");
+    int end = currentTimeMillis();
+    int use = end - start;
+    print('getDouble in deep cost: $use, start: $start , end: $end');
+    return ret;
   }
 
   int getByte(int b) {
@@ -79,5 +85,9 @@ class RuntimeStub extends JObject {
 
   void setDelegateListener(SampleDelegate delegate) {
     invoke('setDelegateListener', [delegate], "V");
+  }
+
+  int currentTimeMillis() {
+    return new DateTime.now().microsecondsSinceEpoch;
   }
 }

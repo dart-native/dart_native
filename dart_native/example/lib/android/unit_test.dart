@@ -5,8 +5,9 @@ import 'package:dart_native_example/android/entity.dart';
 testAndroid(RuntimeStub stub) {
   int ms = currentTimeMillis();
   double resultDouble = stub.getDouble(10.0);
-  int use = currentTimeMillis() - ms;
-  print('getDouble result:$resultDouble , cost:$use');
+  int end = currentTimeMillis();
+  int use = end - ms;
+  print('getDouble in dartNative result:$resultDouble , cost: $use, start: $ms , end: $end');
 
   ms = currentTimeMillis();
   String resultChar = stub.getChar('a');
@@ -80,5 +81,5 @@ testAndroid(RuntimeStub stub) {
 }
 
 int currentTimeMillis() {
-  return new DateTime.now().millisecondsSinceEpoch;
+  return new DateTime.now().microsecondsSinceEpoch;
 }

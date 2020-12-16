@@ -28,9 +28,10 @@ class JObject extends Class{
   }
 
   dynamic invoke(String methodName, List args, [String returnType]) {
+    int startT = currentTimeMillis();
+    print("prepare startT: $startT");
     Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
     Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
-
     Pointer<Pointer<Void>> pointers;
     Pointer<Pointer<Utf8>> typePointers;
     if (args != null) {
@@ -46,16 +47,41 @@ class JObject extends Class{
       pointers.elementAt(args.length).value = nullptr;
       typePointers.elementAt(args.length).value = nullptr;
     }
+    int use = currentTimeMillis() - startT;
+    print("prepare cost: $use, start: $startT");
+
+    startT = currentTimeMillis();
     Pointer<Void> invokeMethodRet =
         nativeInvokeNeo(_ptr, methodNamePtr, pointers, typePointers, returnTypePtr);
+    use = currentTimeMillis() - startT;
+    print("invoke cost: $use");
+
+    startT = currentTimeMillis();
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
+    use = currentTimeMillis() - startT;
+    print("loadValueFromPointer cost: $use");
+
+    startT = currentTimeMillis();
     if (pointers != null) {
       free(pointers);
     }
     if (typePointers != null) {
       free(typePointers);
     }
+    use = currentTimeMillis() - startT;
+    print("free cost: $use");
+
+    startT = currentTimeMillis();
+    print("print test");
+    int end = currentTimeMillis();
+    use = end - startT;
+    print("print and get time cost: $use, end: $end");
+
     return result;
+  }
+
+  int currentTimeMillis() {
+    return new DateTime.now().microsecondsSinceEpoch;
   }
 
   @override

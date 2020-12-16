@@ -193,8 +193,15 @@ void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
     }
 }
 
+long long currentTimeInMilliseconds()
+{
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+}
 
 void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, char *returnType) {
+    long startT = currentTimeInMilliseconds();
     JNIEnv *curEnv;
     bool bShouldDetach = false;
     void *nativeInvokeResult = nullptr;
@@ -271,6 +278,7 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
+    NSLog("invokeNativeMethodNeo cost: %d" , (currentTimeInMilliseconds() - startT));
     return nativeInvokeResult;
 }
 
