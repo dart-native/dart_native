@@ -7,6 +7,7 @@
 
 #import "DNMacro.h"
 #import "dart_api_dl.h"
+#import <Foundation/Foundation.h>
 
 @class DNBlockWrapper;
 @class DNMethodIMP;
