@@ -35,7 +35,7 @@ Pointer<Void> _msgSend(
 
 Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
-/// Send a message to [target], which should be an instance in Objective-C.
+/// Send a message to [target], which should be an instance in iOS.
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types when [decodeRetVal] is `true`.

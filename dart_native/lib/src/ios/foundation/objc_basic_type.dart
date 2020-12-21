@@ -2,7 +2,7 @@ import 'package:dart_native/src/common/native_type_box.dart';
 
 mixin _ToAlias {}
 
-/// These native types ONLY for Objective-C Block description.
+/// These native types are ONLY for describing signatures of Objective-C Block.
 class BOOL = NativeBox<bool> with _ToAlias;
 class NSInteger = NativeIntBox with _ToAlias;
 class NSUInteger = NativeIntBox with _ToAlias;

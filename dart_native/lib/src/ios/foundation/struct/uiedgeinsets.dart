@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
+/// Stands for `UIEdgeInsets` in iOS.
 class UIEdgeInsets extends CGFloatx4Wrapper {
   double get top => d1;
   set top(double top) {

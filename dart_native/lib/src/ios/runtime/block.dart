@@ -20,7 +20,7 @@ final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
     .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
         'DNBlockTypeEncodeString');
 
-/// Stands for `NSBlock` in Objective-C. [Block] can be used as an argument
+/// Stands for `NSBlock` in iOS. [Block] can be used as an argument
 /// to a method and as a callback.
 ///
 /// You can create [Block] from Dart [Function], or just obtain [Block] from
@@ -61,7 +61,7 @@ class Block extends id {
   /// [Block] created by this method do NOT have [function] property.
   Block.fromPointer(Pointer<Void> ptr) : super(ptr);
 
-  /// This [isa] block in Objective-C, but it's meaningless for a block created
+  /// This [isa] block in iOS, but it's meaningless for a block created
   /// by Dart function.
   Class get isa {
     if (function != null) {
@@ -70,7 +70,7 @@ class Block extends id {
     return super.isa;
   }
 
-  /// Superclass for block in Objective-C, but it's meaningless for a block
+  /// Superclass for block in iOS, but it's meaningless for a block
   /// created by Dart function.
   Class get superclass {
     if (function != null) {

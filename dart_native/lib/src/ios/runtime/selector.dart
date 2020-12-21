@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `SEL` in Objective-C.
+/// Stands for `SEL` and `@selector` in iOS.
 ///
 /// An opaque type that represents a method selector.
 class SEL {

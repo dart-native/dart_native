@@ -5,7 +5,10 @@ import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `NSObject **` in Objective-C.
+/// Stands for `NSObject **` in iOS.
+///
+/// This Class is an experimental implementation.
+/// Broken changes are likely in the future.
 class NSObjectRef<T extends id> {
   T value;
   Pointer<Pointer<Void>> _ptr;

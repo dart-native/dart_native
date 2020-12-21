@@ -5,6 +5,7 @@ import 'package:dart_native/src/ios/foundation/collection/nsarray.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
+/// Stands for `NSSet` in iOS.
 @native
 class NSSet extends NSSubclass<Set> {
   NSSet(Set value, {InitSubclass init: _new}) : super(value, init) {
@@ -24,6 +25,8 @@ class NSSet extends NSSubclass<Set> {
   }
 }
 
+/// Stands for `NSMutableSet` in iOS.
+///
 /// Only for type casting. It's unmodifiable.
 @native
 class NSMutableSet extends NSSet {

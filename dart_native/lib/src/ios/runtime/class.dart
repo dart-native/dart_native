@@ -6,7 +6,9 @@ import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `Class` in Objective-C.
+/// Stands for `Class` in iOS.
+///
+/// An opaque type that represents an Objective-C class.
 class Class extends id {
   String name;
 

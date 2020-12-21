@@ -8,10 +8,10 @@ import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
 
-/// Stands for `id` in Objective-C.
+/// Stands for `id` in iOS.
 // ignore: camel_case_types
 class id implements NSObjectProtocol {
-  /// Stands for `isa` in Objective-C.
+  /// Stands for `isa` in iOS.
   Class get isa {
     if (_ptr == null) {
       return null;
