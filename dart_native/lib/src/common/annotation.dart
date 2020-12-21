@@ -1,3 +1,9 @@
+/// Annotation for available API on native platforms.
+///
+/// You can add `NativeAvailable` above your interface:
+/// ```
+/// @NativeAvailable(ios: '11.0')
+/// ```
 class NativeAvailable {
   final String ios;
   final String macos;
@@ -8,6 +14,7 @@ class NativeAvailable {
       {this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
 
+/// Type for unavailable platforms.
 class NativePlatform {
   const NativePlatform();
 }
@@ -18,11 +25,21 @@ const NativePlatform tvos = const NativePlatform();
 const NativePlatform watchos = const NativePlatform();
 const NativePlatform android = const NativePlatform();
 
+/// Annotation for unavailable API on native platforms.
+///
+/// You can mark three [NativePlatform] at most.
 class NativeUnavailable {
   const NativeUnavailable(NativePlatform p0,
       [NativePlatform p1, NativePlatform p2]);
 }
 
+/// Annotation for deprecated API on native platforms.
+///
+/// When you make some API deprecated, scope of available versions on each
+/// platform is required. For example:
+/// ```
+/// @NativeDeprecated(ios: ['10.0', '10.4'])
+/// ```
 class NativeDeprecated {
   final List<String> ios;
   final List<String> macos;

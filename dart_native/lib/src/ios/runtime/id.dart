@@ -1,15 +1,17 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/dart_objc.dart';
-import 'package:dart_native/src/ios/runtime/functions.dart';
+import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
 
+/// Stands for `id` in iOS.
 // ignore: camel_case_types
 class id implements NSObjectProtocol {
+  /// Stands for `isa` in iOS.
   Class get isa {
     if (_ptr == null) {
       return null;

@@ -6,7 +6,7 @@ import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 import 'package:dart_native/src/common/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:ffi/ffi.dart';
 
 // TODO: change encoding hard code string to const var.
@@ -120,8 +120,7 @@ Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
 /// Store [object] to [ptr] which using [encoding] for automatic type conversion.
 /// Returns a wrapper if [encoding] is some struct or pointer.
 dynamic storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr, Pointer<Utf8> encoding,
-    [bool auto = true]) {
+    dynamic object, Pointer<Pointer<Void>> ptr, Pointer<Utf8> encoding) {
   if (object == null && encoding == TypeEncodings.v) {
     return;
   }

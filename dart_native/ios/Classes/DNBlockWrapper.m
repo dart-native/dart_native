@@ -7,7 +7,6 @@
 
 #import "DNBlockWrapper.h"
 #import "ffi.h"
-#import <Flutter/Flutter.h>
 #import "DNFFIHelper.h"
 #import "DNInvocation.h"
 #import <objc/runtime.h>

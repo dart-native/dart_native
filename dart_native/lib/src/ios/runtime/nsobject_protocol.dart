@@ -6,6 +6,8 @@ import 'package:dart_native/src/ios/runtime/protocol.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:flutter/foundation.dart';
 
+/// Stands for `@protocol NSObject` in iOS.
+///
 /// The group of methods that are fundamental to all Objective-C objects.
 abstract class NSObjectProtocol {
   /// Returns the class object for the receiver’s superclass.

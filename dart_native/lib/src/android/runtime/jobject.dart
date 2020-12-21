@@ -14,7 +14,7 @@ void passJObjectToNative(JObject obj) {
   }
 }
 
-class JObject extends Class{
+class JObject extends Class {
   Pointer _ptr;
 
   //init target class
@@ -41,13 +41,14 @@ class JObject extends Class{
         if (arg == null) {
           throw 'One of args list is null';
         }
-        storeValueToPointer(arg, pointers.elementAt(i), typePointers.elementAt(i));
+        storeValueToPointer(
+            arg, pointers.elementAt(i), typePointers.elementAt(i));
       }
       pointers.elementAt(args.length).value = nullptr;
       typePointers.elementAt(args.length).value = nullptr;
     }
-    Pointer<Void> invokeMethodRet =
-        nativeInvokeNeo(_ptr, methodNamePtr, pointers, typePointers, returnTypePtr);
+    Pointer<Void> invokeMethodRet = nativeInvokeNeo(
+        _ptr, methodNamePtr, pointers, typePointers, returnTypePtr);
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     if (pointers != null) {
       free(pointers);

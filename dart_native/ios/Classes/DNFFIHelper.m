@@ -6,6 +6,7 @@
 //
 
 #import "DNFFIHelper.h"
+#import <UIKit/UIKit.h>
 
 const char *DNSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp) {
     const char *out = NSGetSizeAndAlignment(str, sizep, alignp);
