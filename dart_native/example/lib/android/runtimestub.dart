@@ -26,12 +26,8 @@ class RuntimeStub extends JObject {
   }
 
   double getDouble(double b) {
-    int start = currentTimeMicros();
-    // print('getDouble in deep currentTimeMillis: $start');
     double ret = invoke('getDouble', [b], "D");
-    int end = currentTimeMicros();
-    int use = end - start;
-    print('getDouble in deep cost: $use, start: $start , end: $end');
+    markItemFinish("invoke result back");
     return ret;
   }
 

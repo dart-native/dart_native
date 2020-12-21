@@ -29,8 +29,8 @@ class JObject extends Class{
   }
 
   dynamic invoke(String methodName, List args, [String returnType]) {
-    // int startT = currentTimeMicros();
-    // print("prepare startT: $startT");
+    markItemFinish("start call invoke");
+
     Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
     Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
     Pointer<Pointer<Void>> pointers;
@@ -48,35 +48,22 @@ class JObject extends Class{
       pointers.elementAt(args.length).value = nullptr;
       typePointers.elementAt(args.length).value = nullptr;
     }
-    // int use = currentTimeMicros() - startT;
-    // print("prepare cost: $use, start: $startT");
+    markItemFinish("prepare");
 
-    // startT = currentTimeMicros();
     Pointer<Void> invokeMethodRet =
         nativeInvokeNeo(_ptr, methodNamePtr, pointers, typePointers, returnTypePtr);
-    // use = currentTimeMicros() - startT;
-    // print("invoke cost: $use");
+    markItemFinish("invoke");
 
-    // startT = currentTimeMicros();
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
-    // use = currentTimeMicros() - startT;
-    // print("loadValueFromPointer cost: $use");
+    markItemFinish("loadValueFromPointer");
 
-    // startT = currentTimeMicros();
     if (pointers != null) {
       free(pointers);
     }
     if (typePointers != null) {
       free(typePointers);
     }
-    // use = currentTimeMicros() - startT;
-    // print("free cost: $use");
-
-    // startT = currentTimeMicros();
-    // print("print test");
-    // int end = currentTimeMicros();
-    // use = end - startT;
-    // print("print and get time cost: $use, end: $end");
+    markItemFinish("free");
 
     return result;
   }
