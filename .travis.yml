@@ -41,7 +41,7 @@ jobs:
       before_install: cd dart_native/example
       before_script:
         - brew update
-        - brew install --HEAD libimobiledevice
+        - brew install libimobiledevice
         - brew install ideviceinstaller
         - brew install ios-deploy
         - git clone https://github.com/flutter/flutter.git -b stable --depth 1

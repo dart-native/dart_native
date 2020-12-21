@@ -1,8 +1,6 @@
 import 'dart:ffi';
 import 'dart:isolate';
 
-import 'package:ffi/ffi.dart';
-
 import 'library.dart';
 
 class CallBackManager {

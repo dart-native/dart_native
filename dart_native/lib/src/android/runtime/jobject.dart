@@ -18,7 +18,7 @@ class JObject extends Class {
   Pointer _ptr;
 
   //init target class
-  JObject(String className, Pointer ptr) : super(className) {
+  JObject(String className, [Pointer ptr]) : super(className) {
     _ptr = ptr == null ? nativeCreateClass(super.classUtf8()) : ptr;
     passJObjectToNative(this);
   }
