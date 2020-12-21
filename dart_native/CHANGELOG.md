@@ -1,3 +1,6 @@
+## 0.3.6
+
+* [Fix] Issue: https://github.com/dart-native/dart_native/issues/24
 ## 0.3.5
 
 * [Feature] Object lifecycle management for Android.
