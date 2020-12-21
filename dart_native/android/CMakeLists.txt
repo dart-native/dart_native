@@ -4,8 +4,6 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../android/jniLibs/${ANDROID_ABI})
-
     # Specifies a library name, specifies whether the library is STATIC or
     # SHARED, and provides relative paths to the source code. You can
     # define multiple libraries by adding multiple add_library() commands,
