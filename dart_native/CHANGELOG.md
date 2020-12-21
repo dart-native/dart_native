@@ -1,6 +1,15 @@
+## 0.3.8
+
+* [Feature] Android so file path.
+
+## 0.3.7
+
+* [Feature] Android callback result.
+ 
 ## 0.3.6
 
 * [Fix] Issue: https://github.com/dart-native/dart_native/issues/24
+
 ## 0.3.5
 
 * [Feature] Object lifecycle management for Android.
