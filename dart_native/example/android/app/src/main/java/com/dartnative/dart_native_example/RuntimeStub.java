@@ -8,10 +8,7 @@ public class RuntimeStub {
   private final String TAG = "dart_java";
 
   public RuntimeStub() {
-    long start = System.nanoTime();
     getDouble(100.23);
-    long use = System.nanoTime() - start;
-    System.out.println("getDouble in java , cost: " + use / 1000);
   }
 
   public int getInt(int i){
