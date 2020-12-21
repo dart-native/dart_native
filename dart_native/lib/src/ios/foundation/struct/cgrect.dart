@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
+/// Stands for `CGRect` in iOS.
 class CGRect extends CGFloatx4Wrapper {
   double get x => d1;
   set x(double x) {

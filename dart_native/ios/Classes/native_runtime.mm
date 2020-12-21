@@ -61,15 +61,15 @@ native_protocol_method_types(Protocol *proto, SEL selector) {
 }
 
 Class
-native_get_class(const char *className, Class baseClass) {
+native_get_class(const char *className, Class superclass) {
     Class result = objc_getClass(className);
     if (result) {
         return result;
     }
-    if (!baseClass) {
-        baseClass = NSObject.class;
+    if (!superclass) {
+        superclass = NSObject.class;
     }
-    result = objc_allocateClassPair(baseClass, className, 0);
+    result = objc_allocateClassPair(superclass, className, 0);
     objc_registerClassPair(result);
     return result;
 }

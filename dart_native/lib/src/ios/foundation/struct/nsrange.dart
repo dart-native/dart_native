@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
+/// Stands for `NSRange` in iOS.
 class NSRange extends NSUIntegerx2Wrapper {
   int get location => i1;
   set location(int location) {

@@ -13,9 +13,10 @@ import 'package:dart_native/src/ios/foundation/struct/nsdirectionaledgeinsets.da
 import 'package:dart_native/src/ios/foundation/struct/nsrange.dart';
 import 'package:dart_native/src/ios/foundation/struct/uioffset.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
-import 'package:dart_native/src/ios/runtime/nssubclass.dart';
+import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
+/// Stands for `NSValue` in iOS.
 @native
 class NSValue extends NSSubclass {
   NSValue(dynamic value) : super(value, _new);

@@ -6,9 +6,10 @@ import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
-import 'package:dart_native/src/ios/runtime/functions.dart';
+import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/block_lifecycle.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
@@ -19,18 +20,26 @@ final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
     .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
         'DNBlockTypeEncodeString');
 
-Map<int, Block> _blockForAddress = {};
-
+/// Stands for `NSBlock` in iOS. [Block] can be used as an argument
+/// to a method and as a callback.
+///
+/// You can create [Block] from Dart [Function], or just obtain [Block] from
+/// native pointer address.
 class Block extends id {
   Function function;
   NSObject _wrapper; // Block hold wrapper
   List<String> types = [];
 
-  /// TODO: This is not working when block is created by function.
+  // TODO: This is not working when block is created by function.
   // set queue(Pointer<Void> queue) {
   //   _wrapper.perform(Selector('setQueue:'), args: [queue]);
   // }
 
+  /// Creating a [Block] from a [Function].
+  ///
+  /// NOTE: The arguments of [function] should be wrapper class which can
+  /// represent native type, such as [unsigned_int] or custom wrapper class with
+  /// the same name.
   factory Block(Function function) {
     List<String> dartTypes = dartTypeStringForFunction(function);
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
@@ -43,13 +52,30 @@ class Block extends id {
     result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
-    _blockForAddress[result.pointer.address] = result;
+    blockForAddress[result.pointer.address] = result;
     return result;
   }
 
+  /// Creating a [Block] from a [Pointer].
+  ///
+  /// [Block] created by this method do NOT have [function] property.
   Block.fromPointer(Pointer<Void> ptr) : super(ptr);
 
+  /// This [isa] block in iOS, but it's meaningless for a block created
+  /// by Dart function.
+  Class get isa {
+    if (function != null) {
+      return null;
+    }
+    return super.isa;
+  }
+
+  /// Superclass for block in iOS, but it's meaningless for a block
+  /// created by Dart function.
   Class get superclass {
+    if (function != null) {
+      return null;
+    }
     return isa.perform(SEL('superclass'));
   }
 
@@ -65,7 +91,14 @@ class Block extends id {
     return hashCode;
   }
 
+  /// Copy a new [Block] by calling `Block_copy` function.
+  ///
+  /// Copy a block created by Dart function is invalid, because it's used for
+  /// callback from native to Dart.
   Block copy() {
+    if (pointer == nullptr || function != null) {
+      return null;
+    }
     Pointer<Void> newPtr = Block_copy(pointer);
     if (newPtr == pointer) {
       return this;
@@ -75,14 +108,18 @@ class Block extends id {
     if (function != null) {
       result._wrapper = _wrapper;
       result.function = function;
-      _blockForAddress[newPtr.address] = result;
+      blockForAddress[newPtr.address] = result;
       result.types = types;
     }
     return result;
   }
 
+  /// Invoke the [Block] synchronously.
+  ///
+  /// Invoking a block created by Dart function is invalid, because it's used
+  /// for callback from native to Dart.
   dynamic invoke([List args]) {
-    if (pointer == nullptr) {
+    if (pointer == nullptr || function != null) {
       return null;
     }
     Pointer<Utf8> typesEncodingsPtr = _blockTypeEncodeString(pointer);
@@ -132,7 +169,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
       .value
       .cast<Pointer<Void>>()
       .value;
-  Block block = _blockForAddress[blockPtr.address];
+  Block block = blockForAddress[blockPtr.address];
   if (block == null) {
     return null;
   }
@@ -182,12 +219,4 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
 void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr, int argCount, int stret) {
   _callback(argsPtrPtr, retPtr, argCount, stret != 0);
-}
-
-void removeBlockOnAddress(int addr) {
-  Block block = _blockForAddress[addr];
-  if (block != null) {
-    block._wrapper = null;
-    _blockForAddress.remove(addr);
-  }
 }

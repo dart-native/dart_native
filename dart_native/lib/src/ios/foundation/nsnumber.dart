@@ -5,6 +5,7 @@ import 'package:dart_native/src/ios/common/precompile_macro.dart';
 import 'package:dart_native/src/ios/foundation/nsvalue.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
+/// Stands for `NSNumber` in iOS.
 @native
 class NSNumber extends NSValue {
   NSNumber(dynamic value) : super.fromPointer(_new(value));

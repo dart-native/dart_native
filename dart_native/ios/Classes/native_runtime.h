@@ -31,7 +31,7 @@ DN_EXTERN char * _Nullable
 native_protocol_method_types(Protocol *proto, SEL selector);
 
 DN_EXTERN Class _Nullable
-native_get_class(const char *className, Class baseClass);
+native_get_class(const char *className, Class superclass);
 
 DN_EXTERN void * _Nullable
 native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, BOOL waitUntilDone);
