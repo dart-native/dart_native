@@ -16,6 +16,7 @@ public class CallbackInvocationHandler implements InvocationHandler {
         put(int.class, "I");
         put(float.class, "F");
         put(double.class, "D");
+        put(boolean.class, "Z");
         put(String.class, "Ljava/lang/String;");
     }};
 
@@ -28,11 +29,10 @@ public class CallbackInvocationHandler implements InvocationHandler {
             params[i] = sTypeConvert.get(paramTypes[i]);
         }
         String funName = method.getName();
+        String returnType = sTypeConvert.get(method.getReturnType());
         long dartObjectAddr = CallbackManager.getInstance().getRegisterDartAddr(proxy);
-        hookCallback(dartObjectAddr, funName, paramTypes.length, params, args);
-        return true;
-
+        return hookCallback(dartObjectAddr, funName, paramTypes.length, params, args, returnType);
     }
 
-    static native void hookCallback(long dartObjectAddr, String funName, int argCount, String[] argTypes, Object[] args);
+    static native Object hookCallback(long dartObjectAddr, String funName, int argCount, String[] argTypes, Object[] args, String returnType);
 }

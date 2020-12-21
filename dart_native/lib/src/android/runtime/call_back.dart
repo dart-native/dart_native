@@ -43,6 +43,10 @@ _callback(
   }
 
   dynamic result = Function.apply(function, args);
+
+  if (result != null) {
+    storeValueToPointer(result, argsPtrPtr.elementAt(0));
+  }
 }
 
 void _syncCallback(

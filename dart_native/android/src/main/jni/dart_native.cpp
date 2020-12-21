@@ -371,19 +371,20 @@ void ExecuteCallback(Work* work_ptr) {
     delete work_ptr;
 }
 
-JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
+JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
                                                                                                jclass clazz,
                                                                                                jlong dartObject,
                                                                                                jstring fun_name,
                                                                                                jint arg_count,
                                                                                                jobjectArray arg_types,
-                                                                                               jobjectArray args) {
+                                                                                               jobjectArray args,
+                                                                                               jstring return_type) {
     sem_t sem;
     bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
 
     char *funName = (char *) env->GetStringUTFChars(fun_name, 0);
     jsize argTypeLength = env->GetArrayLength(arg_types);
-    char **argTypes = new char *[argTypeLength];
+    char **argTypes = new char *[argTypeLength + 1];
     void **arguments = new void *[argTypeLength];
     for (int i = 0; i < argTypeLength; ++i) {
         jobject argType = env->GetObjectArrayElement(arg_types, i);
@@ -428,8 +429,9 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
             env->DeleteLocalRef(argString);
         }
     }
-
-    const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess]() {
+    char *returnType = (char *) env->GetStringUTFChars(return_type, 0);
+    argTypes[argTypeLength] = returnType;
+    const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess, return_type]() {
         NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
         void *target = targetCache[dartObject];
         if (methodCallback != NULL && target != nullptr) {
@@ -437,22 +439,35 @@ JNIEXPORT void JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandle
         }
         if (isSemInitSuccess) {
             sem_post(&sem);
-            NSLog("post");
         }
+
     };
 
     const Work* work_ptr = new Work(work);
     NotifyDart(native_callback_send_port, work_ptr);
 
+    jobject callbackResult = NULL;
+
     if (isSemInitSuccess) {
         NSLog("wait");
         sem_wait(&sem);
-        NSLog("proccess");
-        free(funName);
-        free(argTypes);
-        free(arguments);
+        //todo optimization
+        if (strcmp(returnType, "Ljava/lang/String;") == 0) {
+            callbackResult = env->NewStringUTF((char *) arguments[0]);
+        } else if (strcmp(returnType, "Z") == 0) {
+            jclass booleanClass = env->FindClass("java/lang/Boolean");
+            jmethodID methodID = env->GetMethodID(booleanClass, "<init>", "(Z)V");
+            callbackResult = env->NewObject(booleanClass, methodID, static_cast<jboolean>(*((int *) arguments)));
+            env->DeleteLocalRef(booleanClass);
+        }
         sem_destroy(&sem);
     }
+
+    free(funName);
+    free(argTypes);
+    free(arguments);
+
+    return callbackResult;
 }
 
 }
