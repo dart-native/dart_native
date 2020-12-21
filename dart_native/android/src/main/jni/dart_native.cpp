@@ -34,7 +34,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
     gJvm = pjvm;  // cache the JavaVM pointer
     auto env = getEnv();
     //replace with one of your classes in the line below
-    auto randomClass = env->FindClass("com/dartnative/dart_native/DartNative");
+    auto randomClass = env->FindClass("com/dartnative/dart_native/DartNativePlugin");
     jclass classClass = env->GetObjectClass(randomClass);
     auto classLoaderClass = env->FindClass("java/lang/ClassLoader");
     auto getClassLoaderMethod = env->GetMethodID(classClass, "getClassLoader",
