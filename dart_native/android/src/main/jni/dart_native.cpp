@@ -201,7 +201,7 @@ long long currentTimeInMilliseconds()
 }
 
 void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, char *returnType) {
-    long startT = currentTimeInMilliseconds();
+    // long startT = currentTimeInMilliseconds();
     JNIEnv *curEnv;
     bool bShouldDetach = false;
     void *nativeInvokeResult = nullptr;
@@ -278,7 +278,7 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
-    NSLog("invokeNativeMethodNeo cost: %d" , (currentTimeInMilliseconds() - startT));
+    // NSLog("invokeNativeMethodNeo cost: %d" , (currentTimeInMilliseconds() - startT));
     return nativeInvokeResult;
 }
 

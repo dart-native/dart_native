@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/common/library.dart';
+import 'package:dart_native/src/android/runtime/recorder.dart';
 import 'package:ffi/ffi.dart';
 
 import 'class.dart';
@@ -28,8 +29,8 @@ class JObject extends Class{
   }
 
   dynamic invoke(String methodName, List args, [String returnType]) {
-    int startT = currentTimeMillis();
-    print("prepare startT: $startT");
+    // int startT = currentTimeMicros();
+    // print("prepare startT: $startT");
     Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
     Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
     Pointer<Pointer<Void>> pointers;
@@ -47,41 +48,37 @@ class JObject extends Class{
       pointers.elementAt(args.length).value = nullptr;
       typePointers.elementAt(args.length).value = nullptr;
     }
-    int use = currentTimeMillis() - startT;
-    print("prepare cost: $use, start: $startT");
+    // int use = currentTimeMicros() - startT;
+    // print("prepare cost: $use, start: $startT");
 
-    startT = currentTimeMillis();
+    // startT = currentTimeMicros();
     Pointer<Void> invokeMethodRet =
         nativeInvokeNeo(_ptr, methodNamePtr, pointers, typePointers, returnTypePtr);
-    use = currentTimeMillis() - startT;
-    print("invoke cost: $use");
+    // use = currentTimeMicros() - startT;
+    // print("invoke cost: $use");
 
-    startT = currentTimeMillis();
+    // startT = currentTimeMicros();
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
-    use = currentTimeMillis() - startT;
-    print("loadValueFromPointer cost: $use");
+    // use = currentTimeMicros() - startT;
+    // print("loadValueFromPointer cost: $use");
 
-    startT = currentTimeMillis();
+    // startT = currentTimeMicros();
     if (pointers != null) {
       free(pointers);
     }
     if (typePointers != null) {
       free(typePointers);
     }
-    use = currentTimeMillis() - startT;
-    print("free cost: $use");
+    // use = currentTimeMicros() - startT;
+    // print("free cost: $use");
 
-    startT = currentTimeMillis();
-    print("print test");
-    int end = currentTimeMillis();
-    use = end - startT;
-    print("print and get time cost: $use, end: $end");
+    // startT = currentTimeMicros();
+    // print("print test");
+    // int end = currentTimeMicros();
+    // use = end - startT;
+    // print("print and get time cost: $use, end: $end");
 
     return result;
-  }
-
-  int currentTimeMillis() {
-    return new DateTime.now().microsecondsSinceEpoch;
   }
 
   @override
