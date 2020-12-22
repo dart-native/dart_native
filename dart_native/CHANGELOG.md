@@ -1,3 +1,7 @@
+## 0.3.9
+
+* [Fix] iOS framework compatibility.
+
 ## 0.3.8
 
 * [Feature] Android so file path.
