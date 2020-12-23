@@ -377,12 +377,16 @@ native_mark_autoreleasereturn_object(id object) {
     }];
 }
 
-const void *
+const uint16_t *
 native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length) {
     NSData *data = [string dataUsingEncoding:NSUTF16StringEncoding];
     // UTF16, 2-byte per unit
     *length = data.length / 2;
-    return data.bytes;
+    uint16_t *result = (uint16_t *)data.bytes;
+    if (*result == 0xFEFF || *result == 0xFFFE) { // skip BOM
+        result++;
+    }
+    return result;
 }
 
 #pragma mark Dart VM API Init
