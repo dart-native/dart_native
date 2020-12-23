@@ -1,3 +1,7 @@
+## 0.3.11
+
+* [Fix] Skip BOM for Utf-16 on iOS. Sad!
+
 ## 0.3.10
 
 * [Fix] Skip BOM for Utf-16 on iOS.

@@ -385,6 +385,7 @@ native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length) {
     uint16_t *result = (uint16_t *)data.bytes;
     if (*result == 0xFEFF || *result == 0xFFFE) { // skip BOM
         result++;
+        *length = *length - 1;
     }
     return result;
 }
