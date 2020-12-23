@@ -1,3 +1,7 @@
+## 0.3.10
+
+* [Fix] Skip BOM for Utf-16 on iOS.
+
 ## 0.3.9
 
 * [Fix] iOS framework compatibility.
