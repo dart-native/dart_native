@@ -1,7 +1,7 @@
 PODS:
-  - CocoaLumberjack (3.6.2):
-    - CocoaLumberjack/Core (= 3.6.2)
-  - CocoaLumberjack/Core (3.6.2)
+  - CocoaLumberjack (3.7.0):
+    - CocoaLumberjack/Core (= 3.7.0)
+  - CocoaLumberjack/Core (3.7.0)
   - dart_native (0.0.1):
     - Flutter
   - Flutter (1.0.0)
@@ -22,7 +22,7 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  CocoaLumberjack: bd155f2dd06c0e0b03f876f7a3ee55693122ec94
+  CocoaLumberjack: e8955b9d337ac307103b0a34fd141c32f27e53c5
   dart_native: 8150ab93e4e060c19e0e8fb3bf98bc970d097957
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
 
