@@ -256,8 +256,8 @@ class RuntimeStub extends NSObject {
     return NSMutableString.fromPointer(result).raw;
   }
 
-  void fooWithError(NSObjectRef<NSError> error) {
-    perform(SEL('fooWithError:'), args: [error]);
+  bool fooWithError(NSObjectRef<NSError> error) {
+    return perform(SEL('fooWithError:'), args: [error]);
   }
 
   TestOptions fooWithOptions(TestOptions options) {

@@ -267,10 +267,12 @@ API_AVAILABLE(ios(11.0)){
     return str;
 }
 
-- (void)fooWithError:(out NSError **)error {
+- (BOOL)fooWithError:(out NSError **)error {
     if (error) {
         *error = [NSError errorWithDomain:@"com.dartnative.test" code:-1 userInfo:nil];
+        return NO;
     }
+    return YES;
 }
 
 - (TestOptions)fooWithOptions:(TestOptions)options {

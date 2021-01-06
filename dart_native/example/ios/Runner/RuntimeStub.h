@@ -71,7 +71,7 @@ typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 - (void)fooStructDelegate:(id<SampleDelegate>)delegate;
 - (NSString *)fooNSString:(NSString *)str;
 - (NSMutableString *)fooNSMutableString:(NSMutableString *)str;
-- (void)fooWithError:(out NSError **)error;
+- (BOOL)fooWithError:(out NSError **)error;
 - (TestOptions)fooWithOptions:(TestOptions)options;
 
 @end

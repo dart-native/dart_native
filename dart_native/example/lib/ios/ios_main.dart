@@ -13,7 +13,6 @@ class IOSApp extends StatefulWidget {
 
 class _IOSAppState extends State<IOSApp> {
   static const platform = const MethodChannel('sample.dartnative.com');
-
   @override
   void initState() {
     super.initState();
@@ -25,7 +24,6 @@ class _IOSAppState extends State<IOSApp> {
     RuntimeSon stub = RuntimeSon();
     DelegateStub delegate = DelegateStub();
     testIOS(stub, delegate);
-
     // Benchmark
     String testString =
         'This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖';
