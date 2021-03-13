@@ -15,7 +15,7 @@ class NSObjectRef<T extends id> {
   Pointer<Pointer<Void>> get pointer => _ptr;
 
   NSObjectRef() {
-    _ptr = allocate<Pointer<Void>>();
+    _ptr = calloc<Pointer<Void>>();
     _ptr.value = nullptr;
     PointerWrapper wrapper = PointerWrapper();
     wrapper.value = _ptr.cast<Void>();

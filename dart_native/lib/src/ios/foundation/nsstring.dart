@@ -14,10 +14,10 @@ class NSString extends NSSubclass<String> {
   NSString(String value, {InitSubclass init: _new}) : super(value, init);
 
   NSString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    Pointer<Uint64> length = allocate<Uint64>();
+    Pointer<Uint64> length = calloc<Uint64>();
     Pointer<Void> result = convertNSStringToUTF16(ptr, length);
     Uint16List list = result.cast<Uint16>().asTypedList(length.value);
-    free(length);
+    calloc.free(length);
     raw = String.fromCharCodes(list);
   }
 }
@@ -39,14 +39,14 @@ class NSMutableString extends NSString {
 Pointer<Void> _new(dynamic value) {
   if (value is String) {
     final units = value.codeUnits;
-    final Pointer<Uint16> charPtr = allocate<Uint16>(count: units.length + 1);
+    final Pointer<Uint16> charPtr = calloc<Uint16>(units.length + 1);
     final Uint16List nativeString = charPtr.asTypedList(units.length + 1);
     nativeString.setAll(0, units);
     nativeString[units.length] = 0;
     NSObject result = Class('NSString').perform(
         SEL('stringWithCharacters:length:'),
         args: [charPtr, units.length]);
-    free(charPtr);
+    calloc.free(charPtr);
     return result.pointer;
   } else {
     throw 'Invalid param when initializing NSString.';

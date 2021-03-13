@@ -29,7 +29,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: FlatButton(
+        body: TextButton(
           onPressed: () {
             testAndroid(stub);
           },

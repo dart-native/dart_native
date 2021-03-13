@@ -43,12 +43,12 @@ class Block extends id {
   factory Block(Function function) {
     List<String> dartTypes = dartTypeStringForFunction(function);
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
-    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(nativeTypes.join(', '));
+    Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
     NSObject blockWrapper =
         NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
     Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
-    free(typeStringPtr);
+    calloc.free(typeStringPtr);
     result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
@@ -123,11 +123,11 @@ class Block extends id {
       return null;
     }
     Pointer<Utf8> typesEncodingsPtr = _blockTypeEncodeString(pointer);
-    Pointer<Int32> countPtr = allocate<Int32>();
+    Pointer<Int32> countPtr = calloc<Int32>();
     Pointer<Pointer<Utf8>> typesPtrPtr =
         nativeTypesEncoding(typesEncodingsPtr, countPtr, 0);
     int count = countPtr.value;
-    free(countPtr);
+    calloc.free(countPtr);
     // typesPtrPtr contains return type and block itself.
     if (count != (args?.length ?? 0) + 2) {
       throw 'Args Count NOT match';
@@ -135,7 +135,7 @@ class Block extends id {
 
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
     if (args != null) {
-      argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
+      argsPtrPtr = calloc<Pointer<Void>>(args.length);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (arg == null) {
@@ -147,7 +147,7 @@ class Block extends id {
     }
     Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
     if (argsPtrPtr != nullptr.cast()) {
-      free(argsPtrPtr);
+      calloc.free(argsPtrPtr);
     }
     dynamic result =
         loadValueFromPointer(resultPtr, typesPtrPtr.elementAt(0).value);

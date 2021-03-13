@@ -23,81 +23,81 @@ enum ValueType {
 }
 
 Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
-  ValueType.char : Utf8.toUtf8("C"),
-  ValueType.int : Utf8.toUtf8("I"),
-  ValueType.double : Utf8.toUtf8("D"),
-  ValueType.float : Utf8.toUtf8("F"),
-  ValueType.byte : Utf8.toUtf8("B"),
-  ValueType.short : Utf8.toUtf8("S"),
-  ValueType.long : Utf8.toUtf8("J"),
-  ValueType.bool : Utf8.toUtf8("Z"),
-  ValueType.string : Utf8.toUtf8("Ljava/lang/String;")
+  ValueType.char: 'C'.toNativeUtf8(),
+  ValueType.int: 'I'.toNativeUtf8(),
+  ValueType.double: 'D'.toNativeUtf8(),
+  ValueType.float: 'F'.toNativeUtf8(),
+  ValueType.byte: 'B'.toNativeUtf8(),
+  ValueType.short: 'S'.toNativeUtf8(),
+  ValueType.long: 'J'.toNativeUtf8(),
+  ValueType.bool: 'Z'.toNativeUtf8(),
+  ValueType.string: 'Ljava/lang/String;'.toNativeUtf8(),
 };
 
-dynamic storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr, [Pointer<Pointer<Utf8>> typePtr]) {
+dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
+    [Pointer<Pointer<Utf8>> typePtr]) {
   if (object == null) {
     return;
   }
 
-  if(object is byte) {
+  if (object is byte) {
     ptr.cast<Int32>().value = object.raw;
     typePtr?.value = _pointerForEncode[ValueType.byte];
     return;
   }
 
-  if(object is short) {
+  if (object is short) {
     ptr.cast<Int16>().value = object.raw;
     typePtr?.value = _pointerForEncode[ValueType.short];
     return;
   }
 
-  if(object is long) {
+  if (object is long) {
     ptr.cast<Int64>().value = object.raw;
     typePtr?.value = _pointerForEncode[ValueType.long];
     return;
   }
 
-  if(object is int) {
+  if (object is int) {
     ptr.cast<Int32>().value = object;
     typePtr?.value = _pointerForEncode[ValueType.int];
     return;
   }
 
-  if(object is bool) {
+  if (object is bool) {
     ptr.cast<Int32>().value = object ? 1 : 0;
     typePtr?.value = _pointerForEncode[ValueType.bool];
     return;
   }
 
-  if(object is float) {
+  if (object is float) {
     ptr.cast<Float>().value = object.raw;
     typePtr?.value = _pointerForEncode[ValueType.float];
     return;
   }
 
-  if(object is double) {
+  if (object is double) {
     ptr.cast<Double>().value = object;
     typePtr?.value = _pointerForEncode[ValueType.double];
     return;
   }
 
-  if(object is char) {
+  if (object is char) {
     ptr.cast<Uint16>().value = object.raw;
     typePtr?.value = _pointerForEncode[ValueType.char];
     return;
   }
 
-  if(object is String) {
-    ptr.cast<Pointer<Utf8>>().value = Utf8.toUtf8(object);
+  if (object is String) {
+    ptr.cast<Pointer<Utf8>>().value = object.toNativeUtf8();
     typePtr?.value = _pointerForEncode[ValueType.string];
     return;
   }
 
-  if(object is Class) {
-    if(object is JObject) {
+  if (object is Class) {
+    if (object is JObject) {
       ptr.value = object.pointer;
-      typePtr?.value = Utf8.toUtf8("L" + object.className + ";");
+      typePtr?.value = 'L${object.className};'.toNativeUtf8();
     }
     return;
   }
@@ -110,7 +110,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
   }
   ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
   ByteData data = ByteData.view(buffer);
-  switch(returnType) {
+  switch (returnType) {
     case "B":
       result = data.getInt8(0);
       break;
@@ -136,7 +136,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
       result = utf8.decode([data.getInt8(0)]);
       break;
     case "Ljava/lang/String;":
-      result = Utf8.fromUtf8(ptr.cast());
+      result = ptr.cast<Utf8>().toDartString;
       break;
     default:
       result = ptr;

@@ -33,7 +33,7 @@ extension TypeEncodings on Pointer<Utf8> {
 
   // Return encoding only if type is struct.
   String get encodingForStruct {
-    String result = Utf8.fromUtf8(this);
+    String result = toDartString();
     if (result.startsWith('{')) {
       return result;
     }
@@ -189,7 +189,7 @@ PointerWrapper storeStructToPointer(
 }
 
 dynamic storeCStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
-  Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+  Pointer<Utf8> charPtr = object.toNativeUtf8();
   PointerWrapper wrapper = PointerWrapper();
   wrapper.value = charPtr.cast<Void>();
   ptr.cast<Pointer<Utf8>>().value = charPtr;
@@ -245,7 +245,7 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   TypeEncodings.cstring: (Pointer<Void> ptr, bool auto) {
     Pointer<Utf8> temp = ptr.cast();
     if (auto) {
-      return Utf8.fromUtf8(temp);
+      return temp.toDartString();
     } else {
       // TODO: malloc and strcpy
       return temp;

@@ -21,9 +21,9 @@ class Protocol {
     if (protocolName == null) {
       return null;
     }
-    final protocolNamePtr = Utf8.toUtf8(protocolName);
+    final protocolNamePtr = protocolName.toNativeUtf8();
     Pointer<Void> ptr = objc_getProtocol(protocolNamePtr);
-    free(protocolNamePtr);
+    calloc.free(protocolNamePtr);
     if (_cache.containsKey(ptr.address)) {
       return _cache[ptr.address];
     } else {
@@ -36,7 +36,7 @@ class Protocol {
     if (_cache.containsKey(key)) {
       return _cache[key];
     } else {
-      String selName = Utf8.fromUtf8(protocol_getName(ptr));
+      String selName = protocol_getName(ptr).toDartString();
       return Protocol._internal(selName, ptr);
     }
   }

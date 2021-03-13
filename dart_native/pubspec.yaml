@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ffi: ^0.1.3
+  ffi: ^1.0.0
   dart_native_gen: ^0.1.2
 
 dev_dependencies:

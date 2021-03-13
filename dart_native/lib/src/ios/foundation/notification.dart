@@ -45,8 +45,8 @@ SEL _registerNotificationCallback(id target, Function callback) {
   String selName = 'handleNotification${_notificationIndex++}:';
   SEL selector = SEL(selName);
   String notificationEncoding = 'v24@0:8@16';
-  Pointer<Utf8> types = Utf8.toUtf8(notificationEncoding);
+  Pointer<Utf8> types = notificationEncoding.toNativeUtf8();
   bool success = registerMethodCallback(target, selector, callback, types);
-  free(types);
+  calloc.free(types);
   return success ? selector : null;
 }

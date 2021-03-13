@@ -22,7 +22,7 @@ class NSUInteger32x2 extends Struct {
   @Uint32()
   int i1, i2;
 
-  factory NSUInteger32x2(int i1, int i2) => allocate<NSUInteger32x2>().ref
+  factory NSUInteger32x2(int i1, int i2) => calloc<NSUInteger32x2>().ref
     ..i1 = i1
     ..i2 = i2;
 
@@ -35,7 +35,7 @@ class NSUInteger64x2 extends Struct {
   @Uint64()
   int i1, i2;
 
-  factory NSUInteger64x2(int i1, int i2) => allocate<NSUInteger64x2>().ref
+  factory NSUInteger64x2(int i1, int i2) => calloc<NSUInteger64x2>().ref
     ..i1 = i1
     ..i2 = i2;
 
@@ -104,7 +104,7 @@ class CGFloat32x2 extends Struct {
   @Float()
   double d1, d2;
 
-  factory CGFloat32x2(double d1, double d2) => allocate<CGFloat32x2>().ref
+  factory CGFloat32x2(double d1, double d2) => calloc<CGFloat32x2>().ref
     ..d1 = d1
     ..d2 = d2;
 
@@ -117,7 +117,7 @@ class CGFloat64x2 extends Struct {
   @Double()
   double d1, d2;
 
-  factory CGFloat64x2(double d1, double d2) => allocate<CGFloat64x2>().ref
+  factory CGFloat64x2(double d1, double d2) => calloc<CGFloat64x2>().ref
     ..d1 = d1
     ..d2 = d2;
 
@@ -185,7 +185,7 @@ class CGFloat32x4 extends Struct {
   double d1, d2, d3, d4;
 
   factory CGFloat32x4(double d1, double d2, double d3, double d4) =>
-      allocate<CGFloat32x4>().ref
+      calloc<CGFloat32x4>().ref
         ..d1 = d1
         ..d2 = d2
         ..d3 = d3
@@ -201,7 +201,7 @@ class CGFloat64x4 extends Struct {
   double d1, d2, d3, d4;
 
   factory CGFloat64x4(double d1, double d2, double d3, double d4) =>
-      allocate<CGFloat64x4>().ref
+      calloc<CGFloat64x4>().ref
         ..d1 = d1
         ..d2 = d2
         ..d3 = d3
@@ -290,7 +290,7 @@ class CGFloat32x6 extends Struct {
 
   factory CGFloat32x6(
           double d1, double d2, double d3, double d4, double d5, double d6) =>
-      allocate<CGFloat32x6>().ref
+      calloc<CGFloat32x6>().ref
         ..d1 = d1
         ..d2 = d2
         ..d3 = d3
@@ -309,7 +309,7 @@ class CGFloat64x6 extends Struct {
 
   factory CGFloat64x6(
           double d1, double d2, double d3, double d4, double d5, double d6) =>
-      allocate<CGFloat64x6>().ref
+      calloc<CGFloat64x6>().ref
         ..d1 = d1
         ..d2 = d2
         ..d3 = d3
@@ -445,7 +445,7 @@ class CGFloat32x16 extends Struct {
           double d14,
           double d15,
           double d16) =>
-      allocate<CGFloat32x16>().ref
+      calloc<CGFloat32x16>().ref
         ..d1 = d1
         ..d2 = d2
         ..d3 = d3
@@ -489,7 +489,7 @@ class CGFloat64x16 extends Struct {
           double d14,
           double d15,
           double d16) =>
-      allocate<CGFloat64x16>().ref
+      calloc<CGFloat64x16>().ref
         ..d1 = d1
         ..d2 = d2
         ..d3 = d3

@@ -18,8 +18,12 @@ class JObject extends Class {
   Pointer _ptr;
 
   //init target class
-  JObject(String className, [Pointer ptr]) : super(className) {
-    _ptr = ptr == null ? nativeCreateClass(super.classUtf8()) : ptr;
+  JObject(String className, [this._ptr]) : super(className) {
+    if (_ptr == null) {
+      Pointer<Utf8> classNamePtr = super.className.toNativeUtf8();
+      _ptr = nativeCreateClass(classNamePtr);
+      calloc.free(classNamePtr);
+    }
     passJObjectToNative(this);
   }
 
@@ -28,14 +32,14 @@ class JObject extends Class {
   }
 
   dynamic invoke(String methodName, List args, [String returnType]) {
-    Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
-    Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
+    Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
+    Pointer<Utf8> returnTypePtr = returnType.toNativeUtf8();
 
     Pointer<Pointer<Void>> pointers;
     Pointer<Pointer<Utf8>> typePointers;
     if (args != null) {
-      pointers = allocate<Pointer<Void>>(count: args.length + 1);
-      typePointers = allocate<Pointer<Utf8>>(count: args.length + 1);
+      pointers = calloc<Pointer<Void>>(args.length + 1);
+      typePointers = calloc<Pointer<Utf8>>(args.length + 1);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (arg == null) {
@@ -50,11 +54,13 @@ class JObject extends Class {
     Pointer<Void> invokeMethodRet = nativeInvokeNeo(
         _ptr, methodNamePtr, pointers, typePointers, returnTypePtr);
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
+    calloc.free(methodNamePtr);
+    calloc.free(returnTypePtr);
     if (pointers != null) {
-      free(pointers);
+      calloc.free(pointers);
     }
     if (typePointers != null) {
-      free(typePointers);
+      calloc.free(typePointers);
     }
     return result;
   }

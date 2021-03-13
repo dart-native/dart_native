@@ -50,7 +50,7 @@ final int nativePort = interactiveCppRequests.sendPort.nativePort;
 final executeCallback = runtimeLib.lookupFunction<Void Function(Pointer<Work>),
     void Function(Pointer<Work>)>('ExecuteCallback');
 
-class Work extends Struct {}
+class Work extends Opaque {}
 
 void requestExecuteCallback(dynamic message) {
   final int workAddress = message;

@@ -60,7 +60,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
   }
 
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr =
-      allocate<Pointer<Utf8>>(count: argCount + 1);
+      calloc<Pointer<Utf8>>(argCount + 1);
   Pointer<Void> selectorPtr = selector.toPointer();
   Pointer isaPtr = object_getClass(target);
   Map<SEL, Pointer> cache = _methodSignatureCache[isaPtr];
@@ -72,7 +72,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
   if (signaturePtr == null) {
     signaturePtr = nativeMethodSignature(isaPtr, selectorPtr);
     if (signaturePtr.address == 0) {
-      free(typeEncodingsPtrPtr);
+      calloc.free(typeEncodingsPtrPtr);
       throw 'signature for [$target $selector] is NULL.';
     }
     cache[selector] = signaturePtr;
@@ -83,7 +83,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
 
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
-    pointers = allocate<Pointer<Void>>(count: argCount);
+    pointers = calloc<Pointer<Void>>(argCount);
     for (var i = 0; i < argCount; i++) {
       var arg = args[i];
       if (arg == null) {
@@ -101,19 +101,19 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
       target, selectorPtr, signaturePtr, pointers, onQueue, waitUntilDone);
 
   if (pointers != null) {
-    free(pointers);
+    calloc.free(pointers);
   }
 
   if (decodeRetVal) {
     Pointer<Utf8> resultTypePtr = nativeTypeEncoding(typeEncodingsPtrPtr.value);
-    free(typeEncodingsPtrPtr);
+    calloc.free(typeEncodingsPtrPtr);
 
     dynamic result = loadValueFromPointer(resultPtr, resultTypePtr, auto);
 
     outRefArgs.forEach((ref) => ref.syncValue());
     return result;
   } else {
-    free(typeEncodingsPtrPtr);
+    calloc.free(typeEncodingsPtrPtr);
     return resultPtr;
   }
 }

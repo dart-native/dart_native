@@ -39,7 +39,7 @@ class Class extends id {
       return _cache[key];
     } else {
       if (object_isClass(ptr) != 0) {
-        String name = Utf8.fromUtf8(class_getName(ptr));
+        String name = class_getName(ptr).toDartString();
         return Class._internal(name, ptr);
       } else {
         throw 'Pointer $ptr is not for Class!';
@@ -61,7 +61,7 @@ Pointer<Void> _getClass(String className, [Class superclass]) {
   if (className == null) {
     className = 'NSObject';
   }
-  final classNamePtr = Utf8.toUtf8(className);
+  final classNamePtr = className.toNativeUtf8();
   Pointer<Void> basePtr = superclass?.pointer;
   Pointer<Void> result;
   if (superclass == null) {
@@ -69,6 +69,6 @@ Pointer<Void> _getClass(String className, [Class superclass]) {
   } else {
     result = nativeGetClass(classNamePtr, basePtr);
   }
-  free(classNamePtr);
+  calloc.free(classNamePtr);
   return result;
 }

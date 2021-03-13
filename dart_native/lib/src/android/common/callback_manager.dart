@@ -11,10 +11,11 @@ class CallBackManager {
   factory CallBackManager() => _instance;
   static CallBackManager get instance => _instance;
 
-  registerCallBack(Pointer<Void> targetPtr, String functionName, Function function) {
+  registerCallBack(
+      Pointer<Void> targetPtr, String functionName, Function function) {
     Map<String, Function> methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
-      methodsMap = {functionName : function};
+      methodsMap = {functionName: function};
     } else {
       methodsMap[functionName] = function;
     }
@@ -36,7 +37,7 @@ final int nativePort = interactiveCppRequests.sendPort.nativePort;
 final executeCallback = nativeDylib.lookupFunction<Void Function(Pointer<Work>),
     void Function(Pointer<Work>)>('ExecuteCallback');
 
-class Work extends Struct {}
+class Work extends Opaque {}
 
 void requestExecuteCallback(dynamic message) {
   final int workAddress = message;
