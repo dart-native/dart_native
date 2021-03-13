@@ -496,7 +496,6 @@ void NotifyDeallocToDart(intptr_t address) {
 #pragma mark - Dart Finalizer
 
 static void RunFinalizer(void *isolate_callback_data,
-                         Dart_WeakPersistentHandle handle,
                          void *peer) {
     SEL selector = NSSelectorFromString(@"release");
     #pragma clang diagnostic push
