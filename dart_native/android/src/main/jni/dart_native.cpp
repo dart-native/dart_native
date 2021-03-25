@@ -17,6 +17,23 @@ static JavaVM *gJvm = nullptr;
 static jobject gClassLoader;
 static jmethodID gFindClassMethod;
 
+typedef void (*NativeMethodCallback)(
+    void *targetPtr,
+    char *funNamePtr,
+    void **args,
+    char **argTypes,
+    int argCount
+);
+
+static std::map<jobject, jclass> cache;
+static std::map<jobject, int> referenceCount;
+
+// todo too many cache
+// for callback
+static std::map<void *, jobject> callbackObjCache;
+static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackManagerCache;
+static std::map<jlong, void *> targetCache;
+
 JNIEnv *getEnv() {
     JNIEnv *env;
     int status = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
@@ -47,32 +64,92 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
     return JNI_VERSION_1_6;
 }
 
-jclass findClass(JNIEnv *env, const char *name) {
-    if (gClassLoader == NULL || gFindClassMethod == NULL) {
-        NSLog("findClass error !");
-    }
-    return static_cast<jclass>(env->CallObjectMethod(gClassLoader, gFindClassMethod,
-                                                     env->NewStringUTF(name)));
+char *spliceChar(char *dest, char *src) {
+  char *result = (char *)malloc(strlen(dest) + strlen(src));
+  strcpy(result, dest);
+  strcat(result, src);
+  return result;
 }
 
-typedef void (*NativeMethodCallback)(
-        void *targetPtr,
-        char *funNamePtr,
-        void **args,
-        char **argTypes,
-        int argCount
-        );
+char *generateSignature(char **argTypes) {
+  char *signature = const_cast<char *>("(");
+  int argCount = 0;
+  if (argTypes != nullptr)
+  {
+    for (; *argTypes; ++argTypes, ++argCount) {
+      signature = spliceChar(signature, *argTypes);
+    }
+  }
+  return spliceChar(signature, const_cast<char *>(")"));
+}
 
-static std::map<jobject, jclass> cache;
-static std::map<jobject, int> referenceCount;
+void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
+  for(jsize index(0); *argTypes ; ++args, ++index, ++argTypes) {
+    char *argType = *argTypes;
+    if (strlen(argType) > 1) {
+      if (strcmp(argType, "Ljava/lang/String;") == 0) {
+        argValues[index].l = curEnv->NewStringUTF((char *)*args);
+      }
+      else {
+        jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
+        argValues[index].l = object;
+      }
+    }
+    else if (strcmp(argType, "C") == 0) {
+      argValues[index].c = (jchar) *(char *) args;
+    }
+    else if(strcmp(argType, "I") == 0) {
+      argValues[index].i = (jint) *((int *) args);
+    }
+    else if(strcmp(argType, "D") == 0) {
+      argValues[index].d = (jdouble) *((double *) args);
+    }
+    else if(strcmp(argType, "F") == 0) {
+      argValues[index].f = (jfloat) *((float *) args);
+    }
+    else if(strcmp(argType, "B") == 0) {
+      argValues[index].b = (jbyte) *((int8_t *) args);
+    }
+    else if(strcmp(argType, "S") == 0) {
+      argValues[index].s = (jshort) *((int16_t *) args);
+    }
+    else if(strcmp(argType, "J") == 0) {
+      argValues[index].j = (jlong) *((int64_t *) args);
+    }
+    else if(strcmp(argType, "Z") == 0) {
+      argValues[index].z = static_cast<jboolean>(*((int *) args));
+    }
+    else if(strcmp(argType, "V") == 0) {}
+  }
+}
 
-// todo too many cache
-// for callback
-static std::map<void *, jobject> callbackObjCache;
-static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackManagerCache;
-static std::map<jlong, void *> targetCache;
+jclass findClass(JNIEnv *env, const char *name) {
+    jclass nativeClass = nullptr;
+    nativeClass = env->FindClass(name);
+    jthrowable exception = env->ExceptionOccurred();
+    if (exception) {
+      env->ExceptionClear();
+      NSLog("findClass exception");
+      return static_cast<jclass>(env->CallObjectMethod(gClassLoader,
+                                                       gFindClassMethod,
+                                                       env->NewStringUTF(name)));
+    }
+    return nativeClass;
+}
 
-void *createTargetClass(char *targetClassName) {
+jobject newObject(JNIEnv *env, jclass cls, void **args, char **argTypes) {
+  char *signature = generateSignature(argTypes);
+  jvalue *argValues = new jvalue[strlen(signature) - 2];
+  if (strlen(signature) - 2 > 0) {
+    fillArgs(args, argTypes, argValues, env);
+  }
+  jmethodID constructor = env->GetMethodID(cls, "<init>", spliceChar(signature, const_cast<char *>("V")));
+  jobject newObj = env->NewObjectA(cls, constructor, argValues);
+  free(argValues);
+  return newObj;
+}
+
+void *createTargetClass(char *targetClassName, void **args, char **argTypes) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
 
@@ -84,16 +161,16 @@ void *createTargetClass(char *targetClassName) {
     }
 
     jclass cls = findClass(curEnv, targetClassName);
-    jmethodID constructor = curEnv->GetMethodID(cls, "<init>", "()V");
-    jobject newObject = curEnv->NewGlobalRef(curEnv->NewObject(cls, constructor));
-    cache[newObject] = static_cast<jclass>(curEnv->NewGlobalRef(cls));
+
+    jobject newObj = curEnv->NewGlobalRef(newObject(curEnv, cls, args, argTypes));
+    cache[newObj] = static_cast<jclass>(curEnv->NewGlobalRef(cls));
 
 
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
 
-    return newObject;
+    return newObj;
 }
 
 
@@ -138,63 +215,6 @@ void release(void *classPtr) {
     referenceCount[object] = count - 1;
 }
 
-char *spliceChar(char *dest, char *src) {
-    char *result = (char *)malloc(strlen(dest) + strlen(src));
-    strcpy(result, dest);
-    strcat(result, src);
-    return result;
-}
-
-char *generateSignature(char **argTypes) {
-    char *signature = const_cast<char *>("(");
-    int argCount = 0;
-    for(; *argTypes ; ++argTypes, ++argCount) {
-        signature = spliceChar(signature, *argTypes);
-    }
-    return spliceChar(signature, const_cast<char *>(")"));
-}
-
-void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
-    for(jsize index(0); *argTypes ; ++args, ++index, ++argTypes) {
-        char *argType = *argTypes;
-        if (strlen(argType) > 1) {
-            if (strcmp(argType, "Ljava/lang/String;") == 0) {
-                argValues[index].l = curEnv->NewStringUTF((char *)*args);
-            }
-            else {
-                jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
-                argValues[index].l = object;
-            }
-        }
-        else if (strcmp(argType, "C") == 0) {
-            argValues[index].c = (jchar) *(char *) args;
-        }
-        else if(strcmp(argType, "I") == 0) {
-            argValues[index].i = (jint) *((int *) args);
-        }
-        else if(strcmp(argType, "D") == 0) {
-            argValues[index].d = (jdouble) *((double *) args);
-        }
-        else if(strcmp(argType, "F") == 0) {
-            argValues[index].f = (jfloat) *((float *) args);
-        }
-        else if(strcmp(argType, "B") == 0) {
-            argValues[index].b = (jbyte) *((int8_t *) args);
-        }
-        else if(strcmp(argType, "S") == 0) {
-            argValues[index].s = (jshort) *((int16_t *) args);
-        }
-        else if(strcmp(argType, "J") == 0) {
-            argValues[index].j = (jlong) *((int64_t *) args);
-        }
-        else if(strcmp(argType, "Z") == 0) {
-            argValues[index].z = static_cast<jboolean>(*((int *) args));
-        }
-        else if(strcmp(argType, "V") == 0) {}
-    }
-}
-
-
 void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, char *returnType) {
     JNIEnv *curEnv;
     bool bShouldDetach = false;
@@ -207,17 +227,22 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     }
     jobject object = static_cast<jobject>(classPtr);
     jclass cls = cache[object];
-
     char *signature = generateSignature(argTypes);
     jvalue *argValues = new jvalue[strlen(signature) - 2];
-    fillArgs(args, argTypes, argValues, curEnv);
+    if ((strlen(signature) - 2) > 0) {
+      fillArgs(args, argTypes, argValues, curEnv);
+    }
     jmethodID method = curEnv->GetMethodID(cls, methodName, spliceChar(signature, returnType));
 
     if (strlen(returnType) > 1) {
         if (strcmp(returnType, "Ljava/lang/String;") == 0) {
             jstring javaString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
-            nativeInvokeResult = (char *) curEnv->GetStringUTFChars(javaString, 0);
-            curEnv->DeleteLocalRef(javaString);
+            jboolean isCopy = JNI_FALSE;
+            nativeInvokeResult = (char *) curEnv->GetStringUTFChars(javaString, &isCopy);
+            if (isCopy == JNI_TRUE) {
+              NSLog("DeleteLocalRef");
+              curEnv->DeleteLocalRef(javaString);
+            }
         }
         else {
             jobject obj = curEnv->NewGlobalRef(curEnv->CallObjectMethodA(object, method, argValues));
@@ -260,8 +285,10 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
         nativeInvokeResult = (void *) nativeLong;
     }
     else if(strcmp(returnType, "Z") == 0) {
-        auto nativeBool = curEnv->CallBooleanMethodA(object, method, argValues);
-        nativeInvokeResult = (void *) nativeBool;
+      NSLog("CallBooleanMethodA");
+      auto nativeBool = curEnv->CallBooleanMethodA(object, method, argValues);
+      NSLog("CallBooleanMethodA success %d", nativeBool);
+      nativeInvokeResult = (void *) nativeBool;
     }
     else if(strcmp(returnType, "V") == 0) {
         curEnv->CallVoidMethodA(object, method, argValues);
