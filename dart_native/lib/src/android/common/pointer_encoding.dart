@@ -97,7 +97,7 @@ dynamic storeValueToPointer(
   if(object is Class) {
     if(object is JObject) {
       ptr.value = object.pointer;
-      typePtr?.value = Utf8.toUtf8("L" + object.className + ";");
+      typePtr?.value = argSignature != null ? argSignature : Utf8.toUtf8("L" + object.className + ";");
     }
     return;
   }

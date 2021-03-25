@@ -4,13 +4,13 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
 
 /// Stands for `Short` in Android.
-const String clsShort = "java/lang/Short";
+const String CLS_SHORT = "java/lang/Short";
 
 class Short extends JSubclass<int> {
-  Short(int value) : super(value, _new, clsShort);
+  Short(int value) : super(value, _new, CLS_SHORT);
 
-  Short.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, clsShort) {
-    raw = invoke("shortValue", [], "()S");
+  Short.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_SHORT) {
+    raw = invoke("shortValue", [], "S");
   }
 }
 

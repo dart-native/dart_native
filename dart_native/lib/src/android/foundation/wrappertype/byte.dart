@@ -4,13 +4,13 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
 
 /// Stands for `Byte` in Android.
-const String clsByte = "java/lang/Byte";
+const String CLS_BYTE = "java/lang/Byte";
 
 class Byte extends JSubclass<int> {
-  Byte(int value) : super(value, _new, clsByte);
+  Byte(int value) : super(value, _new, CLS_BYTE);
 
-  Byte.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, clsByte) {
-    raw = invoke("byteValue", [], "()B");
+  Byte.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_BYTE) {
+    raw = invoke("byteValue", [], "B");
   }
 }
 

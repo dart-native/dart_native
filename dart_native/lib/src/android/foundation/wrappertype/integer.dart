@@ -4,13 +4,13 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
 
 /// Stands for `Integer` in Android.
-const String clsInteger = "java/lang/Integer";
+const String CLS_INTEGER = "java/lang/Integer";
 
 class Integer extends JSubclass<int> {
-  Integer(int value) : super(value, _new, clsInteger);
+  Integer(int value) : super(value, _new, CLS_INTEGER);
 
-  Integer.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, clsInteger) {
-    raw = invoke("intValue", [], "()I");
+  Integer.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_INTEGER) {
+    raw = invoke("intValue", [], "I");
   }
 }
 

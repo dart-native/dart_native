@@ -4,13 +4,13 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
 
 /// Stands for `Boolean` in Android.
-const String clsBoolean = "java/lang/Boolean";
+const String CLS_BOOLEAN = "java/lang/Boolean";
 
 class Boolean extends JSubclass<bool> {
-  Boolean(bool value) : super(value, _new, clsBoolean);
+  Boolean(bool value) : super(value, _new, CLS_BOOLEAN);
 
-  Boolean.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, clsBoolean) {
-    raw = invoke("booleanValue", [], "()Z");
+  Boolean.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_BOOLEAN) {
+    raw = invoke("booleanValue", [], "Z");
   }
 }
 

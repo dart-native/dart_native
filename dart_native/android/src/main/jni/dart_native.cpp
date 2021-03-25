@@ -186,8 +186,8 @@ void releaseTargetClass(void *classPtr) {
     }
 
     jobject object = static_cast<jobject>(classPtr);
+    cache.erase(object);
     curEnv->DeleteGlobalRef(object);
-    cache[object] = NULL;
 
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
@@ -233,8 +233,9 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
       fillArgs(args, argTypes, argValues, curEnv);
     }
     jmethodID method = curEnv->GetMethodID(cls, methodName, spliceChar(signature, returnType));
+    NSLog("call method: %s descriptor: %s", methodName, spliceChar(signature, returnType));
 
-    if (strlen(returnType) > 1) {
+  if (strlen(returnType) > 1) {
         if (strcmp(returnType, "Ljava/lang/String;") == 0) {
             jstring javaString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
             jboolean isCopy = JNI_FALSE;
@@ -246,11 +247,9 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
         }
         else {
             jobject obj = curEnv->NewGlobalRef(curEnv->CallObjectMethodA(object, method, argValues));
+            jclass objCls = curEnv->GetObjectClass(obj);
             //store class value
-            char* clsName= new char[strlen(returnType)];
-            strlcpy(clsName, returnType + 1, strlen(returnType) - 1);
-            cache[obj] = static_cast<jclass>(curEnv->NewGlobalRef(findClass(curEnv, clsName)));
-            free(clsName);
+            cache[obj] = static_cast<jclass>(curEnv->NewGlobalRef(objCls));
             nativeInvokeResult = obj;
         }
     }
@@ -285,9 +284,7 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
         nativeInvokeResult = (void *) nativeLong;
     }
     else if(strcmp(returnType, "Z") == 0) {
-      NSLog("CallBooleanMethodA");
       auto nativeBool = curEnv->CallBooleanMethodA(object, method, argValues);
-      NSLog("CallBooleanMethodA success %d", nativeBool);
       nativeInvokeResult = (void *) nativeBool;
     }
     else if(strcmp(returnType, "V") == 0) {

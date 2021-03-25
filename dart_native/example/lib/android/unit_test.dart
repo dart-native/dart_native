@@ -1,6 +1,7 @@
 import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
+import 'package:dart_native/dart_native.dart';
 
 testAndroid(RuntimeStub stub) {
   int ms = currentTimeMillis();
@@ -77,6 +78,14 @@ testAndroid(RuntimeStub stub) {
   print('new entity get time : ${stub.getTime(new Entity())}');
 
   stub.setDelegateListener(DelegateStub());
+
+  print("integer ${stub.getInteger()}");
+
+  JList jList1 = JList([1, 2, 3, 4]);
+  List list = stub.getList(jList1);
+  for (int item in list) {
+    print("item $item");
+  }
 }
 
 int currentTimeMillis() {

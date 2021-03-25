@@ -6,6 +6,8 @@ import android.os.Looper;
 import com.dartnative.dart_native.CallbackManager;
 
 import io.flutter.Log;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RuntimeStub {
   private final String TAG = "dart_java";
@@ -83,5 +85,19 @@ public class RuntimeStub {
       boolean isSuccess = delegate.callbackComplex(20, 100.0, "wwawawawawa");
       Log.d(TAG, "callback result " + isSuccess);
     }, 2000);
+  }
+  
+  public Integer getInteger() {
+    return new Integer(10);
+  }
+
+  public List<Integer> getList(List<Integer> list) {
+    for (int i = 0; i < list.size(); i++) {
+      Log.d(TAG, "element is " + list.get(i));
+    }
+    List<Integer> returnList = new ArrayList<>();
+    returnList.add(7);
+    returnList.add(8);
+    return returnList;
   }
 }

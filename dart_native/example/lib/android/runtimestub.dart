@@ -80,4 +80,13 @@ class RuntimeStub extends JObject {
   void setDelegateListener(SampleDelegate delegate) {
     invoke('setDelegateListener', [delegate], "V");
   }
+
+  int getInteger() {
+    return Integer.fromPointer(invoke("getInteger", null, "Ljava/lang/Integer;")).raw;
+  }
+
+  List getList(JList list) {
+    return JList.fromPointer(invoke("getList", [list], "Ljava/util/List;")).raw;
+  }
+
 }
