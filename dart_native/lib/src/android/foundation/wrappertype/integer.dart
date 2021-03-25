@@ -14,6 +14,7 @@ class Integer extends JSubclass<int> {
   }
 }
 
+/// New native 'Integer'.
 Pointer<Void> _new(dynamic value) {
   if (value is int) {
     JObject object = JObject.parameterConstructor(clsName, [value]);
