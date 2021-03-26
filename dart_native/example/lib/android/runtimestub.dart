@@ -85,8 +85,29 @@ class RuntimeStub extends JObject {
     return Integer.fromPointer(invoke("getInteger", null, "Ljava/lang/Integer;")).raw;
   }
 
-  List getList(JList list) {
-    return JList.fromPointer(invoke("getList", [list], "Ljava/util/List;")).raw;
+  List getList(List list) {
+    JList jl = JList(list);
+    return JList.fromPointer(invoke("getList", [jl], "Ljava/util/List;")).raw;
+  }
+
+  List getByteList(List list) {
+    JList jl = JList(list);
+    return JList.fromPointer(invoke("getByteList", [jl], "Ljava/util/List;")).raw;
+  }
+
+  List getFloatList(List list) {
+    JList jl = JList(list);
+    return JList.fromPointer(invoke("getFloatList", [jl], "Ljava/util/List;")).raw;
+  }
+
+  List getStringList(List list) {
+    JList jl = JList(list);
+    return JList.fromPointer(invoke("getStringList", [jl], "Ljava/util/List;")).raw;
+  }
+
+  List getCycleList(List list) {
+    JList jl = JList(list);
+    return JList.fromPointer(invoke("getCycleList", [jl], "Ljava/util/List;")).raw;
   }
 
 }

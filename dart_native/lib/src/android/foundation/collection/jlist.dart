@@ -16,13 +16,19 @@ class JList extends JSubclass<List> {
   JList.fromPointer(Pointer<Void> ptr, {String clsName: CLS_LIST}) : super.fromPointer(ptr, clsName) {
     int count = invoke("size", [], "I");
     List temp = List(count);
+    String itemType = "";
     for (var i = 0; i < count; i++) {
-      temp[i] = Integer.fromPointer(invoke("get", [i], "Ljava/lang/Object;")).raw;
+      Pointer<Void> itemPtr = invoke("get", [i], "Ljava/lang/Object;");
+      if (itemType == "") {
+        itemType = _getItemClass(itemPtr);
+      }
+      temp[i] = unBoxingWrapperClass(itemPtr, itemType);
     }
     raw = temp;
   }
-
 }
+
+Pointer<Utf8> _argSignature = Utf8.toUtf8("Ljava/lang/Object;");
 
 /// New native 'ArrayList'.
 Pointer<Void> _new(dynamic value, String clsName) {
@@ -31,17 +37,30 @@ Pointer<Void> _new(dynamic value, String clsName) {
     if (clsName == CLS_LIST) clsName = CLS_ARRAYLIST;
 
     JObject nativeList = JObject(clsName);
-    Pointer<Utf8> argSignature = Utf8.toUtf8("Ljava/lang/Object;");
 
     if (value == null) {
       return nativeList.pointer;
     }
-
     for (var i = 0; i < value.length; i ++) {
-      nativeList.invoke("add", [Integer(value[i])], "Z", [argSignature]);
+      nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z", [_argSignature]);
     }
     return nativeList.pointer;
   } else {
     throw 'Invalid param when initializing JList.';
   }
+}
+
+String _getItemClass(Pointer<Void> itemPtr) {
+  JObject templeObject = JObject("java/lang/Object", itemPtr);
+  templeObject = JObject("java/lang/Class",
+      templeObject.invoke("getClass", null, "Ljava/lang/Class;"));
+  
+  return templeObject.invoke("getName", null, "Ljava/lang/String;");
+}
+
+class ListItemType {
+  bool isWrapperClass;
+  String clsName;
+
+  ListItemType(this.isWrapperClass, this.clsName);
 }

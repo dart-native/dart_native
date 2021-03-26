@@ -81,10 +81,31 @@ testAndroid(RuntimeStub stub) {
 
   print("integer ${stub.getInteger()}");
 
-  JList jList1 = JList([1, 2, 3, 4]);
-  List list = stub.getList(jList1);
+  List list = stub.getList([1, 2, 3, 4]);
   for (int item in list) {
     print("item $item");
+  }
+
+  list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
+  for (int item in list) {
+    print("item $item");
+  }
+
+  list = stub.getFloatList([float(1.0), float(2.0), float(3.0), float(4.0)]);
+  for (double item in list) {
+    print("item $item");
+  }
+
+  // List list = stub.getStringList(["w", "q", "e"]);
+  // for (String item in list) {
+  //   print("item $item");
+  // }
+
+  list = stub.getCycleList([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+  for (List items in list) {
+    for (int item in items) {
+      print("item $item");
+    }
   }
 }
 
