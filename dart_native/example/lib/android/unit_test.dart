@@ -1,6 +1,7 @@
 import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
+import 'package:dart_native/dart_native.dart';
 
 testAndroid(RuntimeStub stub) {
   int ms = currentTimeMillis();
@@ -77,6 +78,40 @@ testAndroid(RuntimeStub stub) {
   print('new entity get time : ${stub.getTime(new Entity())}');
 
   stub.setDelegateListener(DelegateStub());
+
+  print("integer ${stub.getInteger()}");
+
+  List list = stub.getList([1, 2, 3, 4]);
+  for (int item in list) {
+    print("item $item");
+  }
+
+  list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
+  for (int item in list) {
+    print("item $item");
+  }
+
+  list = stub.getFloatList([float(1.0), float(2.0), float(3.0), float(4.0)]);
+  for (double item in list) {
+    print("item $item");
+  }
+
+  // List list = stub.getStringList(["w", "q", "e"]);
+  // for (String item in list) {
+  //   print("item $item");
+  // }
+
+  list = stub.getCycleList([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+  for (List items in list) {
+    for (int item in items) {
+      print("item $item");
+    }
+  }
+
+  List byteArray = stub.getByteArray([byte(1), byte(2), byte(3)]);
+  for (int byte in byteArray) {
+    print("item $byte");
+  }
 }
 
 int currentTimeMillis() {

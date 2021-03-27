@@ -14,7 +14,6 @@ class Class extends Comparable<dynamic>{
   }
 
   Pointer<Utf8> classUtf8() {
-    print("HUIZZ className $_className");
     return Utf8.toUtf8(_className);
   }
 
