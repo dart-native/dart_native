@@ -150,4 +150,11 @@ public class RuntimeStub {
     returnList.add(newList2);
     return returnList;
   }
+
+  public byte[] getByteArray(byte[] bytes) {
+    for (int i = 0; i < bytes.length; i++) {
+      Log.d(TAG, "element is " + bytes[i]);
+    }
+    return new byte[]{1, 2, 10};
+  }
 }

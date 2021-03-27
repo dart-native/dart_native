@@ -110,4 +110,8 @@ class RuntimeStub extends JObject {
     return JList.fromPointer(invoke("getCycleList", [jl], "Ljava/util/List;")).raw;
   }
 
+  List getByteArray(List list) {
+    return JArray.fromPointer(invoke("getByteArray", [JArray(list)], "[B")).raw;
+  }
+
 }

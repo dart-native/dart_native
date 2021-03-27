@@ -1,6 +1,7 @@
 export 'runtime/jobject.dart';
 export 'runtime/call_back.dart';
 export 'foundation/collection/jlist.dart';
+export 'foundation/collection/jarray.dart';
 export 'foundation/wrapperclass/integer.dart';
 export 'foundation/wrapperclass/boolean.dart';
 export 'foundation/wrapperclass/byte.dart';

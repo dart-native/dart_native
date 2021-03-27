@@ -107,6 +107,11 @@ testAndroid(RuntimeStub stub) {
       print("item $item");
     }
   }
+
+  List byteArray = stub.getByteArray([byte(1), byte(2), byte(3)]);
+  for (int byte in byteArray) {
+    print("item $byte");
+  }
 }
 
 int currentTimeMillis() {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/src/android/foundation/collection/jarray.dart';
 import 'package:dart_native/src/android/runtime/class.dart';
 import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:dart_native/src/common/native_basic_type.dart';
@@ -91,6 +92,12 @@ dynamic storeValueToPointer(
   if(object is String) {
     ptr.cast<Pointer<Utf8>>().value = Utf8.toUtf8(object);
     typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.string];
+    return;
+  }
+
+  if(object is JArray) {
+    ptr.value = object.pointer;
+    typePtr?.value = argSignature != null ? argSignature : Utf8.toUtf8(object.arraySignature);
     return;
   }
 

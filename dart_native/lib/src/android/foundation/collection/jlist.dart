@@ -57,10 +57,3 @@ String _getItemClass(Pointer<Void> itemPtr) {
   
   return templeObject.invoke("getName", null, "Ljava/lang/String;");
 }
-
-class ListItemType {
-  bool isWrapperClass;
-  String clsName;
-
-  ListItemType(this.isWrapperClass, this.clsName);
-}
