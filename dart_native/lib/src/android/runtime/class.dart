@@ -1,21 +1,8 @@
-import 'dart:ffi';
-
-import 'package:ffi/ffi.dart';
-
-class Class extends Comparable<dynamic>{
+class Class extends Comparable<dynamic> {
   String _className;
 
-  Class(String className) {
-    _className = className;
-  }
-
-  String get className {
-    return _className;
-  }
-
-  Pointer<Utf8> classUtf8() {
-    return Utf8.toUtf8(_className);
-  }
+  Class(this._className);
+  String get className => _className;
 
   @override
   int compareTo(other) {

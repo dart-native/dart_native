@@ -18,15 +18,21 @@ class JObject extends Class {
   Pointer _ptr;
 
   //init target class
-  JObject(String className, [Pointer ptr]) : super(className) {
-    _ptr = ptr == null ? nativeCreateClass(super.classUtf8(), nullptr, nullptr) : ptr;
+  JObject(String className, [this._ptr]) : super(className) {
+    if (_ptr == null) {
+      Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
+      _ptr = nativeCreateClass(classNamePtr, nullptr, nullptr);
+      free(classNamePtr);
+    }
     passJObjectToNative(this);
   }
 
   JObject.parameterConstructor(String clsName, List args) : super(clsName) {
     ArgumentsPointers pointers = _parseArguments(args);
-
-    _ptr = nativeCreateClass(super.classUtf8(), pointers.pointers, pointers.typePointers);
+    Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
+    _ptr = nativeCreateClass(
+        classNamePtr, pointers.pointers, pointers.typePointers);
+    free(classNamePtr);
     passJObjectToNative(this);
     pointers.freePointers();
   }
@@ -35,16 +41,19 @@ class JObject extends Class {
     return _ptr;
   }
 
-  dynamic invoke(String methodName, List args, String returnType, [List argsSignature]) {
+  dynamic invoke(String methodName, List args, String returnType,
+      [List argsSignature]) {
     Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
     Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
 
     ArgumentsPointers pointers = _parseArguments(args, argsSignature);
-    Pointer<Void> invokeMethodRet = nativeInvokeNeo(
-        _ptr, methodNamePtr, pointers.pointers, pointers.typePointers, returnTypePtr);
+    Pointer<Void> invokeMethodRet = nativeInvokeNeo(_ptr, methodNamePtr,
+        pointers.pointers, pointers.typePointers, returnTypePtr);
 
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     pointers.freePointers();
+    free(methodNamePtr);
+    free(returnTypePtr);
     return result;
   }
 
@@ -67,10 +76,12 @@ class JObject extends Class {
         if (arg == null) {
           throw 'One of args list is null';
         }
-        Pointer<Utf8> argSignature
-            = argsSignature == null || !(argsSignature[i] is Pointer<Utf8>) ? null : argsSignature[i];
-        storeValueToPointer(
-            arg, pointers.elementAt(i), typePointers.elementAt(i), argSignature);
+        Pointer<Utf8> argSignature =
+            argsSignature == null || !(argsSignature[i] is Pointer<Utf8>)
+                ? null
+                : argsSignature[i];
+        storeValueToPointer(arg, pointers.elementAt(i),
+            typePointers.elementAt(i), argSignature);
       }
       pointers.elementAt(args.length).value = nullptr;
       typePointers.elementAt(args.length).value = nullptr;
