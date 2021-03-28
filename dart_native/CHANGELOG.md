@@ -1,3 +1,7 @@
+## 0.3.12
+
+* [Feature] Support List/Array for Android.
+
 ## 0.3.11
 
 * [Fix] Skip BOM for Utf-16 on iOS. Sad!
