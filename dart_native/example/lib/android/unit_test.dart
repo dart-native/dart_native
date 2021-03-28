@@ -96,11 +96,6 @@ testAndroid(RuntimeStub stub) {
     print("item $item");
   }
 
-  // List list = stub.getStringList(["w", "q", "e"]);
-  // for (String item in list) {
-  //   print("item $item");
-  // }
-
   list = stub.getCycleList([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
   for (List items in list) {
     for (int item in items) {

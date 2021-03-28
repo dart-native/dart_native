@@ -240,10 +240,6 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
             jstring javaString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
             jboolean isCopy = JNI_FALSE;
             nativeInvokeResult = (char *) curEnv->GetStringUTFChars(javaString, &isCopy);
-            if (isCopy == JNI_TRUE) {
-              NSLog("DeleteLocalRef");
-              curEnv->DeleteLocalRef(javaString);
-            }
         }
         else {
             jobject obj = curEnv->NewGlobalRef(curEnv->CallObjectMethodA(object, method, argValues));
