@@ -43,7 +43,6 @@ class SEL {
   }
 
   bool operator ==(other) {
-    if (other == null) return false;
     return _selPtr == other._selPtr;
   }
 

@@ -411,7 +411,7 @@ void NotifyDart(Dart_Port send_port, const Work* work) {
 
     const bool result = Dart_PostCObject_DL(send_port, &dart_object);
     if (!result) {
-      NSLog(@"Native callback to Dart failed! Invalid port or isolate died");
+        NSLog(@"Native callback to Dart failed! Invalid port or isolate died");
     }
 }
 

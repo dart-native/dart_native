@@ -12,11 +12,12 @@ class NSSubclass<T> extends NSObject {
   NSSubclass.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   bool operator ==(other) {
-    if (other == null) {
+    if (other == nil) {
       return false;
     }
-    if (other == nil) return false;
-    if (other is T) return raw == other;
+    if (other is T) {
+      return raw == other;
+    }
     return raw == other.raw;
   }
 

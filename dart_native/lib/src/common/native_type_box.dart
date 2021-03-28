@@ -5,8 +5,9 @@ class NativeBox<T> {
   const NativeBox(this.raw);
 
   bool operator ==(other) {
-    if (other == null) return false;
-    if (other is T) return raw == other;
+    if (other is T) {
+      return raw == other;
+    }
     return raw == other.raw;
   }
 

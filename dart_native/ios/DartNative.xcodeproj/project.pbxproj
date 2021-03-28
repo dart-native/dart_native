@@ -49,7 +49,6 @@
 
 /* Begin PBXFileReference section */
 		A45D1D3D258B3DC6009C163D /* DartNative.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DartNative.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A45D1D41258B3DC6009C163D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A45D1D4C258B3E0A009C163D /* dart_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_api.h; sourceTree = "<group>"; };
 		A45D1D4D258B3E0A009C163D /* dart_api_dl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dart_api_dl.c; sourceTree = "<group>"; };
 		A45D1D4E258B3E0A009C163D /* dart_version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_version.h; sourceTree = "<group>"; };
@@ -88,6 +87,7 @@
 		A45D1D75258B3E0A009C163D /* DNPointerWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNPointerWrapper.m; sourceTree = "<group>"; };
 		A45D1D76258B3E0A009C163D /* DNFFIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNFFIHelper.h; sourceTree = "<group>"; };
 		A45D1D77258B3E0A009C163D /* DNBlockWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNBlockWrapper.m; sourceTree = "<group>"; };
+		A49438DF25934C39004BF483 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,7 +108,7 @@
 				A45D1D64258B3E0A009C163D /* Classes */,
 				A45D1D4A258B3E0A009C163D /* common */,
 				A45D1D57258B3E0A009C163D /* libffi */,
-				A45D1D3F258B3DC6009C163D /* DartNative */,
+				A49438DE25934C39004BF483 /* DartNative */,
 				A45D1D3E258B3DC6009C163D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -119,14 +119,6 @@
 				A45D1D3D258B3DC6009C163D /* DartNative.framework */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		A45D1D3F258B3DC6009C163D /* DartNative */ = {
-			isa = PBXGroup;
-			children = (
-				A45D1D41258B3DC6009C163D /* Info.plist */,
-			);
-			path = DartNative;
 			sourceTree = "<group>";
 		};
 		A45D1D4A258B3E0A009C163D /* common */ = {
@@ -210,6 +202,14 @@
 				A45D1D77258B3E0A009C163D /* DNBlockWrapper.m */,
 			);
 			path = Classes;
+			sourceTree = "<group>";
+		};
+		A49438DE25934C39004BF483 /* DartNative */ = {
+			isa = PBXGroup;
+			children = (
+				A49438DF25934C39004BF483 /* Info.plist */,
+			);
+			path = DartNative;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
