@@ -105,7 +105,7 @@ _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *i
 }
 
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, BOOL waitUntilDone) {
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *)) {
     if (!object || !selector || !signature) {
         return NULL;
     }
@@ -113,39 +113,38 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     invocation.target = object;
     invocation.selector = selector;
     _fillArgsToInvocation(signature, args, invocation, 2);
-    if (queue != NULL) {
-        // Return immediately.
-        if (!waitUntilDone) {
-            dispatch_async(queue, ^{
-                [invocation invoke];
-            });
-            return nil;
-        }
-        // Same queue
-        if (strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(queue)) == 0) {
-            [invocation invoke];
-        } else {
-            dispatch_sync(queue, ^{
-                [invocation invoke];
-            });
-        }
-    } else {
-        [invocation invoke];
-    }
-    void *result = NULL;
-    const char returnType = signature.methodReturnType[0];
-    if (signature.methodReturnLength > 0) {
-        if (returnType == '{') {
-            result = _mallocReturnStruct(signature);
-            [invocation getReturnValue:result];
-        } else {
-            [invocation getReturnValue:&result];
-            if (returnType == '@') {
-                [DNObjectDealloc attachHost:(__bridge id)result];
+    
+    void *(^resultBlock)() = ^() {
+        void *result = NULL;
+        const char returnType = signature.methodReturnType[0];
+        if (signature.methodReturnLength > 0) {
+            if (returnType == '{') {
+                result = _mallocReturnStruct(signature);
+                [invocation getReturnValue:result];
+            } else {
+                [invocation getReturnValue:&result];
+                if (returnType == '@') {
+                    [DNObjectDealloc attachHost:(__bridge id)result];
+                }
             }
         }
+        return result;
+    };
+    
+    if (queue != NULL) {
+        // Return nil immediately.
+        dispatch_async(queue, ^{
+            [invocation invoke];
+            if (callback) {
+                void *result = resultBlock();
+                callback(result);
+            }
+        });
+        return nil;;
+    } else {
+        [invocation invoke];
+        return resultBlock();
     }
-    return result;
 }
 
 void *

@@ -30,11 +30,6 @@ class Block extends id {
   NSObject _wrapper; // Block hold wrapper
   List<String> types = [];
 
-  // TODO: This is not working when block is created by function.
-  // set queue(Pointer<Void> queue) {
-  //   _wrapper.perform(Selector('setQueue:'), args: [queue]);
-  // }
-
   /// Creating a [Block] from a [Function].
   ///
   /// NOTE: The arguments of [function] should be wrapper class which can

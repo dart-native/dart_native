@@ -61,11 +61,4 @@ class DispatchQueue {
   static final DispatchQueue main = DispatchQueue._internal(_mainQueue);
 
   DispatchQueue._internal(this._queue);
-
-  /// TODO: This is not working.
-  // void async(DispatchWorkItem workItem) {
-  //   Block block = Block(workItem);
-  //   block.queue = _queue;
-  //   dispatch_async(_queue, block.pointer);
-  // }
 }

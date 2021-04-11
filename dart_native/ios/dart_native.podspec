@@ -14,7 +14,7 @@ Write native code using Dart. This package liberates you from native code and lo
   s.author           = { 'DartNative' => 'email@example.com' }
   s.source           = { :path => '.' }
   
-#  s.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
+  # s.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
   s.source_files = 'Classes/DartNativePlugin.*'
   
   s.public_header_files = 'Classes/DartNativePlugin.h'
@@ -22,7 +22,7 @@ Write native code using Dart. This package liberates you from native code and lo
   s.platform = :ios, '8.0'
   s.libraries = 'c++'
   
-#  s.vendored_libraries = 'libffi/libffi.a'
+  # s.vendored_libraries = 'libffi/libffi.a'
   s.vendored_frameworks = 'DartNative.framework'
   
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.

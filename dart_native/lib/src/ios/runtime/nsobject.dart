@@ -12,6 +12,11 @@ import 'package:dart_native/src/ios/runtime/selector.dart';
 final id nil = id(nullptr);
 
 void passObjectToNative(NSObject obj) {
+  // Ignore null and nil
+  if (obj == null || obj == nil) {
+    return;
+  }
+
   if (initDartAPISuccess && obj.isa != null) {
     passObjectToC(obj, obj.pointer);
   } else {

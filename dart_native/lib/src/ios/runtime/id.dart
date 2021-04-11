@@ -13,7 +13,7 @@ import 'package:dart_native/src/ios/runtime/message.dart';
 class id implements NSObjectProtocol {
   /// Stands for `isa` in iOS.
   Class get isa {
-    if (_ptr == null) {
+    if (_ptr == null || _ptr == nullptr) {
       return null;
     }
     Pointer<Void> isaPtr = object_getClass(_ptr);
@@ -37,12 +37,14 @@ class id implements NSObjectProtocol {
     return perform(SEL('superclass'));
   }
 
-  /// Returns a Boolean value that indicates whether the receiver and a given object are equal.
+  /// Returns a Boolean value that indicates whether the receiver and a given
+  /// object are equal.
   bool isEqual(NSObjectProtocol object) {
     return perform(SEL('isEqual:'), args: [object]);
   }
 
-  /// Returns an integer that can be used as a table address in a hash table structure.
+  /// Returns an integer that can be used as a table address in a hash table
+  /// structure.
   int get hash {
     return perform(SEL('hash'));
   }
@@ -52,22 +54,26 @@ class id implements NSObjectProtocol {
     return this;
   }
 
-  /// Returns a Boolean value that indicates whether the receiver is an instance of given class or an instance of any class that inherits from that class.
+  /// Returns a Boolean value that indicates whether the receiver is an instance
+  /// of given class or an instance of any class that inherits from that class.
   bool isKind({@required Class of}) {
     return perform(SEL('isKindOfClass:'), args: [of]);
   }
 
-  /// Returns a Boolean value that indicates whether the receiver is an instance of a given class.
+  /// Returns a Boolean value that indicates whether the receiver is an instance
+  /// of a given class.
   bool isMember({@required Class of}) {
     return perform(SEL('isMemberOfClass:'), args: [of]);
   }
 
-  /// Returns a Boolean value that indicates whether the receiver implements or inherits a method that can respond to a specified message.
+  /// Returns a Boolean value that indicates whether the receiver implements or
+  /// inherits a method that can respond to a specified message.
   bool responds({@required SEL to}) {
     return perform(SEL('respondsToSelector:'), args: [to]);
   }
 
-  /// Returns a Boolean value that indicates whether the receiver conforms to a given protocol.
+  /// Returns a Boolean value that indicates whether the receiver conforms to a
+  /// given protocol.
   bool conforms({@required Protocol to}) {
     return perform(SEL('conformsToProtocol:'), args: [to]);
   }
@@ -78,33 +84,39 @@ class id implements NSObjectProtocol {
     return NSString.fromPointer(result.pointer).raw;
   }
 
-  /// Returns a string that describes the contents of the receiver for presentation in the debugger.
+  /// Returns a string that describes the contents of the receiver for
+  /// presentation in the debugger.
   String get debugDescription {
     NSObject result = perform(SEL('debugDescription'));
     return NSString.fromPointer(result.pointer).raw;
   }
 
-  /// Sends a specified message to the receiver and returns the result of the message.
-  dynamic perform(SEL selector,
-      {List args,
-      DispatchQueue onQueue,
-      bool waitUntilDone = true,
-      bool decodeRetVal = true}) {
+  /// Sends a specified message to the receiver and returns the result of the
+  /// message.
+  dynamic perform(SEL selector, {List args, bool decodeRetVal = true}) {
     return msgSend(this.pointer, selector,
-        args: args,
-        onQueue: onQueue,
-        waitUntilDone: waitUntilDone,
-        decodeRetVal: decodeRetVal);
+        args: args, decodeRetVal: decodeRetVal);
   }
 
-  /// Returns a Boolean value that indicates whether the receiver does not descend from NSObject.
+  /// Sends a specified message to the receiver asynchronously.
+  ///
+  /// Returns a [Future] which completes to the received response, which may
+  /// be null or nil.
+  Future<dynamic> performAsync(SEL selector,
+      {List args, DispatchQueue onQueue, bool decodeRetVal = true}) async {
+    return msgSendAsync(this.pointer, selector,
+        args: args, decodeRetVal: decodeRetVal, onQueue: onQueue);
+  }
+
+  /// Returns a Boolean value that indicates whether the receiver does not
+  /// descend from NSObject.
   bool isProxy() {
     return perform(SEL('isProxy'));
   }
 
   @override
   String toString() {
-    return '<${isa.name}: $_address>';
+    return '<${isa?.name}: $_address>';
   }
 
   bool operator ==(other) {

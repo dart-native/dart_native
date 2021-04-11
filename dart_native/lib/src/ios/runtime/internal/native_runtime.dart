@@ -40,23 +40,17 @@ typedef GetClassD = Pointer<Void> Function(
 final GetClassD nativeGetClass =
     runtimeLib.lookupFunction<GetClassC, GetClassD>('native_get_class');
 
-/// waitUntilDone is ignored when queue equals to nullptr.
-typedef InvokeMethodD = Pointer<Void> Function(
+/// When [queue] is not `nullptr`, method will be invoked asynchronously.
+/// [callback] is ignored when queue equals to `nullptr`.
+typedef InvokeMethod = Pointer<Void> Function(
     Pointer<Void> instance,
     Pointer<Void> selector,
     Pointer<Void> signature,
     Pointer<Void> queue,
     Pointer<Pointer<Void>> args,
-    int waitUntilDone);
-typedef InvokeMethodC = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Void> queue,
-    Pointer<Pointer<Void>> args,
-    Int8 waitUntilDone);
-final InvokeMethodD nativeInvokeMethod = runtimeLib
-    .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
+    Pointer<Void> callback);
+final InvokeMethod nativeInvokeMethod = runtimeLib
+    .lookupFunction<InvokeMethod, InvokeMethod>('native_instance_invoke');
 
 typedef MethodIMPCallbackC = Void Function(
     Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
