@@ -259,6 +259,7 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
 dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
     [bool auto = true]) {
   dynamic result = nil;
+  // num or bool
   if (encoding.isNum || encoding == TypeEncodings.b) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
@@ -267,10 +268,13 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
       result = result != 0;
     }
   } else {
+    // object
     Function strategy = _loadValueStrategyMap[encoding];
     if (strategy != null) {
+      // built-in class.
       result = strategy(ptr, auto);
     } else {
+      // built-in struct.
       String structEncoding = encoding.encodingForStruct;
       if (structEncoding == null) {
         result = ptr;

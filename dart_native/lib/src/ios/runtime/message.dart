@@ -41,11 +41,16 @@ Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 /// Send a message to [target], which should be an instance in iOS.
 ///
 /// The message will consist of a [selector] and zero or more [args].
-/// Return value will be converted to Dart types when [decodeRetVal] is `true`.
 /// `C-String` will be converted to Dart `String` when [auto] is `true`.
 ///
-/// You can send message asynchronously on GCD queues using [onQueue]. It will
+/// You can send message on GCD queues asynchronously using [onQueue]. It will
 /// pass the result as a parameter of [callback].
+///
+/// Returns the result of this message when [callback] is `null`, or `null` if
+/// [callback] is passed.
+///
+/// The Result of the message will be converted to Dart types when
+/// [decodeRetVal] is `true`.
 dynamic _msgSend(Pointer<Void> target, SEL selector,
     {List args,
     bool auto = true,
@@ -104,6 +109,10 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
   if (callback != null) {
     Block block = Block(callback);
     callbackPtr = block.pointer;
+    if (onQueue == null) {
+      // Send message to main queue by default.
+      onQueue = DispatchQueue.main;
+    }
   }
 
   Pointer<Void> resultPtr = _sendMsgToNative(
@@ -136,8 +145,9 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
       args: args, auto: auto, decodeRetVal: decodeRetVal);
 }
 
-/// Send a message asynchronously to [target] on GCD queues using [onQueue].
+/// Send a message to [target] on GCD queues asynchronously using [onQueue].
 /// [target] should be an instance in iOS.
+/// [onQueue] is `DispatchQueue.main` by default.
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types when [decodeRetVal] is `true`.
