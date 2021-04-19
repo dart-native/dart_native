@@ -39,8 +39,11 @@ class Block extends id {
     List<String> dartTypes = dartTypeStringForFunction(function);
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(nativeTypes.join(', '));
-    NSObject blockWrapper =
-        NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
+    Pointer<Void> blockPtr = blockCreate(typeStringPtr, _callbackPtr);
+    if (blockPtr == nullptr) {
+      return nil;
+    }
+    NSObject blockWrapper = NSObject.fromPointer(blockPtr);
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
     Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
     free(typeStringPtr);

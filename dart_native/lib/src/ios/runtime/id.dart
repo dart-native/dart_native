@@ -103,6 +103,7 @@ class id implements NSObjectProtocol {
   }
 
   /// Sends a specified message to the receiver asynchronously using [onQueue].
+  /// [onQueue] is `DispatchQueue.main` by default.
   ///
   /// The message will consist of a [selector] and zero or more [args].
   ///

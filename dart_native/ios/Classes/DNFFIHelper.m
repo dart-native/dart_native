@@ -1,12 +1,16 @@
 //
 //  DNFFIHelper.m
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/30.
 //
 
 #import "DNFFIHelper.h"
 #import <UIKit/UIKit.h>
+
+#if !__has_feature(objc_arc)
+#error
+#endif
 
 const char *DNSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp) {
     const char *out = NSGetSizeAndAlignment(str, sizep, alignp);

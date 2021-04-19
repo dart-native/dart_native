@@ -1,6 +1,6 @@
 //
 //  native_runtime.h
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/24.
 //

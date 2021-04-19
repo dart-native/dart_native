@@ -1,6 +1,6 @@
 //
 //  DNBlockWrapper.h
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/18.
 //
@@ -24,7 +24,8 @@ typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, voi
 - (intptr_t)blockAddress;
 
 - (instancetype)initWithTypeString:(char *)typeString
-                          callback:(NativeBlockCallback)callback;
+                          callback:(NativeBlockCallback)callback
+                             error:(out NSError **)error;
 
 @end
 

@@ -1,6 +1,6 @@
 //
 //  DNBlockWrapper.m
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/18.
 //
@@ -13,6 +13,7 @@
 #import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
 #import "native_runtime.h"
+#import "DNError.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -122,14 +123,18 @@ void dispose_helper(struct _DNBlock *src) {
 @implementation DNBlockWrapper
 
 - (instancetype)initWithTypeString:(char *)typeString
-                          callback:(NativeBlockCallback)callback {
+                          callback:(NativeBlockCallback)callback
+                             error:(out NSError **)error {
     self = [super init];
     if (self) {
         _helper = [DNFFIHelper new];
-        _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]];
-        _callback = callback;
-        _thread = NSThread.currentThread;
-        [self initBlock];
+        _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]
+                                      error:error];
+        if (_typeString.length > 0) {
+            _callback = callback;
+            _thread = NSThread.currentThread;
+            [self initBlockWithError:error];
+        }
     }
     return self;
 }
@@ -141,7 +146,7 @@ void dispose_helper(struct _DNBlock *src) {
     NotifyDeallocToDart(_blockAddress);
 }
 
-- (void)initBlock {
+- (void)initBlockWithError:(out NSError **)error {
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
     // Struct return value on x86(32&64) MUST be put into pointer.(On heap)
@@ -236,11 +241,16 @@ void dispose_helper(struct _DNBlock *src) {
     return argCount;
 }
 
-- (NSString *)_parseTypeNames:(NSString *)typeNames {
+- (NSString *)_parseTypeNames:(NSString *)typeNames
+                        error:(NSError **)error {
     NSMutableString *encodeStr = [[NSMutableString alloc] init];
     NSArray *typeArr = [typeNames componentsSeparatedByString:@","];
     if (!_typeEncodings) {
         _typeEncodings = malloc(sizeof(char *) * typeArr.count);
+        if (_typeEncodings == NULL) {
+            DN_ERROR(@"malloc for type encoding fail");
+            return nil;
+        }
     }
     NSString *retEncodeStr = @"";
     int currentLength = sizeof(void *); // Init length for block pointer
@@ -300,6 +310,10 @@ static void DNHandleReturnValue(void *origRet, DNBlockWrapper *wrapper, DNInvoca
 static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)userdata;
     
+    if (!wrapper.callback) {
+        return;
+    }
+    
     void *userRet = ret;
     void **userArgs = args;
     // handle struct return: should pass pointer to struct
@@ -320,7 +334,11 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         if (type[0] == '{') {
             NSUInteger size;
             DNSizeAndAlignment(type, &size, NULL, NULL);
+            // Struct is copied on heap, it will be freed when dart side no longer owns it.
             void *temp = malloc(size);
+            if (!temp) {
+                return;
+            }
             memcpy(temp, args[i + indexOffset], size);
             args[i + indexOffset] = temp;
         }
@@ -335,7 +353,7 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     
     int64_t retAddr = (int64_t)(invocation.realRetValue);
     
-    if (wrapper.thread == NSThread.currentThread && wrapper.callback) {
+    if (wrapper.thread == NSThread.currentThread) {
         wrapper.callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
     } else {
         [invocation retainArguments];

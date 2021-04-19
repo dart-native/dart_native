@@ -1,3 +1,10 @@
+//
+//  native_runtime.mm
+//  DartNative
+//
+//  Created by 杨萧玉 on 2019/10/24.
+//
+
 #import "native_runtime.h"
 #include <stdlib.h>
 #include <functional>
@@ -10,6 +17,10 @@
 #import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
 #import "DNInvocation.h"
+
+#if !__has_feature(objc_arc)
+#error
+#endif
 
 NSMethodSignature *
 native_method_signature(Class cls, SEL selector) {
@@ -43,8 +54,15 @@ native_add_method(id target, SEL selector, char *types, void *callback) {
         return NO;
     }
     if (types != NULL) {
-        DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types callback:(NativeMethodCallback)callback]; // DNMethodIMP always exists.
+        NSError *error;
+        DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types
+                                                                  callback:(NativeMethodCallback)callback
+                                                                     error:&error];
+        if (error.code) {
+            return NO;
+        }
         class_replaceMethod(cls, selector, [methodIMP imp], types);
+        // DNMethodIMP always exists.
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return YES;
     }
@@ -79,6 +97,7 @@ _mallocReturnStruct(NSMethodSignature *signature) {
     const char *type = signature.methodReturnType;
     NSUInteger size;
     DNSizeAndAlignment(type, &size, NULL, NULL);
+    // Struct is copied on heap, it will be freed when dart side no longer owns it.
     void *result = malloc(size);
     return result;
 }
@@ -149,7 +168,13 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
 
 void *
 native_block_create(char *types, void *callback) {
-    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types callback:(NativeBlockCallback)callback];
+    NSError *error;
+    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types
+                                                                callback:(NativeBlockCallback)callback
+                                                                   error:&error];
+    if (error.code) {
+        return nil;
+    }
     return (__bridge void *)wrapper;
 }
 
@@ -283,10 +308,14 @@ native_type_encoding(const char *str) {
     return str;
 }
 
+// Returns type encodings whose need be freed.
 const char **
 native_types_encoding(const char *str, int *count, int startIndex) {
     int argCount = DNTypeCount(str) - startIndex;
     const char **argTypes = (const char **)malloc(sizeof(char *) * argCount);
+    if (argTypes == NULL) {
+        return argTypes;
+    }
     
     int i = -startIndex;
     while(str && *str)

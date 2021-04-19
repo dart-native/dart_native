@@ -1,6 +1,6 @@
 //
 //  DNMethodIMP.h
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/30.
 //
@@ -21,7 +21,8 @@ typedef void (*NativeMethodCallback)(void *_Nullable *_Null_unspecified args,
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncodings
-                            callback:(NativeMethodCallback)callback;
+                            callback:(NativeMethodCallback)callback
+                               error:(NSError **)error;
 - (IMP)imp;
 
 @end
