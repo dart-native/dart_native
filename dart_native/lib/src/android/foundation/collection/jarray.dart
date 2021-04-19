@@ -21,7 +21,7 @@ class JArray extends JSubclass<List> {
 
   JArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_ARRAY_OBJECT) {
     JObject converter = JObject("com/dartnative/dart_native/ArrayListConverter");
-    raw = JList.fromPointer(converter.invoke("arrayToList", [JObject("java/lang/Object", ptr)], "Ljava/util/List;")).raw;
+    raw = JList.fromPointer(converter.invoke("arrayToList", [JObject("java/lang/Object", pointer: ptr)], "Ljava/util/List;")).raw;
   }
 }
 

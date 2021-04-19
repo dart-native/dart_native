@@ -18,8 +18,9 @@ class JObject extends Class {
   Pointer _ptr;
 
   //init target class
-  JObject(String className, [this._ptr]) : super(className) {
-    if (_ptr == null) {
+  JObject(String className, {Pointer pointer, bool isInterface = false}) : super(className) {
+    _ptr = pointer;
+    if (_ptr == null && !isInterface) {
       Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
       _ptr = nativeCreateClass(classNamePtr, nullptr, nullptr);
       free(classNamePtr);

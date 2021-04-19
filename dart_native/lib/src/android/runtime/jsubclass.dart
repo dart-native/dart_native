@@ -8,8 +8,8 @@ typedef Pointer<Void> InitSubclass(dynamic value, String clsName);
 class JSubclass<T> extends JObject {
   T raw;
 
-  JSubclass(this.raw, InitSubclass init, String clsName) : super(clsName, init(raw, clsName));
-  JSubclass.fromPointer(Pointer<Void> ptr, String clsName) : super(clsName, ptr);
+  JSubclass(this.raw, InitSubclass init, String clsName) : super(clsName, pointer: init(raw, clsName));
+  JSubclass.fromPointer(Pointer<Void> ptr, String clsName) : super(clsName, pointer: ptr);
 
   bool operator ==(other) {
     if (other == nil) {
