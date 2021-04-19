@@ -143,9 +143,11 @@ jobject newObject(JNIEnv *env, jclass cls, void **args, char **argTypes) {
   if (strlen(signature) - 2 > 0) {
     fillArgs(args, argTypes, argValues, env);
   }
-  jmethodID constructor = env->GetMethodID(cls, "<init>", spliceChar(signature, const_cast<char *>("V")));
+  char *constructorSig = spliceChar(signature, const_cast<char *>("V"));
+  jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSig);
   jobject newObj = env->NewObjectA(cls, constructor, argValues);
   free(argValues);
+  free(constructorSig);
   return newObj;
 }
 
@@ -232,10 +234,11 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     if ((strlen(signature) - 2) > 0) {
       fillArgs(args, argTypes, argValues, curEnv);
     }
-    jmethodID method = curEnv->GetMethodID(cls, methodName, spliceChar(signature, returnType));
-    NSLog("call method: %s descriptor: %s", methodName, spliceChar(signature, returnType));
+    char *methodSignature = spliceChar(signature, returnType);
+    jmethodID method = curEnv->GetMethodID(cls, methodName, methodSignature);
+    NSLog("call method: %s descriptor: %s", methodName, methodSignature);
 
-  if (strlen(returnType) > 1) {
+    if (strlen(returnType) > 1) {
         if (strcmp(returnType, "Ljava/lang/String;") == 0) {
             jstring javaString = (jstring)curEnv->CallObjectMethodA(object, method, argValues);
             jboolean isCopy = JNI_FALSE;
@@ -288,6 +291,7 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     }
 
     free(argValues);
+    free(methodSignature);
     free(signature);
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
@@ -469,10 +473,12 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
     jobject callbackResult = NULL;
 
     if (isSemInitSuccess) {
-        NSLog("wait");
+        NSLog("wait work execute");
         sem_wait(&sem);
         //todo optimization
-        if (strcmp(returnType, "Ljava/lang/String;") == 0) {
+        if (returnType == nullptr) {
+          NSLog("void");
+        } else if (strcmp(returnType, "Ljava/lang/String;") == 0) {
             callbackResult = env->NewStringUTF((char *) arguments[0]);
         } else if (strcmp(returnType, "Z") == 0) {
             jclass booleanClass = env->FindClass("java/lang/Boolean");
