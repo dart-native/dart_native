@@ -272,9 +272,15 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
     Function strategy = _loadValueStrategyMap[encoding];
     if (strategy != null) {
       // built-in class.
+      if (ptr == nullptr) {
+        return nil;
+      }
       result = strategy(ptr, auto);
     } else {
       // built-in struct.
+      if (ptr == nullptr) {
+        return null;
+      }
       String structEncoding = encoding.encodingForStruct;
       if (structEncoding == null) {
         result = ptr;

@@ -279,8 +279,7 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
     ffi_type **argTypes = [self _allocate:(argCount + (nullAtEnd ? 1 : 0)) * sizeof(*argTypes)];
     
     int i = -start;
-    while(str && *str)
-    {
+    while(str && *str) {
         const char *next = DNSizeAndAlignment(str, NULL, NULL, NULL);
         if (i >= 0 && i < argCount) {
             ffi_type *argType = [self ffiTypeForEncode:str];

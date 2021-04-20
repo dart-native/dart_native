@@ -116,8 +116,6 @@ void dispose_helper(struct _DNBlock *src) {
 @property (nonatomic) NSThread *thread;
 @property (nonatomic, nullable) dispatch_queue_t queue;
 
-- (void)invokeWithArgs:(void **)args retValue:(void *)retValue;
-
 @end
 
 @implementation DNBlockWrapper
@@ -154,8 +152,11 @@ void dispose_helper(struct _DNBlock *src) {
         flags |= BLOCK_HAS_STRET;
     }
     // Check block encoding types valid.
-    NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:typeString flags:flags];
+    NSUInteger numberOfArguments = [self _prepCIF:&_cif
+                                 withEncodeString:typeString
+                                            flags:flags];
     if (numberOfArguments == -1) { // Unknown encode.
+        DN_ERROR(DNCreateBlockError, @"Prepare ffi_cif failed.");
         return;
     }
     self.numberOfArguments = numberOfArguments;
@@ -167,8 +168,8 @@ void dispose_helper(struct _DNBlock *src) {
     
     ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DNFFIBlockClosureFunc, (__bridge void *)(self), _blockIMP);
     if (status != FFI_OK) {
-        NSLog(@"ffi_prep_closure returned %d", (int)status);
-        abort();
+        DN_ERROR(DNCreateBlockError, @"ffi_prep_closure returned %d", (int)status);
+        return;
     }
 
     struct _DNBlockDescriptor descriptor = {
@@ -180,6 +181,10 @@ void dispose_helper(struct _DNBlock *src) {
     };
     
     _descriptor = malloc(sizeof(struct _DNBlockDescriptor));
+    if (!_descriptor) {
+        DN_ERROR(DNCreateBlockError, @"malloc _DNBlockDescriptor failed.")
+        return;
+    }
     memcpy(_descriptor, &descriptor, sizeof(struct _DNBlockDescriptor));
 
     struct _DNBlock simulateBlock = {
@@ -206,9 +211,7 @@ void dispose_helper(struct _DNBlock *src) {
     return _blockAddress;
 }
 
-- (void)invokeWithArgs:(void **)args retValue:(void *)retValue {
-    ffi_call(&_cif, _blockIMP, retValue, args);
-}
+#pragma mark - Private Method
 
 - (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str flags:(int32_t)flags {
     int argCount;
@@ -248,7 +251,7 @@ void dispose_helper(struct _DNBlock *src) {
     if (!_typeEncodings) {
         _typeEncodings = malloc(sizeof(char *) * typeArr.count);
         if (_typeEncodings == NULL) {
-            DN_ERROR(@"malloc for type encoding fail");
+            DN_ERROR(DNCreateTypeEncodingError, @"malloc for type encoding fail");
             return nil;
         }
     }
@@ -331,15 +334,16 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     NSUInteger indexOffset = wrapper.hasStret ? 1 : 0;
     for (NSUInteger i = 0; i < wrapper.signature.numberOfArguments; i++) {
         const char *type = [wrapper.signature getArgumentTypeAtIndex:i];
+        // Struct
         if (type[0] == '{') {
             NSUInteger size;
             DNSizeAndAlignment(type, &size, NULL, NULL);
             // Struct is copied on heap, it will be freed when dart side no longer owns it.
             void *temp = malloc(size);
-            if (!temp) {
-                return;
+            if (temp) {
+                memcpy(temp, args[i + indexOffset], size);
             }
-            memcpy(temp, args[i + indexOffset], size);
+            // Dart side can handle null
             args[i + indexOffset] = temp;
         }
     }

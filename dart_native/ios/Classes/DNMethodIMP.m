@@ -48,7 +48,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         size_t size = sizeof(char) * length;
         _typeEncoding = malloc(size);
         if (_typeEncoding == NULL) {
-            DN_ERROR(@"malloc for type encoding fail: %s", typeEncoding);
+            DN_ERROR(DNCreateTypeEncodingError, @"malloc for type encoding fail: %s", typeEncoding);
             return self;
         }
         strlcpy(_typeEncoding, typeEncoding, length);
@@ -152,15 +152,16 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     NSUInteger indexOffset = methodIMP.hasStret ? 1 : 0;
     for (NSUInteger i = 0; i < methodIMP.signature.numberOfArguments; i++) {
         const char *type = [methodIMP.signature getArgumentTypeAtIndex:i];
+        // Struct
         if (type[0] == '{') {
             NSUInteger size;
             DNSizeAndAlignment(type, &size, NULL, NULL);
             // Struct is copied on heap, it will be freed when dart side no longer owns it.
             void *temp = malloc(size);
-            if (!temp) {
-                return;
+            if (temp) {
+                memcpy(temp, args[i + indexOffset], size);
             }
-            memcpy(temp, args[i + indexOffset], size);
+            // Dart side can handle null
             args[i + indexOffset] = temp;
         }
     }

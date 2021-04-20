@@ -7,11 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
-#define DN_ERROR(desc, ...) \
+#define DN_ERROR(errorCode, desc, ...) \
 if (error) { \
     NSString *reason = [NSString stringWithFormat:desc, ##__VA_ARGS__]; \
+    NSLog(desc, ##__VA_ARGS__);\
     NSError *underlyingError = [NSError errorWithDomain:DNErrorDomain\
-                                                   code:DNCreateTypeEncodingError\
+                                                   code:errorCode\
                                                userInfo:@{NSLocalizedFailureReasonErrorKey: reason}];\
     *error = DNErrorWithUnderlyingError(*error, underlyingError); \
 }
@@ -23,6 +24,7 @@ extern NSErrorDomain const DNErrorDomain;
 
 typedef NS_ERROR_ENUM(DNErrorDomain, DNErrorCode) {
     DNCreateTypeEncodingError = 1, // creating type encoding fail.
+    DNCreateBlockError, // creating block fail.
 };
 
 static NSError * DNErrorWithUnderlyingError(NSError *error, NSError *underlyingError) {
