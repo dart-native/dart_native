@@ -120,6 +120,7 @@ void fillArgs(void **args, char **argTypes, jvalue *argValues, JNIEnv *curEnv) {
       argValues[index].z = static_cast<jboolean>(*((int *) args));
     }
     else if(strcmp(argType, "V") == 0) {}
+    free(argType);
   }
 }
 
@@ -293,6 +294,8 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     free(argValues);
     free(methodSignature);
     free(signature);
+    curEnv = nullptr;
+    free(curEnv);
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
@@ -411,10 +414,9 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
     char **argTypes = new char *[argTypeLength + 1];
     void **arguments = new void *[argTypeLength];
     for (int i = 0; i < argTypeLength; ++i) {
-        jobject argType = env->GetObjectArrayElement(arg_types, i);
+        jstring argTypeString = (jstring) env->GetObjectArrayElement(arg_types, i);
         jobject argument = env->GetObjectArrayElement(args, i);
 
-        jstring argTypeString = (jstring) argType;
         argTypes[i] = (char *) env->GetStringUTFChars(argTypeString, 0);
         env->DeleteLocalRef(argTypeString);
         //todo optimization
@@ -452,10 +454,11 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
             arguments[i] = (char *) env->GetStringUTFChars(argString, 0);
             env->DeleteLocalRef(argString);
         }
+        env->DeleteLocalRef(argument);
     }
     char *returnType = (char *) env->GetStringUTFChars(return_type, 0);
     argTypes[argTypeLength] = returnType;
-    const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess, return_type]() {
+    const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess]() {
         NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
         void *target = targetCache[dartObject];
         if (methodCallback != NULL && target != nullptr) {
@@ -489,9 +492,13 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
         sem_destroy(&sem);
     }
 
+    free(returnType);
     free(funName);
-    free(argTypes);
     free(arguments);
+    for (int i = 0; i <= argTypeLength; i++) {
+      free(argTypes[i]);
+    }
+    free(argTypes);
 
     return callbackResult;
 }
