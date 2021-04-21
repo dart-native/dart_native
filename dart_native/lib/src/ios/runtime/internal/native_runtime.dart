@@ -80,7 +80,8 @@ typedef BlockCallbackC = Void Function(
     Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     Pointer<Pointer<Void>> retPtrPtr,
     Int32 argCount,
-    Int32 stret);
+    Int32 stret,
+    Int64 seq);
 typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
     Pointer<NativeFunction<BlockCallbackC>> callback);
 typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings,

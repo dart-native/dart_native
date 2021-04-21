@@ -29,6 +29,7 @@ class Block extends id {
   Function function;
   NSObject _wrapper; // Block hold wrapper
   List<String> types = [];
+  int sequence = -1;
 
   /// Creating a [Block] from a [Function].
   ///
@@ -45,12 +46,17 @@ class Block extends id {
     }
     NSObject blockWrapper = NSObject.fromPointer(blockWrapperPtr);
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
+    int sequence = blockWrapper.perform(SEL('sequence'));
     Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
     free(typeStringPtr);
     result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
-    blockForAddress[result.pointer.address] = result;
+    result.sequence = sequence;
+    if (blockForSequence[sequence] != null) {
+      throw 'Already exists a block on sequence $sequence';
+    }
+    blockForSequence[sequence] = result;
     return result;
   }
 
@@ -106,7 +112,6 @@ class Block extends id {
     if (function != null) {
       result._wrapper = _wrapper;
       result.function = function;
-      blockForAddress[newPtr.address] = result;
       result.types = types;
     }
     return result;
@@ -157,19 +162,13 @@ Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =
     Pointer.fromFunction(_syncCallback);
 
 _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
-    Pointer<Pointer<Void>> retPtrPtr, int argCount, bool stret) {
+    Pointer<Pointer<Void>> retPtrPtr, int argCount, bool stret, int seq) {
   // If stret, the first arg contains address of a pointer of returned struct. Other args move backwards.
   // This is the index for first argument of block in argsPtrPtrPtr list.
   int argStartIndex = stret ? 2 : 1;
-
-  Pointer<Void> blockPtr = argsPtrPtrPtr
-      .elementAt(argStartIndex - 1)
-      .value
-      .cast<Pointer<Void>>()
-      .value;
-  Block block = blockForAddress[blockPtr.address];
+  Block block = blockForSequence[seq];
   if (block == null) {
-    return null;
+    throw 'Can\'t find block by sequence $seq';
   }
   List args = [];
   Pointer pointer = block._wrapper.perform(SEL('typeEncodings'));
@@ -214,7 +213,9 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   }
 }
 
+int cc = 0;
+
 void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr, int argCount, int stret) {
-  _callback(argsPtrPtr, retPtr, argCount, stret != 0);
+    Pointer<Pointer<Void>> retPtr, int argCount, int stret, int seq) {
+  _callback(argsPtrPtr, retPtr, argCount, stret != 0, seq);
 }

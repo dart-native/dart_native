@@ -150,6 +150,9 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
 /// Return value will be converted to Dart types.
 Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
     {List args, DispatchQueue onQueue}) async {
+  if (onQueue == null) {
+    onQueue = DispatchQueue.main;
+  }
   final completer = Completer<dynamic>();
   _msgSend(target, selector, args: args, onQueue: onQueue,
       callback: (dynamic result) {

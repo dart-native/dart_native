@@ -121,7 +121,7 @@ Map<String, ConvertorFromPointer> _convertorCache = {};
 void _dealloc(Pointer<Void> ptr) {
   if (ptr != nullptr) {
     CallbackManager.shared.clearAllCallbackOnTarget(ptr);
-    removeBlockOnAddress(ptr.address);
+    removeBlockOnSequence(ptr.address);
   }
 }
 

@@ -15,12 +15,12 @@ Write native code using Dart. This package liberates you from native code and lo
   s.source           = { :path => '.' }
   
   # Debug
-  # s.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
-  # s.vendored_libraries = 'libffi/libffi.a'
+  s.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
+  s.vendored_libraries = 'libffi/libffi.a'
 
   # Release
-  s.source_files = 'Classes/DartNativePlugin.*'
-  s.vendored_frameworks = 'DartNative.framework'
+  # s.source_files = 'Classes/DartNativePlugin.*'
+  # s.vendored_frameworks = 'DartNative.framework'
   
   s.public_header_files = 'Classes/DartNativePlugin.h'
   s.dependency 'Flutter'

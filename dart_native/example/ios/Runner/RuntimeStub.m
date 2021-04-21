@@ -257,7 +257,7 @@ API_AVAILABLE(ios(11.0)){
 }
 
 - (NSString *)fooNSString:(NSString *)str {
-    DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
+//    DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
     return @"test nsstring";
 }
 

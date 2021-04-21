@@ -14,6 +14,7 @@
 #import "DNPointerWrapper.h"
 #import "native_runtime.h"
 #import "DNError.h"
+#import <stdatomic.h>
 
 #if !__has_feature(objc_arc)
 #error
@@ -120,6 +121,8 @@ void dispose_helper(struct _DNBlock *src) {
 
 @implementation DNBlockWrapper
 
+static atomic_uint_fast64_t _seq = 0;
+
 - (instancetype)initWithTypeString:(char *)typeString
                           callback:(NativeBlockCallback)callback
                              error:(out NSError **)error {
@@ -132,6 +135,8 @@ void dispose_helper(struct _DNBlock *src) {
             _callback = callback;
             _thread = NSThread.currentThread;
             [self initBlockWithError:error];
+            atomic_fetch_add(&_seq, 1);
+            _sequence = _seq;
         }
     }
     return self;
@@ -141,7 +146,7 @@ void dispose_helper(struct _DNBlock *src) {
     ffi_closure_free(_closure);
     free(_descriptor);
     free(_typeEncodings);
-    NotifyDeallocToDart(_blockAddress);
+    NotifyDeallocToDart(_sequence);
 }
 
 - (void)initBlockWithError:(out NSError **)error {
@@ -358,7 +363,11 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     int64_t retAddr = (int64_t)(invocation.realRetValue);
     
     if (wrapper.thread == NSThread.currentThread) {
-        wrapper.callback(args, ret, (int)numberOfArguments, wrapper.hasStret);
+        wrapper.callback(args,
+                         ret,
+                         (int)numberOfArguments,
+                         wrapper.hasStret,
+                         wrapper.sequence);
     } else {
         [invocation retainArguments];
         NotifyBlockInvokeToDart(invocation, wrapper, (int)numberOfArguments);

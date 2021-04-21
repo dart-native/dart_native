@@ -151,7 +151,8 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     };
     
     if (queue != NULL) {
-        // Return nil immediately.
+        // Retain arguments and return nil immediately.
+        [invocation retainArguments];
         dispatch_async(queue, ^{
             [invocation invoke];
             if (callback) {
@@ -465,7 +466,8 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
         callback(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
-                 wrapper.hasStret);
+                 wrapper.hasStret,
+                 wrapper.sequence);
         if (sema) {
             dispatch_semaphore_signal(sema);
         }
