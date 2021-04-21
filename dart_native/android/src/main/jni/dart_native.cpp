@@ -138,7 +138,6 @@ void fillArgs(void **args, char **argTypes, jvalue *argValues) {
       argValues[index].z = static_cast<jboolean>(*((int *) args));
     }
     else if(strcmp(argType, "V") == 0) {}
-    free(argType);
   }
 }
 
@@ -426,7 +425,6 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
             arguments[i] = (char *) env->GetStringUTFChars(argString, 0);
             env->DeleteLocalRef(argString);
         }
-        env->DeleteLocalRef(argument);
     }
     char *returnType = (char *) env->GetStringUTFChars(return_type, 0);
     argTypes[argTypeLength] = returnType;
@@ -467,9 +465,6 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
     free(returnType);
     free(funName);
     free(arguments);
-    for (int i = 0; i <= argTypeLength; i++) {
-      free(argTypes[i]);
-    }
     free(argTypes);
 
     return callbackResult;
