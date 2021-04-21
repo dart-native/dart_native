@@ -230,34 +230,28 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   TypeEncodings.float64: (ByteData data) {
     return data.getFloat64(0, Endian.host);
   },
-  TypeEncodings.object: (Pointer<Void> ptr, bool auto) {
+  TypeEncodings.object: (Pointer<Void> ptr) {
     return NSObject.fromPointer(ptr);
   },
-  TypeEncodings.cls: (Pointer<Void> ptr, bool auto) {
+  TypeEncodings.cls: (Pointer<Void> ptr) {
     return Class.fromPointer(ptr);
   },
-  TypeEncodings.selector: (Pointer<Void> ptr, bool auto) {
+  TypeEncodings.selector: (Pointer<Void> ptr) {
     return SEL.fromPointer(ptr);
   },
-  TypeEncodings.block: (Pointer<Void> ptr, bool auto) {
+  TypeEncodings.block: (Pointer<Void> ptr) {
     return Block.fromPointer(ptr);
   },
-  TypeEncodings.cstring: (Pointer<Void> ptr, bool auto) {
+  TypeEncodings.cstring: (Pointer<Void> ptr) {
     Pointer<Utf8> temp = ptr.cast();
-    if (auto) {
-      return Utf8.fromUtf8(temp);
-    } else {
-      // TODO: malloc and strcpy
-      return temp;
-    }
+    return Utf8.fromUtf8(temp);
   },
-  TypeEncodings.v: (Pointer<Void> ptr, bool auto) {
+  TypeEncodings.v: (Pointer<Void> ptr) {
     return;
   },
 };
 
-dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
-    [bool auto = true]) {
+dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
   dynamic result = nil;
   // num or bool
   if (encoding.isNum || encoding == TypeEncodings.b) {
@@ -275,12 +269,12 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
       if (ptr == nullptr) {
         return nil;
       }
-      result = strategy(ptr, auto);
+      result = strategy(ptr);
     } else {
-      // built-in struct.
       if (ptr == nullptr) {
         return null;
       }
+      // built-in struct.
       String structEncoding = encoding.encodingForStruct;
       if (structEncoding == null) {
         result = ptr;
