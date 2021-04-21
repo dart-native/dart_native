@@ -105,6 +105,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
 
   Pointer<Void> callbackPtr = nullptr;
   if (callback != null) {
+    // Return value is passed to block.
     Block block = Block(callback);
     callbackPtr = block.pointer;
     if (onQueue == null) {
@@ -146,14 +147,12 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
 /// [onQueue] is `DispatchQueue.main` by default.
 ///
 /// The message will consist of a [selector] and zero or more [args].
-/// Return value will be converted to Dart types when [decodeRetVal] is `true`.
+/// Return value will be converted to Dart types.
 Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
-    {List args, bool decodeRetVal = true, DispatchQueue onQueue}) async {
+    {List args, DispatchQueue onQueue}) async {
   final completer = Completer<dynamic>();
-  _msgSend(target, selector,
-      args: args,
-      decodeRetVal: decodeRetVal,
-      onQueue: onQueue, callback: (dynamic result) {
+  _msgSend(target, selector, args: args, onQueue: onQueue,
+      callback: (dynamic result) {
     completer.complete(result);
   });
   return completer.future;

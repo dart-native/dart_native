@@ -38,7 +38,9 @@ class _IOSAppState extends State<IOSApp> {
     time = DateTime.now().millisecondsSinceEpoch;
 
     for (var i = 0; i < 10000; i++) {
-      String _ = stub.fooNSString(testString);
+      // String _ = stub.fooNSString(testString);
+      String a = await stub.fooNSStringAsync(testString);
+      print(a);
     }
 
     print("DartNative Cost: ${DateTime.now().millisecondsSinceEpoch - time}");

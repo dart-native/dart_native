@@ -108,12 +108,10 @@ class id implements NSObjectProtocol {
   /// The message will consist of a [selector] and zero or more [args].
   ///
   /// Returns a [Future] which completes to the received response, which may
-  /// be null or nil. Return value will be converted to Dart types when
-  /// [decodeRetVal] is `true`.
+  /// be null or nil. Return value will be converted to Dart types.
   Future<dynamic> performAsync(SEL selector,
-      {List args, DispatchQueue onQueue, bool decodeRetVal = true}) async {
-    return msgSendAsync(this.pointer, selector,
-        args: args, decodeRetVal: decodeRetVal, onQueue: onQueue);
+      {List args, DispatchQueue onQueue}) async {
+    return msgSendAsync(this.pointer, selector, args: args, onQueue: onQueue);
   }
 
   /// Returns a Boolean value that indicates whether the receiver does not
