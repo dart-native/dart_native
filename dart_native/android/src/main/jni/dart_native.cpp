@@ -77,7 +77,9 @@ char *generateSignature(char **argTypes) {
   if (argTypes != nullptr)
   {
     for (; *argTypes; ++argTypes, ++argCount) {
-      signature = spliceChar(signature, *argTypes);
+      char *templeSignature = spliceChar(signature, *argTypes);
+      signature = templeSignature;
+      free(templeSignature);
     }
   }
   return spliceChar(signature, const_cast<char *>(")"));
@@ -294,8 +296,6 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     free(argValues);
     free(methodSignature);
     free(signature);
-    curEnv = nullptr;
-    free(curEnv);
     if (bShouldDetach) {
         gJvm->DetachCurrentThread();
     }
