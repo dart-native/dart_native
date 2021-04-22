@@ -17,7 +17,7 @@ static JavaVM *gJvm = nullptr;
 static jobject gClassLoader;
 static jmethodID gFindClassMethod;
 static JNIEnv *gCurEnv = nullptr;
-static pthread_key_t detachKey=0;
+static pthread_key_t detachKey = 0;
 
 typedef void (*NativeMethodCallback)(
     void *targetPtr,
@@ -51,6 +51,7 @@ JNIEnv *getEnv() {
 void detachThreadDestructor(void* arg) {
   NSLog("detach from current thread");
   gJvm->DetachCurrentThread();
+  detachKey = 0;
 }
 
 void attachThread() {
