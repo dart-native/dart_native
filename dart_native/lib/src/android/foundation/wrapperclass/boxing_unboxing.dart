@@ -38,7 +38,7 @@ dynamic unBoxingWrapperClass(Pointer<Void> ptr, String itemType) {
     case "java.util.List":
     case "java.util.ArrayList":
       return JList.fromPointer(ptr).raw;
-    default: return JObject(itemType?.replaceAll(".", "/"), ptr);
+    default: return JObject(itemType?.replaceAll(".", "/"), pointer: ptr);
   }
 }
 
