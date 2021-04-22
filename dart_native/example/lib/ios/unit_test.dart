@@ -106,24 +106,24 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   set = stub.fooNSMutableSet(Set.from([1, 2.345, 'I\'m String', rect]));
   print('fooNSMutableSet to Set: $set');
 
-  // stub.fooBlock((NSObject a) {
-  //   print('hello block! ${a.description}');
-  //   return a;
-  // });
+  stub.fooBlock((NSObject a) {
+    print('hello block! ${a.description}');
+    return a;
+  });
 
-  // stub.fooStretBlock((CGAffineTransform a) {
-  //   print('hello block stret! ${a.toString()}');
-  //   return CGAffineTransform(12, 0, 12, 0, 12, 0);
-  // });
+  stub.fooStretBlock((CGAffineTransform a) {
+    print('hello block stret! ${a.toString()}');
+    return CGAffineTransform(12, 0, 12, 0, 12, 0);
+  });
 
-  // stub.fooCStringBlock((CString a) {
-  //   print('hello block cstring! $a');
-  //   return CString('test return cstring');
-  // });
+  stub.fooCStringBlock((CString a) {
+    print('hello block cstring! $a');
+    return CString('test return cstring');
+  });
 
-  // stub.fooCompletion(() {
-  //   print('hello completion block!');
-  // });
+  stub.fooCompletion(() {
+    print('hello completion block!');
+  });
 
   stub.fooDelegate(delegate);
 
@@ -143,13 +143,13 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
       stub.fooWithOptions(TestOptions(TestOptionsOne | TestOptionsTwo));
   print('fooWithOptions result:$options');
 
-  // Class('NSThread')
-  //     .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
-  //     .then((currentThread) {
-  //   NSObject description = currentThread.perform(SEL('description'));
-  //   String threadResult = NSString.fromPointer(description.pointer).raw;
-  //   print('currentThread: $threadResult');
-  // });
+  Class('NSThread')
+      .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
+      .then((currentThread) {
+    NSObject description = currentThread.perform(SEL('description'));
+    String threadResult = NSString.fromPointer(description.pointer).raw;
+    print('currentThread: $threadResult');
+  });
 
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);

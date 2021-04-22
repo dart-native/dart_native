@@ -1,6 +1,5 @@
 import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_example/ios/runtimeson.dart';
-import 'package:dart_native_example/ios/runtimestub.dart';
 import 'package:dart_native_example/ios/unit_test.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -24,23 +23,21 @@ class _IOSAppState extends State<IOSApp> {
   Future<void> initPlatformState() async {
     RuntimeSon stub = RuntimeSon();
     DelegateStub delegate = DelegateStub();
-    // testIOS(stub, delegate);
+    testIOS(stub, delegate);
     // Benchmark
     String testString =
         'This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖';
     int time = DateTime.now().millisecondsSinceEpoch;
 
-    // for (var i = 0; i < 10000; i++) {
-    //   String _ = await platform.invokeMethod('fooNSString:', testString);
-    // }
+    for (var i = 0; i < 10000; i++) {
+      String _ = await platform.invokeMethod('fooNSString:', testString);
+    }
 
     print(
         "Flutter Channel Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
     time = DateTime.now().millisecondsSinceEpoch;
-    var count = 0;
-    for (count = 0; count < 10000; count++) {
-      // String _ = stub.fooNSString(testString);
-      String a = await stub.fooNSStringAsync(testString);
+    for (var i = 0; i < 10000; i++) {
+      String _ = stub.fooNSString(testString);
     }
 
     print("DartNative Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
