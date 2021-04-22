@@ -1,6 +1,6 @@
 //
 //  DNObjectDealloc.h
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/11/5.
 //

@@ -36,7 +36,6 @@ class _IOSAppState extends State<IOSApp> {
     print(
         "Flutter Channel Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
     time = DateTime.now().millisecondsSinceEpoch;
-
     for (var i = 0; i < 10000; i++) {
       String _ = stub.fooNSString(testString);
     }

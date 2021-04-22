@@ -143,11 +143,13 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
       stub.fooWithOptions(TestOptions(TestOptionsOne | TestOptionsTwo));
   print('fooWithOptions result:$options');
 
-  NSObject currentThread = Class('NSThread')
-      .perform(SEL('currentThread'), onQueue: DispatchQueue.global());
-  NSObject description = currentThread.perform(SEL('description'));
-  String threadResult = NSString.fromPointer(description.pointer).raw;
-  print('currentThread: $threadResult');
+  Class('NSThread')
+      .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
+      .then((currentThread) {
+    NSObject description = currentThread.perform(SEL('description'));
+    String threadResult = NSString.fromPointer(description.pointer).raw;
+    print('currentThread: $threadResult');
+  });
 
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);

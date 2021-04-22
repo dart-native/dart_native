@@ -1,10 +1,10 @@
 import 'package:dart_native/src/ios/runtime/block.dart';
 
-Map<int, Block> blockForAddress = {};
+Map<int, Block> blockForSequence = {};
 
-void removeBlockOnAddress(int addr) {
-  Block block = blockForAddress[addr];
+void removeBlockOnSequence(int seq) {
+  Block block = blockForSequence[seq];
   if (block != null) {
-    blockForAddress.remove(addr);
+    blockForSequence.remove(seq);
   }
 }

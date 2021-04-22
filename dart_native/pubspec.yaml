@@ -5,7 +5,7 @@ homepage: https://github.com/dart-native/dart_native
 
 environment:
   sdk: ">=2.9.0 <3.0.0"
-  flutter: ">=1.20.0"
+  flutter: ">=1.22.3"
 
 dependencies:
   flutter:

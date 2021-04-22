@@ -1,6 +1,6 @@
 //
 //  DNObjectDealloc.m
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/11/5.
 //
@@ -8,6 +8,10 @@
 #import "DNObjectDealloc.h"
 #import <objc/runtime.h>
 #import "native_runtime.h"
+
+#if !__has_feature(objc_arc)
+#error
+#endif
 
 #if TARGET_OS_OSX && __x86_64__
     // 64-bit Mac - tag bit is LSB
