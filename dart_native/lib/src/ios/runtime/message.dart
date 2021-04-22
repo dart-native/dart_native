@@ -28,8 +28,8 @@ Pointer<Void> _sendMsgToNative(
   if (args == null || args == nullptr) {
     args = nullptr.cast();
   }
-  if (callbackPtr == null) {
-    callbackPtr = nullptr;
+  if (callbackPtr == nullptr) {
+    callbackPtr = nullptr.cast();
   }
   result = nativeInvokeMethod(
       target, selector, signature, queuePtr, args, callbackPtr);

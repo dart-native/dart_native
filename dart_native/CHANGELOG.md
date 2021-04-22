@@ -1,3 +1,7 @@
+## 0.3.15
+
+* [Fix] Performance issue on iOS.
+
 ## 0.3.14
 
 * [Feature] Support `await/async` for methods on iOS.
