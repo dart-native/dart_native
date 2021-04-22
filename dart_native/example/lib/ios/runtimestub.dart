@@ -249,6 +249,12 @@ class RuntimeStub extends NSObject {
     return NSString.fromPointer(result).raw;
   }
 
+  Future<dynamic> fooNSStringAsync(String str) async {
+    return performAsync(SEL('fooNSString:'), args: [str]).then((value) {
+      return NSString.fromPointer(value.pointer).raw;
+    });
+  }
+
   String fooNSMutableString(String str) {
     NSMutableString _str = NSMutableString(str);
     Pointer<Void> result =

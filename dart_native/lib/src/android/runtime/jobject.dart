@@ -19,12 +19,20 @@ class JObject extends Class {
 
   //init target class
   JObject(String className, {Pointer pointer, bool isInterface = false}) : super(className) {
-    _ptr = pointer;
-    if (_ptr == null && !isInterface) {
+    if (isInterface) {
+      Pointer<Int64> hashPointer = allocate();
+      hashPointer.value = identityHashCode(this);
+      _ptr = hashPointer.cast<Void>();
+      return;
+    }
+
+    if (pointer == null) {
       Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-      _ptr = nativeCreateClass(classNamePtr, nullptr, nullptr);
+      pointer = nativeCreateClass(classNamePtr, nullptr, nullptr);
       free(classNamePtr);
     }
+
+    _ptr = pointer;
     passJObjectToNative(this);
   }
 

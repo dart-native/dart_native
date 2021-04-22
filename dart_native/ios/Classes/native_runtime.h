@@ -1,6 +1,6 @@
 //
 //  native_runtime.h
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/24.
 //
@@ -34,7 +34,7 @@ DN_EXTERN Class _Nullable
 native_get_class(const char *className, Class superclass);
 
 DN_EXTERN void * _Nullable
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, BOOL waitUntilDone);
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *));
 
 DN_EXTERN void *
 native_block_create(char *types, void *callback);

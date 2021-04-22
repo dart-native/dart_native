@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A45C1CAC262DB7B500FC10FE /* DNError.h in Headers */ = {isa = PBXBuildFile; fileRef = A45C1CAA262DB7B500FC10FE /* DNError.h */; };
+		A45C1CAD262DB7B500FC10FE /* DNError.m in Sources */ = {isa = PBXBuildFile; fileRef = A45C1CAB262DB7B500FC10FE /* DNError.m */; };
 		A45D1D78258B3E0A009C163D /* dart_api.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D4C258B3E0A009C163D /* dart_api.h */; };
 		A45D1D79258B3E0A009C163D /* dart_api_dl.c in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D4D258B3E0A009C163D /* dart_api_dl.c */; };
 		A45D1D7A258B3E0A009C163D /* dart_version.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D4E258B3E0A009C163D /* dart_version.h */; };
@@ -48,6 +50,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A45C1CAA262DB7B500FC10FE /* DNError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNError.h; sourceTree = "<group>"; };
+		A45C1CAB262DB7B500FC10FE /* DNError.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DNError.m; sourceTree = "<group>"; };
 		A45D1D3D258B3DC6009C163D /* DartNative.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DartNative.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A45D1D4C258B3E0A009C163D /* dart_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_api.h; sourceTree = "<group>"; };
 		A45D1D4D258B3E0A009C163D /* dart_api_dl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dart_api_dl.c; sourceTree = "<group>"; };
@@ -183,23 +187,25 @@
 		A45D1D64258B3E0A009C163D /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				A45D1D65258B3E0A009C163D /* DNInvocation.h */,
-				A45D1D66258B3E0A009C163D /* DNMacro.h */,
-				A45D1D67258B3E0A009C163D /* NSThread+DartNative.m */,
-				A45D1D69258B3E0A009C163D /* DNObjectDealloc.h */,
 				A45D1D6A258B3E0A009C163D /* DNBlockWrapper.h */,
-				A45D1D6B258B3E0A009C163D /* DNFFIHelper.m */,
-				A45D1D6C258B3E0A009C163D /* DNPointerWrapper.h */,
-				A45D1D6D258B3E0A009C163D /* DNMethodIMP.m */,
-				A45D1D6E258B3E0A009C163D /* DNInvocation.m */,
-				A45D1D6F258B3E0A009C163D /* native_runtime.h */,
-				A45D1D71258B3E0A009C163D /* NSThread+DartNative.h */,
-				A45D1D72258B3E0A009C163D /* native_runtime.mm */,
-				A45D1D73258B3E0A009C163D /* DNObjectDealloc.m */,
-				A45D1D74258B3E0A009C163D /* DNMethodIMP.h */,
-				A45D1D75258B3E0A009C163D /* DNPointerWrapper.m */,
-				A45D1D76258B3E0A009C163D /* DNFFIHelper.h */,
 				A45D1D77258B3E0A009C163D /* DNBlockWrapper.m */,
+				A45C1CAA262DB7B500FC10FE /* DNError.h */,
+				A45C1CAB262DB7B500FC10FE /* DNError.m */,
+				A45D1D76258B3E0A009C163D /* DNFFIHelper.h */,
+				A45D1D6B258B3E0A009C163D /* DNFFIHelper.m */,
+				A45D1D65258B3E0A009C163D /* DNInvocation.h */,
+				A45D1D6E258B3E0A009C163D /* DNInvocation.m */,
+				A45D1D66258B3E0A009C163D /* DNMacro.h */,
+				A45D1D74258B3E0A009C163D /* DNMethodIMP.h */,
+				A45D1D6D258B3E0A009C163D /* DNMethodIMP.m */,
+				A45D1D69258B3E0A009C163D /* DNObjectDealloc.h */,
+				A45D1D73258B3E0A009C163D /* DNObjectDealloc.m */,
+				A45D1D6C258B3E0A009C163D /* DNPointerWrapper.h */,
+				A45D1D75258B3E0A009C163D /* DNPointerWrapper.m */,
+				A45D1D6F258B3E0A009C163D /* native_runtime.h */,
+				A45D1D72258B3E0A009C163D /* native_runtime.mm */,
+				A45D1D71258B3E0A009C163D /* NSThread+DartNative.h */,
+				A45D1D67258B3E0A009C163D /* NSThread+DartNative.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -234,6 +240,7 @@
 				A45D1D7F258B3E0A009C163D /* dart_tools_api.h in Headers */,
 				A45D1D97258B3E0A009C163D /* native_runtime.h in Headers */,
 				A45D1D82258B3E0A009C163D /* ffitarget.h in Headers */,
+				A45C1CAC262DB7B500FC10FE /* DNError.h in Headers */,
 				A45D1D92258B3E0A009C163D /* DNBlockWrapper.h in Headers */,
 				A45D1D7A258B3E0A009C163D /* dart_version.h in Headers */,
 				A45D1D7D258B3E0A009C163D /* dart_native_api.h in Headers */,
@@ -317,6 +324,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A45C1CAD262DB7B500FC10FE /* DNError.m in Sources */,
 				A45D1D9A258B3E0A009C163D /* native_runtime.mm in Sources */,
 				A45D1D9F258B3E0A009C163D /* DNBlockWrapper.m in Sources */,
 				A45D1D9D258B3E0A009C163D /* DNPointerWrapper.m in Sources */,
