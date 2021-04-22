@@ -1,3 +1,7 @@
+## 0.3.13
+
+* [Fix] Memory leaks on Android.
+
 ## 0.3.12
 
 * [Feature] Support List/Array for Android.
