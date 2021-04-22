@@ -1,3 +1,7 @@
+## 0.3.14
+
+* [Feature] Support `await/async` for methods on iOS.
+
 ## 0.3.13
 
 * [Fix] Memory leaks on Android.
