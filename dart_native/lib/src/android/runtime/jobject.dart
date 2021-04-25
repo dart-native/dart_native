@@ -28,7 +28,7 @@ class JObject extends Class {
 
     if (pointer == null) {
       Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-      pointer = nativeCreateClass(classNamePtr, nullptr, nullptr);
+      pointer = nativeCreateClass(classNamePtr, nullptr, nullptr, 0);
       free(classNamePtr);
     }
 
@@ -40,7 +40,7 @@ class JObject extends Class {
     ArgumentsPointers pointers = _parseArguments(args);
     Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
     _ptr = nativeCreateClass(
-        classNamePtr, pointers.pointers, pointers.typePointers);
+        classNamePtr, pointers.pointers, pointers.typePointers, args.length);
     free(classNamePtr);
     passJObjectToNative(this);
     pointers.freePointers();
@@ -57,7 +57,7 @@ class JObject extends Class {
 
     ArgumentsPointers pointers = _parseArguments(args, argsSignature);
     Pointer<Void> invokeMethodRet = nativeInvokeNeo(_ptr, methodNamePtr,
-        pointers.pointers, pointers.typePointers, returnTypePtr);
+        pointers.pointers, pointers.typePointers, args.length, returnTypePtr);
 
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     pointers.freePointers();
@@ -78,8 +78,8 @@ class JObject extends Class {
     Pointer<Pointer<Void>> pointers = nullptr;
     Pointer<Pointer<Utf8>> typePointers = nullptr;
     if (args != null) {
-      pointers = allocate<Pointer<Void>>(count: args.length + 1);
-      typePointers = allocate<Pointer<Utf8>>(count: args.length + 1);
+      pointers = allocate<Pointer<Void>>(count: args.length);
+      typePointers = allocate<Pointer<Utf8>>(count: args.length);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (arg == null) {
@@ -92,8 +92,6 @@ class JObject extends Class {
         storeValueToPointer(arg, pointers.elementAt(i),
             typePointers.elementAt(i), argSignature);
       }
-      pointers.elementAt(args.length).value = nullptr;
-      typePointers.elementAt(args.length).value = nullptr;
     }
     return ArgumentsPointers(pointers, typePointers);
   }
