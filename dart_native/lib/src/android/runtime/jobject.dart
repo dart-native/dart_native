@@ -40,7 +40,7 @@ class JObject extends Class {
     ArgumentsPointers pointers = _parseArguments(args);
     Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
     _ptr = nativeCreateClass(
-        classNamePtr, pointers.pointers, pointers.typePointers, args.length);
+        classNamePtr, pointers.pointers, pointers.typePointers, args?.length ?? 0);
     free(classNamePtr);
     passJObjectToNative(this);
     pointers.freePointers();
@@ -57,7 +57,7 @@ class JObject extends Class {
 
     ArgumentsPointers pointers = _parseArguments(args, argsSignature);
     Pointer<Void> invokeMethodRet = nativeInvokeNeo(_ptr, methodNamePtr,
-        pointers.pointers, pointers.typePointers, args.length, returnTypePtr);
+        pointers.pointers, pointers.typePointers, args?.length ?? 0, returnTypePtr);
 
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
     pointers.freePointers();
