@@ -55,7 +55,6 @@ JNIEnv *getEnv() {
 
   switch (ret) {
     case JNI_OK:
-      NSLog("JNI_OK");
       return env;
     case JNI_EDETACHED:
       NSLog("attach to current thread");
@@ -221,7 +220,6 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
     }
     char *methodSignature = spliceChar(signature, returnType);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
-    NSLog("call method: %s descriptor: %s", methodName, methodSignature);
 
     if (strlen(returnType) > 1) {
         if (strcmp(returnType, "Ljava/lang/String;") == 0) {
