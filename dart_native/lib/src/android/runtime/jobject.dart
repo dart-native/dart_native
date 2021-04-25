@@ -93,6 +93,13 @@ class JObject extends Class {
             typePointers.elementAt(i), argSignature);
       }
     }
+    if (pointers == nullptr) {
+      pointers = nullptr.cast();
+    }
+
+    if (typePointers == nullptr) {
+      typePointers = nullptr.cast();
+    }
     return ArgumentsPointers(pointers, typePointers);
   }
 }
