@@ -13,7 +13,6 @@ public class RuntimeStub {
   private final String TAG = "dart_java";
 
   public int getInt(int i){
-    Log.d(TAG, "getInt : " + i);
     return 100;
   }
 
@@ -53,7 +52,6 @@ public class RuntimeStub {
   }
 
   public String getString(String s) {
-    Log.d(TAG, "getString : " + s);
     return "test success";
   }
 

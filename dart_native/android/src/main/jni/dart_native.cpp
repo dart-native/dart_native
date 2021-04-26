@@ -16,7 +16,6 @@ extern "C" {
 static JavaVM *gJvm = nullptr;
 static jobject gClassLoader;
 static jmethodID gFindClassMethod;
-static JNIEnv *gCurEnv = nullptr;
 static pthread_key_t detachKey = 0;
 
 typedef void (*NativeMethodCallback)(
@@ -36,17 +35,6 @@ static std::map<void *, jobject> callbackObjCache;
 static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackManagerCache;
 static std::map<jlong, void *> targetCache;
 
-JNIEnv *getEnv() {
-    JNIEnv *env;
-    int status = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
-    if (status < 0) {
-        status = gJvm->AttachCurrentThread(&env, NULL);
-        if (status < 0) {
-            return nullptr;
-        }
-    }
-    return env;
-}
 
 void detachThreadDestructor(void* arg) {
   NSLog("detach from current thread");
@@ -54,27 +42,41 @@ void detachThreadDestructor(void* arg) {
   detachKey = 0;
 }
 
-void attachThread() {
+JNIEnv *getEnv() {
+  if (gJvm == nullptr) {
+    return nullptr;
+  }
+
   if (detachKey == 0) {
-    NSLog("attach to current thread");
     pthread_key_create(&detachKey, detachThreadDestructor);
-    gJvm->AttachCurrentThread(&gCurEnv, NULL);
-    pthread_setspecific(detachKey, nullptr);
+  }
+  JNIEnv *env;
+  jint ret = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
+
+  switch (ret) {
+    case JNI_OK:
+      return env;
+    case JNI_EDETACHED:
+      NSLog("attach to current thread");
+      gJvm->AttachCurrentThread(&env, NULL);
+      return env;
+    default:
+      NSLog("fail to get env");
+      return nullptr;
   }
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
     NSLog("JNI_OnLoad");
     gJvm = pjvm;  // cache the JavaVM pointer
-    gCurEnv = getEnv();
     //replace with one of your classes in the line below
-    auto randomClass = gCurEnv->FindClass("com/dartnative/dart_native/DartNativePlugin");
-    jclass classClass = gCurEnv->GetObjectClass(randomClass);
-    auto classLoaderClass = gCurEnv->FindClass("java/lang/ClassLoader");
-    auto getClassLoaderMethod = gCurEnv->GetMethodID(classClass, "getClassLoader",
+    auto randomClass = getEnv()->FindClass("com/dartnative/dart_native/DartNativePlugin");
+    jclass classClass = getEnv()->GetObjectClass(randomClass);
+    auto classLoaderClass = getEnv()->FindClass("java/lang/ClassLoader");
+    auto getClassLoaderMethod = getEnv()->GetMethodID(classClass, "getClassLoader",
                                                  "()Ljava/lang/ClassLoader;");
-    gClassLoader = gCurEnv->NewGlobalRef(gCurEnv->CallObjectMethod(randomClass, getClassLoaderMethod));
-    gFindClassMethod = gCurEnv->GetMethodID(classLoaderClass, "findClass",
+    gClassLoader = getEnv()->NewGlobalRef(getEnv()->CallObjectMethod(randomClass, getClassLoaderMethod));
+    gFindClassMethod = getEnv()->GetMethodID(classLoaderClass, "findClass",
                                         "(Ljava/lang/String;)Ljava/lang/Class;");
 
     NSLog("JNI_OnLoad finish");
@@ -88,12 +90,11 @@ char *spliceChar(char *dest, char *src) {
   return result;
 }
 
-char *generateSignature(char **argTypes) {
+char *generateSignature(char **argTypes, int argCount) {
   char *signature = const_cast<char *>("(");
-  int argCount = 0;
   if (argTypes != nullptr)
   {
-    for (; *argTypes; ++argTypes, ++argCount) {
+    for (int i = 0; i < argCount; ++argTypes, i++) {
       char *templeSignature = spliceChar(signature, *argTypes);
       signature = templeSignature;
       free(templeSignature);
@@ -102,12 +103,12 @@ char *generateSignature(char **argTypes) {
   return spliceChar(signature, const_cast<char *>(")"));
 }
 
-void fillArgs(void **args, char **argTypes, jvalue *argValues) {
-  for(jsize index(0); *argTypes ; ++args, ++index, ++argTypes) {
+void fillArgs(void **args, char **argTypes, jvalue *argValues, int argCount) {
+  for(jsize index(0); index < argCount ; ++args, ++index, ++argTypes) {
     char *argType = *argTypes;
     if (strlen(argType) > 1) {
       if (strcmp(argType, "Ljava/lang/String;") == 0) {
-        argValues[index].l = gCurEnv->NewStringUTF((char *)*args);
+        argValues[index].l = getEnv()->NewStringUTF((char *)*args);
       }
       else {
         jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
@@ -156,38 +157,34 @@ jclass findClass(JNIEnv *env, const char *name) {
     return nativeClass;
 }
 
-jobject newObject(jclass cls, void **args, char **argTypes) {
-  char *signature = generateSignature(argTypes);
-  jvalue *argValues = new jvalue[strlen(signature) - 2];
-  if (strlen(signature) - 2 > 0) {
-    fillArgs(args, argTypes, argValues);
+jobject newObject(jclass cls, void **args, char **argTypes, int argCount) {
+  char *signature = generateSignature(argTypes, argCount);
+  jvalue *argValues = new jvalue[argCount];
+  if (argCount > 0) {
+    fillArgs(args, argTypes, argValues, argCount);
   }
   char *constructorSig = spliceChar(signature, const_cast<char *>("V"));
-  jmethodID constructor = gCurEnv->GetMethodID(cls, "<init>", constructorSig);
-  jobject newObj = gCurEnv->NewObjectA(cls, constructor, argValues);
+  jmethodID constructor = getEnv()->GetMethodID(cls, "<init>", constructorSig);
+  jobject newObj = getEnv()->NewObjectA(cls, constructor, argValues);
   free(argValues);
   free(constructorSig);
   return newObj;
 }
 
-void *createTargetClass(char *targetClassName, void **args, char **argTypes) {
-    attachThread();
+void *createTargetClass(char *targetClassName, void **args, char **argTypes, int argCount) {
+    jclass cls = findClass(getEnv(), targetClassName);
 
-    jclass cls = findClass(gCurEnv, targetClassName);
-
-    jobject newObj = gCurEnv->NewGlobalRef(newObject(cls, args, argTypes));
-    cache[newObj] = static_cast<jclass>(gCurEnv->NewGlobalRef(cls));
+    jobject newObj = getEnv()->NewGlobalRef(newObject(cls, args, argTypes, argCount));
+    cache[newObj] = static_cast<jclass>(getEnv()->NewGlobalRef(cls));
 
     return newObj;
 }
 
 
 void releaseTargetClass(void *classPtr) {
-    attachThread();
-
     jobject object = static_cast<jobject>(classPtr);
     cache.erase(object);
-    gCurEnv->DeleteGlobalRef(object);
+    getEnv()->DeleteGlobalRef(object);
 }
 
 void retain(void *classPtr) {
@@ -211,71 +208,69 @@ void release(void *classPtr) {
     referenceCount[object] = count - 1;
 }
 
-void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, char *returnType) {
+void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, int argCount, char *returnType) {
     void *nativeInvokeResult = nullptr;
 
-    attachThread();
     jobject object = static_cast<jobject>(classPtr);
     jclass cls = cache[object];
-    char *signature = generateSignature(argTypes);
-    jvalue *argValues = new jvalue[strlen(signature) - 2];
-    if ((strlen(signature) - 2) > 0) {
-      fillArgs(args, argTypes, argValues);
+    char *signature = generateSignature(argTypes, argCount);
+    jvalue *argValues = new jvalue[argCount];
+    if (argCount > 0) {
+      fillArgs(args, argTypes, argValues, argCount);
     }
     char *methodSignature = spliceChar(signature, returnType);
-    jmethodID method = gCurEnv->GetMethodID(cls, methodName, methodSignature);
-    NSLog("call method: %s descriptor: %s", methodName, methodSignature);
+    jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
     if (strlen(returnType) > 1) {
         if (strcmp(returnType, "Ljava/lang/String;") == 0) {
-            jstring javaString = (jstring)gCurEnv->CallObjectMethodA(object, method, argValues);
+            jstring javaString = (jstring) getEnv()->CallObjectMethodA(object, method, argValues);
             jboolean isCopy = JNI_FALSE;
-            nativeInvokeResult = (char *) gCurEnv->GetStringUTFChars(javaString, &isCopy);
+            nativeInvokeResult = (char *) getEnv()->GetStringUTFChars(javaString, &isCopy);
         }
         else {
-            jobject obj = gCurEnv->NewGlobalRef(gCurEnv->CallObjectMethodA(object, method, argValues));
-            jclass objCls = gCurEnv->GetObjectClass(obj);
+            jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
+            jclass objCls = getEnv()->GetObjectClass(obj);
             //store class value
-            cache[obj] = static_cast<jclass>(gCurEnv->NewGlobalRef(objCls));
+            cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
             nativeInvokeResult = obj;
         }
     }
     else if (strcmp(returnType, "C") == 0) {
-        auto nativeChar = gCurEnv->CallCharMethodA(object, method, argValues);
+        auto nativeChar = getEnv()->CallCharMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeChar;
     }
     else if(strcmp(returnType, "I") == 0) {
-        auto nativeInt = gCurEnv->CallIntMethodA(object, method, argValues);
+        auto nativeInt = getEnv()->CallIntMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeInt;
     }
     else if(strcmp(returnType, "D") == 0) {
-        auto nativeDouble = gCurEnv->CallDoubleMethodA(object, method, argValues);
+        auto nativeDouble = getEnv()->CallDoubleMethodA(object, method, argValues);
         double cDouble = (double) nativeDouble;
         memcpy(&nativeInvokeResult, &cDouble, sizeof(double));
     }
     else if(strcmp(returnType, "F") == 0) {
-        auto nativeDouble = gCurEnv->CallFloatMethodA(object, method, argValues);
+        auto nativeDouble = getEnv()->CallFloatMethodA(object, method, argValues);
         float cDouble = (float) nativeDouble;
         memcpy(&nativeInvokeResult, &cDouble, sizeof(float));
     }
     else if(strcmp(returnType, "B") == 0) {
-        auto nativeByte = gCurEnv->CallByteMethodA(object, method, argValues);
+        auto nativeByte = getEnv()->CallByteMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeByte;
     }
     else if(strcmp(returnType, "S") == 0) {
-        auto nativeShort = gCurEnv->CallShortMethodA(object, method, argValues);
+        auto nativeShort = getEnv()->CallShortMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeShort;
     }
     else if(strcmp(returnType, "J") == 0) {
-        auto nativeLong = gCurEnv->CallLongMethodA(object, method, argValues);
+        auto nativeLong = getEnv()->CallLongMethodA(object, method, argValues);
         nativeInvokeResult = (void *) nativeLong;
     }
     else if(strcmp(returnType, "Z") == 0) {
-      auto nativeBool = gCurEnv->CallBooleanMethodA(object, method, argValues);
+      auto nativeBool = getEnv()->CallBooleanMethodA(object, method, argValues);
       nativeInvokeResult = (void *) nativeBool;
     }
     else if(strcmp(returnType, "V") == 0) {
-      gCurEnv->CallVoidMethodA(object, method, argValues);
+      getEnv()->CallVoidMethodA(object, method, argValues);
     }
 
     free(argValues);
@@ -307,20 +302,18 @@ NativeMethodCallback getCallbackMethod(jlong targetAddr, char *functionName) {
 }
 
 void registerNativeCallback(void *target, char* targetName, char *funName, void *callback) {
-    attachThread();
-
-    jclass callbackManager = findClass(gCurEnv, "com/dartnative/dart_native/CallbackManager");
-    jmethodID registerCallback = gCurEnv->GetStaticMethodID(callbackManager, "registerCallback", "(JLjava/lang/String;)Ljava/lang/Object;");
+    jclass callbackManager = findClass(getEnv(), "com/dartnative/dart_native/CallbackManager");
+    jmethodID registerCallback = getEnv()->GetStaticMethodID(callbackManager, "registerCallback", "(JLjava/lang/String;)Ljava/lang/Object;");
     jlong targetAddr = (jlong)target;
     jvalue *argValues = new jvalue[2];
     argValues[0].j = targetAddr;
-    argValues[1].l = gCurEnv->NewStringUTF(targetName);
-    jobject callbackOJ = gCurEnv->NewGlobalRef(gCurEnv->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
+    argValues[1].l = getEnv()->NewStringUTF(targetName);
+    jobject callbackOJ = getEnv()->NewGlobalRef(getEnv()->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
     callbackObjCache[target] = callbackOJ;
     targetCache[targetAddr] = target;
 
     registerCallbackManager(targetAddr, funName, callback);
-    gCurEnv->DeleteLocalRef(callbackManager);
+    getEnv()->DeleteLocalRef(callbackManager);
     free(argValues);
 }
 
