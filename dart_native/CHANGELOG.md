@@ -1,3 +1,7 @@
+## 0.3.16
+
+* [Fix] JNI environment issue on Android.
+
 ## 0.3.15
 
 * [Fix] Performance issue on iOS.
