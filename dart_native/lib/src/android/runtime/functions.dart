@@ -16,14 +16,15 @@ typedef MethodNativeCallback = Void Function(
 /// input : className
 /// return : classObject
 final Pointer<Void> Function(Pointer<Utf8> clsName,
-    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Utf8>> typePtrs)
+    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Utf8>> typePtrs, int)
 nativeCreateClass = nativeDylib
     ?.lookup<
     NativeFunction<
         Pointer<Void> Function(
             Pointer<Utf8> clsName,
             Pointer<Pointer<Void>> argsPtrs,
-            Pointer<Pointer<Utf8>> typePtrs)>>("createTargetClass")
+            Pointer<Pointer<Utf8>> typePtrs,
+            Int32 argCount)>>("createTargetClass")
     ?.asFunction();
 
 
@@ -38,7 +39,7 @@ nativeCreateClass = nativeDylib
 ///
 /// @return: 返回值指针
 final Pointer<Void> Function(Pointer<Void> objectPtr, Pointer<Utf8> methodName,
-    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Utf8>> typePtrs, Pointer<Utf8> returnType)
+    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Utf8>> typePtrs, int, Pointer<Utf8> returnType)
 nativeInvokeNeo = nativeDylib
     ?.lookup<
     NativeFunction<
@@ -47,6 +48,7 @@ nativeInvokeNeo = nativeDylib
             Pointer<Utf8> methodName,
             Pointer<Pointer<Void>> argsPtrs,
             Pointer<Pointer<Utf8>> typePtrs,
+            Int32 argCount,
             Pointer<Utf8> returnType)>>("invokeNativeMethodNeo")
     ?.asFunction();
 
