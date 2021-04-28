@@ -64,7 +64,7 @@ DN_EXTERN dispatch_queue_main_t
 _dispatch_get_main_queue(void);
 
 DN_EXTERN void
-native_mark_autoreleasereturn_object(id object);
+native_retain_object(id object);
 
 DN_EXTERN const uint16_t *
 native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length);

@@ -61,6 +61,7 @@ class NSObject extends id {
     if (isa == null) {
       isa = Class('NSObject');
     }
+    // TODO: merge into one call
     NSObject result = isa.perform(SEL('new'));
     return result.autorelease().pointer;
   }

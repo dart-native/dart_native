@@ -399,7 +399,11 @@ _dispatch_get_main_queue(void) {
 }
 
 void
-native_mark_autoreleasereturn_object(id object) {
+native_retain_object(id object) {
+//    #pragma clang diagnostic push
+//    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+//    [object performSelector:NSSelectorFromString(@"retain")];
+//    #pragma clang diagnostic pop
     int64_t address = (int64_t)object;
     [NSThread.currentThread dn_performWaitingUntilDone:YES block:^{
         NSThread.currentThread.threadDictionary[@(address)] = object;

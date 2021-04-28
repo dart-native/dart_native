@@ -83,7 +83,7 @@ _callback(
     }
   }
   if (result is id) {
-    markAutoreleasereturnObject(result.pointer);
+    retainObject(result.pointer);
   }
 }
 

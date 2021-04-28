@@ -145,7 +145,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         userArgs = args + 1;
     }
     *(void **)userRet = NULL;
-    __block int64_t retObjectAddr = 0;
     // Use (numberOfArguments - 2) exclude itself and _cmd.
     int numberOfArguments = (int)methodIMP.numberOfArguments - 2;
     
@@ -189,9 +188,16 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
     }
     free(types);
-    retObjectAddr = (int64_t)*(void **)retAddr;
+    int64_t retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, methodIMP, invocation);
     [methodIMP.thread dn_performBlock:^{
+//        if (methodIMP.typeEncoding[0] == '@') {
+//            SEL selector = NSSelectorFromString(@"release");
+//            #pragma clang diagnostic push
+//            #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+//            [(__bridge id)(*(void **)ret) performSelector:selector];
+//            #pragma clang diagnostic pop
+//        }
         NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
     }];
 }
