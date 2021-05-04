@@ -313,6 +313,13 @@ static void DNHandleReturnValue(void *origRet, DNBlockWrapper *wrapper, DNInvoca
         }
     }
     [invocation getReturnValue:origRet];
+    if ([wrapper.typeString hasPrefix:@"@"]) {
+        SEL selector = NSSelectorFromString(@"release");
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [(__bridge id)(*(void **)origRet) performSelector:selector];
+        #pragma clang diagnostic pop
+    }
 }
 
 static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
@@ -374,9 +381,6 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     }
     retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, wrapper, invocation);
-    [wrapper.thread dn_performBlock:^{
-        NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
-    }];
 }
 
 

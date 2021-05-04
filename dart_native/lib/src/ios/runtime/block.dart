@@ -45,6 +45,7 @@ class Block extends id {
       return nil;
     }
     NSObject blockWrapper = NSObject.fromPointer(blockWrapperPtr);
+    // TODO: merge into one call
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
     int sequence = blockWrapper.perform(SEL('sequence'));
     Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));

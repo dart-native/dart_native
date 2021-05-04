@@ -127,6 +127,13 @@ static void DNHandleReturnValue(void *origRet, DNMethodIMP *methodIMP, DNInvocat
         }
     }
     [invocation getReturnValue:origRet];
+    if (methodIMP.typeEncoding[0] == '@') {
+        SEL selector = NSSelectorFromString(@"release");
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+        [(__bridge id)(*(void **)origRet) performSelector:selector];
+        #pragma clang diagnostic pop
+    }
 }
 
 static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
@@ -190,15 +197,5 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     free(types);
     int64_t retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, methodIMP, invocation);
-    [methodIMP.thread dn_performBlock:^{
-//        if (methodIMP.typeEncoding[0] == '@') {
-//            SEL selector = NSSelectorFromString(@"release");
-//            #pragma clang diagnostic push
-//            #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-//            [(__bridge id)(*(void **)ret) performSelector:selector];
-//            #pragma clang diagnostic pop
-//        }
-        NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
-    }];
 }
 
