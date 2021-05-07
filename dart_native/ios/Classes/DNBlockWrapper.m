@@ -145,6 +145,9 @@ static atomic_uint_fast64_t _seq = 0;
 - (void)dealloc {
     ffi_closure_free(_closure);
     free(_descriptor);
+    for (int i = 0; i < _numberOfArguments; i++) {
+        free((void *)_typeEncodings[i]);
+    }
     free(_typeEncodings);
     NotifyDeallocToDart(_sequence);
 }
@@ -275,7 +278,17 @@ static atomic_uint_fast64_t _seq = 0;
             }
         }
         
-        *(self.typeEncodings + i) = encode.UTF8String;
+        const char *encodeSource = encode.UTF8String;
+        size_t typeLength = strlen(encodeSource) + 1;
+        size_t size = sizeof(char) * typeLength;
+        char *typePtr = (char *)malloc(size);
+        if (typePtr == NULL) {
+            DN_ERROR(DNCreateTypeEncodingError, @"malloc for type encoding fail: %s", encodeSource);
+            return nil;
+        }
+        strlcpy(typePtr, encode.UTF8String, typeLength);
+        self.typeEncodings[i] = typePtr;
+        
         int length = DNTypeLengthWithTypeName(typeStr);
         
         if (i == 0) {
