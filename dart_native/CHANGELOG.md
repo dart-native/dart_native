@@ -1,3 +1,7 @@
+## 0.3.17
+
+* [Fix] Type encoding issue on iOS.
+
 ## 0.3.16
 
 * [Fix] JNI environment issue on Android.
