@@ -34,35 +34,40 @@ _objc_isTaggedPointer(const void *ptr) {
 
 @interface DNObjectDealloc ()
 
-@property (nonatomic, weak) NSObject *host;
-@property (nonatomic) int64_t hostAddress;
+@property (nonatomic, readonly, weak) NSObject *host;
+@property (nonatomic, readonly) int64_t hostAddress;
+@property (nonatomic, readonly) Dart_Port dartPort;
 
 @end
 
 @implementation DNObjectDealloc
 
-+ (void)attachHost:(NSObject *)host {
-    if (!host || objc_getAssociatedObject(host, @selector(initWithHost:))) {
++ (void)attachHost:(NSObject *)host
+          dartPort:(Dart_Port)dartPort {
+    if (!host || objc_getAssociatedObject(host, @selector(initWithHost:dartPort:))) {
         return;
     }
     if (!_objc_isTaggedPointer((__bridge const void *)(host)) ||
         [host isKindOfClass:NSClassFromString(@"__NSMallocBlock")]) {
-        __unused DNObjectDealloc *dealloc = [[self alloc] initWithHost:host];
+        __unused DNObjectDealloc *dealloc = [[self alloc] initWithHost:host
+                                                              dartPort:dartPort];
     }
 }
 
-- (instancetype)initWithHost:(NSObject *)host {
+- (instancetype)initWithHost:(NSObject *)host
+                    dartPort:(Dart_Port)dartPort {
     self = [super init];
     if (self) {
         _host = host;
         _hostAddress = (int64_t)host;
+        _dartPort = dartPort;
         objc_setAssociatedObject(host, _cmd, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return self;
 }
 
 - (void)dealloc {
-    NotifyDeallocToDart(_hostAddress);
+    NotifyDeallocToDart(_hostAddress, _dartPort);
 }
 
 @end

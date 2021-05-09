@@ -21,7 +21,6 @@ final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData, nativePort);
 
 final initDartAPISuccess = _dartAPIResult == 0;
 
-
 class Library {
   static void setLibPath(String soPath) {
     _libPath = soPath;

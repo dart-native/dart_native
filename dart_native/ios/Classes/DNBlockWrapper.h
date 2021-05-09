@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DNMacro.h"
+#import "dart_api_dl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,11 +22,13 @@ typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, voi
 @property (nonatomic, readonly) NativeBlockCallback callback;
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
 @property (nonatomic, readonly) int64_t sequence;
+@property (nonatomic, readonly) Dart_Port dartPort;
 
 - (intptr_t)blockAddress;
 
 - (instancetype)initWithTypeString:(char *)typeString
                           callback:(NativeBlockCallback)callback
+                          dartPort:(Dart_Port)dartPort
                              error:(out NSError **)error;
 
 @end

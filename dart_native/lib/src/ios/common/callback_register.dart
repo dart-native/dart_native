@@ -16,7 +16,8 @@ bool registerMethodCallback(
   Pointer<Void> selectorPtr = selector.toPointer();
   CallbackManager.shared
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
-  int result = nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr);
+  int result =
+      nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr, nativePort);
   return result != 0;
 }
 

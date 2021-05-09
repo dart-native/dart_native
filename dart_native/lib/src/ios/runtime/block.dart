@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
@@ -40,7 +41,8 @@ class Block extends id {
     List<String> dartTypes = dartTypeStringForFunction(function);
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = Utf8.toUtf8(nativeTypes.join(', '));
-    Pointer<Void> blockWrapperPtr = blockCreate(typeStringPtr, _callbackPtr);
+    Pointer<Void> blockWrapperPtr =
+        blockCreate(typeStringPtr, _callbackPtr, nativePort);
     if (blockWrapperPtr == nullptr) {
       return nil;
     }
@@ -148,7 +150,7 @@ class Block extends id {
             arg, argsPtrPtr.elementAt(i), typesPtrPtr.elementAt(i + 2).value);
       }
     }
-    Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
+    Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr, nativePort);
     if (argsPtrPtr != nullptr.cast()) {
       free(argsPtrPtr);
     }
