@@ -433,7 +433,7 @@ intptr_t InitDartApiDL(void *data) {
 
 typedef std::function<void()> Work;
 
-void NotifyDart(Dart_Port send_port, const Work* work) {
+BOOL NotifyDart(Dart_Port send_port, const Work* work) {
     const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
 
     Dart_CObject dart_object;
@@ -444,6 +444,7 @@ void NotifyDart(Dart_Port send_port, const Work* work) {
     if (!result) {
         NSLog(@"Native callback to Dart failed! Invalid port or isolate died");
     }
+    return result;
 }
 
 DN_EXTERN
@@ -475,8 +476,8 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
         }
     };
     const Work* work_ptr = new Work(work);
-    NotifyDart(wrapper.dartPort, work_ptr);
-    if (sema) {
+    BOOL success = NotifyDart(wrapper.dartPort, work_ptr);
+    if (sema && success) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
 }
@@ -504,8 +505,8 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
         }
     };
     const Work* work_ptr = new Work(work);
-    NotifyDart(methodIMP.dartPort, work_ptr);
-    if (sema) {
+    BOOL success = NotifyDart(methodIMP.dartPort, work_ptr);
+    if (sema && success) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
 }
