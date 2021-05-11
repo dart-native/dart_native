@@ -15,8 +15,11 @@ typedef MethodNativeCallback = Void Function(
 /// 创建native class
 /// input : className
 /// return : classObject
-final Pointer<Void> Function(Pointer<Utf8> clsName,
-    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Utf8>> typePtrs, int)
+final Pointer<Void> Function(
+    Pointer<Utf8> clsName,
+    Pointer<Pointer<Void>> argsPtrs,
+    Pointer<Pointer<Utf8>> typePtrs,
+    int argCount)
 nativeCreateClass = nativeDylib
     ?.lookup<
     NativeFunction<
@@ -38,8 +41,13 @@ nativeCreateClass = nativeDylib
 /// returnType: 需要的返回类型指针
 ///
 /// @return: 返回值指针
-final Pointer<Void> Function(Pointer<Void> objectPtr, Pointer<Utf8> methodName,
-    Pointer<Pointer<Void>> argsPtrs, Pointer<Pointer<Utf8>> typePtrs, int, Pointer<Utf8> returnType)
+final Pointer<Void> Function(
+    Pointer<Void> objectPtr,
+    Pointer<Utf8> methodName,
+    Pointer<Pointer<Void>> argsPtrs,
+    Pointer<Pointer<Utf8>> typePtrs,
+    int argCount,
+    Pointer<Utf8> returnType)
 nativeInvokeNeo = nativeDylib
     ?.lookup<
     NativeFunction<
@@ -52,12 +60,27 @@ nativeInvokeNeo = nativeDylib
             Pointer<Utf8> returnType)>>("invokeNativeMethodNeo")
     ?.asFunction();
 
-final void Function(Object, Pointer<Void>) passJObjectToC = nativeDylib
-    ?.lookup<NativeFunction<Void Function(Handle, Pointer<Void>)>>(
-    "PassObjectToCUseDynamicLinking")
+///
+/// dart对象与native对象绑定
+///
+final void Function(
+    Object,
+    Pointer<Void>)
+passJObjectToC = nativeDylib
+    ?.lookup<NativeFunction<Void Function(
+    Handle,
+    Pointer<Void>)>>("PassObjectToCUseDynamicLinking")
     ?.asFunction();
 
-final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>, Pointer<NativeFunction<MethodNativeCallback>>)
+///
+/// 注册异步回调函数
+///
+final void Function(
+    Pointer<Void>,
+    Pointer<Utf8>,
+    Pointer<Utf8>,
+    Pointer<NativeFunction<MethodNativeCallback>>,
+    int)
   registerNativeCallback = nativeDylib
     ?.lookup<
     NativeFunction<
@@ -65,5 +88,6 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>, Pointer<NativeF
             Pointer<Void> targetPtr,
             Pointer<Utf8> targetName,
             Pointer<Utf8> funName,
-            Pointer<NativeFunction<MethodNativeCallback>> funcation)>>("registerNativeCallback")
+            Pointer<NativeFunction<MethodNativeCallback>> funcation,
+            Int64 dartPort)>>("registerNativeCallback")
     ?.asFunction();

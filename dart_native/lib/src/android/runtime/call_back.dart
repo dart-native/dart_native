@@ -15,7 +15,7 @@ void registerCallback(dynamic target, Function function, String functionName) {
   Pointer<Utf8> targetName = Utf8.toUtf8(target.className);
   Pointer<Utf8> funNamePtr = Utf8.toUtf8(functionName);
   CallBackManager.instance.registerCallBack(targetPtr, functionName, function);
-  registerNativeCallback(targetPtr, targetName, funNamePtr, _callbackPtr);
+  registerNativeCallback(targetPtr, targetName, funNamePtr, _callbackPtr, nativePort);
   free(targetName);
   free(funNamePtr);
 }
