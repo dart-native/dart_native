@@ -25,7 +25,7 @@ DN_EXTERN void
 native_signature_encoding_list(NSMethodSignature *signature, const char * _Nonnull * _Nonnull typeEncodings);
 
 DN_EXTERN BOOL
-native_add_method(id target, SEL selector, char *types, void *callback);
+native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort);
 
 DN_EXTERN char * _Nullable
 native_protocol_method_types(Protocol *proto, SEL selector);
@@ -34,13 +34,13 @@ DN_EXTERN Class _Nullable
 native_get_class(const char *className, Class superclass);
 
 DN_EXTERN void * _Nullable
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *));
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *), Dart_Port dartPort);
 
 DN_EXTERN void *
-native_block_create(char *types, void *callback);
+native_block_create(char *types, void *callback, Dart_Port dartPort);
 
 DN_EXTERN void *
-native_block_invoke(void *block, void * _Nonnull * _Nullable args);
+native_block_invoke(void *block, void * _Nonnull * _Nullable args, Dart_Port dartPort);
 
 DN_EXTERN const char * _Nonnull * _Nonnull
 native_all_type_encodings(void);
@@ -72,7 +72,7 @@ native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length);
 #pragma mark - Dart VM API
 
 DN_EXTERN
-intptr_t InitDartApiDL(void *data, Dart_Port port);
+intptr_t InitDartApiDL(void *data);
 
 #pragma mark - Async Block Callback
 
@@ -95,7 +95,7 @@ DN_EXTERN
 void PassObjectToCUseDynamicLinking(Dart_Handle h, id object);
 
 DN_EXTERN
-void NotifyDeallocToDart(intptr_t address);
+void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
 
 DN_EXTERN
 void RegisterDeallocCallback(void (*callback)(intptr_t));

@@ -1,3 +1,7 @@
+## 0.3.18
+
+* [Feature] Support multi-isolates.
+
 ## 0.3.17
 
 * [Fix] Type encoding issue on iOS.

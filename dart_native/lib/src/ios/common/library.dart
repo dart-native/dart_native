@@ -20,10 +20,9 @@ DynamicLibrary get runtimeLib {
 
 final DynamicLibrary nativeDylib = DynamicLibrary.process();
 
-final initializeApi = runtimeLib.lookupFunction<
-    IntPtr Function(Pointer<Void>, Int64),
-    int Function(Pointer<Void>, int)>("InitDartApiDL");
+final initializeApi = runtimeLib.lookupFunction<IntPtr Function(Pointer<Void>),
+    int Function(Pointer<Void>)>("InitDartApiDL");
 
-final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData, nativePort);
+final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData);
 
 final initDartAPISuccess = _dartAPIResult == 0;

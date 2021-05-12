@@ -21,9 +21,14 @@ typedef AddMethodC = Int32 Function(
     Pointer<Void> target,
     Pointer<Void> selector,
     Pointer<Utf8> types,
-    Pointer<NativeFunction<MethodIMPCallbackC>> callback);
-typedef AddMethodD = int Function(Pointer<Void> target, Pointer<Void> selector,
-    Pointer<Utf8> types, Pointer<NativeFunction<MethodIMPCallbackC>> callback);
+    Pointer<NativeFunction<MethodIMPCallbackC>> callback,
+    Int64 dartPort);
+typedef AddMethodD = int Function(
+    Pointer<Void> target,
+    Pointer<Void> selector,
+    Pointer<Utf8> types,
+    Pointer<NativeFunction<MethodIMPCallbackC>> callback,
+    int dartPort);
 final AddMethodD nativeAddMethod =
     runtimeLib.lookupFunction<AddMethodC, AddMethodD>('native_add_method');
 
@@ -42,15 +47,26 @@ final GetClassD nativeGetClass =
 
 /// When [queue] is not `nullptr`, method will be invoked asynchronously.
 /// [callback] is ignored when queue equals to `nullptr`.
-typedef InvokeMethod = Pointer<Void> Function(
-    Pointer<Void> instance,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Void> queue,
-    Pointer<Pointer<Void>> args,
-    Pointer<Void> callback);
-final InvokeMethod nativeInvokeMethod = runtimeLib
-    .lookupFunction<InvokeMethod, InvokeMethod>('native_instance_invoke');
+typedef InvokeMethodC = Pointer<Void> Function(
+  Pointer<Void> instance,
+  Pointer<Void> selector,
+  Pointer<Void> signature,
+  Pointer<Void> queue,
+  Pointer<Pointer<Void>> args,
+  Pointer<Void> callback,
+  Int64 dartPort,
+);
+typedef InvokeMethodD = Pointer<Void> Function(
+  Pointer<Void> instance,
+  Pointer<Void> selector,
+  Pointer<Void> signature,
+  Pointer<Void> queue,
+  Pointer<Pointer<Void>> args,
+  Pointer<Void> callback,
+  int dartPort,
+);
+final InvokeMethodD nativeInvokeMethod = runtimeLib
+    .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
 
 typedef MethodIMPCallbackC = Void Function(
     Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
@@ -83,16 +99,16 @@ typedef BlockCallbackC = Void Function(
     Int32 stret,
     Int64 seq);
 typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
-    Pointer<NativeFunction<BlockCallbackC>> callback);
+    Pointer<NativeFunction<BlockCallbackC>> callback, Int64 dartPort);
 typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
-    Pointer<NativeFunction<BlockCallbackC>> callback);
+    Pointer<NativeFunction<BlockCallbackC>> callback, int dartPort);
 final BlockCreateD blockCreate = runtimeLib
     .lookupFunction<BlockCreateC, BlockCreateD>('native_block_create');
 
 typedef BlockInvokeC = Pointer<Void> Function(
-    Pointer<Void> block, Pointer<Pointer<Void>> args);
+    Pointer<Void> block, Pointer<Pointer<Void>> args, Int64 dartPort);
 typedef BlockInvokeD = Pointer<Void> Function(
-    Pointer<Void> block, Pointer<Pointer<Void>> args);
+    Pointer<Void> block, Pointer<Pointer<Void>> args, int dartPort);
 final BlockInvokeD blockInvoke = runtimeLib
     .lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');
 

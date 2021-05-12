@@ -125,6 +125,7 @@ static atomic_uint_fast64_t _seq = 0;
 
 - (instancetype)initWithTypeString:(char *)typeString
                           callback:(NativeBlockCallback)callback
+                          dartPort:(Dart_Port)dartPort
                              error:(out NSError **)error {
     self = [super init];
     if (self) {
@@ -134,6 +135,7 @@ static atomic_uint_fast64_t _seq = 0;
         if (_typeString.length > 0) {
             _callback = callback;
             _thread = NSThread.currentThread;
+            _dartPort = dartPort;
             [self initBlockWithError:error];
             atomic_fetch_add(&_seq, 1);
             _sequence = _seq;
@@ -149,7 +151,7 @@ static atomic_uint_fast64_t _seq = 0;
         free((void *)_typeEncodings[i]);
     }
     free(_typeEncodings);
-    NotifyDeallocToDart(_sequence);
+    NotifyDeallocToDart(_sequence, _dartPort);
 }
 
 - (void)initBlockWithError:(out NSError **)error {

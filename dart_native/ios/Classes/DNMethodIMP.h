@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "dart_api_dl.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,9 +20,11 @@ typedef void (*NativeMethodCallback)(void *_Nullable *_Null_unspecified args,
 
 @property (nonatomic, readonly) NativeMethodCallback callback;
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
+@property (nonatomic, readonly) Dart_Port dartPort;
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncodings
                             callback:(NativeMethodCallback)callback
+                            dartPort:(Dart_Port)dartPort
                                error:(NSError **)error;
 - (IMP)imp;
 

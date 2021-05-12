@@ -34,6 +34,7 @@ static std::map<jobject, int> referenceCount;
 static std::map<void *, jobject> callbackObjCache;
 static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackManagerCache;
 static std::map<jlong, void *> targetCache;
+static std::map<jlong, int64_t> dartPortCache;
 
 
 void detachThreadDestructor(void* arg) {
@@ -301,7 +302,7 @@ NativeMethodCallback getCallbackMethod(jlong targetAddr, char *functionName) {
     return methodsMap[functionName];
 }
 
-void registerNativeCallback(void *target, char* targetName, char *funName, void *callback) {
+void registerNativeCallback(void *target, char* targetName, char *funName, void *callback, Dart_Port dartPort) {
     jclass callbackManager = findClass(getEnv(), "com/dartnative/dart_native/CallbackManager");
     jmethodID registerCallback = getEnv()->GetStaticMethodID(callbackManager, "registerCallback", "(JLjava/lang/String;)Ljava/lang/Object;");
     jlong targetAddr = (jlong)target;
@@ -311,6 +312,8 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
     jobject callbackOJ = getEnv()->NewGlobalRef(getEnv()->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
     callbackObjCache[target] = callbackOJ;
     targetCache[targetAddr] = target;
+    NSLog("HUIZZ dartport %d", dartPort);
+    dartPortCache[targetAddr] = dartPort;
 
     registerCallbackManager(targetAddr, funName, callback);
     getEnv()->DeleteLocalRef(callbackManager);
@@ -318,10 +321,7 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
 }
 
 // Dart extensions
-Dart_Port native_callback_send_port;
-
-intptr_t InitDartApiDL(void *data, Dart_Port port) {
-    native_callback_send_port = port;
+intptr_t InitDartApiDL(void *data) {
     return Dart_InitializeApiDL(data);
 }
 
@@ -344,7 +344,7 @@ void PassObjectToCUseDynamicLinking(Dart_Handle h, void *classPtr) {
 
 typedef std::function<void()> Work;
 
-void NotifyDart(Dart_Port send_port, const Work* work) {
+bool NotifyDart(Dart_Port send_port, const Work* work) {
     const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
 
     Dart_CObject dart_object;
@@ -355,6 +355,7 @@ void NotifyDart(Dart_Port send_port, const Work* work) {
     if (!result) {
         NSLog("Native callback to Dart failed! Invalid port or isolate died");
     }
+    return result;
 }
 
 void ExecuteCallback(Work* work_ptr) {
@@ -371,8 +372,10 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
                                                                                                jobjectArray arg_types,
                                                                                                jobjectArray args,
                                                                                                jstring return_type) {
-    sem_t sem;
-    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+    if (!dartPortCache.count(dartObject)) {
+      NSLog("not register dart port!");
+      return NULL;
+    }
 
     char *funName = (char *) env->GetStringUTFChars(fun_name, 0);
     jsize argTypeLength = env->GetArrayLength(arg_types);
@@ -422,6 +425,10 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
     }
     char *returnType = (char *) env->GetStringUTFChars(return_type, 0);
     argTypes[argTypeLength] = returnType;
+
+    sem_t sem;
+    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+
     const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess]() {
         NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
         void *target = targetCache[dartObject];
@@ -435,10 +442,9 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
     };
 
     const Work* work_ptr = new Work(work);
-    NotifyDart(native_callback_send_port, work_ptr);
+    bool notifyResult = NotifyDart(dartPortCache[dartObject], work_ptr);
 
     jobject callbackResult = NULL;
-
     if (isSemInitSuccess) {
         NSLog("wait work execute");
         sem_wait(&sem);
@@ -448,10 +454,13 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
         } else if (strcmp(returnType, "Ljava/lang/String;") == 0) {
             callbackResult = env->NewStringUTF((char *) arguments[0]);
         } else if (strcmp(returnType, "Z") == 0) {
-            jclass booleanClass = env->FindClass("java/lang/Boolean");
-            jmethodID methodID = env->GetMethodID(booleanClass, "<init>", "(Z)V");
-            callbackResult = env->NewObject(booleanClass, methodID, static_cast<jboolean>(*((int *) arguments)));
-            env->DeleteLocalRef(booleanClass);
+          jclass booleanClass = env->FindClass("java/lang/Boolean");
+          jmethodID methodID = env->GetMethodID(booleanClass, "<init>", "(Z)V");
+          callbackResult = env->NewObject(booleanClass,
+                                          methodID,
+                                          notifyResult ? static_cast<jboolean>(*((int *) arguments))
+                                                       : JNI_FALSE);
+          env->DeleteLocalRef(booleanClass);
         }
         sem_destroy(&sem);
     }

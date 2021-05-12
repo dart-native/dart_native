@@ -40,6 +40,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncoding
                             callback:(NativeMethodCallback)callback
+                            dartPort:(Dart_Port)dartPort
                                error:(out NSError **)error {
     self = [super init];
     if (self) {
@@ -54,6 +55,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         strlcpy(_typeEncoding, typeEncoding, length);
         _callback = callback;
         _thread = NSThread.currentThread;
+        _dartPort = dartPort;
         _signature = [NSMethodSignature signatureWithObjCTypes:_typeEncoding];
     }
     return self;

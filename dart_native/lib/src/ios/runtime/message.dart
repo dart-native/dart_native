@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ffi';
 
+import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/gcd.dart';
@@ -32,7 +33,7 @@ Pointer<Void> _sendMsgToNative(
     callbackPtr = nullptr.cast();
   }
   result = nativeInvokeMethod(
-      target, selector, signature, queuePtr, args, callbackPtr);
+      target, selector, signature, queuePtr, args, callbackPtr, nativePort);
   return result;
 }
 
