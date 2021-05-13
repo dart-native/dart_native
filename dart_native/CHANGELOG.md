@@ -1,3 +1,7 @@
+## 0.3.19
+
+* [Fix] Some crash on Android.
+
 ## 0.3.18
 
 * [Feature] Support multi-isolates.
