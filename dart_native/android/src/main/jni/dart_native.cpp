@@ -312,7 +312,6 @@ void registerNativeCallback(void *target, char* targetName, char *funName, void 
     jobject callbackOJ = getEnv()->NewGlobalRef(getEnv()->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
     callbackObjCache[target] = callbackOJ;
     targetCache[targetAddr] = target;
-    NSLog("HUIZZ dartport %d", dartPort);
     dartPortCache[targetAddr] = dartPort;
 
     registerCallbackManager(targetAddr, funName, callback);
@@ -419,11 +418,16 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
         }
         else if (strcmp(argTypes[i], "Ljava/lang/String;") == 0) {
             jstring argString = (jstring) argument;
-            arguments[i] = (char *) env->GetStringUTFChars(argString, 0);
+            arguments[i] = argString == nullptr ? (char *) ""
+                                                : (char *) env->GetStringUTFChars(argString, 0);
             env->DeleteLocalRef(argString);
         }
     }
-    char *returnType = (char *) env->GetStringUTFChars(return_type, 0);
+
+    /// when return void, jstring which from native is null.
+    char *returnType = return_type == nullptr ? nullptr
+                                              : (char *) env->GetStringUTFChars(return_type, 0);
+
     argTypes[argTypeLength] = returnType;
 
     sem_t sem;
@@ -452,7 +456,8 @@ JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHan
         if (returnType == nullptr) {
           NSLog("void");
         } else if (strcmp(returnType, "Ljava/lang/String;") == 0) {
-            callbackResult = env->NewStringUTF((char *) arguments[0]);
+            callbackResult = env->NewStringUTF(arguments[0] == nullptr ? (char *) ""
+                                                                              : (char *) arguments[0]);
         } else if (strcmp(returnType, "Z") == 0) {
           jclass booleanClass = env->FindClass("java/lang/Boolean");
           jmethodID methodID = env->GetMethodID(booleanClass, "<init>", "(Z)V");
