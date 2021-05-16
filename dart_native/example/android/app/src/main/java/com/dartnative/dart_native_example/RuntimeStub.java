@@ -7,7 +7,10 @@ import com.dartnative.dart_native.CallbackManager;
 
 import io.flutter.Log;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class RuntimeStub {
   private final String TAG = "dart_java";
@@ -154,5 +157,27 @@ public class RuntimeStub {
       Log.d(TAG, "element is " + bytes[i]);
     }
     return new byte[]{1, 2, 10};
+  }
+
+  public Set<Integer> getIntSet(Set<Integer> set) {
+    for(Integer element : set) {
+      Log.d(TAG, "Set element is " + element);
+    }
+    Set<Integer> backSet = new HashSet<>();
+    backSet.add(600);
+    backSet.add(700);
+    backSet.add(800);
+    backSet.add(900);
+    return backSet;
+  }
+
+  public Set<Float> getFloatSet(Set<Float> set) {
+    for(Float element : set) {
+      Log.d(TAG, "Set element is " + element);
+    }
+    Set<Float> backSet = new HashSet<>();
+    backSet.add(60.0f);
+    backSet.add(70.0f);
+    return backSet;
   }
 }

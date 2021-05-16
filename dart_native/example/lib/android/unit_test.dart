@@ -76,9 +76,9 @@ testAndroid(RuntimeStub stub) {
   // print('stub get time : ${stub.getTime(entity)}');
   //
   // print('new entity get time : ${stub.getTime(new Entity())}');
-
-  stub.setDelegateListener(DelegateStub());
-
+  //
+  // stub.setDelegateListener(DelegateStub());
+  //
   // print("integer ${stub.getInteger()}");
   //
   // List list = stub.getList([1, 2, 3, 4]);
@@ -107,6 +107,16 @@ testAndroid(RuntimeStub stub) {
   // for (int byte in byteArray) {
   //   print("item $byte");
   // }
+
+  Set intSet = stub.getIntSet(Set.from([1, 2, 3]));
+  for (int setInt in intSet) {
+    print("intSet $setInt");
+  }
+
+  Set fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
+  for (double setF in fSet) {
+    print("fSet $setF");
+  }
 }
 
 int currentTimeMillis() {

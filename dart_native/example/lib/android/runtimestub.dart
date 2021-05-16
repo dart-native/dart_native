@@ -133,4 +133,13 @@ class RuntimeStub extends JObject {
   List getByteArray(List list) {
     return JArray.fromPointer(invoke("getByteArray", [JArray(list)], "[B")).raw;
   }
+
+  Set getIntSet(Set set) {
+    return JSet.fromPointer(invoke("getIntSet", [JSet(set)], "Ljava/util/Set;")).raw;
+  }
+
+  Set getFloatSet(Set set) {
+    return JSet.fromPointer(invoke("getFloatSet", [JSet(set)], "Ljava/util/Set;")).raw;
+  }
+
 }
