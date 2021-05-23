@@ -1,3 +1,10 @@
+//
+//  native_runtime.mm
+//  DartNative
+//
+//  Created by 杨萧玉 on 2019/10/24.
+//
+
 #import "native_runtime.h"
 #include <stdlib.h>
 #include <functional>
@@ -10,6 +17,10 @@
 #import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
 #import "DNInvocation.h"
+
+#if !__has_feature(objc_arc)
+#error
+#endif
 
 NSMethodSignature *
 native_method_signature(Class cls, SEL selector) {
@@ -33,7 +44,7 @@ native_signature_encoding_list(NSMethodSignature *signature, const char **typeEn
 }
 
 BOOL
-native_add_method(id target, SEL selector, char *types, void *callback) {
+native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort) {
     Class cls = object_getClass(target);
     NSString *selName = [NSString stringWithFormat:@"dart_native_%@", NSStringFromSelector(selector)];
     SEL key = NSSelectorFromString(selName);
@@ -43,8 +54,16 @@ native_add_method(id target, SEL selector, char *types, void *callback) {
         return NO;
     }
     if (types != NULL) {
-        DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types callback:(NativeMethodCallback)callback]; // DNMethodIMP always exists.
+        NSError *error;
+        DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types
+                                                                  callback:(NativeMethodCallback)callback
+                                                                  dartPort:dartPort
+                                                                     error:&error];
+        if (error.code) {
+            return NO;
+        }
         class_replaceMethod(cls, selector, [methodIMP imp], types);
+        // DNMethodIMP always exists.
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return YES;
     }
@@ -79,6 +98,7 @@ _mallocReturnStruct(NSMethodSignature *signature) {
     const char *type = signature.methodReturnType;
     NSUInteger size;
     DNSizeAndAlignment(type, &size, NULL, NULL);
+    // Struct is copied on heap, it will be freed when dart side no longer owns it.
     void *result = malloc(size);
     return result;
 }
@@ -105,7 +125,7 @@ _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *i
 }
 
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, BOOL waitUntilDone) {
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort) {
     if (!object || !selector || !signature) {
         return NULL;
     }
@@ -113,49 +133,57 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     invocation.target = object;
     invocation.selector = selector;
     _fillArgsToInvocation(signature, args, invocation, 2);
-    if (queue != NULL) {
-        // Return immediately.
-        if (!waitUntilDone) {
-            dispatch_async(queue, ^{
-                [invocation invoke];
-            });
-            return nil;
-        }
-        // Same queue
-        if (strcmp(dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL), dispatch_queue_get_label(queue)) == 0) {
-            [invocation invoke];
-        } else {
-            dispatch_sync(queue, ^{
-                [invocation invoke];
-            });
-        }
-    } else {
-        [invocation invoke];
-    }
-    void *result = NULL;
-    const char returnType = signature.methodReturnType[0];
-    if (signature.methodReturnLength > 0) {
-        if (returnType == '{') {
-            result = _mallocReturnStruct(signature);
-            [invocation getReturnValue:result];
-        } else {
-            [invocation getReturnValue:&result];
-            if (returnType == '@') {
-                [DNObjectDealloc attachHost:(__bridge id)result];
+    
+    void *(^resultBlock)() = ^() {
+        void *result = NULL;
+        const char returnType = signature.methodReturnType[0];
+        if (signature.methodReturnLength > 0) {
+            if (returnType == '{') {
+                result = _mallocReturnStruct(signature);
+                [invocation getReturnValue:result];
+            } else {
+                [invocation getReturnValue:&result];
+                if (returnType == '@') {
+                    [DNObjectDealloc attachHost:(__bridge id)result
+                                       dartPort:dartPort];
+                }
             }
         }
+        return result;
+    };
+    
+    if (queue != NULL) {
+        // Retain arguments and return nil immediately.
+        [invocation retainArguments];
+        dispatch_async(queue, ^{
+            [invocation invoke];
+            if (callback) {
+                void *result = resultBlock();
+                callback(result);
+            }
+        });
+        return nil;;
+    } else {
+        [invocation invoke];
+        return resultBlock();
     }
-    return result;
 }
 
 void *
-native_block_create(char *types, void *callback) {
-    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types callback:(NativeBlockCallback)callback];
+native_block_create(char *types, void *callback, Dart_Port dartPort) {
+    NSError *error;
+    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types
+                                                                callback:(NativeBlockCallback)callback
+                                                                dartPort:dartPort
+                                                                   error:&error];
+    if (error.code) {
+        return nil;
+    }
     return (__bridge void *)wrapper;
 }
 
 void *
-native_block_invoke(void *block, void **args) {
+native_block_invoke(void *block, void **args, Dart_Port dartPort) {
     const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
@@ -170,7 +198,8 @@ native_block_invoke(void *block, void **args) {
         } else {
             [invocation getReturnValue:&result];
             if (returnType == '@') {
-                [DNObjectDealloc attachHost:(__bridge id)result];
+                [DNObjectDealloc attachHost:(__bridge id)result
+                                   dartPort:dartPort];
             }
         }
     }
@@ -284,10 +313,14 @@ native_type_encoding(const char *str) {
     return str;
 }
 
+// Returns type encodings whose need be freed.
 const char **
 native_types_encoding(const char *str, int *count, int startIndex) {
     int argCount = DNTypeCount(str) - startIndex;
     const char **argTypes = (const char **)malloc(sizeof(char *) * argCount);
+    if (argTypes == NULL) {
+        return argTypes;
+    }
     
     int i = -startIndex;
     while(str && *str)
@@ -392,9 +425,7 @@ native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length) {
 
 #pragma mark Dart VM API Init
 
-Dart_Port native_callback_send_port;
-intptr_t InitDartApiDL(void *data, Dart_Port port) {
-    native_callback_send_port = port;
+intptr_t InitDartApiDL(void *data) {
     return Dart_InitializeApiDL(data);
 }
 
@@ -402,7 +433,7 @@ intptr_t InitDartApiDL(void *data, Dart_Port port) {
 
 typedef std::function<void()> Work;
 
-void NotifyDart(Dart_Port send_port, const Work* work) {
+BOOL NotifyDart(Dart_Port send_port, const Work* work) {
     const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
 
     Dart_CObject dart_object;
@@ -413,6 +444,7 @@ void NotifyDart(Dart_Port send_port, const Work* work) {
     if (!result) {
         NSLog(@"Native callback to Dart failed! Invalid port or isolate died");
     }
+    return result;
 }
 
 DN_EXTERN
@@ -437,14 +469,15 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
         callback(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
-                 wrapper.hasStret);
+                 wrapper.hasStret,
+                 wrapper.sequence);
         if (sema) {
             dispatch_semaphore_signal(sema);
         }
     };
     const Work* work_ptr = new Work(work);
-    NotifyDart(native_callback_send_port, work_ptr);
-    if (sema) {
+    BOOL success = NotifyDart(wrapper.dartPort, work_ptr);
+    if (sema && success) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
 }
@@ -472,8 +505,8 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
         }
     };
     const Work* work_ptr = new Work(work);
-    NotifyDart(native_callback_send_port, work_ptr);
-    if (sema) {
+    BOOL success = NotifyDart(methodIMP.dartPort, work_ptr);
+    if (sema && success) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
 }
@@ -486,11 +519,11 @@ void RegisterDeallocCallback(void (*callback)(intptr_t)) {
     native_dealloc_callback = callback;
 }
 
-void NotifyDeallocToDart(intptr_t address) {
+void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
     auto callback = native_dealloc_callback;
     const Work work = [address, callback]() { callback(address); };
     const Work* work_ptr = new Work(work);
-    NotifyDart(native_callback_send_port, work_ptr);
+    NotifyDart(dartPort, work_ptr);
 }
 
 #pragma mark - Dart Finalizer

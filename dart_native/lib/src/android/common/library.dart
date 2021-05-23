@@ -1,7 +1,5 @@
 import 'dart:ffi';
 
-import 'package:dart_native/src/android/common/callback_manager.dart';
-
 DynamicLibrary _nativeDylib;
 DynamicLibrary get nativeDylib {
   if (_nativeDylib == null) {
@@ -14,13 +12,12 @@ DynamicLibrary get nativeDylib {
 String _libPath = "libdart_native.so";
 
 final initializeApi = nativeDylib.lookupFunction<
-    IntPtr Function(Pointer<Void>, Int64),
-    int Function(Pointer<Void>, int)>("InitDartApiDL");
+    IntPtr Function(Pointer<Void>),
+    int Function(Pointer<Void>)>("InitDartApiDL");
 
-final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData, nativePort);
+final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData);
 
 final initDartAPISuccess = _dartAPIResult == 0;
-
 
 class Library {
   static void setLibPath(String soPath) {

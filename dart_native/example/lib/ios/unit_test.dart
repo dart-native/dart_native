@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:ffi';
+import 'dart:isolate';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/ios/delegatestub.dart';
@@ -143,12 +145,35 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
       stub.fooWithOptions(TestOptions(TestOptionsOne | TestOptionsTwo));
   print('fooWithOptions result:$options');
 
-  NSObject currentThread = Class('NSThread')
-      .perform(SEL('currentThread'), onQueue: DispatchQueue.global());
-  NSObject description = currentThread.perform(SEL('description'));
-  String threadResult = NSString.fromPointer(description.pointer).raw;
-  print('currentThread: $threadResult');
+  Class('NSThread')
+      .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
+      .then((currentThread) {
+    NSObject description = currentThread.perform(SEL('description'));
+    String threadResult = NSString.fromPointer(description.pointer).raw;
+    print('currentThread: $threadResult');
+  });
 
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);
+
+  Isolate.spawn(_checkTimer, stub.pointer.address);
+  Isolate.spawn(_checkTimer1, stub.pointer.address);
+}
+
+void _checkTimer(int addr) async {
+  RuntimeStub stub = RuntimeStub.fromPointer(Pointer.fromAddress(addr));
+  Timer.periodic(new Duration(seconds: 1), (Timer t) {
+    stub.fooCompletion(() {
+      print('hello completion block on another isolate!');
+    });
+  });
+}
+
+void _checkTimer1(int addr) async {
+  RuntimeStub stub = RuntimeStub.fromPointer(Pointer.fromAddress(addr));
+  Timer.periodic(new Duration(seconds: 1), (Timer t) {
+    stub.fooCompletion(() {
+      print('hello completion block on third isolate!');
+    });
+  });
 }

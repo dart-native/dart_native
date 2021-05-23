@@ -1,3 +1,35 @@
+## 0.3.19
+
+* [Fix] Some crash on Android.
+
+## 0.3.18
+
+* [Feature] Support multi-isolates.
+
+## 0.3.17
+
+* [Fix] Type encoding issue on iOS.
+
+## 0.3.16
+
+* [Fix] JNI environment issue on Android.
+
+## 0.3.15
+
+* [Fix] Performance issue on iOS.
+
+## 0.3.14
+
+* [Feature] Support `await/async` for methods on iOS.
+
+## 0.3.13
+
+* [Fix] Memory leaks on Android.
+
+## 0.3.12
+
+* [Feature] Support List/Array for Android.
+
 ## 0.3.11
 
 * [Fix] Skip BOM for Utf-16 on iOS. Sad!

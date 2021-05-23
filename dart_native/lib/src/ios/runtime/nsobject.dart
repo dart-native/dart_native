@@ -12,6 +12,11 @@ import 'package:dart_native/src/ios/runtime/selector.dart';
 final id nil = id(nullptr);
 
 void passObjectToNative(NSObject obj) {
+  // Ignore null and nil
+  if (obj == null || obj == nil) {
+    return;
+  }
+
   if (initDartAPISuccess && obj.isa != null) {
     passObjectToC(obj, obj.pointer);
   } else {
@@ -116,7 +121,7 @@ Map<String, ConvertorFromPointer> _convertorCache = {};
 void _dealloc(Pointer<Void> ptr) {
   if (ptr != nullptr) {
     CallbackManager.shared.clearAllCallbackOnTarget(ptr);
-    removeBlockOnAddress(ptr.address);
+    removeBlockOnSequence(ptr.address);
   }
 }
 

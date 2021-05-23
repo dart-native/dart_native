@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
@@ -29,11 +30,7 @@ class Block extends id {
   Function function;
   NSObject _wrapper; // Block hold wrapper
   List<String> types = [];
-
-  // TODO: This is not working when block is created by function.
-  // set queue(Pointer<Void> queue) {
-  //   _wrapper.perform(Selector('setQueue:'), args: [queue]);
-  // }
+  int sequence = -1;
 
   /// Creating a [Block] from a [Function].
   ///
@@ -44,15 +41,24 @@ class Block extends id {
     List<String> dartTypes = dartTypeStringForFunction(function);
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
-    NSObject blockWrapper =
-        NSObject.fromPointer(blockCreate(typeStringPtr, _callbackPtr));
+    Pointer<Void> blockWrapperPtr =
+        blockCreate(typeStringPtr, _callbackPtr, nativePort);
+    if (blockWrapperPtr == nullptr) {
+      return nil;
+    }
+    NSObject blockWrapper = NSObject.fromPointer(blockWrapperPtr);
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
+    int sequence = blockWrapper.perform(SEL('sequence'));
     Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
     calloc.free(typeStringPtr);
     result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
-    blockForAddress[result.pointer.address] = result;
+    result.sequence = sequence;
+    if (blockForSequence[sequence] != null) {
+      throw 'Already exists a block on sequence $sequence';
+    }
+    blockForSequence[sequence] = result;
     return result;
   }
 
@@ -108,7 +114,6 @@ class Block extends id {
     if (function != null) {
       result._wrapper = _wrapper;
       result.function = function;
-      blockForAddress[newPtr.address] = result;
       result.types = types;
     }
     return result;
@@ -145,7 +150,7 @@ class Block extends id {
             arg, argsPtrPtr.elementAt(i), typesPtrPtr.elementAt(i + 2).value);
       }
     }
-    Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr);
+    Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr, nativePort);
     if (argsPtrPtr != nullptr.cast()) {
       calloc.free(argsPtrPtr);
     }
@@ -159,19 +164,13 @@ Pointer<NativeFunction<BlockCallbackC>> _callbackPtr =
     Pointer.fromFunction(_syncCallback);
 
 _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
-    Pointer<Pointer<Void>> retPtrPtr, int argCount, bool stret) {
+    Pointer<Pointer<Void>> retPtrPtr, int argCount, bool stret, int seq) {
   // If stret, the first arg contains address of a pointer of returned struct. Other args move backwards.
   // This is the index for first argument of block in argsPtrPtrPtr list.
   int argStartIndex = stret ? 2 : 1;
-
-  Pointer<Void> blockPtr = argsPtrPtrPtr
-      .elementAt(argStartIndex - 1)
-      .value
-      .cast<Pointer<Void>>()
-      .value;
-  Block block = blockForAddress[blockPtr.address];
+  Block block = blockForSequence[seq];
   if (block == null) {
-    return null;
+    throw 'Can\'t find block by sequence $seq';
   }
   List args = [];
   Pointer pointer = block._wrapper.perform(SEL('typeEncodings'));
@@ -216,7 +215,9 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   }
 }
 
+int cc = 0;
+
 void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
-    Pointer<Pointer<Void>> retPtr, int argCount, int stret) {
-  _callback(argsPtrPtr, retPtr, argCount, stret != 0);
+    Pointer<Pointer<Void>> retPtr, int argCount, int stret, int seq) {
+  _callback(argsPtrPtr, retPtr, argCount, stret != 0, seq);
 }

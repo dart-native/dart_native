@@ -1,11 +1,15 @@
 //
 //  DNInvocation.m
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/31.
 //
 
 #import "DNInvocation.h"
+
+#if !__has_feature(objc_arc)
+#error
+#endif
 
 @interface DNInvocation ()
 
@@ -153,6 +157,9 @@
 }
 
 - (void)_retainPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key {
+    if (!pointer) {
+        return;
+    }
     void *p = *pointer;
     if (!p) {
         return;
