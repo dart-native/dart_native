@@ -220,6 +220,7 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
       fillArgs(args, argTypes, argValues, argCount);
     }
     char *methodSignature = spliceChar(signature, returnType);
+    NSLog("call method %s %s", methodName, methodSignature);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
     if (strlen(returnType) > 1) {

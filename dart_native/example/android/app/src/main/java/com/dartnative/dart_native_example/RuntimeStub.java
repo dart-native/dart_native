@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
 public class RuntimeStub {
   private final String TAG = "dart_java";
@@ -159,7 +160,7 @@ public class RuntimeStub {
     return new byte[]{1, 2, 10};
   }
 
-  public Set<Integer> getIntSet(Set<Integer> set) {
+  public Set<Integer> getIntSet(HashSet<Integer> set) {
     for(Integer element : set) {
       Log.d(TAG, "Set element is " + element);
     }
@@ -171,7 +172,7 @@ public class RuntimeStub {
     return backSet;
   }
 
-  public Set<Float> getFloatSet(Set<Float> set) {
+  public Set<Float> getFloatSet(HashSet<Float> set) {
     for(Float element : set) {
       Log.d(TAG, "Set element is " + element);
     }

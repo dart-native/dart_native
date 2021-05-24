@@ -1,9 +1,10 @@
 package com.dartnative.dart_native;
 
-import io.flutter.Log;
+import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -142,54 +143,11 @@ public class ArrayListConverter {
 
     /************************set to list***************************************/
 
-    public List setToList(Set set) {
-        Log.d("HUIZZ", "set start");
-        Object ele = set.iterator().next();
-        List arrayList;
-        if (ele instanceof Integer) {
-            arrayList = new ArrayList<Integer>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else if (ele instanceof Short) {
-            arrayList = new ArrayList<Short>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else if (ele instanceof Byte) {
-            arrayList = new ArrayList<Byte>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else if (ele instanceof Long) {
-            arrayList = new ArrayList<Long>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else if (ele instanceof Boolean) {
-            arrayList = new ArrayList<Boolean>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else if (ele instanceof Float) {
-            arrayList = new ArrayList<Float>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else if (ele instanceof Double) {
-            arrayList = new ArrayList<Double>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else if (ele instanceof Character) {
-            arrayList = new ArrayList<Character>();
-            for (Object element : set) {
-                arrayList.add(element);
-            }
-        } else {
-            arrayList = Arrays.asList(set.toArray());
+    public List setToList(HashSet<Object> set) {
+        if (set == null || set.size() == 0) {
+            return new ArrayList();
         }
-        Log.d("HUIZZ", "set success");
-        return arrayList;
+
+        return new ArrayList<Object>(set);
     }
 }

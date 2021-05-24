@@ -86,7 +86,7 @@ testAndroid(RuntimeStub stub) {
   //   print("item $item");
   // }
   //
-  // list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
+  // List list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
   // for (int item in list) {
   //   print("item $item");
   // }
