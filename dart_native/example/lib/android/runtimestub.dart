@@ -142,4 +142,8 @@ class RuntimeStub extends JObject {
     return JSet.fromPointer(invoke("getFloatSet", [JSet(set)], "Ljava/util/Set;")).raw;
   }
 
+  Map getMap(Map map) {
+    return JMap.fromPointer(invoke("getMap", [JMap(map)], "Ljava/util/Map;")).raw;
+  }
+
 }

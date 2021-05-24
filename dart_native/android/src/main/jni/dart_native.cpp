@@ -230,10 +230,12 @@ void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char 
             nativeInvokeResult = (char *) getEnv()->GetStringUTFChars(javaString, &isCopy);
         }
         else {
-            jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
-            jclass objCls = getEnv()->GetObjectClass(obj);
-            //store class value
-            cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+          jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
+          if (obj != nullptr) {
+              jclass objCls = getEnv()->GetObjectClass(obj);
+              //store class value
+              cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+            }
             nativeInvokeResult = obj;
         }
     }

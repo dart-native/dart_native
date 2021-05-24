@@ -7,9 +7,11 @@ import com.dartnative.dart_native.CallbackManager;
 
 import io.flutter.Log;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -180,5 +182,15 @@ public class RuntimeStub {
     backSet.add(60.0f);
     backSet.add(70.0f);
     return backSet;
+  }
+
+  public Map getMap(HashMap<Integer, Integer> map) {
+    for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+      Log.d(TAG, "Key = " + entry.getKey() + ", Value = " + entry.getValue());
+    }
+    HashMap<Integer, Float> backMap = new HashMap<>();
+    backMap.put(1, 1.0f);
+    backMap.put(2, 2.0f);
+    return backMap;
   }
 }
