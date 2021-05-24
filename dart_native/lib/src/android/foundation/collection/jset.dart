@@ -8,13 +8,18 @@ import 'package:ffi/ffi.dart';
 const String CLS_HASH_SET = "java/util/HashSet";
 
 class JSet extends JSubclass<Set> {
-  JSet(Set value, {String clsName: CLS_HASH_SET, InitSubclass init: _new}) : super(value, _new, clsName) {
+  JSet(Set value, {String clsName: CLS_HASH_SET, InitSubclass init: _new})
+      : super(value, _new, clsName) {
     value = Set.of(value);
   }
 
-  JSet.fromPointer(Pointer<Void> ptr, {String clsName: CLS_HASH_SET}) : super.fromPointer(ptr, clsName) {
-    JObject converter = JObject("com/dartnative/dart_native/ArrayListConverter");
-    List list = JList.fromPointer(converter.invoke("setToList", [JObject("java/util/HashSet", pointer: ptr)], "Ljava/util/List;")).raw;
+  JSet.fromPointer(Pointer<Void> ptr, {String clsName: CLS_HASH_SET})
+      : super.fromPointer(ptr, clsName) {
+    JObject converter =
+        JObject("com/dartnative/dart_native/ArrayListConverter");
+    List list = JList.fromPointer(converter.invoke("setToList",
+            [JObject("java/util/HashSet", pointer: ptr)], "Ljava/util/List;"))
+        .raw;
     raw = list.toSet();
   }
 }
@@ -30,7 +35,8 @@ Pointer<Void> _new(dynamic value, String clsName) {
     }
 
     for (var element in value) {
-      nativeSet.invoke("add", [boxingWrapperClass(element)], "Z", [_argSignature]);
+      nativeSet.invoke(
+          "add", [boxingWrapperClass(element)], "Z", [_argSignature]);
     }
     return nativeSet.pointer;
   } else {

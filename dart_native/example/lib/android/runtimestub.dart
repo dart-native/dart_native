@@ -135,15 +135,18 @@ class RuntimeStub extends JObject {
   }
 
   Set getIntSet(Set set) {
-    return JSet.fromPointer(invoke("getIntSet", [JSet(set)], "Ljava/util/Set;")).raw;
+    return JSet.fromPointer(invoke("getIntSet", [JSet(set)], "Ljava/util/Set;"))
+        .raw;
   }
 
   Set getFloatSet(Set set) {
-    return JSet.fromPointer(invoke("getFloatSet", [JSet(set)], "Ljava/util/Set;")).raw;
+    return JSet.fromPointer(
+            invoke("getFloatSet", [JSet(set)], "Ljava/util/Set;"))
+        .raw;
   }
 
   Map getMap(Map map) {
-    return JMap.fromPointer(invoke("getMap", [JMap(map)], "Ljava/util/Map;")).raw;
+    return JMap.fromPointer(invoke("getMap", [JMap(map)], "Ljava/util/Map;"))
+        .raw;
   }
-
 }

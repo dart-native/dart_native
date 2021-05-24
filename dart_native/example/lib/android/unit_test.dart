@@ -59,16 +59,8 @@ testAndroid(RuntimeStub stub) {
   use = currentTimeMillis() - ms;
   print('testlog, cost:$use');
 
-  bool resultCall = stub.complexCall(
-      "test",
-      10,
-      'a',
-      10.0,
-      12.0,
-      1,
-      2,
-      10000,
-      false);
+  bool resultCall =
+      stub.complexCall("test", 10, 'a', 10.0, 12.0, 1, 2, 10000, false);
   print('call result:$resultCall');
 
   Entity entity = stub.createEntity();
@@ -96,7 +88,11 @@ testAndroid(RuntimeStub stub) {
     print("item $item");
   }
 
-  list = stub.getCycleList([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+  list = stub.getCycleList([
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+  ]);
   for (List items in list) {
     for (int item in items) {
       print("item $item");
@@ -117,8 +113,8 @@ testAndroid(RuntimeStub stub) {
   for (double setF in fSet) {
     print("fSet $setF");
   }
-  
-  Map map = stub.getMap({1 : 10, 2 : 20, 3 : 30});
+
+  Map map = stub.getMap({1: 10, 2: 20, 3: 30});
   map.forEach((key, value) {
     print("map from native $key : $value");
   });

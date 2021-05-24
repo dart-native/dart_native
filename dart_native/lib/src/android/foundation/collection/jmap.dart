@@ -8,17 +8,20 @@ import 'package:ffi/ffi.dart';
 const String CLS_HASH_MAP = "java/util/HashMap";
 
 class JMap extends JSubclass<Map> {
-  JMap(Map value, {String clsName: CLS_HASH_MAP, InitSubclass init: _new}) : super(value, _new, clsName) {
+  JMap(Map value, {String clsName: CLS_HASH_MAP, InitSubclass init: _new})
+      : super(value, _new, clsName) {
     value = Map.of(value);
   }
 
-  JMap.fromPointer(Pointer<Void> ptr, {String clsName: CLS_HASH_MAP}) : super.fromPointer(ptr, clsName) {
+  JMap.fromPointer(Pointer<Void> ptr, {String clsName: CLS_HASH_MAP})
+      : super.fromPointer(ptr, clsName) {
     Set keySet = JSet.fromPointer(invoke("keySet", [], "Ljava/util/Set;")).raw;
     Map temp = {};
     String itemType = "";
     print("map key set ${keySet.toString()}");
     for (var key in keySet) {
-      Pointer<Void> itemPtr = invoke("get", [boxingWrapperClass(key)], "Ljava/lang/Object;", [_argSignature]);
+      Pointer<Void> itemPtr = invoke("get", [boxingWrapperClass(key)],
+          "Ljava/lang/Object;", [_argSignature]);
       if (itemType == "") {
         itemType = _getItemClass(itemPtr);
       }
@@ -40,7 +43,11 @@ Pointer<Void> _new(dynamic value, String clsName) {
       return nativeMap.pointer;
     }
     value.forEach((key, value) {
-      nativeMap.invoke("put", [boxingWrapperClass(key), boxingWrapperClass(value)], "Ljava/lang/Object;", [_argSignature, _argSignature]);
+      nativeMap.invoke(
+          "put",
+          [boxingWrapperClass(key), boxingWrapperClass(value)],
+          "Ljava/lang/Object;",
+          [_argSignature, _argSignature]);
     });
     return nativeMap.pointer;
   } else {
