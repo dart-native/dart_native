@@ -20,6 +20,8 @@ dynamic boxingWrapperClass(dynamic value) {
   } else if (value is String){
     // todo support java string
     // return JObject(value);
+  } else if (value is Set) {
+    return JSet(value);
   } else if (value is JObject) {
     return value;
   }
@@ -38,6 +40,9 @@ dynamic unBoxingWrapperClass(Pointer<Void> ptr, String itemType) {
     case "java.util.List":
     case "java.util.ArrayList":
       return JList.fromPointer(ptr).raw;
+    case "java.util.Set":
+    case "java.util.HashSet":
+      return JSet.fromPointer(ptr).raw;
     default: return JObject(itemType?.replaceAll(".", "/"), pointer: ptr);
   }
 }

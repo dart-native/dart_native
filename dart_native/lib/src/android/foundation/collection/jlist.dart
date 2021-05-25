@@ -6,7 +6,7 @@ import 'package:ffi/ffi.dart';
 
 /// Stands for `List` in Android.
 const String CLS_LIST = "java/util/List";
-const String CLS_ARRAYLIST = "java/util/ArrayList";
+const String CLS_ARRAY_LIST = "java/util/ArrayList";
 
 class JList extends JSubclass<List> {
   JList(List value, {String clsName: CLS_LIST, InitSubclass init: _new}) : super(value, _new, clsName) {
@@ -34,7 +34,7 @@ Pointer<Utf8> _argSignature = Utf8.toUtf8("Ljava/lang/Object;");
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is List) {
     ///'List' default implementation 'ArrayList'.
-    if (clsName == CLS_LIST) clsName = CLS_ARRAYLIST;
+    if (clsName == CLS_LIST) clsName = CLS_ARRAY_LIST;
 
     JObject nativeList = JObject(clsName);
 
