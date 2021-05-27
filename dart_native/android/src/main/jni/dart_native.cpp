@@ -212,6 +212,7 @@ extern "C"
   void releaseTargetClass(void *classPtr)
   {
     jobject object = static_cast<jobject>(classPtr);
+    getEnv()->DeleteGlobalRef(cache[object]);
     cache.erase(object);
     getEnv()->DeleteGlobalRef(object);
   }
@@ -234,8 +235,8 @@ extern "C"
     int count = referenceCount[object];
     if (count <= 1)
     {
+      referenceCount.erase(object);
       releaseTargetClass(classPtr);
-      referenceCount[object] = NULL;
       return;
     }
     referenceCount[object] = count - 1;
@@ -555,5 +556,28 @@ extern "C"
     free(argTypes);
 
     return callbackResult;
+  }
+
+  void *dartStringToJavaString(wchar_t *dartString, int length)
+  {
+    jchar *jc = new jchar[length];
+    for(int i = 0; i < length; i++)
+    {
+      jc[i] = (jchar) dartString[i];
+    }
+
+    jstring nativeString = getEnv()->NewString(jc, length);
+    jobject gNativeString = getEnv()->NewGlobalRef(nativeString);
+
+    jclass stringCls = getEnv()->GetObjectClass(nativeString);
+    jobject gStringCls = getEnv()->NewGlobalRef(stringCls);
+
+    cache[gNativeString] = static_cast<jclass>(gStringCls);
+
+    getEnv()->DeleteLocalRef(nativeString);
+    getEnv()->DeleteLocalRef(stringCls);
+    delete[] jc;
+
+    return gNativeString;
   }
 }

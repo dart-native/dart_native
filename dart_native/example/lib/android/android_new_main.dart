@@ -17,7 +17,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    // initPlatformState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.

@@ -13,6 +13,7 @@ export 'foundation/wrapperclass/float.dart';
 export 'foundation/wrapperclass/long.dart';
 export 'foundation/wrapperclass/short.dart';
 export 'foundation/wrapperclass/boxing_unboxing.dart';
+export 'foundation/jstring.dart';
 
 import 'common/library.dart';
 
