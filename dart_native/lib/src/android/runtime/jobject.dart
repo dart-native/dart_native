@@ -4,7 +4,7 @@ import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
-import 'class.dart';
+import 'jclass.dart';
 
 void passJObjectToNative(JObject obj) {
   if (initDartAPISuccess && obj != null) {
@@ -14,7 +14,7 @@ void passJObjectToNative(JObject obj) {
   }
 }
 
-class JObject extends Class {
+class JObject extends JClass {
   Pointer _ptr;
 
   //init target class

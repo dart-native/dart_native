@@ -12,7 +12,11 @@ class JString extends JSubclass<String> {
   JString(String value) : super(value, _new, _clsString);
 
   JString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, _clsString) {
-    raw = "string";
+    Pointer<Uint64> length = allocate<Uint64>();
+    Pointer<Void> result = javaStringToDartString(ptr, length);
+    Uint16List list = result.cast<Uint16>().asTypedList(length.value);
+    free(length);
+    raw = String.fromCharCodes(list);
   }
 }
 

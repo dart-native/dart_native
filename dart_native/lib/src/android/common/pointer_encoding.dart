@@ -3,9 +3,10 @@ import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:dart_native/src/android/foundation/collection/jarray.dart';
-import 'package:dart_native/src/android/runtime/class.dart';
+import 'package:dart_native/src/android/runtime/jclass.dart';
 import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:dart_native/src/common/native_basic_type.dart';
+import 'package:dart_native/src/android/foundation/jstring.dart';
 
 import 'package:ffi/ffi.dart';
 
@@ -90,7 +91,7 @@ dynamic storeValueToPointer(
   }
 
   if(object is String) {
-    ptr.cast<Pointer<Utf8>>().value = Utf8.toUtf8(object);
+    ptr.value = JString(object).pointer;
     typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.string];
     return;
   }
@@ -101,7 +102,7 @@ dynamic storeValueToPointer(
     return;
   }
 
-  if(object is Class) {
+  if(object is JClass) {
     if(object is JObject) {
       ptr.value = object.pointer;
       typePtr?.value = argSignature != null ? argSignature : Utf8.toUtf8("L" + object.className + ";");
@@ -143,7 +144,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
       result = utf8.decode([data.getInt8(0)]);
       break;
     case "Ljava/lang/String;":
-      result = Utf8.fromUtf8(ptr.cast());
+      result = JString.fromPointer(ptr).raw;
       break;
     default:
       result = ptr;

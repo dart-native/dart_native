@@ -47,7 +47,14 @@ testAndroid(RuntimeStub stub) {
   // ms = currentTimeMillis();
   // String resultString = stub.getString("test is success?");
   // use = currentTimeMillis() - ms;
-  // print('getString result:$resultString, cost:$use');
+  // print('getString result:$resultString');
+
+  int time = DateTime.now().millisecondsSinceEpoch;
+  for (var i = 0; i < 10000; i++) {
+    String resultString = stub.getString("test is success?");
+  }
+  print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
+
   //
   // ms = currentTimeMillis();
   // int resultAdd = stub.add(10, 20);
@@ -118,7 +125,6 @@ testAndroid(RuntimeStub stub) {
   // map.forEach((key, value) {
   //   print("map from native $key : $value");
   // });
-  JString string = JString("just test");
 }
 
 int currentTimeMillis() {

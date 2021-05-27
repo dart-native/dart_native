@@ -62,7 +62,7 @@ extern "C"
     case JNI_OK:
       return env;
     case JNI_EDETACHED:
-      NSLog("attach to current thread");
+//      NSLog("attach to current thread");
       gJvm->AttachCurrentThread(&env, NULL);
       return env;
     default:
@@ -119,15 +119,8 @@ extern "C"
       char *argType = *argTypes;
       if (strlen(argType) > 1)
       {
-        if (strcmp(argType, "Ljava/lang/String;") == 0)
-        {
-          argValues[index].l = getEnv()->NewStringUTF((char *)*args);
-        }
-        else
-        {
-          jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
-          argValues[index].l = object;
-        }
+        jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
+        argValues[index].l = object;
       }
       else if (strcmp(argType, "C") == 0)
       {
@@ -255,28 +248,19 @@ extern "C"
       fillArgs(args, argTypes, argValues, argCount);
     }
     char *methodSignature = spliceChar(signature, returnType);
-    NSLog("call method %s %s", methodName, methodSignature);
+//    NSLog("call method %s %s", methodName, methodSignature);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
     if (strlen(returnType) > 1)
     {
-      if (strcmp(returnType, "Ljava/lang/String;") == 0)
+      jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
+      if (obj != nullptr)
       {
-        jstring javaString = (jstring)getEnv()->CallObjectMethodA(object, method, argValues);
-        jboolean isCopy = JNI_FALSE;
-        nativeInvokeResult = (char *)getEnv()->GetStringUTFChars(javaString, &isCopy);
+        jclass objCls = getEnv()->GetObjectClass(obj);
+        //store class value
+        cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
       }
-      else
-      {
-        jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
-        if (obj != nullptr)
-        {
-          jclass objCls = getEnv()->GetObjectClass(obj);
-          //store class value
-          cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
-        }
-        nativeInvokeResult = obj;
-      }
+      nativeInvokeResult = obj;
     }
     else if (strcmp(returnType, "C") == 0)
     {
@@ -385,7 +369,7 @@ extern "C"
                            Dart_WeakPersistentHandle handle,
                            void *peer)
   {
-    NSLog("finalizer");
+//    NSLog("finalizer");
     release(peer);
   }
 
@@ -395,7 +379,7 @@ extern "C"
     {
       return;
     }
-    NSLog("retain");
+//    NSLog("retain");
     retain(classPtr);
     intptr_t size = 8;
     Dart_NewWeakPersistentHandle_DL(h, classPtr, size, RunFinalizer);
@@ -558,7 +542,7 @@ extern "C"
     return callbackResult;
   }
 
-  void *dartStringToJavaString(wchar_t *dartString, int length)
+  void *dartStringToJavaString(uint16_t *dartString, int length)
   {
     jchar *jc = new jchar[length];
     for(int i = 0; i < length; i++)
@@ -574,10 +558,28 @@ extern "C"
 
     cache[gNativeString] = static_cast<jclass>(gStringCls);
 
-    getEnv()->DeleteLocalRef(nativeString);
+    getEnv()->ReleaseStringChars(nativeString, jc);
     getEnv()->DeleteLocalRef(stringCls);
-    delete[] jc;
 
     return gNativeString;
+  }
+
+  void *javaStringToDartString(void *nativeStrPtr, uint64_t *length)
+  {
+    jobject object = static_cast<jobject>(nativeStrPtr);
+    const jchar* jc = getEnv()->GetStringChars((jstring) object, NULL);
+    jsize stringLength = getEnv()->GetStringLength((jstring) object);
+    *length = stringLength / 2;
+
+    uint16_t *result = new uint16_t[stringLength];
+    for (int i = 0; i < stringLength; i++)
+    {
+      result[i] = jc[i];
+    }
+
+    if (*result == 0xFEFF || *result == 0xFFFE) { // skip BOM
+      result++;
+    }
+    return result;
   }
 }

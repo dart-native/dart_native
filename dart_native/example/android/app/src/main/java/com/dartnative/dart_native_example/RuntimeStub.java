@@ -53,6 +53,7 @@ public class RuntimeStub {
     }
 
     public String getString(String s) {
+//        Log.d(TAG, "getString : " + s);
         return "test success";
     }
 

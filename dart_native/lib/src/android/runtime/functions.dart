@@ -90,5 +90,16 @@ final Pointer<Void> Function(Pointer<Uint16>, int) dartStringToJavaString =
         ?.lookup<
             NativeFunction<
                 Pointer<Void> Function(Pointer<Uint16> utf16String,
-                    Int32 length)>>("dartStringToJavaString")
+                    Int64 length)>>("dartStringToJavaString")
+        ?.asFunction();
+
+///
+/// convert java string to dart string with utf16
+///
+final Pointer<Void> Function(Pointer<Void>, Pointer<Uint64>)
+    javaStringToDartString = nativeDylib
+        ?.lookup<
+            NativeFunction<
+                Pointer<Void> Function(Pointer<Void> utf16String,
+                    Pointer<Uint64> length)>>("javaStringToDartString")
         ?.asFunction();
