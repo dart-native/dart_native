@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/android/common/pointer_encoding.dart';
 
 dynamic boxingWrapperClass(dynamic value) {
   if (value is byte) {
@@ -18,8 +19,7 @@ dynamic boxingWrapperClass(dynamic value) {
   } else if (value is List) {
     return JList(value);
   } else if (value is String){
-    // todo support java string
-    // return JObject(value);
+    return toUtf16(value);
   } else if (value is Set) {
     return JSet(value);
   } else if (value is JObject) {
@@ -43,6 +43,8 @@ dynamic unBoxingWrapperClass(Pointer<Void> ptr, String itemType) {
     case "java.util.Set":
     case "java.util.HashSet":
       return JSet.fromPointer(ptr).raw;
+    case "java.lang.String":
+      return fromUtf16(ptr);
     default: return JObject(itemType?.replaceAll(".", "/"), pointer: ptr);
   }
 }

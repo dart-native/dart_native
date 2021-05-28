@@ -36,7 +36,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
 
     for (var element in value) {
       nativeSet.invoke(
-          "add", [boxingWrapperClass(element)], "Z", [_argSignature]);
+          "add", [boxingWrapperClass(element)], "Z", argsSignature: [_argSignature]);
     }
     return nativeSet.pointer;
   } else {

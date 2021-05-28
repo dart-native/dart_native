@@ -254,7 +254,7 @@ extern "C"
       fillArgs(args, argTypes, argValues, argCount);
     }
     char *methodSignature = spliceChar(signature, returnType);
-    //    DNDebug("call method %s %s", methodName, methodSignature);
+    DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
     if (strlen(returnType) > 1)

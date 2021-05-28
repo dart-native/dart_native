@@ -42,7 +42,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
       return nativeList.pointer;
     }
     for (var i = 0; i < value.length; i ++) {
-      nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z", [_argSignature]);
+      nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z", argsSignature: [_argSignature]);
     }
     return nativeList.pointer;
   } else {

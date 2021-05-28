@@ -49,11 +49,11 @@ testAndroid(RuntimeStub stub) {
   // use = currentTimeMillis() - ms;
   // print('getString result:$resultString');
 
-  int time = DateTime.now().millisecondsSinceEpoch;
-  for (var i = 0; i < 10000; i++) {
-    stub.getString("This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖");
-  }
-  print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
+  // int time = DateTime.now().millisecondsSinceEpoch;
+  // for (var i = 0; i < 10000; i++) {
+  //   stub.getString("This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖");
+  // }
+  // print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
 
   //
   // ms = currentTimeMillis();
@@ -125,6 +125,11 @@ testAndroid(RuntimeStub stub) {
   // map.forEach((key, value) {
   //   print("map from native $key : $value");
   // });
+
+  List list = stub.getStringList(["test啊", "emoji🤣"]);
+  for (var item in list) {
+    print("item $item");
+  }
 }
 
 int currentTimeMillis() {

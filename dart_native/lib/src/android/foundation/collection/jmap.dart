@@ -21,7 +21,7 @@ class JMap extends JSubclass<Map> {
     print("map key set ${keySet.toString()}");
     for (var key in keySet) {
       Pointer<Void> itemPtr = invoke("get", [boxingWrapperClass(key)],
-          "Ljava/lang/Object;", [_argSignature]);
+          "Ljava/lang/Object;", argsSignature: [_argSignature]);
       if (itemType == "") {
         itemType = _getItemClass(itemPtr);
       }
@@ -47,7 +47,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
           "put",
           [boxingWrapperClass(key), boxingWrapperClass(value)],
           "Ljava/lang/Object;",
-          [_argSignature, _argSignature]);
+          argsSignature: [_argSignature, _argSignature]);
     });
     return nativeMap.pointer;
   } else {

@@ -9,8 +9,8 @@
 jstring convertToJavaUtf16(JNIEnv *env, void *value)
 {
   uint16_t *utf16 = (uint16_t *)value;
-  uint32_t length = 0;
 
+  uint32_t length = 0;
   length += *utf16++ << 16;
   length += *utf16++;
 
@@ -23,8 +23,8 @@ uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString)
 {
   const jchar *jc = env->GetStringChars(nativeString, NULL);
   jsize strLength = env->GetStringLength(nativeString);
-  uint16_t *utf16Str = new uint16_t[strLength + 3];
 
+  uint16_t *utf16Str = new uint16_t[strLength + 3];
   utf16Str[0] = strLength >> 16 & 0xFFFF;
   utf16Str[1] = strLength & 0xFFFF;
 
@@ -33,6 +33,7 @@ uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString)
     utf16Str[i + 2] = jc[i];
   }
   utf16Str[strLength + 2] = '\0';
+
   env->ReleaseStringChars(nativeString, jc);
   env->DeleteLocalRef(nativeString);
   return utf16Str;

@@ -51,11 +51,11 @@ class JObject extends JClass {
   }
 
   dynamic invoke(String methodName, List args, String returnType,
-      [List argsSignature]) {
+      {List argsSignature}) {
     Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
     Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
 
-    ArgumentsPointers pointers = _parseArguments(args, argsSignature);
+    ArgumentsPointers pointers = _parseArguments(args, argsSignature: argsSignature);
     Pointer<Void> invokeMethodRet = nativeInvokeNeo(_ptr, methodNamePtr,
         pointers.pointers, pointers.typePointers, args?.length ?? 0, returnTypePtr);
 
@@ -74,7 +74,7 @@ class JObject extends JClass {
     return 1;
   }
 
-  ArgumentsPointers _parseArguments(List args, [List argsSignature]) {
+  ArgumentsPointers _parseArguments(List args, {List argsSignature}) {
     Pointer<Pointer<Void>> pointers = nullptr;
     Pointer<Pointer<Utf8>> typePointers = nullptr;
     if (args != null) {
