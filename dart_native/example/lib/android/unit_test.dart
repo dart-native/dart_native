@@ -51,7 +51,7 @@ testAndroid(RuntimeStub stub) {
 
   int time = DateTime.now().millisecondsSinceEpoch;
   for (var i = 0; i < 10000; i++) {
-    String resultString = stub.getString("test is success?");
+    stub.getString("This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖");
   }
   print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
 

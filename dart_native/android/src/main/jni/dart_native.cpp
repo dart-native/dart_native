@@ -1,6 +1,5 @@
 #include <jni.h>
 #include <stdint.h>
-#include <android/log.h>
 #include <string.h>
 #include <malloc.h>
 #include <map>
@@ -8,11 +7,11 @@
 #include <regex>
 #include <dart_api_dl.h>
 #include <semaphore.h>
+#include "dn_type_convert.h"
+#include "dn_log.h"
 
 extern "C"
 {
-
-#define NSLog(...) __android_log_print(ANDROID_LOG_DEBUG, "Native", __VA_ARGS__)
 
   static JavaVM *gJvm = nullptr;
   static jobject gClassLoader;
@@ -38,7 +37,7 @@ extern "C"
 
   void detachThreadDestructor(void *arg)
   {
-    NSLog("detach from current thread");
+    DNDebug("detach from current thread");
     gJvm->DetachCurrentThread();
     detachKey = 0;
   }
@@ -62,18 +61,18 @@ extern "C"
     case JNI_OK:
       return env;
     case JNI_EDETACHED:
-//      NSLog("attach to current thread");
+      //      DNDebug("attach to current thread");
       gJvm->AttachCurrentThread(&env, NULL);
       return env;
     default:
-      NSLog("fail to get env");
+      DNDebug("fail to get env");
       return nullptr;
     }
   }
 
   JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved)
   {
-    NSLog("JNI_OnLoad");
+    DNDebug("JNI_OnLoad");
     gJvm = pjvm; // cache the JavaVM pointer
     //replace with one of your classes in the line below
     auto randomClass = getEnv()->FindClass("com/dartnative/dart_native/DartNativePlugin");
@@ -85,7 +84,7 @@ extern "C"
     gFindClassMethod = getEnv()->GetMethodID(classLoaderClass, "findClass",
                                              "(Ljava/lang/String;)Ljava/lang/Class;");
 
-    NSLog("JNI_OnLoad finish");
+    DNDebug("JNI_OnLoad finish");
     return JNI_VERSION_1_6;
   }
 
@@ -119,8 +118,15 @@ extern "C"
       char *argType = *argTypes;
       if (strlen(argType) > 1)
       {
-        jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
-        argValues[index].l = object;
+        if (strcmp(argType, "Ljava/lang/String;") == 0)
+        {
+          argValues[index].l = convertToJavaUtf16(getEnv(), *args);
+        }
+        else
+        {
+          jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
+          argValues[index].l = object;
+        }
       }
       else if (strcmp(argType, "C") == 0)
       {
@@ -168,7 +174,7 @@ extern "C"
     if (exception)
     {
       env->ExceptionClear();
-      NSLog("findClass exception");
+      DNDebug("findClass exception");
       return static_cast<jclass>(env->CallObjectMethod(gClassLoader,
                                                        gFindClassMethod,
                                                        env->NewStringUTF(name)));
@@ -222,7 +228,7 @@ extern "C"
     jobject object = static_cast<jobject>(classPtr);
     if (referenceCount[object] == NULL)
     {
-      NSLog("not contain object");
+      DNDebug("not contain object");
       return;
     }
     int count = referenceCount[object];
@@ -248,19 +254,27 @@ extern "C"
       fillArgs(args, argTypes, argValues, argCount);
     }
     char *methodSignature = spliceChar(signature, returnType);
-//    NSLog("call method %s %s", methodName, methodSignature);
+    //    DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
     if (strlen(returnType) > 1)
     {
-      jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
-      if (obj != nullptr)
+      if (strcmp(returnType, "Ljava/lang/String;") == 0)
       {
-        jclass objCls = getEnv()->GetObjectClass(obj);
-        //store class value
-        cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+        jstring javaString = (jstring)getEnv()->CallObjectMethodA(object, method, argValues);
+        nativeInvokeResult = convertToDartUtf16(getEnv(), javaString);
       }
-      nativeInvokeResult = obj;
+      else
+      {
+        jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
+        if (obj != nullptr)
+        {
+          jclass objCls = getEnv()->GetObjectClass(obj);
+          //store class value
+          cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+        }
+        nativeInvokeResult = obj;
+      }
     }
     else if (strcmp(returnType, "C") == 0)
     {
@@ -334,7 +348,7 @@ extern "C"
   {
     if (!callbackManagerCache.count(targetAddr))
     {
-      NSLog("getCallbackMethod error not register %s", functionName);
+      DNDebug("getCallbackMethod error not register %s", functionName);
       return NULL;
     }
     std::map<std::string, NativeMethodCallback> methodsMap = callbackManagerCache[targetAddr];
@@ -369,7 +383,7 @@ extern "C"
                            Dart_WeakPersistentHandle handle,
                            void *peer)
   {
-//    NSLog("finalizer");
+    //    DNDebug("finalizer");
     release(peer);
   }
 
@@ -379,7 +393,7 @@ extern "C"
     {
       return;
     }
-//    NSLog("retain");
+    //    DNDebug("retain");
     retain(classPtr);
     intptr_t size = 8;
     Dart_NewWeakPersistentHandle_DL(h, classPtr, size, RunFinalizer);
@@ -398,7 +412,7 @@ extern "C"
     const bool result = Dart_PostCObject_DL(send_port, &dart_object);
     if (!result)
     {
-      NSLog("Native callback to Dart failed! Invalid port or isolate died");
+      DNDebug("Native callback to Dart failed! Invalid port or isolate died");
     }
     return result;
   }
@@ -421,7 +435,7 @@ extern "C"
   {
     if (!dartPortCache.count(dartObject))
     {
-      NSLog("not register dart port!");
+      DNDebug("not register dart port!");
       return NULL;
     }
 
@@ -509,12 +523,12 @@ extern "C"
     jobject callbackResult = NULL;
     if (isSemInitSuccess)
     {
-      NSLog("wait work execute");
+      DNDebug("wait work execute");
       sem_wait(&sem);
       //todo optimization
       if (returnType == nullptr)
       {
-        NSLog("void");
+        DNDebug("void");
       }
       else if (strcmp(returnType, "Ljava/lang/String;") == 0)
       {
@@ -540,46 +554,5 @@ extern "C"
     free(argTypes);
 
     return callbackResult;
-  }
-
-  void *dartStringToJavaString(uint16_t *dartString, int length)
-  {
-    jchar *jc = new jchar[length];
-    for(int i = 0; i < length; i++)
-    {
-      jc[i] = (jchar) dartString[i];
-    }
-
-    jstring nativeString = getEnv()->NewString(jc, length);
-    jobject gNativeString = getEnv()->NewGlobalRef(nativeString);
-
-    jclass stringCls = getEnv()->GetObjectClass(nativeString);
-    jobject gStringCls = getEnv()->NewGlobalRef(stringCls);
-
-    cache[gNativeString] = static_cast<jclass>(gStringCls);
-
-    getEnv()->ReleaseStringChars(nativeString, jc);
-    getEnv()->DeleteLocalRef(stringCls);
-
-    return gNativeString;
-  }
-
-  void *javaStringToDartString(void *nativeStrPtr, uint64_t *length)
-  {
-    jobject object = static_cast<jobject>(nativeStrPtr);
-    const jchar* jc = getEnv()->GetStringChars((jstring) object, NULL);
-    jsize stringLength = getEnv()->GetStringLength((jstring) object);
-    *length = stringLength / 2;
-
-    uint16_t *result = new uint16_t[stringLength];
-    for (int i = 0; i < stringLength; i++)
-    {
-      result[i] = jc[i];
-    }
-
-    if (*result == 0xFEFF || *result == 0xFFFE) { // skip BOM
-      result++;
-    }
-    return result;
   }
 }

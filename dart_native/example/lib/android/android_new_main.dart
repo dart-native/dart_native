@@ -33,7 +33,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         "Flutter Channel String Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
     time = DateTime.now().millisecondsSinceEpoch;
     for (var i = 0; i < 10000; i++) {
-      String _ = stub.getString(testString);
+      // String _ = stub.getString(testString);
     }
     print("DartNative String Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
 

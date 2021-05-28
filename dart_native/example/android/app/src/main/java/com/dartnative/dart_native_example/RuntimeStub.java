@@ -53,8 +53,8 @@ public class RuntimeStub {
     }
 
     public String getString(String s) {
-//        Log.d(TAG, "getString : " + s);
-        return "test success";
+    //    Log.d(TAG, "getString : " + s);
+       return "This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖";
     }
 
     public int add(int a, int b) {

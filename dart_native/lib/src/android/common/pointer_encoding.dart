@@ -6,7 +6,6 @@ import 'package:dart_native/src/android/foundation/collection/jarray.dart';
 import 'package:dart_native/src/android/runtime/jclass.dart';
 import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:dart_native/src/common/native_basic_type.dart';
-import 'package:dart_native/src/android/foundation/jstring.dart';
 
 import 'package:ffi/ffi.dart';
 
@@ -91,7 +90,7 @@ dynamic storeValueToPointer(
   }
 
   if(object is String) {
-    ptr.value = JString(object).pointer;
+    ptr.cast<Pointer<Uint16>>().value = toUtf16(object);
     typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.string];
     return;
   }
@@ -144,7 +143,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
       result = utf8.decode([data.getInt8(0)]);
       break;
     case "Ljava/lang/String;":
-      result = JString.fromPointer(ptr).raw;
+      result = fromUtf16(ptr);
       break;
     default:
       result = ptr;
@@ -152,3 +151,31 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
   }
   return result;
 }
+
+Pointer<Uint16> toUtf16(String value) {
+  final units = value.codeUnits;
+  final Pointer<Uint16> charPtr = allocate<Uint16>(count: units.length + 4);
+  final Uint16List uintList = charPtr.asTypedList(units.length + 4);
+
+  final valueLength = units.length;
+
+  final lengths = [
+    valueLength >> 16 & 0xFFFF,
+    valueLength & 0xFFFF,
+  ];
+  uintList.setAll(0, lengths);
+  uintList.setAll(2, units);
+  uintList[units.length + 3] = 0;
+  return charPtr;
+}
+
+String fromUtf16(Pointer<Void> uint16Ptr) {
+  int length = 0;
+  for (int i = 0; i < 2; i++) {
+    length += uint16Ptr.cast<Uint16>().elementAt(i).value;
+  }
+  Uint16List list = uint16Ptr.cast<Uint16>().asTypedList(length + 2);
+  free(uint16Ptr);
+  return String.fromCharCodes(list.sublist(2));
+}
+
