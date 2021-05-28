@@ -55,6 +55,7 @@ typedef InvokeMethodC = Pointer<Void> Function(
   Pointer<Pointer<Void>> args,
   Pointer<Void> callback,
   Int64 dartPort,
+  Uint64 stringTypeBitmask,
 );
 typedef InvokeMethodD = Pointer<Void> Function(
   Pointer<Void> instance,
@@ -64,6 +65,7 @@ typedef InvokeMethodD = Pointer<Void> Function(
   Pointer<Pointer<Void>> args,
   Pointer<Void> callback,
   int dartPort,
+  int stringTypeBitmask,
 );
 final InvokeMethodD nativeInvokeMethod = runtimeLib
     .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
@@ -106,9 +108,17 @@ final BlockCreateD blockCreate = runtimeLib
     .lookupFunction<BlockCreateC, BlockCreateD>('native_block_create');
 
 typedef BlockInvokeC = Pointer<Void> Function(
-    Pointer<Void> block, Pointer<Pointer<Void>> args, Int64 dartPort);
+  Pointer<Void> block,
+  Pointer<Pointer<Void>> args,
+  Int64 dartPort,
+  Uint64 stringTypeBitmask,
+);
 typedef BlockInvokeD = Pointer<Void> Function(
-    Pointer<Void> block, Pointer<Pointer<Void>> args, int dartPort);
+  Pointer<Void> block,
+  Pointer<Pointer<Void>> args,
+  int dartPort,
+  int stringTypeBitmask,
+);
 final BlockInvokeD blockInvoke = runtimeLib
     .lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');
 

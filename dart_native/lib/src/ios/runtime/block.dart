@@ -137,7 +137,7 @@ class Block extends id {
     if (count != (args?.length ?? 0) + 2) {
       throw 'Args Count NOT match';
     }
-
+    int stringTypeBitmask = 0;
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
     if (args != null) {
       argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
@@ -146,11 +146,15 @@ class Block extends id {
         if (arg == null) {
           arg = nil;
         }
+        if (arg is String) {
+          stringTypeBitmask |= (0x1 << i);
+        }
         storeValueToPointer(
             arg, argsPtrPtr.elementAt(i), typesPtrPtr.elementAt(i + 2).value);
       }
     }
-    Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr, nativePort);
+    Pointer<Void> resultPtr =
+        blockInvoke(pointer, argsPtrPtr, nativePort, stringTypeBitmask);
     if (argsPtrPtr != nullptr.cast()) {
       free(argsPtrPtr);
     }

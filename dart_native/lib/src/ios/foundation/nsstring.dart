@@ -38,18 +38,27 @@ class NSMutableString extends NSString {
 
 Pointer<Void> _new(dynamic value) {
   if (value is String) {
-    final units = value.codeUnits;
-    final Pointer<Uint16> charPtr = allocate<Uint16>(count: units.length + 1);
-    final Uint16List nativeString = charPtr.asTypedList(units.length + 1);
-    nativeString.setAll(0, units);
-    nativeString[units.length] = 0;
-    NSObject result = Class('NSString').perform(
+    List<int> units = value.codeUnits;
+    Pointer<Uint16> utf16Ptr = units.toUtf16Buffer();
+    Pointer<Void> result = Class('NSString').perform(
         SEL('stringWithCharacters:length:'),
-        args: [charPtr, units.length]);
-    free(charPtr);
-    return result.pointer;
+        args: [utf16Ptr, units.length],
+        decodeRetVal: false);
+    free(utf16Ptr);
+    return result;
   } else {
     throw 'Invalid param when initializing NSString.';
+  }
+}
+
+extension Utf16Buffer on List<int> {
+  Pointer<Uint16> toUtf16Buffer() {
+    final count = length + 1;
+    final Pointer<Uint16> result = allocate<Uint16>(count: count);
+    final Uint16List typedList = result.asTypedList(count);
+    typedList.setAll(0, this);
+    typedList[this.length] = 0;
+    return result;
   }
 }
 

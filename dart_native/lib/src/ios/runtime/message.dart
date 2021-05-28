@@ -14,12 +14,14 @@ import 'package:ffi/ffi.dart';
 typedef void _AsyncMessageCallback(dynamic result);
 
 Pointer<Void> _sendMsgToNative(
-    Pointer<Void> target,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Pointer<Void>> args,
-    DispatchQueue queue,
-    Pointer<Void> callbackPtr) {
+  Pointer<Void> target,
+  Pointer<Void> selector,
+  Pointer<Void> signature,
+  Pointer<Pointer<Void>> args,
+  DispatchQueue queue,
+  Pointer<Void> callbackPtr,
+  int stringTypeBitmask,
+) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr.cast();
   // This awful code dues to this issue: https://github.com/dart-lang/sdk/issues/39488
@@ -32,8 +34,8 @@ Pointer<Void> _sendMsgToNative(
   if (callbackPtr == nullptr) {
     callbackPtr = nullptr.cast();
   }
-  result = nativeInvokeMethod(
-      target, selector, signature, queuePtr, args, callbackPtr, nativePort);
+  result = nativeInvokeMethod(target, selector, signature, queuePtr, args,
+      callbackPtr, nativePort, stringTypeBitmask);
   return result;
 }
 
@@ -87,7 +89,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
   nativeSignatureEncodingList(signaturePtr, typeEncodingsPtrPtr);
 
   List<NSObjectRef> outRefArgs = [];
-
+  int stringTypeBitmask = 0;
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
     pointers = allocate<Pointer<Void>>(count: argCount);
@@ -97,6 +99,9 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
         arg = nil;
       } else if (arg is NSObjectRef) {
         outRefArgs.add(arg);
+      }
+      if (arg is String) {
+        stringTypeBitmask |= (0x1 << i);
       }
       Pointer<Utf8> argTypePtr =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
@@ -115,8 +120,8 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
   }
 
-  Pointer<Void> resultPtr = _sendMsgToNative(
-      target, selectorPtr, signaturePtr, pointers, onQueue, callbackPtr);
+  Pointer<Void> resultPtr = _sendMsgToNative(target, selectorPtr, signaturePtr,
+      pointers, onQueue, callbackPtr, stringTypeBitmask);
   if (pointers != null) {
     free(pointers);
   }

@@ -156,8 +156,7 @@ dynamic storeValueToPointer(
     if (encoding.maybeCString) {
       return storeCStringToPointer(object, ptr);
     } else if (encoding.maybeObject) {
-      NSString string = NSString(object);
-      ptr.value = string.pointer;
+      storeStringToPointer(object, ptr);
     }
   } else if (object is List && encoding.maybeObject) {
     ptr.value = NSArray(object).pointer;
@@ -186,6 +185,23 @@ PointerWrapper storeStructToPointer(
     return object.wrapper;
   }
   return null;
+}
+
+void storeStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
+  List<int> units = object.codeUnits;
+  List<int> data = List.from(units);
+  int length = units.length;
+  //
+  List<int> length64Bit = [
+    length >> 48 & 0xffff,
+    length >> 32 & 0xffff,
+    length >> 16 & 0xffff,
+    length & 0xffff,
+  ];
+  data.insertAll(0, length64Bit);
+  // utf16Ptr will be freed on native side.
+  Pointer<Uint16> utf16Ptr = data.toUtf16Buffer();
+  ptr.value = utf16Ptr.cast();
 }
 
 dynamic storeCStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
