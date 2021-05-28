@@ -136,6 +136,8 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
     free(typeEncodingsPtrPtr);
     return result;
+  } else {
+    free(typeEncodingsPtrPtr);
   }
 }
 

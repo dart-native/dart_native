@@ -41,7 +41,7 @@ native_get_class(const char *className, Class superclass);
 /// @param queue dispatch queue for async method.
 /// @param args arguments passed to method.
 /// @param dartPort port for dart isolate.
-/// @param stringTypeBitmask first bit is for return value.
+/// @param stringTypeBitmask bitmask for checking if an argument is a string.
 DN_EXTERN void * _Nullable
 native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask);
 
