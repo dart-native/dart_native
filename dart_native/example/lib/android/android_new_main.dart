@@ -11,7 +11,6 @@ class AndroidNewApp extends StatefulWidget {
 }
 
 class _AndroidNewApp extends State<AndroidNewApp> {
-  RuntimeStub stub = RuntimeStub();
   static const platform = const MethodChannel('dart_native.example');
 
   @override
@@ -45,7 +44,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         "Flutter Channel int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
     time = DateTime.now().millisecondsSinceEpoch;
     for (var i = 0; i < 10000; i++) {
-      int _ = stub.getInt(100);
+      // int _ = stub.getInt(100);
     }
     print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
   }
@@ -59,6 +58,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         ),
         body: FlatButton(
           onPressed: () {
+            RuntimeStub stub = RuntimeStub();
             testAndroid(stub);
           },
           child: Text('Using DartNative\n'),

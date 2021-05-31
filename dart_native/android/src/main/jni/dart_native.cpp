@@ -10,6 +10,7 @@
 #include "dn_type_convert.h"
 #include "dn_log.h"
 #include "dn_method_call.h"
+#include "dn_signature_helper.h"
 
 extern "C"
 {
@@ -63,7 +64,7 @@ extern "C"
     case JNI_OK:
       return env;
     case JNI_EDETACHED:
-      //      DNDebug("attach to current thread");
+      DNDebug("attach to current thread");
       gJvm->AttachCurrentThread(&env, NULL);
       return env;
     default:
@@ -88,29 +89,6 @@ extern "C"
     strCls = getEnv()->FindClass("java/lang/String");
     DNDebug("JNI_OnLoad finish");
     return JNI_VERSION_1_6;
-  }
-
-  char *spliceChar(char *dest, char *src)
-  {
-    char *result = (char *)malloc(strlen(dest) + strlen(src));
-    strcpy(result, dest);
-    strcat(result, src);
-    return result;
-  }
-
-  char *generateSignature(char **argTypes, int argCount)
-  {
-    char *signature = const_cast<char *>("(");
-    if (argTypes != nullptr)
-    {
-      for (int i = 0; i < argCount; ++argTypes, i++)
-      {
-        char *templeSignature = spliceChar(signature, *argTypes);
-        signature = templeSignature;
-        free(templeSignature);
-      }
-    }
-    return spliceChar(signature, const_cast<char *>(")"));
   }
 
   void fillArgs(void **args, char **argTypes, jvalue *argValues, int argCount, uint32_t stringTypeBitmask)
@@ -156,17 +134,18 @@ extern "C"
 
   jobject newObject(jclass cls, void **args, char **argTypes, int argCount, uint32_t stringTypeBitmask)
   {
-    char *signature = generateSignature(argTypes, argCount);
     jvalue *argValues = new jvalue[argCount];
     if (argCount > 0)
     {
       fillArgs(args, argTypes, argValues, argCount, stringTypeBitmask);
     }
-    char *constructorSig = spliceChar(signature, const_cast<char *>("V"));
-    jmethodID constructor = getEnv()->GetMethodID(cls, "<init>", constructorSig);
+
+    char *constructorSignature = generateSignature(argTypes, argCount, const_cast<char *>("V"));
+    jmethodID constructor = getEnv()->GetMethodID(cls, "<init>", constructorSignature);
     jobject newObj = getEnv()->NewObjectA(cls, constructor, argValues);
-    free(argValues);
-    free(constructorSig);
+
+    delete[] argValues;
+    free(constructorSignature);
     return newObj;
   }
 
@@ -220,13 +199,12 @@ extern "C"
 
     jobject object = static_cast<jobject>(classPtr);
     jclass cls = cache[object];
-    char *signature = generateSignature(argTypes, argCount);
     jvalue *argValues = new jvalue[argCount];
     if (argCount > 0)
     {
       fillArgs(args, argTypes, argValues, argCount, stringTypeBitmask);
     }
-    char *methodSignature = spliceChar(signature, returnType);
+    char *methodSignature = generateSignature(argTypes, argCount, returnType);
     DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
@@ -264,9 +242,8 @@ extern "C"
       nativeInvokeResult = it->second(env, object, method, argValues);
     }
 
-    free(argValues);
+    delete[] argValues;
     free(methodSignature);
-    free(signature);
     return nativeInvokeResult;
   }
 

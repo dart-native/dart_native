@@ -20,7 +20,8 @@ add_library( # Specifies the name of the library.
              src/main/jni/include/dart_api_dl.c
              src/main/jni/dart_native.cpp
              src/main/jni/dn_type_convert.cpp
-             src/main/jni/dn_method_call.cpp)
+             src/main/jni/dn_method_call.cpp
+             src/main/jni/dn_signature_helper.cpp)
 
     find_library( # Sets the name of the path variable.
             log-lib

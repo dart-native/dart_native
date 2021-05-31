@@ -12,7 +12,7 @@ extern "C"
 {
 #endif
 
-typedef void BasicTypeToNative(void *, jvalue *, int);
+  typedef void BasicTypeToNative(void *, jvalue *, int);
 
   jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index);
   uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString);
@@ -27,7 +27,7 @@ typedef void BasicTypeToNative(void *, jvalue *, int);
   void convertToJBoolean(void *value, jvalue *argValue, int index);
 
   /// key is basic argument signature
-  const std::map<char, std::function<BasicTypeToNative>> basicTypeConvertMap = {
+  const std::map<char, std::function<BasicTypeToNative> > basicTypeConvertMap = {
       {'C', convertToJChar},
       {'I', convertToJInt},
       {'D', convertToJDouble},
