@@ -9,6 +9,7 @@
 #include <semaphore.h>
 #include "dn_type_convert.h"
 #include "dn_log.h"
+#include "dn_method_call.h"
 
 extern "C"
 {
@@ -215,6 +216,7 @@ extern "C"
   void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, int argCount, char *returnType, uint32_t stringTypeBitmask)
   {
     void *nativeInvokeResult = nullptr;
+    JNIEnv *env = getEnv();
 
     jobject object = static_cast<jobject>(classPtr);
     jclass cls = cache[object];
@@ -228,12 +230,11 @@ extern "C"
     DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
-    if (strlen(returnType) > 1)
-    {
+    auto it = methodCallerMap.find(*returnType);
+    if (it == methodCallerMap.end()) {
       if (strcmp(returnType, "Ljava/lang/String;") == 0)
       {
-        jstring javaString = (jstring)getEnv()->CallObjectMethodA(object, method, argValues);
-        nativeInvokeResult = convertToDartUtf16(getEnv(), javaString);
+        nativeInvokeResult = callNativeStringMethod(getEnv(), object, method, argValues);
       }
       else
       {
@@ -241,7 +242,7 @@ extern "C"
         jobject obj = getEnv()->CallObjectMethodA(object, method, argValues);
         if (obj != nullptr && getEnv()->IsInstanceOf(obj, strCl))
         {
-          *++argTypes = (char *)"1";
+          *++argTypes = (char *) "1";
           nativeInvokeResult = convertToDartUtf16(getEnv(), (jstring)obj);
         }
         else
@@ -259,52 +260,8 @@ extern "C"
         }
         getEnv()->DeleteLocalRef(obj);
       }
-    }
-    else if (strcmp(returnType, "C") == 0)
-    {
-      auto nativeChar = getEnv()->CallCharMethodA(object, method, argValues);
-      nativeInvokeResult = (void *)nativeChar;
-    }
-    else if (strcmp(returnType, "I") == 0)
-    {
-      auto nativeInt = getEnv()->CallIntMethodA(object, method, argValues);
-      nativeInvokeResult = (void *)nativeInt;
-    }
-    else if (strcmp(returnType, "D") == 0)
-    {
-      auto nativeDouble = getEnv()->CallDoubleMethodA(object, method, argValues);
-      double cDouble = (double)nativeDouble;
-      memcpy(&nativeInvokeResult, &cDouble, sizeof(double));
-    }
-    else if (strcmp(returnType, "F") == 0)
-    {
-      auto nativeDouble = getEnv()->CallFloatMethodA(object, method, argValues);
-      float cDouble = (float)nativeDouble;
-      memcpy(&nativeInvokeResult, &cDouble, sizeof(float));
-    }
-    else if (strcmp(returnType, "B") == 0)
-    {
-      auto nativeByte = getEnv()->CallByteMethodA(object, method, argValues);
-      nativeInvokeResult = (void *)nativeByte;
-    }
-    else if (strcmp(returnType, "S") == 0)
-    {
-      auto nativeShort = getEnv()->CallShortMethodA(object, method, argValues);
-      nativeInvokeResult = (void *)nativeShort;
-    }
-    else if (strcmp(returnType, "J") == 0)
-    {
-      auto nativeLong = getEnv()->CallLongMethodA(object, method, argValues);
-      nativeInvokeResult = (void *)nativeLong;
-    }
-    else if (strcmp(returnType, "Z") == 0)
-    {
-      auto nativeBool = getEnv()->CallBooleanMethodA(object, method, argValues);
-      nativeInvokeResult = (void *)nativeBool;
-    }
-    else if (strcmp(returnType, "V") == 0)
-    {
-      getEnv()->CallVoidMethodA(object, method, argValues);
+    } else {
+      nativeInvokeResult = it->second(env, object, method, argValues);
     }
 
     free(argValues);

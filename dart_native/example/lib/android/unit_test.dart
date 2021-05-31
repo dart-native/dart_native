@@ -22,7 +22,7 @@ testAndroid(RuntimeStub stub) {
   ms = currentTimeMillis();
   bool resultBool = stub.getBool(true);
   use = currentTimeMillis() - ms;
-  print('getBool result:$resultBool , cost:$use');
+  print('getBool result:$resultBool');
 
   ms = currentTimeMillis();
   double resultFloat = stub.getFloat(10.5);
@@ -49,12 +49,12 @@ testAndroid(RuntimeStub stub) {
   use = currentTimeMillis() - ms;
   print('getString result:$resultString');
 
-  int time = DateTime.now().millisecondsSinceEpoch;
-  for (var i = 0; i < 10000; i++) {
-    stub.getString("This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖");
-  }
-  print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
-
+  // int time = DateTime.now().millisecondsSinceEpoch;
+  // for (var i = 0; i < 10000; i++) {
+  //   stub.getString("This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖");
+  // }
+  // print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
+  //
 
   ms = currentTimeMillis();
   int resultAdd = stub.add(10, 20);

@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <jni.h>
 #include <map>
-#include <string>
 
 #ifndef DART_NATIVE_DN_TYPE_CONVERT_H
 #define DART_NATIVE_DN_TYPE_CONVERT_H
@@ -16,6 +15,7 @@ extern "C"
 typedef void BasicTypeToNative(void *, jvalue *, int);
 
   jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index);
+  uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString);
 
   void convertToJChar(void *value, jvalue *argValue, int index);
   void convertToJInt(void *value, jvalue *argValue, int index);
@@ -36,8 +36,6 @@ typedef void BasicTypeToNative(void *, jvalue *, int);
       {'S', convertToJShort},
       {'J', convertToJLong},
       {'Z', convertToJBoolean}};
-
-  uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString);
 
 #ifdef __cplusplus
 }

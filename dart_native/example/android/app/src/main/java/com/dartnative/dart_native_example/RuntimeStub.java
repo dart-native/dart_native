@@ -49,7 +49,7 @@ public class RuntimeStub {
 
     public boolean getBool(boolean b) {
         Log.d(TAG, "getBool : " + b);
-        return false;
+        return true;
     }
 
     public String getString(String s) {
