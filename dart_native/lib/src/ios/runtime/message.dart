@@ -7,6 +7,7 @@ import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/gcd.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
@@ -20,7 +21,7 @@ Pointer<Void> _sendMsgToNative(
   Pointer<Pointer<Void>> args,
   DispatchQueue queue,
   Pointer<Void> callbackPtr,
-  int stringTypeBitmask,
+  Pointer<Int64> stringTypeBitmaskPtr,
 ) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr.cast();
@@ -35,7 +36,7 @@ Pointer<Void> _sendMsgToNative(
     callbackPtr = nullptr.cast();
   }
   result = nativeInvokeMethod(target, selector, signature, queuePtr, args,
-      callbackPtr, nativePort, stringTypeBitmask);
+      callbackPtr, nativePort, stringTypeBitmaskPtr);
   return result;
 }
 
@@ -89,7 +90,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
   nativeSignatureEncodingList(signaturePtr, typeEncodingsPtrPtr);
 
   List<NSObjectRef> outRefArgs = [];
-  int stringTypeBitmask = 0;
+  int stringTypeBitmask = decodeRetVal ? 1 << 63 : 0;
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
     pointers = allocate<Pointer<Void>>(count: argCount);
@@ -101,7 +102,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
         outRefArgs.add(arg);
       }
       if (arg is String) {
-        stringTypeBitmask |= (0x1 << i);
+        stringTypeBitmask |= (0x1 << (i + 1));
       }
       Pointer<Utf8> argTypePtr =
           nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
@@ -120,18 +121,25 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
   }
 
+  sharedBitmaskPtr.value = stringTypeBitmask;
   Pointer<Void> resultPtr = _sendMsgToNative(target, selectorPtr, signaturePtr,
-      pointers, onQueue, callbackPtr, stringTypeBitmask);
+      pointers, onQueue, callbackPtr, sharedBitmaskPtr);
   if (pointers != null) {
     free(pointers);
   }
 
   if (callback == null) {
     dynamic result = resultPtr;
+    // need decode return value
     if (decodeRetVal) {
-      Pointer<Utf8> resultTypePtr =
-          nativeTypeEncoding(typeEncodingsPtrPtr.value);
-      result = loadValueFromPointer(resultPtr, resultTypePtr);
+      // return value is a String.
+      if (sharedBitmaskPtr.value & 0x1 == 1) {
+        result = loadStringFromPointer(resultPtr);
+      } else {
+        Pointer<Utf8> resultTypePtr =
+            nativeTypeEncoding(typeEncodingsPtrPtr.value);
+        result = loadValueFromPointer(resultPtr, resultTypePtr);
+      }
       outRefArgs.forEach((ref) => ref.syncValue());
     }
     free(typeEncodingsPtrPtr);

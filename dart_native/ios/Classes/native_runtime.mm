@@ -104,7 +104,7 @@ _mallocReturnStruct(NSMethodSignature *signature) {
 }
 
 void
-_fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
+_fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t *stringTypeBitmaskPtr, NSMutableArray<NSString *> *stringTypeBucket) {
     for (NSUInteger i = offset; i < signature.numberOfArguments; i++) {
         const char *argType = [signature getArgumentTypeAtIndex:i];
         NSUInteger argsIndex = i - offset;
@@ -119,16 +119,16 @@ _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *i
             // Already put struct in pointer on Dart side.
             [invocation setArgument:args[argsIndex] atIndex:i];
         } else if (argType[0] == '@' &&
-                   (stringTypeBitmask >> argsIndex & 0x1) == 1) {
+                   (*stringTypeBitmaskPtr >> (argsIndex + 1) & 0x1) == 1) {
             const unichar *data = ((const unichar **)args)[argsIndex];
             // First four uint16_t is for data length.
-            const NSUInteger dataOffset = 4;
+            const NSUInteger lengthDataSize = 4;
             uint64_t length = data[0];
-            for (int i = 1; i < dataOffset; i++) {
+            for (int i = 1; i < lengthDataSize; i++) {
                 length <<= 16;
                 length |= data[i];
             }
-            NSString *realArg = [NSString stringWithCharacters:data + dataOffset length:length];
+            NSString *realArg = [NSString stringWithCharacters:data + lengthDataSize length:length];
             [stringTypeBucket addObject:realArg];
             free((void *)data); // Malloc data on dart side, need free here.
             [invocation setArgument:&realArg atIndex:i];
@@ -138,16 +138,40 @@ _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *i
     }
 }
 
+
+/// Return data for NSString: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
+/// @param retVal origin return value
+/// @param stringTypeBitmaskPtr pointer to bitmask
+void *_dataForNSStringReturnValue(NSString *retVal, int64_t *stringTypeBitmaskPtr) {
+    // first bit is for return value.
+    *stringTypeBitmaskPtr |= 0x1;
+    NSUInteger length = 0;
+    const uint16_t *utf16BufferPtr = native_convert_nsstring_to_utf16(retVal, &length);
+    size_t size = sizeof(uint16_t) * length;
+    const size_t lengthDataSize = 4;
+    // free memory on dart side.
+    uint16_t *dataPtr = (uint16_t *)malloc(size + sizeof(uint16_t) * lengthDataSize);
+    memcpy(dataPtr + lengthDataSize, utf16BufferPtr, size);
+    uint16_t lengthData[4] = {
+        static_cast<uint16_t>(length >> 48 & 0xffff),
+        static_cast<uint16_t>(length >> 32 & 0xffff),
+        static_cast<uint16_t>(length >> 16 & 0xffff),
+        static_cast<uint16_t>(length & 0xffff)
+    };
+    memcpy(dataPtr, lengthData, sizeof(uint16_t) * lengthDataSize);
+    return dataPtr;
+}
+
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask) {
-    if (!object || !selector || !signature) {
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort, int64_t *stringTypeBitmaskPtr) {
+    if (!object || !selector || !signature || !stringTypeBitmaskPtr) {
         return NULL;
     }
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = object;
     invocation.selector = selector;
     NSMutableArray<NSString *> *stringTypeBucket = [NSMutableArray array];
-    _fillArgsToInvocation(signature, args, invocation, 2, stringTypeBitmask, stringTypeBucket);
+    _fillArgsToInvocation(signature, args, invocation, 2, stringTypeBitmaskPtr, stringTypeBucket);
     
     void *(^resultBlock)() = ^() {
         void *result = NULL;
@@ -159,8 +183,16 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
             } else {
                 [invocation getReturnValue:&result];
                 if (returnType == '@') {
-                    [DNObjectDealloc attachHost:(__bridge id)result
-                                       dartPort:dartPort];
+                    BOOL isNSString = [(__bridge id)result isKindOfClass:NSString.class];
+                    // highest bit is a flag for decode.
+                    BOOL decodeRetVal = (*stringTypeBitmaskPtr & (1LL << 63)) != 0;
+                    // return value is a NSString and needs decode.
+                    if (isNSString && decodeRetVal) {
+                        result = _dataForNSStringReturnValue((__bridge NSString *)result, stringTypeBitmaskPtr);
+                    } else {
+                        [DNObjectDealloc attachHost:(__bridge id)result
+                                           dartPort:dartPort];
+                    }
                 }
             }
         }
@@ -198,12 +230,15 @@ native_block_create(char *types, void *callback, Dart_Port dartPort) {
 }
 
 void *
-native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t stringTypeBitmask) {
+native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t *stringTypeBitmaskPtr) {
+    if (!block || !stringTypeBitmaskPtr) {
+        return nullptr;
+    }
     const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     NSMutableArray<NSString *> *stringTypeBucket = [NSMutableArray array];
-    _fillArgsToInvocation(signature, args, invocation, 1, stringTypeBitmask, stringTypeBucket);
+    _fillArgsToInvocation(signature, args, invocation, 1, stringTypeBitmaskPtr, stringTypeBucket);
     [invocation invokeWithTarget:(__bridge id)block];
     void *result = NULL;
     const char returnType = signature.methodReturnType[0];
@@ -213,7 +248,12 @@ native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t string
             [invocation getReturnValue:result];
         } else {
             [invocation getReturnValue:&result];
-            if (returnType == '@') {
+            BOOL isNSString = [(__bridge id)result isKindOfClass:NSString.class];
+            BOOL decodeRetVal = (*stringTypeBitmaskPtr & (1LL << 63)) != 0;
+            // return value is a NSString and needs decode.
+            if (isNSString && decodeRetVal) {
+                result = _dataForNSStringReturnValue((__bridge NSString *)result, stringTypeBitmaskPtr);
+            } else {
                 [DNObjectDealloc attachHost:(__bridge id)result
                                    dartPort:dartPort];
             }

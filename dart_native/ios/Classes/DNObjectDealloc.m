@@ -54,12 +54,17 @@ _objc_isTaggedPointer(const void *ptr) {
     }
 }
 
+static int64_t fuxk;
+
 - (instancetype)initWithHost:(NSObject *)host
                     dartPort:(Dart_Port)dartPort {
     self = [super init];
     if (self) {
         _host = host;
         _hostAddress = (int64_t)host;
+        if ([host isKindOfClass:NSClassFromString(@"Fuck")]) {
+            fuxk = _hostAddress;
+        }
         _dartPort = dartPort;
         objc_setAssociatedObject(host, _cmd, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
@@ -67,6 +72,9 @@ _objc_isTaggedPointer(const void *ptr) {
 }
 
 - (void)dealloc {
+    if (_hostAddress == fuxk) {
+        
+    }
     NotifyDeallocToDart(_hostAddress, _dartPort);
 }
 

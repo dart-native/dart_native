@@ -3,7 +3,6 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/foundation/collection/nsarray.dart';
-import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
@@ -15,21 +14,31 @@ class NSDictionary extends NSSubclass<Map> {
   }
 
   NSDictionary.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    NSObject keysObject = perform(SEL('allKeys'));
-    NSArray keysArray = NSArray.fromPointer(keysObject.pointer);
-    List keysList = keysArray.raw;
+    var keys = allKeys;
+    var values = allValues;
     Map temp = {};
-    for (var i = 0; i < count; i++) {
-      id key = keysArray.objectAtIndex(i);
-      id value = objectForKey(key);
-      temp[keysList[i]] = unboxingObjCType(value);
+    for (var i = 0; i < keys.length; i++) {
+      temp[keys[i]] = values;
     }
     raw = temp;
   }
 
   int get count => perform(SEL('count'));
 
-  id objectForKey(id key) {
+  List get allKeys {
+    Pointer<Void> keysPtr = perform(SEL('allKeys'), decodeRetVal: false);
+    return NSArray.fromPointer(keysPtr).raw;
+  }
+
+  List get allValues {
+    Pointer<Void> valuesPtr = perform(SEL('allValues'), decodeRetVal: false);
+    return NSArray.fromPointer(valuesPtr)
+        .raw
+        .map((e) => unboxingObjCType(e))
+        .toList();
+  }
+
+  dynamic objectForKey(dynamic key) {
     return perform(SEL('objectForKey:'), args: [key]);
   }
 }

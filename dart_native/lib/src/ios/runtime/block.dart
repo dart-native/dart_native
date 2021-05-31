@@ -147,20 +147,28 @@ class Block extends id {
           arg = nil;
         }
         if (arg is String) {
-          stringTypeBitmask |= (0x1 << i);
+          stringTypeBitmask |= (0x1 << (i + 1));
         }
         storeValueToPointer(
             arg, argsPtrPtr.elementAt(i), typesPtrPtr.elementAt(i + 2).value);
       }
     }
+
+    Pointer<Int64> stringTypeBitmaskPtr = allocate<Int64>();
+    stringTypeBitmaskPtr.value = stringTypeBitmask;
     Pointer<Void> resultPtr =
-        blockInvoke(pointer, argsPtrPtr, nativePort, stringTypeBitmask);
+        blockInvoke(pointer, argsPtrPtr, nativePort, stringTypeBitmaskPtr);
     if (argsPtrPtr != nullptr.cast()) {
       free(argsPtrPtr);
     }
-    dynamic result =
-        loadValueFromPointer(resultPtr, typesPtrPtr.elementAt(0).value);
-    return result;
+    // return value is a String.
+    bool isRetValStringType = stringTypeBitmaskPtr.value & 0x1 == 1;
+    free(stringTypeBitmaskPtr);
+    if (isRetValStringType) {
+      return loadStringFromPointer(resultPtr);
+    } else {
+      return loadValueFromPointer(resultPtr, typesPtrPtr.elementAt(0).value);
+    }
   }
 }
 
@@ -191,7 +199,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
       arg = boxingObjCBasicValue(dartType, arg);
-      arg = convertFromPointer(dartType, arg);
+      arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);
   }

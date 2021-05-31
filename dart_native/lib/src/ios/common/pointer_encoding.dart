@@ -315,6 +315,23 @@ String structNameForEncoding(String encoding) {
   return null;
 }
 
+String loadStringFromPointer(Pointer<Void> ptr) {
+  final dataPtr = ptr.cast<Int16>();
+  // get data length
+  const lengthDataSize = 4;
+  final lengthData = dataPtr.asTypedList(lengthDataSize);
+  int length = lengthData[0] << 48 |
+      lengthData[1] << 32 |
+      lengthData[2] << 16 |
+      lengthData[3];
+  // get utf16 data
+  Int16List data = dataPtr.elementAt(lengthDataSize).asTypedList(length);
+  String result = String.fromCharCodes(data);
+  // malloc dataPtr on native side, shoule free the memory.
+  free(dataPtr);
+  return result;
+}
+
 NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {
   NativeStruct result;
   String structName = structNameForEncoding(encoding);
