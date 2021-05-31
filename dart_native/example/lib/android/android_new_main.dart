@@ -11,6 +11,7 @@ class AndroidNewApp extends StatefulWidget {
 }
 
 class _AndroidNewApp extends State<AndroidNewApp> {
+  RuntimeStub stub = RuntimeStub();
   static const platform = const MethodChannel('dart_native.example');
 
   @override
@@ -58,7 +59,6 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         ),
         body: FlatButton(
           onPressed: () {
-            RuntimeStub stub = RuntimeStub();
             testAndroid(stub);
           },
           child: Text('Using DartNative\n'),

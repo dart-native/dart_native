@@ -63,7 +63,7 @@ class JObject extends JClass {
 
     NativeArguments nativeArguments =
         _parseNativeArguments(args, argsSignature: argsSignature);
-    Pointer<Void> invokeMethodRet = nativeInvokeNeo(
+    Pointer<Void> invokeMethodRet = nativeInvoke(
         _ptr,
         methodNamePtr,
         nativeArguments.pointers,

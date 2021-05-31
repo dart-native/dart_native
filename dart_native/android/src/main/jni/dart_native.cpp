@@ -16,10 +16,12 @@ extern "C"
 {
 
   static JavaVM *gJvm = nullptr;
+  /// todo release
   static jobject gClassLoader;
   static jmethodID gFindClassMethod;
   static pthread_key_t detachKey = 0;
-  static jclass strCls;
+  /// for invoke result compare
+  static jclass gStrCls;
 
   typedef void (*NativeMethodCallback)(
       void *targetPtr,
@@ -28,7 +30,7 @@ extern "C"
       char **argTypes,
       int argCount);
 
-  static std::map<jobject, jclass> cache;
+  static std::map<jobject, jclass> objectGlobalCache;
   static std::map<jobject, int> referenceCount;
 
   // todo too many cache
@@ -76,29 +78,43 @@ extern "C"
   JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved)
   {
     DNDebug("JNI_OnLoad");
-    gJvm = pjvm; // cache the JavaVM pointer
-    //replace with one of your classes in the line below
-    auto randomClass = getEnv()->FindClass("com/dartnative/dart_native/DartNativePlugin");
-    jclass classClass = getEnv()->GetObjectClass(randomClass);
-    auto classLoaderClass = getEnv()->FindClass("java/lang/ClassLoader");
-    auto getClassLoaderMethod = getEnv()->GetMethodID(classClass, "getClassLoader",
-                                                      "()Ljava/lang/ClassLoader;");
-    gClassLoader = getEnv()->NewGlobalRef(getEnv()->CallObjectMethod(randomClass, getClassLoaderMethod));
-    gFindClassMethod = getEnv()->GetMethodID(classLoaderClass, "findClass",
-                                             "(Ljava/lang/String;)Ljava/lang/Class;");
-    strCls = getEnv()->FindClass("java/lang/String");
+    /// cache the JavaVM pointer
+    gJvm = pjvm;
+    JNIEnv *env = getEnv();
+
+    /// cache classLoader
+    auto plugin = env->FindClass("com/dartnative/dart_native/DartNativePlugin");
+    jclass pluginClass = env->GetObjectClass(plugin);
+    auto classLoaderClass = env->FindClass("java/lang/ClassLoader");
+    auto getClassLoaderMethod = env->GetMethodID(pluginClass, "getClassLoader",
+                                                 "()Ljava/lang/ClassLoader;");
+    auto classLoader = env->CallObjectMethod(plugin, getClassLoaderMethod);
+    gClassLoader = env->NewGlobalRef(classLoader);
+    gFindClassMethod = env->GetMethodID(classLoaderClass, "findClass",
+                                        "(Ljava/lang/String;)Ljava/lang/Class;");
+
+    jclass strCls = env->FindClass("java/lang/String");
+    gStrCls = static_cast<jclass>(env->NewGlobalRef(strCls));
+
+    env->DeleteLocalRef(classLoader);
+    env->DeleteLocalRef(plugin);
+    env->DeleteLocalRef(pluginClass);
+    env->DeleteLocalRef(classLoaderClass);
+    env->DeleteLocalRef(gStrCls);
     DNDebug("JNI_OnLoad finish");
     return JNI_VERSION_1_6;
   }
 
   void fillArgs(void **args, char **argTypes, jvalue *argValues, int argCount, uint32_t stringTypeBitmask)
   {
-    for (jsize index(0); index < argCount; ++args, ++index, ++argTypes) {
+    for (jsize index(0); index < argCount; ++args, ++index, ++argTypes)
+    {
       char *argType = *argTypes;
       /// check basic map convert
       auto it = basicTypeConvertMap.find(*argType);
 
-      if (it == basicTypeConvertMap.end()) {
+      if (it == basicTypeConvertMap.end())
+      {
         /// when argument type is string or stringTypeBitmask mark as string
         if (strcmp(argType, "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
         {
@@ -110,7 +126,9 @@ extern "C"
           jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
           argValues[index].l = object;
         }
-      } else {
+      }
+      else
+      {
         it->second(args, argValues, index);
       }
     }
@@ -151,33 +169,37 @@ extern "C"
 
   void *createTargetClass(char *targetClassName, void **args, char **argTypes, int argCount, uint32_t stringTypeBitmask)
   {
-    jclass cls = findClass(getEnv(), targetClassName);
+    JNIEnv *env = getEnv();
+    jclass cls = findClass(env, targetClassName);
+    jobject newObj = newObject(cls, args, argTypes, argCount, stringTypeBitmask);
+    jobject gObj = env->NewGlobalRef(newObj);
+    objectGlobalCache[gObj] = static_cast<jclass>(env->NewGlobalRef(cls));
 
-    jobject newObj = getEnv()->NewGlobalRef(newObject(cls, args, argTypes, argCount, stringTypeBitmask));
-    cache[newObj] = static_cast<jclass>(getEnv()->NewGlobalRef(cls));
-
-    return newObj;
+    env->DeleteLocalRef(newObj);
+    env->DeleteLocalRef(cls);
+    return gObj;
   }
 
-  void releaseTargetClass(void *classPtr)
+  void releaseTargetClass(void *objPtr)
   {
-    jobject object = static_cast<jobject>(classPtr);
-    getEnv()->DeleteGlobalRef(cache[object]);
-    cache.erase(object);
+    auto object = static_cast<jobject>(objPtr);
+    getEnv()->DeleteGlobalRef(objectGlobalCache[object]);
+    objectGlobalCache.erase(object);
     getEnv()->DeleteGlobalRef(object);
   }
 
-  void retain(void *classPtr)
+  void retain(void *objPtr)
   {
-    jobject object = static_cast<jobject>(classPtr);
-    int refCount = referenceCount[object] == NULL ? 1 : referenceCount[object] + 1;
+    auto object = static_cast<jobject>(objPtr);
+    auto it = referenceCount.find(object);
+    int refCount = it == referenceCount.end() ? 1 : referenceCount[object] + 1;
     referenceCount[object] = refCount;
   }
 
-  void release(void *classPtr)
+  void release(void *objPtr)
   {
-    jobject object = static_cast<jobject>(classPtr);
-    if (referenceCount[object] == NULL)
+    auto object = static_cast<jobject>(objPtr);
+    if (referenceCount.find(object) == referenceCount.end())
     {
       DNDebug("not contain object");
       return;
@@ -186,59 +208,63 @@ extern "C"
     if (count <= 1)
     {
       referenceCount.erase(object);
-      releaseTargetClass(classPtr);
+      releaseTargetClass(objPtr);
       return;
     }
     referenceCount[object] = count - 1;
   }
 
-  void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, int argCount, char *returnType, uint32_t stringTypeBitmask)
+  void *invokeNativeMethod(void *objPtr, char *methodName, void **args, char **argTypes, int argCount, char *returnType, uint32_t stringTypeBitmask)
   {
     void *nativeInvokeResult = nullptr;
     JNIEnv *env = getEnv();
 
-    jobject object = static_cast<jobject>(classPtr);
-    jclass cls = cache[object];
-    jvalue *argValues = new jvalue[argCount];
+    auto object = static_cast<jobject>(objPtr);
+    jclass cls = objectGlobalCache[object];
+
+    auto *argValues = new jvalue[argCount];
     if (argCount > 0)
     {
       fillArgs(args, argTypes, argValues, argCount, stringTypeBitmask);
     }
+
     char *methodSignature = generateSignature(argTypes, argCount, returnType);
     DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = getEnv()->GetMethodID(cls, methodName, methodSignature);
 
     auto it = methodCallerMap.find(*returnType);
-    if (it == methodCallerMap.end()) {
+    if (it == methodCallerMap.end())
+    {
       if (strcmp(returnType, "Ljava/lang/String;") == 0)
       {
         nativeInvokeResult = callNativeStringMethod(getEnv(), object, method, argValues);
       }
       else
       {
-        jclass strCl = getEnv()->FindClass("java/lang/String");
         jobject obj = getEnv()->CallObjectMethodA(object, method, argValues);
-        if (obj != nullptr && getEnv()->IsInstanceOf(obj, strCl))
+        if (obj != nullptr)
         {
-          *++argTypes = (char *) "1";
-          nativeInvokeResult = convertToDartUtf16(getEnv(), (jstring)obj);
-        }
-        else
-        {
-          jobject gObj = nullptr;
-          if (obj != nullptr)
+          if (getEnv()->IsInstanceOf(obj, gStrCls))
+          {
+            *++argTypes = (char *)"1";
+            nativeInvokeResult = convertToDartUtf16(getEnv(), (jstring)obj);
+          }
+          else
           {
             jclass objCls = getEnv()->GetObjectClass(obj);
-            gObj = getEnv()->NewGlobalRef(obj);
+            jobject gObj = getEnv()->NewGlobalRef(obj);
             //store class value
-            cache[gObj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+            objectGlobalCache[gObj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+            nativeInvokeResult = gObj;
+
             getEnv()->DeleteLocalRef(objCls);
+            getEnv()->DeleteLocalRef(obj);
           }
-          nativeInvokeResult = gObj;
         }
-        getEnv()->DeleteLocalRef(obj);
       }
-    } else {
+    }
+    else
+    {
       nativeInvokeResult = it->second(env, object, method, argValues);
     }
 

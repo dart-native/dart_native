@@ -48,7 +48,7 @@ final Pointer<Void> Function(
         Pointer<Pointer<Utf8>> typePtrs,
         int argCount,
         Pointer<Utf8> returnType,
-        int stringTypeBitmask) nativeInvokeNeo =
+        int stringTypeBitmask) nativeInvoke =
     nativeDylib
         ?.lookup<
             NativeFunction<
@@ -59,7 +59,7 @@ final Pointer<Void> Function(
                     Pointer<Pointer<Utf8>> typePtrs,
                     Int32 argCount,
                     Pointer<Utf8> returnType,
-                    Uint32 stringTypeBitmask)>>("invokeNativeMethodNeo")
+                    Uint32 stringTypeBitmask)>>("invokeNativeMethod")
         ?.asFunction();
 
 ///
