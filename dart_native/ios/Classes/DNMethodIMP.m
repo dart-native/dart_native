@@ -167,8 +167,8 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
             args[i + indexOffset] = temp;
         }
     }
-    
-    const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
+    int typesCount = 0;
+    const char **types = native_types_encoding(methodIMP.typeEncoding, &typesCount, 0);
     if (!types) {
         return;
     }
@@ -189,6 +189,11 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     } else {
         [invocation retainArguments];
         NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
+    }
+    for (int i = 0; i < typesCount; i++) {
+        if (*types[i] == '{') {
+            free((void *)types[i]);
+        }
     }
     free(types);
     retObjectAddr = (int64_t)*(void **)retAddr;

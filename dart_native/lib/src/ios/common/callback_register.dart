@@ -55,7 +55,7 @@ _callback(
     // types: ret, self, _cmd, args...
     Pointer<Utf8> argTypePtr = typesPtrPtr.elementAt(i + 3).value;
     Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
-    if (argTypePtr.encodingForStruct == null) {
+    if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
     dynamic arg = loadValueFromPointer(ptr, argTypePtr);

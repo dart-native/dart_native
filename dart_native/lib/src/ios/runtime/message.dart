@@ -86,8 +86,10 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
     cache[selector] = signaturePtr;
   }
-  nativeSignatureEncodingList(signaturePtr, typeEncodingsPtrPtr);
+  nativeSignatureEncodingList(
+      signaturePtr, typeEncodingsPtrPtr, decodeRetVal ? 1 : 0);
 
+  List<Pointer<Utf8>> structTypes = [];
   List<NSObjectRef> outRefArgs = [];
   int stringTypeBitmask = 0;
   Pointer<Pointer<Void>> pointers;
@@ -103,8 +105,10 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
       if (arg is String) {
         stringTypeBitmask |= (0x1 << i);
       }
-      Pointer<Utf8> argTypePtr =
-          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
+      Pointer<Utf8> argTypePtr = typeEncodingsPtrPtr.elementAt(i + 1).value;
+      if (argTypePtr.isStruct) {
+        structTypes.add(argTypePtr);
+      }
       storeValueToPointer(arg, pointers.elementAt(i), argTypePtr);
     }
   }
@@ -126,19 +130,23 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     free(pointers);
   }
 
+  dynamic result;
+
   if (callback == null) {
-    dynamic result = resultPtr;
+    result = resultPtr;
     if (decodeRetVal) {
-      Pointer<Utf8> resultTypePtr =
-          nativeTypeEncoding(typeEncodingsPtrPtr.value);
+      Pointer<Utf8> resultTypePtr = typeEncodingsPtrPtr.value;
       result = loadValueFromPointer(resultPtr, resultTypePtr);
+      if (resultTypePtr.isStruct) {
+        structTypes.add(resultTypePtr);
+      }
       outRefArgs.forEach((ref) => ref.syncValue());
     }
-    free(typeEncodingsPtrPtr);
-    return result;
-  } else {
-    free(typeEncodingsPtrPtr);
   }
+  // free struct type memory (malloc on native side)
+  structTypes.forEach(free);
+  free(typeEncodingsPtrPtr);
+  return result;
 }
 
 /// Send a message synchronously to [target], which should be an instance in iOS.

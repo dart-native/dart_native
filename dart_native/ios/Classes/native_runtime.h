@@ -22,7 +22,7 @@ DN_EXTERN NSMethodSignature * _Nullable
 native_method_signature(Class cls, SEL selector);
 
 DN_EXTERN void
-native_signature_encoding_list(NSMethodSignature *signature, const char * _Nonnull * _Nonnull typeEncodings);
+native_signature_encoding_list(NSMethodSignature *signature, const char * _Nonnull * _Nonnull typeEncodings, BOOL decodeRetVal);
 
 DN_EXTERN BOOL
 native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort);

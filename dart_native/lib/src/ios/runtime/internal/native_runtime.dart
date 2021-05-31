@@ -9,10 +9,10 @@ final MethodSignature nativeMethodSignature =
     runtimeLib.lookupFunction<MethodSignature, MethodSignature>(
         'native_method_signature');
 
-typedef SignatureEncodingListC = Void Function(
-    Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
-typedef SignatureEncodingListD = void Function(
-    Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
+typedef SignatureEncodingListC = Void Function(Pointer<Void> signature,
+    Pointer<Pointer<Utf8>> typeEncodings, Int64 decodeRetVal);
+typedef SignatureEncodingListD = void Function(Pointer<Void> signature,
+    Pointer<Pointer<Utf8>> typeEncodings, int decodeRetVal);
 final SignatureEncodingListD nativeSignatureEncodingList =
     runtimeLib.lookupFunction<SignatureEncodingListC, SignatureEncodingListD>(
         'native_signature_encoding_list');

@@ -32,15 +32,18 @@ native_method_signature(Class cls, SEL selector) {
 }
 
 void
-native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings) {
+native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings, BOOL decodeRetVal) {
     if (!signature || !typeEncodings) {
         return;
     }
     
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
-        *(typeEncodings + i - 1) = [signature getArgumentTypeAtIndex:i];
+        const char *type = [signature getArgumentTypeAtIndex:i];
+        *(typeEncodings + i - 1) = native_type_encoding(type);
     }
-    *typeEncodings = signature.methodReturnType;
+    if (decodeRetVal) {
+        *typeEncodings = native_type_encoding(signature.methodReturnType);
+    }
 }
 
 BOOL
@@ -281,6 +284,7 @@ native_all_type_encodings() {
 
 #define PTR(type) COND(type, typeList[16])
 
+// When returns struct encoding, it needs to be freed.
 const char *
 native_type_encoding(const char *str) {
     if (!str || strlen(str) == 0) {
@@ -329,7 +333,7 @@ native_type_encoding(const char *str) {
     return str;
 }
 
-// Returns type encodings whose need be freed.
+// Returns type encodings whose need to be freed.
 const char **
 native_types_encoding(const char *str, int *count, int startIndex) {
     int argCount = DNTypeCount(str) - startIndex;
@@ -365,6 +369,7 @@ native_types_encoding(const char *str, int *count, int startIndex) {
     return argTypes;
 }
 
+// Returns struct encoding which will be freed.
 const char *
 native_struct_encoding(const char *encoding) {
     NSUInteger size, align;
@@ -392,7 +397,12 @@ native_struct_encoding(const char *encoding) {
     }
     [structType appendString:@"}"];
     free(elements);
-    return structType.UTF8String;
+    // Malloc struct type, it will be freed on dart side.
+    const char *encodeSource = structType.UTF8String;
+    size_t typeLength = strlen(encodeSource) + 1;
+    char *typePtr = (char *)malloc(sizeof(char) * typeLength);
+    strlcpy(typePtr, encodeSource, typeLength);
+    return typePtr;
 }
 
 bool
