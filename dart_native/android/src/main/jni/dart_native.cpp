@@ -117,9 +117,9 @@ extern "C"
     for (jsize index(0); index < argCount; ++args, ++index, ++argTypes) {
       char *argType = *argTypes;
       /// check basic map convert
-      auto it = typeConvertMap.find(*argType);
+      auto it = basicTypeConvertMap.find(*argType);
 
-      if (it == typeConvertMap.end()) {
+      if (it == basicTypeConvertMap.end()) {
         /// when argument type is string or stringTypeBitmask mark as string
         if (strcmp(argType, "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
         {
