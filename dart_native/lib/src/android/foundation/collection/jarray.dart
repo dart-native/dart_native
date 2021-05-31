@@ -7,7 +7,6 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 const String CLS_ARRAY_OBJECT = "java/lang/Object";
 
 class JArray extends JSubclass<List> {
-  
   String get arraySignature => _arraySignature;
   String _arraySignature = "[Ljava/lang/Object;";
 
@@ -19,21 +18,27 @@ class JArray extends JSubclass<List> {
     }
   }
 
-  JArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_ARRAY_OBJECT) {
-    JObject converter = JObject("com/dartnative/dart_native/ArrayListConverter");
-    raw = JList.fromPointer(converter.invoke("arrayToList", [JObject("java/lang/Object", pointer: ptr)], "Ljava/util/List;")).raw;
+  JArray.fromPointer(Pointer<Void> ptr)
+      : super.fromPointer(ptr, CLS_ARRAY_OBJECT) {
+    JObject converter =
+        JObject("com/dartnative/dart_native/ArrayListConverter");
+    raw = JList.fromPointer(converter.invoke("arrayToList",
+            [JObject("java/lang/Object", pointer: ptr)], "Ljava/util/List;"))
+        .raw;
   }
 }
 
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is List) {
-    JObject converter = JObject("com/dartnative/dart_native/ArrayListConverter");
+    JObject converter =
+        JObject("com/dartnative/dart_native/ArrayListConverter");
     JList list = JList(value);
     ArrayType type = ArrayType("object", "[Ljava/lang/Object;");
     if ((value?.length ?? 0) > 0) {
       type = _getValueType(value[0]);
     }
-    return converter.invoke("${type.arrayType}ListToArray", [list], "${type.arraySignature}");
+    return converter.invoke(
+        "${type.arrayType}ListToArray", [list], "${type.arraySignature}");
   } else {
     throw 'Invalid param when initializing JArray.';
   }

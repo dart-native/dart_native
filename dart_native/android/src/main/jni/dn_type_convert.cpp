@@ -35,6 +35,5 @@ uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString)
   utf16Str[strLength + 2] = '\0';
 
   env->ReleaseStringChars(nativeString, jc);
-  env->DeleteLocalRef(nativeString);
   return utf16Str;
 }

@@ -17,6 +17,7 @@ extern "C"
   static jobject gClassLoader;
   static jmethodID gFindClassMethod;
   static pthread_key_t detachKey = 0;
+  static jclass strCls;
 
   typedef void (*NativeMethodCallback)(
       void *targetPtr,
@@ -83,7 +84,7 @@ extern "C"
     gClassLoader = getEnv()->NewGlobalRef(getEnv()->CallObjectMethod(randomClass, getClassLoaderMethod));
     gFindClassMethod = getEnv()->GetMethodID(classLoaderClass, "findClass",
                                              "(Ljava/lang/String;)Ljava/lang/Class;");
-
+    strCls = getEnv()->FindClass("java/lang/String");
     DNDebug("JNI_OnLoad finish");
     return JNI_VERSION_1_6;
   }
@@ -111,14 +112,14 @@ extern "C"
     return spliceChar(signature, const_cast<char *>(")"));
   }
 
-  void fillArgs(void **args, char **argTypes, jvalue *argValues, int argCount)
+  void fillArgs(void **args, char **argTypes, jvalue *argValues, int argCount, uint32_t stringTypeBitmask)
   {
     for (jsize index(0); index < argCount; ++args, ++index, ++argTypes)
     {
       char *argType = *argTypes;
       if (strlen(argType) > 1)
       {
-        if (strcmp(argType, "Ljava/lang/String;") == 0)
+        if (strcmp(argType, "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
         {
           argValues[index].l = convertToJavaUtf16(getEnv(), *args);
         }
@@ -182,13 +183,13 @@ extern "C"
     return nativeClass;
   }
 
-  jobject newObject(jclass cls, void **args, char **argTypes, int argCount)
+  jobject newObject(jclass cls, void **args, char **argTypes, int argCount, uint32_t stringTypeBitmask)
   {
     char *signature = generateSignature(argTypes, argCount);
     jvalue *argValues = new jvalue[argCount];
     if (argCount > 0)
     {
-      fillArgs(args, argTypes, argValues, argCount);
+      fillArgs(args, argTypes, argValues, argCount, stringTypeBitmask);
     }
     char *constructorSig = spliceChar(signature, const_cast<char *>("V"));
     jmethodID constructor = getEnv()->GetMethodID(cls, "<init>", constructorSig);
@@ -198,11 +199,11 @@ extern "C"
     return newObj;
   }
 
-  void *createTargetClass(char *targetClassName, void **args, char **argTypes, int argCount)
+  void *createTargetClass(char *targetClassName, void **args, char **argTypes, int argCount, uint32_t stringTypeBitmask)
   {
     jclass cls = findClass(getEnv(), targetClassName);
 
-    jobject newObj = getEnv()->NewGlobalRef(newObject(cls, args, argTypes, argCount));
+    jobject newObj = getEnv()->NewGlobalRef(newObject(cls, args, argTypes, argCount, stringTypeBitmask));
     cache[newObj] = static_cast<jclass>(getEnv()->NewGlobalRef(cls));
 
     return newObj;
@@ -241,7 +242,7 @@ extern "C"
     referenceCount[object] = count - 1;
   }
 
-  void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, int argCount, char *returnType)
+  void *invokeNativeMethodNeo(void *classPtr, char *methodName, void **args, char **argTypes, int argCount, char *returnType, uint32_t stringTypeBitmask)
   {
     void *nativeInvokeResult = nullptr;
 
@@ -251,7 +252,7 @@ extern "C"
     jvalue *argValues = new jvalue[argCount];
     if (argCount > 0)
     {
-      fillArgs(args, argTypes, argValues, argCount);
+      fillArgs(args, argTypes, argValues, argCount, stringTypeBitmask);
     }
     char *methodSignature = spliceChar(signature, returnType);
     DNDebug("call method %s %s", methodName, methodSignature);
@@ -266,14 +267,27 @@ extern "C"
       }
       else
       {
-        jobject obj = getEnv()->NewGlobalRef(getEnv()->CallObjectMethodA(object, method, argValues));
-        if (obj != nullptr)
+        jclass strCl = getEnv()->FindClass("java/lang/String");
+        jobject obj = getEnv()->CallObjectMethodA(object, method, argValues);
+        if (obj != nullptr && getEnv()->IsInstanceOf(obj, strCl))
         {
-          jclass objCls = getEnv()->GetObjectClass(obj);
-          //store class value
-          cache[obj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+          *++argTypes = (char *)"1";
+          nativeInvokeResult = convertToDartUtf16(getEnv(), (jstring)obj);
         }
-        nativeInvokeResult = obj;
+        else
+        {
+          jobject gObj = nullptr;
+          if (obj != nullptr)
+          {
+            jclass objCls = getEnv()->GetObjectClass(obj);
+            gObj = getEnv()->NewGlobalRef(obj);
+            //store class value
+            cache[gObj] = static_cast<jclass>(getEnv()->NewGlobalRef(objCls));
+            getEnv()->DeleteLocalRef(objCls);
+          }
+          nativeInvokeResult = gObj;
+        }
+        getEnv()->DeleteLocalRef(obj);
       }
     }
     else if (strcmp(returnType, "C") == 0)

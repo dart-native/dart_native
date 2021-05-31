@@ -180,13 +180,13 @@ public class RuntimeStub {
         return backSet;
     }
 
-    public Map getMap(HashMap<Integer, Integer> map) {
-        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+    public Map getMap(HashMap<String, Integer> map) {
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
             Log.d(TAG, "Key = " + entry.getKey() + ", Value = " + entry.getValue());
         }
-        HashMap<Integer, Float> backMap = new HashMap<>();
-        backMap.put(1, 1.0f);
-        backMap.put(2, 2.0f);
+        HashMap<String, Float> backMap = new HashMap<>();
+        backMap.put("1", 1.0f);
+        backMap.put("2", 2.0f);
         return backMap;
     }
 }

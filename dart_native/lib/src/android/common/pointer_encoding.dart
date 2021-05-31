@@ -24,100 +24,131 @@ enum ValueType {
 }
 
 Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
-  ValueType.char : Utf8.toUtf8("C"),
-  ValueType.int : Utf8.toUtf8("I"),
-  ValueType.double : Utf8.toUtf8("D"),
-  ValueType.float : Utf8.toUtf8("F"),
-  ValueType.byte : Utf8.toUtf8("B"),
-  ValueType.short : Utf8.toUtf8("S"),
-  ValueType.long : Utf8.toUtf8("J"),
-  ValueType.bool : Utf8.toUtf8("Z"),
-  ValueType.string : Utf8.toUtf8("Ljava/lang/String;")
+  ValueType.char: Utf8.toUtf8("C"),
+  ValueType.int: Utf8.toUtf8("I"),
+  ValueType.double: Utf8.toUtf8("D"),
+  ValueType.float: Utf8.toUtf8("F"),
+  ValueType.byte: Utf8.toUtf8("B"),
+  ValueType.short: Utf8.toUtf8("S"),
+  ValueType.long: Utf8.toUtf8("J"),
+  ValueType.bool: Utf8.toUtf8("Z"),
+  ValueType.string: Utf8.toUtf8("Ljava/lang/String;")
 };
 
-dynamic storeValueToPointer(
-    dynamic object, Pointer<Pointer<Void>> ptr, [Pointer<Pointer<Utf8>> typePtr, Pointer<Utf8> argSignature]) {
+dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
+    {Pointer<Pointer<Utf8>> typePtr, Pointer<Utf8> argSignature}) {
   if (object == null) {
     return;
   }
 
-  if(object is byte) {
+  if (object is byte) {
     ptr.cast<Int32>().value = object.raw;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.byte];
+    typePtr?.value =
+        argSignature != null ? argSignature : _pointerForEncode[ValueType.byte];
     return;
   }
 
-  if(object is short) {
+  if (object is short) {
     ptr.cast<Int16>().value = object.raw;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.short];
+    typePtr?.value = argSignature != null
+        ? argSignature
+        : _pointerForEncode[ValueType.short];
     return;
   }
 
-  if(object is long) {
+  if (object is long) {
     ptr.cast<Int64>().value = object.raw;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.long];
+    typePtr?.value =
+        argSignature != null ? argSignature : _pointerForEncode[ValueType.long];
     return;
   }
 
-  if(object is int) {
+  if (object is int) {
     ptr.cast<Int32>().value = object;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.int];
+    typePtr?.value =
+        argSignature != null ? argSignature : _pointerForEncode[ValueType.int];
     return;
   }
 
-  if(object is bool) {
+  if (object is bool) {
     ptr.cast<Int32>().value = object ? 1 : 0;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.bool];
+    typePtr?.value =
+        argSignature != null ? argSignature : _pointerForEncode[ValueType.bool];
     return;
   }
 
-  if(object is float) {
+  if (object is float) {
     ptr.cast<Float>().value = object.raw;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.float];
+    typePtr?.value = argSignature != null
+        ? argSignature
+        : _pointerForEncode[ValueType.float];
     return;
   }
 
-  if(object is double) {
+  if (object is double) {
     ptr.cast<Double>().value = object;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.double];
+    typePtr?.value = argSignature != null
+        ? argSignature
+        : _pointerForEncode[ValueType.double];
     return;
   }
 
-  if(object is char) {
+  if (object is char) {
     ptr.cast<Uint16>().value = object.raw;
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.char];
+    typePtr?.value =
+        argSignature != null ? argSignature : _pointerForEncode[ValueType.char];
     return;
   }
 
-  if(object is String) {
+  if (object is String) {
     ptr.cast<Pointer<Uint16>>().value = toUtf16(object);
-    typePtr?.value = argSignature != null ? argSignature : _pointerForEncode[ValueType.string];
+    typePtr?.value = argSignature != null
+        ? argSignature
+        : _pointerForEncode[ValueType.string];
     return;
   }
 
-  if(object is JArray) {
+  if (object is JArray) {
     ptr.value = object.pointer;
-    typePtr?.value = argSignature != null ? argSignature : Utf8.toUtf8(object.arraySignature);
+    typePtr?.value = argSignature != null
+        ? argSignature
+        : Utf8.toUtf8(object.arraySignature);
     return;
   }
 
-  if(object is JClass) {
-    if(object is JObject) {
+  if (object is JClass) {
+    if (object is JObject) {
       ptr.value = object.pointer;
-      typePtr?.value = argSignature != null ? argSignature : Utf8.toUtf8("L" + object.className + ";");
+      typePtr?.value = argSignature != null
+          ? argSignature
+          : Utf8.toUtf8("L" + object.className + ";");
     }
+    return;
+  }
+
+  if (object is Pointer) {
+    ptr.value = object.cast();
+    typePtr?.value = argSignature != null
+        ? argSignature
+        : Utf8.toUtf8("UNKNOWN_NATIVE_TYPE");
     return;
   }
 }
 
-dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
+dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
+    {Pointer<Pointer<Utf8>> typePtr}) {
   dynamic result;
   if (returnType == "V") {
     return;
   }
+
+  if (Utf8.fromUtf8(typePtr.value) == "1") {
+    return fromUtf16(ptr);
+  }
+
   ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
   ByteData data = ByteData.view(buffer);
-  switch(returnType) {
+  switch (returnType) {
     case "B":
       result = data.getInt8(0);
       break;
@@ -174,8 +205,8 @@ String fromUtf16(Pointer<Void> uint16Ptr) {
   for (int i = 0; i < 2; i++) {
     length += uint16Ptr.cast<Uint16>().elementAt(i).value;
   }
-  Uint16List list = uint16Ptr.cast<Uint16>().asTypedList(length + 2);
+  Uint16List list = uint16Ptr.cast<Uint16>().asTypedList(length + 3);
   free(uint16Ptr);
-  return String.fromCharCodes(list.sublist(2));
+  final codes = String.fromCharCodes(list.sublist(2, length + 2));
+  return codes;
 }
-

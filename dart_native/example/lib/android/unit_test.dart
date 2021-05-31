@@ -121,12 +121,12 @@ testAndroid(RuntimeStub stub) {
   //   print("fSet $setF");
   // }
   //
-  // Map map = stub.getMap({1: 10, 2: 20, 3: 30});
-  // map.forEach((key, value) {
-  //   print("map from native $key : $value");
-  // });
+  Map map = stub.getMap({"1": 10, "2": 20, "3": 30});
+  map.forEach((key, value) {
+    print("map from native $key : $value");
+  });
 
-  List list = stub.getStringList(["test啊", "emoji🤣"]);
+  List list = stub.getStringList(["test啊 emoji🤣", "emoji🤣"]);
   for (var item in list) {
     print("item $item");
   }

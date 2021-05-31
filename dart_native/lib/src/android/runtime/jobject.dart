@@ -1,7 +1,8 @@
 import 'dart:ffi';
-import 'package:dart_native/src/android/runtime/functions.dart';
-import 'package:dart_native/src/android/common/pointer_encoding.dart';
+
 import 'package:dart_native/src/android/common/library.dart';
+import 'package:dart_native/src/android/common/pointer_encoding.dart';
+import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:ffi/ffi.dart';
 
 import 'jclass.dart';
@@ -18,7 +19,8 @@ class JObject extends JClass {
   Pointer _ptr;
 
   //init target class
-  JObject(String className, {Pointer pointer, bool isInterface = false}) : super(className) {
+  JObject(String className, {Pointer pointer, bool isInterface = false})
+      : super(className) {
     if (isInterface) {
       Pointer<Int64> hashPointer = allocate();
       hashPointer.value = identityHashCode(this);
@@ -28,7 +30,7 @@ class JObject extends JClass {
 
     if (pointer == null) {
       Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-      pointer = nativeCreateClass(classNamePtr, nullptr, nullptr, 0);
+      pointer = nativeCreateClass(classNamePtr, nullptr, nullptr, 0, 0);
       free(classNamePtr);
     }
 
@@ -37,13 +39,17 @@ class JObject extends JClass {
   }
 
   JObject.parameterConstructor(String clsName, List args) : super(clsName) {
-    ArgumentsPointers pointers = _parseArguments(args);
+    NativeArguments nativeArguments = _parseNativeArguments(args);
     Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
     _ptr = nativeCreateClass(
-        classNamePtr, pointers.pointers, pointers.typePointers, args?.length ?? 0);
+        classNamePtr,
+        nativeArguments.pointers,
+        nativeArguments.typePointers,
+        args?.length ?? 0,
+        nativeArguments.stringTypeBitmask);
     free(classNamePtr);
     passJObjectToNative(this);
-    pointers.freePointers();
+    nativeArguments.freePointers();
   }
 
   Pointer get pointer {
@@ -55,12 +61,21 @@ class JObject extends JClass {
     Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
     Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
 
-    ArgumentsPointers pointers = _parseArguments(args, argsSignature: argsSignature);
-    Pointer<Void> invokeMethodRet = nativeInvokeNeo(_ptr, methodNamePtr,
-        pointers.pointers, pointers.typePointers, args?.length ?? 0, returnTypePtr);
+    NativeArguments nativeArguments =
+        _parseNativeArguments(args, argsSignature: argsSignature);
+    Pointer<Void> invokeMethodRet = nativeInvokeNeo(
+        _ptr,
+        methodNamePtr,
+        nativeArguments.pointers,
+        nativeArguments.typePointers,
+        args?.length ?? 0,
+        returnTypePtr,
+        nativeArguments.stringTypeBitmask);
 
-    dynamic result = loadValueFromPointer(invokeMethodRet, returnType);
-    pointers.freePointers();
+    dynamic result = loadValueFromPointer(invokeMethodRet, returnType,
+        typePtr: nativeArguments.typePointers.elementAt(args?.length ?? 0));
+
+    nativeArguments.freePointers();
     free(methodNamePtr);
     free(returnTypePtr);
     return result;
@@ -74,41 +89,46 @@ class JObject extends JClass {
     return 1;
   }
 
-  ArgumentsPointers _parseArguments(List args, {List argsSignature}) {
-    Pointer<Pointer<Void>> pointers = nullptr;
-    Pointer<Pointer<Utf8>> typePointers = nullptr;
+  NativeArguments _parseNativeArguments(List args, {List argsSignature}) {
+    Pointer<Pointer<Void>> pointers = nullptr.cast();
+
+    /// extend a bit for string
+    Pointer<Pointer<Utf8>> typePointers =
+        allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
+    int stringTypeBitmask = 0;
     if (args != null) {
       pointers = allocate<Pointer<Void>>(count: args.length);
-      typePointers = allocate<Pointer<Utf8>>(count: args.length);
+
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (arg == null) {
           throw 'One of args list is null';
         }
+
         Pointer<Utf8> argSignature =
             argsSignature == null || !(argsSignature[i] is Pointer<Utf8>)
                 ? null
                 : argsSignature[i];
+
+        if (arg is String) {
+          stringTypeBitmask |= (0x1 << i);
+        }
+
         storeValueToPointer(arg, pointers.elementAt(i),
-            typePointers.elementAt(i), argSignature);
+            typePtr: typePointers.elementAt(i), argSignature: argSignature);
       }
     }
-    if (pointers == nullptr) {
-      pointers = nullptr.cast();
-    }
-
-    if (typePointers == nullptr) {
-      typePointers = nullptr.cast();
-    }
-    return ArgumentsPointers(pointers, typePointers);
+    typePointers.elementAt(args?.length ?? 0).value = Utf8.toUtf8("0");
+    return NativeArguments(pointers, typePointers, stringTypeBitmask);
   }
 }
 
-class ArgumentsPointers {
-  Pointer<Pointer<Void>> pointers;
-  Pointer<Pointer<Utf8>> typePointers;
+class NativeArguments {
+  final Pointer<Pointer<Void>> pointers;
+  final Pointer<Pointer<Utf8>> typePointers;
+  int stringTypeBitmask;
 
-  ArgumentsPointers(this.pointers, this.typePointers);
+  NativeArguments(this.pointers, this.typePointers, this.stringTypeBitmask);
 
   void freePointers() {
     free(pointers);

@@ -18,7 +18,8 @@ final Pointer<Void> Function(
         Pointer<Utf8> clsName,
         Pointer<Pointer<Void>> argsPtrs,
         Pointer<Pointer<Utf8>> typePtrs,
-        int argCount) nativeCreateClass =
+        int argCount,
+        int stringTypeBitmask) nativeCreateClass =
     nativeDylib
         ?.lookup<
             NativeFunction<
@@ -26,7 +27,8 @@ final Pointer<Void> Function(
                     Pointer<Utf8> clsName,
                     Pointer<Pointer<Void>> argsPtrs,
                     Pointer<Pointer<Utf8>> typePtrs,
-                    Int32 argCount)>>("createTargetClass")
+                    Int32 argCount,
+                    Uint32 stringTypeBitmask)>>("createTargetClass")
         ?.asFunction();
 
 /// 调用native方法
@@ -45,7 +47,8 @@ final Pointer<Void> Function(
         Pointer<Pointer<Void>> argsPtrs,
         Pointer<Pointer<Utf8>> typePtrs,
         int argCount,
-        Pointer<Utf8> returnType) nativeInvokeNeo =
+        Pointer<Utf8> returnType,
+        int stringTypeBitmask) nativeInvokeNeo =
     nativeDylib
         ?.lookup<
             NativeFunction<
@@ -55,7 +58,8 @@ final Pointer<Void> Function(
                     Pointer<Pointer<Void>> argsPtrs,
                     Pointer<Pointer<Utf8>> typePtrs,
                     Int32 argCount,
-                    Pointer<Utf8> returnType)>>("invokeNativeMethodNeo")
+                    Pointer<Utf8> returnType,
+                    Uint32 stringTypeBitmask)>>("invokeNativeMethodNeo")
         ?.asFunction();
 
 ///
@@ -82,24 +86,3 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
                     Int64 dartPort)>>("registerNativeCallback")
         ?.asFunction();
 
-///
-/// convert dart string to java string with utf16
-///
-final Pointer<Void> Function(Pointer<Uint16>, int) dartStringToJavaString =
-    nativeDylib
-        ?.lookup<
-            NativeFunction<
-                Pointer<Void> Function(Pointer<Uint16> utf16String,
-                    Int64 length)>>("dartStringToJavaString")
-        ?.asFunction();
-
-///
-/// convert java string to dart string with utf16
-///
-final Pointer<Void> Function(Pointer<Void>, Pointer<Uint64>)
-    javaStringToDartString = nativeDylib
-        ?.lookup<
-            NativeFunction<
-                Pointer<Void> Function(Pointer<Void> utf16String,
-                    Pointer<Uint64> length)>>("javaStringToDartString")
-        ?.asFunction();
