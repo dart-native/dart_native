@@ -114,55 +114,25 @@ extern "C"
 
   void fillArgs(void **args, char **argTypes, jvalue *argValues, int argCount, uint32_t stringTypeBitmask)
   {
-    for (jsize index(0); index < argCount; ++args, ++index, ++argTypes)
-    {
+    for (jsize index(0); index < argCount; ++args, ++index, ++argTypes) {
       char *argType = *argTypes;
-      if (strlen(argType) > 1)
-      {
+      /// check basic map convert
+      auto it = typeConvertMap.find(*argType);
+
+      if (it == typeConvertMap.end()) {
+        /// when argument type is string or stringTypeBitmask mark as string
         if (strcmp(argType, "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
         {
-          argValues[index].l = convertToJavaUtf16(getEnv(), *args);
+          convertToJavaUtf16(getEnv(), *args, argValues, index);
         }
         else
         {
+          /// convert from object cache
           jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
           argValues[index].l = object;
         }
-      }
-      else if (strcmp(argType, "C") == 0)
-      {
-        argValues[index].c = (jchar) * (char *)args;
-      }
-      else if (strcmp(argType, "I") == 0)
-      {
-        argValues[index].i = (jint) * ((int *)args);
-      }
-      else if (strcmp(argType, "D") == 0)
-      {
-        argValues[index].d = (jdouble) * ((double *)args);
-      }
-      else if (strcmp(argType, "F") == 0)
-      {
-        argValues[index].f = (jfloat) * ((float *)args);
-      }
-      else if (strcmp(argType, "B") == 0)
-      {
-        argValues[index].b = (jbyte) * ((int8_t *)args);
-      }
-      else if (strcmp(argType, "S") == 0)
-      {
-        argValues[index].s = (jshort) * ((int16_t *)args);
-      }
-      else if (strcmp(argType, "J") == 0)
-      {
-        argValues[index].j = (jlong) * ((int64_t *)args);
-      }
-      else if (strcmp(argType, "Z") == 0)
-      {
-        argValues[index].z = static_cast<jboolean>(*((int *)args));
-      }
-      else if (strcmp(argType, "V") == 0)
-      {
+      } else {
+        it->second(args, argValues, index);
       }
     }
   }

@@ -6,7 +6,7 @@
 #include "dn_type_convert.h"
 #include "dn_log.h"
 
-jstring convertToJavaUtf16(JNIEnv *env, void *value)
+jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index)
 {
   uint16_t *utf16 = (uint16_t *)value;
 
@@ -16,7 +16,52 @@ jstring convertToJavaUtf16(JNIEnv *env, void *value)
 
   jstring nativeString = env->NewString(utf16, length);
   free(value);
+
+  if (argValue != nullptr)
+  {
+    argValue[index].l = nativeString;
+  }
   return nativeString;
+}
+
+void convertToJChar(void *value, jvalue *argValue, int index)
+{
+  argValue[index].c = (jchar) * (char *)value;
+}
+
+void convertToJInt(void *value, jvalue *argValue, int index)
+{
+  argValue[index].i = (jint) * (int *)value;
+}
+
+void convertToJDouble(void *value, jvalue *argValue, int index)
+{
+  argValue[index].d = (jdouble) * (double *)value;
+}
+
+void convertToJFloat(void *value, jvalue *argValue, int index)
+{
+  argValue[index].f = (jfloat) * (float *)value;
+}
+
+void convertToJByte(void *value, jvalue *argValue, int index)
+{
+  argValue[index].b = (jbyte) * (int8_t *)value;
+}
+
+void convertToJShort(void *value, jvalue *argValue, int index)
+{
+  argValue[index].s = (jshort) * (int16_t *)value;
+}
+
+void convertToJLong(void *value, jvalue *argValue, int index)
+{
+  argValue[index].j = (jlong) * (long *)value;
+}
+
+void convertToJBoolean(void *value, jvalue *argValue, int index)
+{
+  argValue[index].z = static_cast<jboolean>(*((int *)value));
 }
 
 uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString)
