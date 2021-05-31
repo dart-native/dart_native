@@ -7,7 +7,6 @@ import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/gcd.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
-import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
@@ -21,7 +20,8 @@ Pointer<Void> _sendMsgToNative(
   Pointer<Pointer<Void>> args,
   DispatchQueue queue,
   Pointer<Void> callbackPtr,
-  Pointer<Int64> stringTypeBitmaskPtr,
+  int stringTypeBitmask,
+  Pointer<Pointer<Utf8>> retType,
 ) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr.cast();
@@ -36,7 +36,7 @@ Pointer<Void> _sendMsgToNative(
     callbackPtr = nullptr.cast();
   }
   result = nativeInvokeMethod(target, selector, signature, queuePtr, args,
-      callbackPtr, nativePort, stringTypeBitmaskPtr);
+      callbackPtr, nativePort, stringTypeBitmask, retType);
   return result;
 }
 
@@ -87,8 +87,10 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
     cache[selector] = signaturePtr;
   }
-  nativeSignatureEncodingList(signaturePtr, typeEncodingsPtrPtr);
+  nativeSignatureEncodingList(
+      signaturePtr, typeEncodingsPtrPtr, decodeRetVal ? 1 : 0);
 
+  List<Pointer<Utf8>> structTypes = [];
   List<NSObjectRef> outRefArgs = [];
   int stringTypeBitmask = decodeRetVal ? 1 << 63 : 0;
   Pointer<Pointer<Void>> pointers;
@@ -102,10 +104,12 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
         outRefArgs.add(arg);
       }
       if (arg is String) {
-        stringTypeBitmask |= (0x1 << (i + 1));
+        stringTypeBitmask |= (0x1 << i);
       }
-      Pointer<Utf8> argTypePtr =
-          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
+      Pointer<Utf8> argTypePtr = typeEncodingsPtrPtr.elementAt(i + 1).value;
+      if (argTypePtr.isStruct) {
+        structTypes.add(argTypePtr);
+      }
       storeValueToPointer(arg, pointers.elementAt(i), argTypePtr);
     }
   }
@@ -121,32 +125,36 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
   }
 
-  sharedBitmaskPtr.value = stringTypeBitmask;
   Pointer<Void> resultPtr = _sendMsgToNative(target, selectorPtr, signaturePtr,
-      pointers, onQueue, callbackPtr, sharedBitmaskPtr);
+      pointers, onQueue, callbackPtr, stringTypeBitmask, typeEncodingsPtrPtr);
   if (pointers != null) {
     free(pointers);
   }
 
+  dynamic result;
+
   if (callback == null) {
-    dynamic result = resultPtr;
+    result = resultPtr;
     // need decode return value
     if (decodeRetVal) {
+      Pointer<Utf8> resultTypePtr = typeEncodingsPtrPtr.value;
       // return value is a String.
-      if (sharedBitmaskPtr.value & 0x1 == 1) {
+      if (resultTypePtr.isString) {
         result = loadStringFromPointer(resultPtr);
       } else {
-        Pointer<Utf8> resultTypePtr =
-            nativeTypeEncoding(typeEncodingsPtrPtr.value);
         result = loadValueFromPointer(resultPtr, resultTypePtr);
+      }
+
+      if (resultTypePtr.isStruct) {
+        structTypes.add(resultTypePtr);
       }
       outRefArgs.forEach((ref) => ref.syncValue());
     }
-    free(typeEncodingsPtrPtr);
-    return result;
-  } else {
-    free(typeEncodingsPtrPtr);
   }
+  // free struct type memory (malloc on native side)
+  structTypes.forEach(free);
+  free(typeEncodingsPtrPtr);
+  return result;
 }
 
 /// Send a message synchronously to [target], which should be an instance in iOS.

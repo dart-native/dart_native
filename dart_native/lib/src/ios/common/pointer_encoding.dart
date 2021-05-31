@@ -30,14 +30,23 @@ extension TypeEncodings on Pointer<Utf8> {
   static final Pointer<Utf8> v = _typeEncodings.elementAt(15).value;
   static final Pointer<Utf8> pointer = _typeEncodings.elementAt(16).value;
   static final Pointer<Utf8> b = _typeEncodings.elementAt(17).value;
+  static final Pointer<Utf8> string = _typeEncodings.elementAt(18).value;
 
   // Return encoding only if type is struct.
   String get encodingForStruct {
-    String result = Utf8.fromUtf8(this);
-    if (result.startsWith('{')) {
-      return result;
+    if (isStruct) {
+      return Utf8.fromUtf8(this);
     }
     return null;
+  }
+
+  bool get isStruct {
+    // ascii for '{' is 123.
+    return cast<Uint8>().value == 123;
+  }
+
+  bool get isString {
+    return this == TypeEncodings.string;
   }
 
   bool get isNum {
@@ -169,7 +178,7 @@ dynamic storeValueToPointer(
   } else if (object is Pointer && encoding.maybeCString) {
     Pointer<Void> tempPtr = object.cast<Void>();
     ptr.value = tempPtr;
-  } else if (encoding.encodingForStruct != null) {
+  } else if (encoding.isStruct) {
     // ptr is struct pointer
     return storeStructToPointer(ptr, object);
   } else {
@@ -262,6 +271,9 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
     Pointer<Utf8> temp = ptr.cast();
     return Utf8.fromUtf8(temp);
   },
+  // TypeEncodings.pointer: (Pointer<Void> ptr) {
+  //   return ptr;
+  // },
   TypeEncodings.v: (Pointer<Void> ptr) {
     return;
   },
@@ -290,13 +302,12 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
       if (ptr == nullptr) {
         return null;
       }
-      // built-in struct.
-      String structEncoding = encoding.encodingForStruct;
-      if (structEncoding == null) {
-        result = ptr;
+      // built-in struct, [ptr] is struct pointer.
+      var struct = loadStructFromPointer(ptr, encoding.encodingForStruct);
+      if (struct != null) {
+        result = struct;
       } else {
-        // ptr is struct pointer
-        result = loadStructFromPointer(ptr, structEncoding);
+        result = ptr;
       }
     }
   }
@@ -333,9 +344,12 @@ String loadStringFromPointer(Pointer<Void> ptr) {
 }
 
 NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {
-  NativeStruct result;
+  if (encoding == null) {
+    return null;
+  }
   String structName = structNameForEncoding(encoding);
   if (structName != null) {
+    NativeStruct result;
     // struct
     switch (structName) {
       case 'CGSize':
@@ -367,8 +381,11 @@ NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {
         break;
       default:
     }
+    if (result != null) {
+      return result..wrapper;
+    }
   }
-  return result..wrapper;
+  return null;
 }
 
 Map<String, String> _nativeTypeNameMap = {

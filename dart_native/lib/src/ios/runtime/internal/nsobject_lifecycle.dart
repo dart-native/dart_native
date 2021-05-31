@@ -32,9 +32,7 @@ void _dealloc(Pointer<Void> ptr) {
     _finalizerMap.remove(ptr);
   }
   if (isolateDeadObject.finalizer == null) {
-    isolateDeadObject.finalizer = () {
-      free(sharedBitmaskPtr);
-    };
+    isolateDeadObject.finalizer = () {};
   }
 }
 
@@ -60,7 +58,6 @@ removeFinalizerForObject(NSObject obj) {
 Pointer<NativeFunction<Void Function(Pointer<Void>)>> nativeObjectDeallocPtr =
     Pointer.fromFunction(_dealloc);
 
-final Pointer<Int64> sharedBitmaskPtr = allocate<Int64>();
 final Fuck isolateDeadObject = Fuck();
 
 class Fuck extends NSObject {

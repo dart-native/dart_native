@@ -62,9 +62,9 @@ static int64_t fuxk;
     if (self) {
         _host = host;
         _hostAddress = (int64_t)host;
-        if ([host isKindOfClass:NSClassFromString(@"Fuck")]) {
-            fuxk = _hostAddress;
-        }
+//        if ([host isKindOfClass:NSClassFromString(@"Fuck")]) {
+//            fuxk = _hostAddress;
+//        }
         _dartPort = dartPort;
         objc_setAssociatedObject(host, _cmd, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
@@ -72,9 +72,9 @@ static int64_t fuxk;
 }
 
 - (void)dealloc {
-    if (_hostAddress == fuxk) {
-        
-    }
+//    if (_hostAddress == fuxk) {
+//        
+//    }
     NotifyDeallocToDart(_hostAddress, _dartPort);
 }
 
