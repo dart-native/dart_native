@@ -16,6 +16,8 @@ extern "C"
 
   typedef void (*NativeMethodCallback)(void *targetPtr, char *funNamePtr, void **args, char **argTypes, int argCount);
 
+  typedef std::function<void()> Work;
+
   void doRegisterNativeCallback(void *dartObject, jobject nativeProxyObject, char *funName, void *callback, Dart_Port dartPort);
 
   jobject getNativeCallbackProxyObject(void *dartObject);

@@ -1,12 +1,8 @@
 #include <jni.h>
-#include <stdint.h>
-#include <string.h>
-#include <malloc.h>
 #include <map>
 #include <string>
 #include <regex>
 #include <dart_api_dl.h>
-#include <semaphore.h>
 #include "dn_type_convert.h"
 #include "dn_log.h"
 #include "dn_method_call.h"
@@ -54,7 +50,7 @@ extern "C"
       return env;
     case JNI_EDETACHED:
       DNDebug("attach to current thread");
-      gJvm->AttachCurrentThread(&env, NULL);
+      gJvm->AttachCurrentThread(&env, nullptr);
       return env;
     default:
       DNDebug("fail to get env");
@@ -87,7 +83,7 @@ extern "C"
     env->DeleteLocalRef(plugin);
     env->DeleteLocalRef(pluginClass);
     env->DeleteLocalRef(classLoaderClass);
-    env->DeleteLocalRef(gStrCls);
+    env->DeleteLocalRef(strCls);
     DNDebug("JNI_OnLoad finish");
     return JNI_VERSION_1_6;
   }
@@ -140,7 +136,7 @@ extern "C"
 
   jobject newObject(jclass cls, void **args, char **argTypes, int argCount, uint32_t stringTypeBitmask)
   {
-    jvalue *argValues = new jvalue[argCount];
+    auto *argValues = new jvalue[argCount];
     if (argCount > 0)
     {
       fillArgs(args, argTypes, argValues, argCount, stringTypeBitmask);
@@ -306,161 +302,10 @@ extern "C"
     Dart_NewWeakPersistentHandle_DL(h, classPtr, size, RunFinalizer);
   }
 
-  typedef std::function<void()> Work;
-
-  bool NotifyDart(Dart_Port send_port, const Work *work)
-  {
-    const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
-
-    Dart_CObject dart_object;
-    dart_object.type = Dart_CObject_kInt64;
-    dart_object.value.as_int64 = work_addr;
-
-    const bool result = Dart_PostCObject_DL(send_port, &dart_object);
-    if (!result)
-    {
-      DNDebug("Native callback to Dart failed! Invalid port or isolate died");
-    }
-    return result;
-  }
-
   void ExecuteCallback(Work *work_ptr)
   {
     const Work work = *work_ptr;
     work();
     delete work_ptr;
-  }
-
-  JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
-                                                                                                    jclass clazz,
-                                                                                                    jlong dartObject,
-                                                                                                    jstring fun_name,
-                                                                                                    jint arg_count,
-                                                                                                    jobjectArray arg_types,
-                                                                                                    jobjectArray args,
-                                                                                                    jstring return_type)
-  {
-    Dart_Port port = getCallbackDartPort(dartObject);
-    if (port == 0)
-    {
-      DNDebug("not register dart port!");
-      return NULL;
-    }
-
-    char *funName = (char *)env->GetStringUTFChars(fun_name, 0);
-    jsize argTypeLength = env->GetArrayLength(arg_types);
-    char **argTypes = new char *[argTypeLength + 1];
-    void **arguments = new void *[argTypeLength];
-    for (int i = 0; i < argTypeLength; ++i)
-    {
-      jstring argTypeString = (jstring)env->GetObjectArrayElement(arg_types, i);
-      jobject argument = env->GetObjectArrayElement(args, i);
-
-      argTypes[i] = (char *)env->GetStringUTFChars(argTypeString, 0);
-      env->DeleteLocalRef(argTypeString);
-      //todo optimization
-      if (strcmp(argTypes[i], "I") == 0)
-      {
-        jclass cls = env->FindClass("java/lang/Integer");
-        if (env->IsInstanceOf(argument, cls) == JNI_TRUE)
-        {
-          jmethodID integerToInt = env->GetMethodID(cls, "intValue", "()I");
-          jint result = env->CallIntMethod(argument, integerToInt);
-          arguments[i] = (void *)result;
-        }
-        env->DeleteLocalRef(cls);
-      }
-      else if (strcmp(argTypes[i], "F") == 0)
-      {
-        jclass cls = env->FindClass("java/lang/Float");
-        if (env->IsInstanceOf(argument, cls) == JNI_TRUE)
-        {
-          jmethodID toJfloat = env->GetMethodID(cls, "floatValue", "()F");
-          jfloat result = env->CallFloatMethod(argument, toJfloat);
-          float templeFloat = (float)result;
-          memcpy(&arguments[i], &templeFloat, sizeof(float));
-        }
-        env->DeleteLocalRef(cls);
-      }
-      else if (strcmp(argTypes[i], "D") == 0)
-      {
-        jclass cls = env->FindClass("java/lang/Double");
-        if (env->IsInstanceOf(argument, cls) == JNI_TRUE)
-        {
-          jmethodID toJfloat = env->GetMethodID(cls, "doubleValue", "()D");
-          jdouble result = env->CallDoubleMethod(argument, toJfloat);
-          double templeDouble = (double)result;
-          memcpy(&arguments[i], &templeDouble, sizeof(double));
-        }
-        env->DeleteLocalRef(cls);
-      }
-      else if (strcmp(argTypes[i], "Ljava/lang/String;") == 0)
-      {
-        jstring argString = (jstring)argument;
-        arguments[i] = argString == nullptr ? (char *)""
-                                            : (char *)env->GetStringUTFChars(argString, 0);
-        env->DeleteLocalRef(argString);
-      }
-    }
-
-    /// when return void, jstring which from native is null.
-    char *returnType = return_type == nullptr ? nullptr
-                                              : (char *)env->GetStringUTFChars(return_type, 0);
-
-    argTypes[argTypeLength] = returnType;
-
-    sem_t sem;
-    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
-
-    const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess]() {
-      NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
-      void *target = getDartObject(dartObject);
-      if (methodCallback != NULL && target != nullptr)
-      {
-        methodCallback(target, funName, arguments, argTypes, arg_count);
-      }
-      if (isSemInitSuccess)
-      {
-        sem_post(&sem);
-      }
-    };
-
-    const Work *work_ptr = new Work(work);
-    bool notifyResult = NotifyDart(port, work_ptr);
-
-    jobject callbackResult = NULL;
-    if (isSemInitSuccess)
-    {
-      DNDebug("wait work execute");
-      sem_wait(&sem);
-      //todo optimization
-      if (returnType == nullptr)
-      {
-        DNDebug("void");
-      }
-      else if (strcmp(returnType, "Ljava/lang/String;") == 0)
-      {
-        callbackResult = env->NewStringUTF(arguments[0] == nullptr ? (char *)""
-                                                                   : (char *)arguments[0]);
-      }
-      else if (strcmp(returnType, "Z") == 0)
-      {
-        jclass booleanClass = env->FindClass("java/lang/Boolean");
-        jmethodID methodID = env->GetMethodID(booleanClass, "<init>", "(Z)V");
-        callbackResult = env->NewObject(booleanClass,
-                                        methodID,
-                                        notifyResult ? static_cast<jboolean>(*((int *)arguments))
-                                                     : JNI_FALSE);
-        env->DeleteLocalRef(booleanClass);
-      }
-      sem_destroy(&sem);
-    }
-
-    free(returnType);
-    free(funName);
-    free(arguments);
-    free(argTypes);
-
-    return callbackResult;
   }
 }
