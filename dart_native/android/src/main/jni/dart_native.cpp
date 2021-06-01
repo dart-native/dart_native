@@ -418,7 +418,7 @@ extern "C"
       if (notifyResult)
       {
         sem_wait(&sem);
-        if (strcmp(returnType, "Ljava/lang/String;") == 0)
+        if (strcmp(returnType, "java.lang.String") == 0)
         {
           callbackResult = convertToJavaUtf16(env, (char *)arguments[argumentCount], nullptr, 0);
         }
