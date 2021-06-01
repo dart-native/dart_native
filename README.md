@@ -59,6 +59,8 @@ typedef int(^BarBlock)(NSObject *a);
 @end
 ```
 
+More ios example see: [ios_unit_test.dart](/dart_native/example/lib/ios/unit_test.dart)
+
 ##### Android:
 
 Dart code:
@@ -90,7 +92,7 @@ public class RuntimeStub {
     }
 }
 ```
-More Android example see: [unit_test.dart](/dart_native/example/lib/android/unit_test.dart)
+More android example see: [android_unit_test.dart](/dart_native/example/lib/android/unit_test.dart)
 ## 📚 Document
 
 ### Readme
