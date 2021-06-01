@@ -27,6 +27,8 @@ This is the blue part(DartNative Bridge) in the picture below:
 
 ## 🔮 Getting Started
 
+##### iOS:
+
 Dart code:
 
 ```dart
@@ -57,6 +59,38 @@ typedef int(^BarBlock)(NSObject *a);
 @end
 ```
 
+##### Android:
+
+Dart code:
+```dart
+// new Java object.
+RuntimeStub stub = RuntimeStub();
+
+// get java list.
+List list = stub.getList([1, 2, 3, 4]);
+
+// support interface.
+stub.setDelegateListener(DelegateStub());
+
+```
+Java code:
+
+```java
+public class RuntimeStub {
+
+    public List<Integer> getList(List<Integer> list) {
+        List<Integer> returnList = new ArrayList<>();
+        returnList.add(1);
+        returnList.add(2);
+        return returnList;
+     }
+
+    public void setDelegateListener(SampleDelegate delegate) {
+         delegate.callbackInt(1);
+    }
+}
+```
+More Android example see: [unit_test.dart](/dart_native/example/lib/android/unit_test.dart)
 ## 📚 Document
 
 ### Readme
