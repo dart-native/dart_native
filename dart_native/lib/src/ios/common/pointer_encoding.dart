@@ -30,6 +30,7 @@ extension TypeEncodings on Pointer<Utf8> {
   static final Pointer<Utf8> v = _typeEncodings.elementAt(15).value;
   static final Pointer<Utf8> pointer = _typeEncodings.elementAt(16).value;
   static final Pointer<Utf8> b = _typeEncodings.elementAt(17).value;
+  static final Pointer<Utf8> string = _typeEncodings.elementAt(18).value;
 
   // Return encoding only if type is struct.
   String get encodingForStruct {
@@ -42,6 +43,10 @@ extension TypeEncodings on Pointer<Utf8> {
   bool get isStruct {
     // ascii for '{' is 123.
     return cast<Uint8>().value == 123;
+  }
+
+  bool get isString {
+    return this == TypeEncodings.string;
   }
 
   bool get isNum {
@@ -319,6 +324,23 @@ String structNameForEncoding(String encoding) {
     return result;
   }
   return null;
+}
+
+String loadStringFromPointer(Pointer<Void> ptr) {
+  final dataPtr = ptr.cast<Int16>();
+  // get data length
+  const lengthDataSize = 4;
+  final lengthData = dataPtr.asTypedList(lengthDataSize);
+  int length = lengthData[0] << 48 |
+      lengthData[1] << 32 |
+      lengthData[2] << 16 |
+      lengthData[3];
+  // get utf16 data
+  Int16List data = dataPtr.elementAt(lengthDataSize).asTypedList(length);
+  String result = String.fromCharCodes(data);
+  // malloc dataPtr on native side, shoule free the memory.
+  free(dataPtr);
+  return result;
 }
 
 NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {

@@ -21,6 +21,7 @@ Pointer<Void> _sendMsgToNative(
   DispatchQueue queue,
   Pointer<Void> callbackPtr,
   int stringTypeBitmask,
+  Pointer<Pointer<Utf8>> retType,
 ) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr.cast();
@@ -35,7 +36,7 @@ Pointer<Void> _sendMsgToNative(
     callbackPtr = nullptr.cast();
   }
   result = nativeInvokeMethod(target, selector, signature, queuePtr, args,
-      callbackPtr, nativePort, stringTypeBitmask);
+      callbackPtr, nativePort, stringTypeBitmask, retType);
   return result;
 }
 
@@ -91,7 +92,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
 
   List<Pointer<Utf8>> structTypes = [];
   List<NSObjectRef> outRefArgs = [];
-  int stringTypeBitmask = 0;
+  int stringTypeBitmask = decodeRetVal ? 1 << 63 : 0;
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
     pointers = allocate<Pointer<Void>>(count: argCount);
@@ -125,7 +126,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
   }
 
   Pointer<Void> resultPtr = _sendMsgToNative(target, selectorPtr, signaturePtr,
-      pointers, onQueue, callbackPtr, stringTypeBitmask);
+      pointers, onQueue, callbackPtr, stringTypeBitmask, typeEncodingsPtrPtr);
   if (pointers != null) {
     free(pointers);
   }
@@ -134,9 +135,16 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
 
   if (callback == null) {
     result = resultPtr;
+    // need decode return value
     if (decodeRetVal) {
       Pointer<Utf8> resultTypePtr = typeEncodingsPtrPtr.value;
-      result = loadValueFromPointer(resultPtr, resultTypePtr);
+      // return value is a String.
+      if (resultTypePtr.isString) {
+        result = loadStringFromPointer(resultPtr);
+      } else {
+        result = loadValueFromPointer(resultPtr, resultTypePtr);
+      }
+
       if (resultTypePtr.isStruct) {
         structTypes.add(resultTypePtr);
       }

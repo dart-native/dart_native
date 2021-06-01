@@ -157,16 +157,24 @@ class Block extends id {
         storeValueToPointer(arg, argsPtrPtr.elementAt(i), argTypePtr);
       }
     }
-    Pointer<Void> resultPtr =
-        blockInvoke(pointer, argsPtrPtr, nativePort, stringTypeBitmask);
+
+    Pointer<Void> resultPtr = blockInvoke(
+        pointer, argsPtrPtr, nativePort, stringTypeBitmask, typesPtrPtr);
     if (argsPtrPtr != nullptr.cast()) {
       free(argsPtrPtr);
     }
-    var retTypePtr = typesPtrPtr.elementAt(0).value;
+
+    var retTypePtr = typesPtrPtr.value;
     if (retTypePtr.isStruct) {
       structTypes.add(retTypePtr);
     }
-    dynamic result = loadValueFromPointer(resultPtr, retTypePtr);
+    // return value is a String.
+    dynamic result;
+    if (retTypePtr.isString) {
+      result = loadStringFromPointer(resultPtr);
+    } else {
+      result = loadValueFromPointer(resultPtr, retTypePtr);
+    }
     // free struct type memory (malloc on native side)
     structTypes.forEach(free);
     return result;
@@ -199,7 +207,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
       arg = boxingObjCBasicValue(dartType, arg);
-      arg = convertFromPointer(dartType, arg);
+      arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);
   }

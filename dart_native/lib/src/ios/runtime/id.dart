@@ -80,8 +80,7 @@ class id implements NSObjectProtocol {
 
   /// Returns a string that describes the contents of the receiver.
   String get description {
-    NSObject result = perform(SEL('description'));
-    return NSString.fromPointer(result.pointer).raw;
+    return perform(SEL('description'));
   }
 
   /// Returns a string that describes the contents of the receiver for

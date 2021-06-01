@@ -1,33 +1,27 @@
 import 'dart:ffi';
 
-import 'package:dart_native/src/ios/common/callback_manager.dart';
-import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/internal/block_lifecycle.dart';
-import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 
 final id nil = id(nullptr);
 
-void passObjectToNative(NSObject obj) {
-  // Ignore null and nil
-  if (obj == null || obj == nil) {
-    return;
-  }
-
-  if (initDartAPISuccess && obj.isa != null) {
-    passObjectToC(obj, obj.pointer);
-  } else {
-    print('pass object to native failed! address=${obj.pointer}');
-  }
-}
+typedef void Finalizer();
 
 /// Stands for `NSObject` in iOS.
 ///
 /// The root class of most Objective-C class hierarchies, from which subclasses inherit a basic interface to the runtime system and the ability to behave as Objective-C objects.
 class NSObject extends id {
+  Finalizer _finalizer;
+  Finalizer get finalizer => _finalizer;
+  set finalizer(Finalizer f) {
+    removeFinalizerForObject(this);
+    _finalizer = f;
+    addFinalizerForObject(this);
+  }
+
   NSObject([Class isa]) : super(_new(isa)) {
     passObjectToNative(this);
   }
@@ -93,7 +87,7 @@ void registerTypeConvertor(String type, ConvertorFromPointer convertor) {
   }
 }
 
-dynamic convertFromPointer(String type, dynamic arg) {
+dynamic objcInstanceFromPointer(String type, dynamic arg) {
   Pointer<Void> ptr;
   if (arg is NSObject) {
     ptr = arg.pointer;
@@ -117,13 +111,3 @@ dynamic convertFromPointer(String type, dynamic arg) {
 }
 
 Map<String, ConvertorFromPointer> _convertorCache = {};
-
-void _dealloc(Pointer<Void> ptr) {
-  if (ptr != nullptr) {
-    CallbackManager.shared.clearAllCallbackOnTarget(ptr);
-    removeBlockOnSequence(ptr.address);
-  }
-}
-
-Pointer<NativeFunction<Void Function(Pointer<Void>)>> nativeObjectDeallocPtr =
-    Pointer.fromFunction(_dealloc);

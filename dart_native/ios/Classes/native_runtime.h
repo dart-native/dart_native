@@ -42,8 +42,9 @@ native_get_class(const char *className, Class superclass);
 /// @param args arguments passed to method.
 /// @param dartPort port for dart isolate.
 /// @param stringTypeBitmask bitmask for checking if an argument is a string.
+/// @param retType type of return value.
 DN_EXTERN void * _Nullable
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask);
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask, const char *_Nonnull *_Nonnull retType);
 
 DN_EXTERN void *
 native_block_create(char *types, void *callback, Dart_Port dartPort);

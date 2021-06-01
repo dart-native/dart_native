@@ -13,15 +13,15 @@ class NSSet extends NSSubclass<Set> {
   }
 
   NSSet.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    List elements = allObjects.raw;
+    List elements = allObjects;
     raw = elements.toSet();
   }
 
   int get count => perform(SEL('count'));
 
-  NSArray get allObjects {
-    NSObject result = perform(SEL('allObjects'));
-    return NSArray.fromPointer(result.pointer);
+  List get allObjects {
+    Pointer<Void> ptr = perform(SEL('allObjects'), decodeRetVal: false);
+    return NSArray.fromPointer(ptr).raw;
   }
 }
 
