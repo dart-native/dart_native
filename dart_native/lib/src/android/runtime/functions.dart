@@ -19,7 +19,7 @@ final Pointer<Void> Function(
         Pointer<Pointer<Void>> argsPtrs,
         Pointer<Pointer<Utf8>> typePtrs,
         int argCount,
-        int stringTypeBitmask) nativeCreateClass =
+        int stringTypeBitmask) nativeCreateObject =
     nativeDylib
         ?.lookup<
             NativeFunction<
@@ -28,7 +28,7 @@ final Pointer<Void> Function(
                     Pointer<Pointer<Void>> argsPtrs,
                     Pointer<Pointer<Utf8>> typePtrs,
                     Int32 argCount,
-                    Uint32 stringTypeBitmask)>>("createTargetClass")
+                    Uint32 stringTypeBitmask)>>("createTargetObject")
         ?.asFunction();
 
 /// 调用native方法

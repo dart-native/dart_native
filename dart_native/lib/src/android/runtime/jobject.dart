@@ -30,7 +30,7 @@ class JObject extends JClass {
 
     if (pointer == null) {
       Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-      pointer = nativeCreateClass(classNamePtr, nullptr, nullptr, 0, 0);
+      pointer = nativeCreateObject(classNamePtr, nullptr, nullptr, 0, 0);
       free(classNamePtr);
     }
 
@@ -41,7 +41,7 @@ class JObject extends JClass {
   JObject.parameterConstructor(String clsName, List args) : super(clsName) {
     NativeArguments nativeArguments = _parseNativeArguments(args);
     Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-    _ptr = nativeCreateClass(
+    _ptr = nativeCreateObject(
         classNamePtr,
         nativeArguments.pointers,
         nativeArguments.typePointers,
