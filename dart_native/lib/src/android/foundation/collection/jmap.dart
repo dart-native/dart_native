@@ -18,14 +18,18 @@ class JMap extends JSubclass<Map> {
     Set keySet = JSet.fromPointer(invoke("keySet", [], "Ljava/util/Set;")).raw;
     Map temp = {};
     String itemType = "";
-    print("map key set ${keySet.toString()}");
     for (var key in keySet) {
-      Pointer<Void> itemPtr = invoke("get", [boxingWrapperClass(key)],
-          "Ljava/lang/Object;", [_argSignature]);
+      dynamic item = invoke(
+          "get", [boxingWrapperClass(key)], "Ljava/lang/Object;",
+          argsSignature: [_argSignature]);
       if (itemType == "") {
-        itemType = _getItemClass(itemPtr);
+        if (item is String) {
+          itemType = "java.lang.String";
+        } else {
+          itemType = _getItemClass(item);
+        }
       }
-      temp[key] = unBoxingWrapperClass(itemPtr, itemType);
+      temp[key] = unBoxingWrapperClass(item, itemType);
     }
     raw = temp;
   }
@@ -47,7 +51,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
           "put",
           [boxingWrapperClass(key), boxingWrapperClass(value)],
           "Ljava/lang/Object;",
-          [_argSignature, _argSignature]);
+          argsSignature: [_argSignature, _argSignature]);
     });
     return nativeMap.pointer;
   } else {

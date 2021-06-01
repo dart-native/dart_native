@@ -40,15 +40,25 @@ _callback(
   for (var i = 0; i < argCount; i++) {
     Pointer<Utf8> argTypePtr = argTypesPtrPtr.elementAt(i).value;
     Pointer<Void> argPtr = argsPtrPtr.elementAt(i).value;
-    dynamic arg =
-        loadValueFromPointer(argPtr, Utf8.fromUtf8(argTypePtr.cast()));
+    final String argType = Utf8.fromUtf8(argTypePtr.cast());
+    dynamic arg = argType == "java.lang.String"
+                  ? fromUtf16(argPtr)
+                  : unBoxingWrapperClass(argPtr, argType);
     args.add(arg);
   }
 
   dynamic result = Function.apply(function, args);
 
   if (result != null) {
-    storeValueToPointer(result, argsPtrPtr.elementAt(0));
+    if (result is String) {
+      argsPtrPtr.elementAt(argCount).value = toUtf16(result).cast();
+      return;
+    }
+
+    dynamic wrapperResult = boxingWrapperClass(result);
+    argsPtrPtr.elementAt(argCount).value = wrapperResult is JObject
+                                            ? wrapperResult.pointer
+                                            : wrapperResult;
   }
 }
 

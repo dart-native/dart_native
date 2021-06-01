@@ -49,11 +49,12 @@ public class RuntimeStub {
 
     public boolean getBool(boolean b) {
         Log.d(TAG, "getBool : " + b);
-        return false;
+        return true;
     }
 
     public String getString(String s) {
-        return "test success";
+    //    Log.d(TAG, "getString : " + s);
+       return "This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖";
     }
 
     public int add(int a, int b) {
@@ -81,6 +82,7 @@ public class RuntimeStub {
     public void setDelegateListener(SampleDelegate delegate) {
         Log.d(TAG, "invoke setDelegateListener");
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            Log.d(TAG, "callback result ");
             boolean isSuccess = delegate.callbackComplex(20, 100.0, "wwawawawawa");
             Log.d(TAG, "callback result " + isSuccess);
         }, 2000);
@@ -179,13 +181,13 @@ public class RuntimeStub {
         return backSet;
     }
 
-    public Map getMap(HashMap<Integer, Integer> map) {
-        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+    public Map getMap(HashMap<String, Integer> map) {
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
             Log.d(TAG, "Key = " + entry.getKey() + ", Value = " + entry.getValue());
         }
-        HashMap<Integer, Float> backMap = new HashMap<>();
-        backMap.put(1, 1.0f);
-        backMap.put(2, 2.0f);
+        HashMap<String, Float> backMap = new HashMap<>();
+        backMap.put("1", 1.0f);
+        backMap.put("2", 2.0f);
         return backMap;
     }
 }
