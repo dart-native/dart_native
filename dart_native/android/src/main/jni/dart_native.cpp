@@ -169,7 +169,7 @@ extern "C"
   }
 
   /// invoke native method
-  void *invokeNativeMethod(void *objPtr, char *methodName, void **args, char **argTypes, int argCount, char *returnType, uint32_t stringTypeBitmask)
+  void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments, char **dataTypes, int argumentCount, char *returnType, uint32_t stringTypeBitmask)
   {
     void *nativeInvokeResult = nullptr;
     JNIEnv *env = _getEnv();
@@ -177,13 +177,13 @@ extern "C"
     auto object = static_cast<jobject>(objPtr);
     jclass cls = objectGlobalCache[object];
 
-    auto *argValues = new jvalue[argCount];
-    if (argCount > 0)
+    auto *argValues = new jvalue[argumentCount];
+    if (argumentCount > 0)
     {
-      _fillArgs(args, argTypes, argValues, argCount, stringTypeBitmask);
+      _fillArgs(arguments, dataTypes, argValues, argumentCount, stringTypeBitmask);
     }
 
-    char *methodSignature = generateSignature(argTypes, argCount, returnType);
+    char *methodSignature = generateSignature(dataTypes, argumentCount, returnType);
     DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
 
@@ -201,7 +201,9 @@ extern "C"
         {
           if (env->IsInstanceOf(obj, gStrCls))
           {
-            *++argTypes = (char *)"1";
+            /// mark the last pointer as string
+            /// dart will check this pointer
+            *++dataTypes = (char *) "java/lang/String";
             nativeInvokeResult = convertToDartUtf16(env, (jstring)obj);
           }
           else
