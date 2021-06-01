@@ -1,12 +1,13 @@
 //
 // Created by Hui on 5/27/21.
 //
+#ifndef DART_NATIVE_DN_TYPE_CONVERT_H
+#define DART_NATIVE_DN_TYPE_CONVERT_H
+
 #include <stdint.h>
 #include <jni.h>
 #include <map>
 
-#ifndef DART_NATIVE_DN_TYPE_CONVERT_H
-#define DART_NATIVE_DN_TYPE_CONVERT_H
 #ifdef __cplusplus
 extern "C"
 {

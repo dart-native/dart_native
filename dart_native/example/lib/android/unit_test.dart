@@ -2,6 +2,7 @@ import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
 import 'package:dart_native/dart_native.dart';
+import 'package:flutter/services.dart';
 
 testAndroid(RuntimeStub stub) {
   int ms = currentTimeMillis();

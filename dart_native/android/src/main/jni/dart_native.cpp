@@ -11,6 +11,7 @@
 #include "dn_log.h"
 #include "dn_method_call.h"
 #include "dn_signature_helper.h"
+#include "dn_callback.h"
 
 extern "C"
 {
@@ -23,22 +24,8 @@ extern "C"
   /// for invoke result compare
   static jclass gStrCls;
 
-  typedef void (*NativeMethodCallback)(
-      void *targetPtr,
-      char *funNamePtr,
-      void **args,
-      char **argTypes,
-      int argCount);
-
   static std::map<jobject, jclass> objectGlobalCache;
   static std::map<jobject, int> referenceCount;
-
-  // todo too many cache
-  // for callback
-  static std::map<void *, jobject> callbackObjCache;
-  static std::map<jlong, std::map<std::string, NativeMethodCallback> > callbackManagerCache;
-  static std::map<jlong, void *> targetCache;
-  static std::map<jlong, int64_t> dartPortCache;
 
   void detachThreadDestructor(void *arg)
   {
@@ -123,8 +110,9 @@ extern "C"
         else
         {
           /// convert from object cache
-          jobject object = callbackObjCache.count(*args) ? callbackObjCache[*args] : static_cast<jobject>(*args);
-          argValues[index].l = object;
+          /// check callback cache, if true using proxy object
+          jobject object = getNativeCallbackProxyObject(*args);
+          argValues[index].l = object == nullptr ? static_cast<jobject>(*args) : object;
         }
       }
       else
@@ -273,48 +261,23 @@ extern "C"
     return nativeInvokeResult;
   }
 
-  void registerCallbackManager(jlong targetAddr, char *functionName, void *callback)
+  void registerNativeCallback(void *dartObject, char *clsName, char *funName, void *callback, Dart_Port dartPort)
   {
-    std::map<std::string, NativeMethodCallback> methodsMap;
-    if (!callbackManagerCache.count(targetAddr))
-    {
-      methodsMap[functionName] = (NativeMethodCallback)callback;
-      callbackManagerCache[targetAddr] = methodsMap;
-      return;
-    }
+    JNIEnv *env = getEnv();
+    jclass callbackManager = findClass(env, "com/dartnative/dart_native/CallbackManager");
+    jmethodID registerCallback = env->GetStaticMethodID(callbackManager,
+                                                  "registerCallback",
+                                                    "(JLjava/lang/String;)Ljava/lang/Object;");
 
-    methodsMap = callbackManagerCache[targetAddr];
-    methodsMap[functionName] = (NativeMethodCallback)callback;
-    callbackManagerCache[targetAddr] = methodsMap;
-  }
+    auto dartObjectAddress = (jlong) dartObject;
+    jobject proxyObject = env->CallStaticObjectMethod(callbackManager,
+                                                      registerCallback,
+                                                      dartObjectAddress, env->NewStringUTF(clsName));
+    jobject gProxyObj = env->NewGlobalRef(proxyObject);
 
-  NativeMethodCallback getCallbackMethod(jlong targetAddr, char *functionName)
-  {
-    if (!callbackManagerCache.count(targetAddr))
-    {
-      DNDebug("getCallbackMethod error not register %s", functionName);
-      return NULL;
-    }
-    std::map<std::string, NativeMethodCallback> methodsMap = callbackManagerCache[targetAddr];
-    return methodsMap[functionName];
-  }
-
-  void registerNativeCallback(void *target, char *targetName, char *funName, void *callback, Dart_Port dartPort)
-  {
-    jclass callbackManager = findClass(getEnv(), "com/dartnative/dart_native/CallbackManager");
-    jmethodID registerCallback = getEnv()->GetStaticMethodID(callbackManager, "registerCallback", "(JLjava/lang/String;)Ljava/lang/Object;");
-    jlong targetAddr = (jlong)target;
-    jvalue *argValues = new jvalue[2];
-    argValues[0].j = targetAddr;
-    argValues[1].l = getEnv()->NewStringUTF(targetName);
-    jobject callbackOJ = getEnv()->NewGlobalRef(getEnv()->CallStaticObjectMethodA(callbackManager, registerCallback, argValues));
-    callbackObjCache[target] = callbackOJ;
-    targetCache[targetAddr] = target;
-    dartPortCache[targetAddr] = dartPort;
-
-    registerCallbackManager(targetAddr, funName, callback);
-    getEnv()->DeleteLocalRef(callbackManager);
-    free(argValues);
+    doRegisterNativeCallback(dartObject, gProxyObj, funName, callback, dartPort);
+    env->DeleteLocalRef(callbackManager);
+    env->DeleteLocalRef(proxyObject);
   }
 
   // Dart extensions
@@ -377,7 +340,8 @@ extern "C"
                                                                                                     jobjectArray args,
                                                                                                     jstring return_type)
   {
-    if (!dartPortCache.count(dartObject))
+    Dart_Port port = getCallbackDartPort(dartObject);
+    if (port == 0)
     {
       DNDebug("not register dart port!");
       return NULL;
@@ -450,7 +414,7 @@ extern "C"
 
     const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess]() {
       NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
-      void *target = targetCache[dartObject];
+      void *target = getDartObject(dartObject);
       if (methodCallback != NULL && target != nullptr)
       {
         methodCallback(target, funName, arguments, argTypes, arg_count);
@@ -462,7 +426,7 @@ extern "C"
     };
 
     const Work *work_ptr = new Work(work);
-    bool notifyResult = NotifyDart(dartPortCache[dartObject], work_ptr);
+    bool notifyResult = NotifyDart(port, work_ptr);
 
     jobject callbackResult = NULL;
     if (isSemInitSuccess)

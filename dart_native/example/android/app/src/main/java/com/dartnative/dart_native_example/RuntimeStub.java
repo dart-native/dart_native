@@ -82,6 +82,7 @@ public class RuntimeStub {
     public void setDelegateListener(SampleDelegate delegate) {
         Log.d(TAG, "invoke setDelegateListener");
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            Log.d(TAG, "callback result ");
             boolean isSuccess = delegate.callbackComplex(20, 100.0, "wwawawawawa");
             Log.d(TAG, "callback result " + isSuccess);
         }, 2000);

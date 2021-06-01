@@ -1,13 +1,14 @@
 //
 // Created by Hui on 5/31/21.
 //
+#ifndef DART_NATIVE_DN_METHOD_CALL_H
+#define DART_NATIVE_DN_METHOD_CALL_H
+
 #include <stdint.h>
 #include <jni.h>
 #include <map>
 #include <string>
 
-#ifndef DART_NATIVE_DN_METHOD_CALL_H
-#define DART_NATIVE_DN_METHOD_CALL_H
 #ifdef __cplusplus
 extern "C"
 {
