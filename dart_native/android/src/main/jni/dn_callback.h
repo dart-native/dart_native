@@ -15,7 +15,6 @@ extern "C"
 #endif
 
   typedef void (*NativeMethodCallback)(void *targetPtr, char *funNamePtr, void **args, char **argTypes, int argCount);
-//  static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackManagerCache;
 
   void doRegisterNativeCallback(void *dartObject, jobject nativeProxyObject, char *funName, void *callback, Dart_Port dartPort);
 
@@ -25,7 +24,7 @@ extern "C"
 
   void *getDartObject(jlong dartObjectAddress);
 
-  NativeMethodCallback getCallbackMethod(jlong targetAddr, char *functionName);
+  NativeMethodCallback getCallbackMethod(jlong dartObjectAddress, char *functionName);
 
 #ifdef __cplusplus
 }

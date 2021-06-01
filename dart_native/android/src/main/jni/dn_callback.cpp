@@ -8,38 +8,23 @@
 static std::map<jlong, void *> targetCache;
 static std::map<jlong, int64_t> dartPortCache;
 static std::map<void *, jobject> callbackObjCache;
-static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackManagerCache;
+static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackFunctionCache;
 
-//void registerCallbackManager(jlong dartObjectAddress, char *functionName, void *callback)
-//{
-////  std::map<std::string, NativeMethodCallback> functionMap;
-////
-////  if (callbackManagerCache.find(dartObjectAddress) == callbackManagerCache.end())
-////  {
-////    DNDebug("callbackManagerCache not contain %d", dartObjectAddress);
-////    functionMap[functionName] = (NativeMethodCallback) callback;
-////    callbackManagerCache[dartObjectAddress] = functionMap;
-////    return;
-////  }
-////
-////  functionMap = callbackManagerCache[dartObjectAddress];
-////  functionMap[functionName] = (NativeMethodCallback) callback;
-////  callbackManagerCache[dartObjectAddress] = functionMap;
-//}
-
-void registerCallbackManager(jlong targetAddr, char *functionName, void *callback)
+void registerCallbackManager(jlong dartObjectAddress, char *functionName, void *callback)
 {
-  std::map<std::string, NativeMethodCallback> methodsMap;
-  if (!callbackManagerCache.count(targetAddr))
+  std::map<std::string, NativeMethodCallback> functionMap;
+
+  if (callbackFunctionCache.find(dartObjectAddress) == callbackFunctionCache.end())
   {
-    methodsMap[functionName] = (NativeMethodCallback)callback;
-    callbackManagerCache[targetAddr] = methodsMap;
+    DNInfo("registerCallbackManager: callbackFunctionCache not contain this dart object %d", dartObjectAddress);
+    functionMap[functionName] = (NativeMethodCallback) callback;
+    callbackFunctionCache[dartObjectAddress] = functionMap;
     return;
   }
 
-  methodsMap = callbackManagerCache[targetAddr];
-  methodsMap[functionName] = (NativeMethodCallback)callback;
-  callbackManagerCache[targetAddr] = methodsMap;
+  functionMap = callbackFunctionCache[dartObjectAddress];
+  functionMap[functionName] = (NativeMethodCallback) callback;
+  callbackFunctionCache[dartObjectAddress] = functionMap;
 }
 
 void doRegisterNativeCallback(void *dartObject, jobject nativeProxyObject, char *funName, void *callback, Dart_Port dartPort)
@@ -56,6 +41,7 @@ jobject getNativeCallbackProxyObject(void *dartObject)
 {
   if (callbackObjCache.find(dartObject) == callbackObjCache.end())
   {
+    DNInfo("getNativeCallbackProxyObject: not contain this dart object");
     return nullptr;
   }
 
@@ -66,6 +52,7 @@ Dart_Port getCallbackDartPort(jlong dartObjectAddress)
 {
   if (dartPortCache.find(dartObjectAddress) == dartPortCache.end())
   {
+    DNInfo("getCallbackDartPort: dartPortCache not contain this dart object %d", dartObjectAddress);
     return 0;
   }
 
@@ -76,19 +63,20 @@ void *getDartObject(jlong dartObjectAddress)
 {
   if (targetCache.find(dartObjectAddress) == targetCache.end())
   {
+    DNInfo("getDartObject: targetCache not contain this dart object %d", dartObjectAddress);
     return nullptr;
   }
 
   return targetCache[dartObjectAddress];
 }
 
-NativeMethodCallback getCallbackMethod(jlong targetAddr, char *functionName)
+NativeMethodCallback getCallbackMethod(jlong dartObjectAddress, char *functionName)
 {
-  if (!callbackManagerCache.count(targetAddr))
+  if (!callbackFunctionCache.count(dartObjectAddress))
   {
-    DNDebug("getCallbackMethod error not register %s", functionName);
-    return NULL;
+    DNInfo("getCallbackMethod: callbackFunctionCache not contain this dart object %d", dartObjectAddress);
+    return nullptr;
   }
-  std::map<std::string, NativeMethodCallback> methodsMap = callbackManagerCache[targetAddr];
+  std::map<std::string, NativeMethodCallback> methodsMap = callbackFunctionCache[dartObjectAddress];
   return methodsMap[functionName];
 }

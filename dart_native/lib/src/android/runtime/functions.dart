@@ -79,10 +79,10 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
         ?.lookup<
             NativeFunction<
                 Void Function(
-                    Pointer<Void> targetPtr,
-                    Pointer<Utf8> targetName,
+                    Pointer<Void> dartObject,
+                    Pointer<Utf8> clsName,
                     Pointer<Utf8> funName,
-                    Pointer<NativeFunction<MethodNativeCallback>> funcation,
+                    Pointer<NativeFunction<MethodNativeCallback>> function,
                     Int64 dartPort)>>("registerNativeCallback")
         ?.asFunction();
 
