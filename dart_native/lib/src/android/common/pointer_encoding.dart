@@ -142,7 +142,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
     return;
   }
 
-  if (Utf8.fromUtf8(typePtr.value) == "java/lang/String") {
+  if (Utf8.fromUtf8(typePtr.value) == "java.lang.String") {
     return fromUtf16(ptr);
   }
 

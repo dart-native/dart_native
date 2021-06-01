@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/common/callback_manager.dart';
-import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:ffi/ffi.dart';
 
@@ -41,14 +40,16 @@ _callback(
     Pointer<Utf8> argTypePtr = argTypesPtrPtr.elementAt(i).value;
     Pointer<Void> argPtr = argsPtrPtr.elementAt(i).value;
     dynamic arg =
-        loadValueFromPointer(argPtr, Utf8.fromUtf8(argTypePtr.cast()));
+        unBoxingWrapperClass(argPtr, Utf8.fromUtf8(argTypePtr.cast()));
     args.add(arg);
   }
 
   dynamic result = Function.apply(function, args);
 
   if (result != null) {
-    storeValueToPointer(result, argsPtrPtr.elementAt(0));
+    dynamic wrapperResult = boxingWrapperClass(result);
+    argsPtrPtr.elementAt(argCount).value = wrapperResult is JObject ? wrapperResult.pointer
+                                                                    : wrapperResult;
   }
 }
 

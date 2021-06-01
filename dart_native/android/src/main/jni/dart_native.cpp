@@ -3,6 +3,7 @@
 #include <string>
 #include <regex>
 #include <dart_api_dl.h>
+#include <semaphore.h>
 #include "dn_type_convert.h"
 #include "dn_log.h"
 #include "dn_method_call.h"
@@ -13,10 +14,10 @@ extern "C"
 {
 
   static JavaVM *gJvm = nullptr;
-  /// todo release
   static jobject gClassLoader;
   static jmethodID gFindClassMethod;
   static pthread_key_t detachKey = 0;
+
   /// for invoke result compare
   static jclass gStrCls;
 
@@ -86,11 +87,6 @@ extern "C"
     env->DeleteLocalRef(strCls);
     DNDebug("JNI_OnLoad finish");
     return JNI_VERSION_1_6;
-  }
-
-  JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
-  {
-      DNDebug("JNI_OnUnload");
   }
 
   jclass _findClass(JNIEnv *env, const char *name)
@@ -207,7 +203,7 @@ extern "C"
           {
             /// mark the last pointer as string
             /// dart will check this pointer
-            dataTypes[argumentCount] = (char *) "java/lang/String";
+            dataTypes[argumentCount] = (char *) "java.lang.String";
             nativeInvokeResult = convertToDartUtf16(env, (jstring)obj);
           }
           else
@@ -326,5 +322,119 @@ extern "C"
     const Work work = *work_ptr;
     work();
     delete work_ptr;
+  }
+
+  /// notify dart run callback function
+  bool NotifyDart(Dart_Port send_port, const Work *work)
+  {
+    const auto work_addr = reinterpret_cast<intptr_t>(work);
+
+    Dart_CObject dart_object;
+    dart_object.type = Dart_CObject_kInt64;
+    dart_object.value.as_int64 = work_addr;
+
+    const bool result = Dart_PostCObject_DL(send_port, &dart_object);
+    if (!result)
+    {
+      DNDebug("Native callback to Dart failed! Invalid port or isolate died");
+    }
+    return result;
+  }
+
+  JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
+                                                                                                    jclass clazz,
+                                                                                                    jlong dartObjectAddress,
+                                                                                                    jstring functionName,
+                                                                                                    jint argumentCount,
+                                                                                                    jobjectArray argumentTypes,
+                                                                                                    jobjectArray argumentsArray,
+                                                                                                    jstring returnTypeStr)
+  {
+    Dart_Port port = getCallbackDartPort(dartObjectAddress);
+    if (port == 0)
+    {
+      DNError("not register this dart port!");
+      return nullptr;
+    }
+
+    char *funName = (char *)env->GetStringUTFChars(functionName, 0);
+    char **dataTypes = new char *[argumentCount + 1];
+    void **arguments = new void *[argumentCount + 1];
+
+    /// store argument to pointer
+    for (int i = 0; i < argumentCount; ++i)
+    {
+      auto argTypeString = (jstring)env->GetObjectArrayElement(argumentTypes, i);
+      auto argument = env->GetObjectArrayElement(argumentsArray, i);
+      dataTypes[i] = (char *)env->GetStringUTFChars(argTypeString, 0);
+
+      if (strcmp(dataTypes[i], "java.lang.String") == 0)
+      {
+        arguments[i] = (jstring) argument == nullptr ? reinterpret_cast<uint16_t *>((char *)"")
+                                                    : convertToDartUtf16(env, (jstring)argument);
+      }
+      else
+      {
+        jclass objCls = env->GetObjectClass(argument);
+        jobject gObj = env->NewGlobalRef(argument);
+        objectGlobalCache[gObj] = static_cast<jclass>(env->NewGlobalRef(objCls));
+        arguments[i] = gObj;
+
+        env->DeleteLocalRef(objCls);
+      }
+
+      env->DeleteLocalRef(argTypeString);
+      env->DeleteLocalRef(argument);
+    }
+
+    /// when return void, jstring which from native is null.
+    char *returnType = returnTypeStr == nullptr ? nullptr
+                                                : (char *)env->GetStringUTFChars(returnTypeStr, 0);
+    /// the last pointer is return type
+    dataTypes[argumentCount] = returnType;
+
+    sem_t sem;
+    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+
+    const Work work = [dartObjectAddress, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess]() {
+      NativeMethodCallback methodCallback = getCallbackMethod(dartObjectAddress, funName);
+      void *target = getDartObject(dartObjectAddress);
+      if (methodCallback != nullptr && target != nullptr)
+      {
+        methodCallback(target, funName, arguments, dataTypes, argumentCount);
+      }
+      if (isSemInitSuccess)
+      {
+        sem_post(&sem);
+      }
+    };
+
+    const Work *work_ptr = new Work(work);
+    /// check run result
+    bool notifyResult = NotifyDart(port, work_ptr);
+    jobject callbackResult = nullptr;
+    if (isSemInitSuccess)
+    {
+      if (notifyResult)
+      {
+        sem_wait(&sem);
+        if (strcmp(returnType, "Ljava/lang/String;") == 0)
+        {
+          callbackResult = convertToJavaUtf16(env, (char *)arguments[argumentCount], nullptr, 0);
+        }
+        else
+        {
+          callbackResult = (jobject) arguments[argumentCount];
+        }
+      }
+      sem_destroy(&sem);
+    }
+
+    env->ReleaseStringUTFChars(returnTypeStr, returnType);
+    env->ReleaseStringUTFChars(functionName, funName);
+    delete[] arguments;
+    delete[] dataTypes;
+
+    return callbackResult;
   }
 }
