@@ -2,11 +2,9 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
-import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/internal/block_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
-import 'package:ffi/ffi.dart';
 
 void passObjectToNative(NSObject obj) {
   // Ignore null and nil
@@ -31,9 +29,6 @@ void _dealloc(Pointer<Void> ptr) {
     });
     _finalizerMap.remove(ptr);
   }
-  if (isolateDeadObject.finalizer == null) {
-    isolateDeadObject.finalizer = () {};
-  }
 }
 
 Map<Pointer<Void>, List<Finalizer>> _finalizerMap = {};
@@ -57,11 +52,3 @@ removeFinalizerForObject(NSObject obj) {
 
 Pointer<NativeFunction<Void Function(Pointer<Void>)>> nativeObjectDeallocPtr =
     Pointer.fromFunction(_dealloc);
-
-final Fuck isolateDeadObject = Fuck();
-
-class Fuck extends NSObject {
-  Fuck([Class isa]) : super(isa ?? Class('Fuck', Class('NSObject')));
-
-  Fuck.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
-}
