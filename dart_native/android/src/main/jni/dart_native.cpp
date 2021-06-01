@@ -108,16 +108,15 @@ extern "C"
   void _fillArgs(void **arguments, char **argumentTypes, jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask)
   {
     JNIEnv *env = _getEnv();
-    for (jsize index(0); index < argumentCount; ++arguments, ++index, ++argumentTypes)
+    for (jsize index(0); index < argumentCount; ++arguments, ++index)
     {
-      char *argType = *argumentTypes;
       /// check basic map convert
-      auto it = basicTypeConvertMap.find(*argType);
+      auto it = basicTypeConvertMap.find(*argumentTypes[index]);
 
       if (it == basicTypeConvertMap.end())
       {
         /// when argument type is string or stringTypeBitmask mark as string
-        if (strcmp(argType, "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
+        if (strcmp(argumentTypes[index], "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
         {
           convertToJavaUtf16(env, *arguments, argValues, index);
         }
@@ -203,7 +202,7 @@ extern "C"
           {
             /// mark the last pointer as string
             /// dart will check this pointer
-            *++dataTypes = (char *) "java/lang/String";
+            dataTypes[argumentCount] = (char *) "java/lang/String";
             nativeInvokeResult = convertToDartUtf16(env, (jstring)obj);
           }
           else
