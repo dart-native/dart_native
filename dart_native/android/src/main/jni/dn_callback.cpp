@@ -102,28 +102,27 @@ bool NotifyDart(Dart_Port send_port, const Work *work)
 
 extern "C" JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
                                                                                                   jclass clazz,
-                                                                                                  jlong dartObject,
-                                                                                                  jstring fun_name,
-                                                                                                  jint arg_count,
-                                                                                                  jobjectArray arg_types,
-                                                                                                  jobjectArray args,
-                                                                                                  jstring return_type)
+                                                                                                  jlong dartObjectAddress,
+                                                                                                  jstring functionName,
+                                                                                                  jint argumentCount,
+                                                                                                  jobjectArray argumentTypes,
+                                                                                                  jobjectArray argumentsArray,
+                                                                                                  jstring returnTypeStr)
 {
-  Dart_Port port = getCallbackDartPort(dartObject);
+  Dart_Port port = getCallbackDartPort(dartObjectAddress);
   if (port == 0)
   {
     DNDebug("not register dart port!");
-    return NULL;
+    return nullptr;
   }
 
-  char *funName = (char *)env->GetStringUTFChars(fun_name, 0);
-  jsize argTypeLength = env->GetArrayLength(arg_types);
-  char **argTypes = new char *[argTypeLength + 1];
-  void **arguments = new void *[argTypeLength];
-  for (int i = 0; i < argTypeLength; ++i)
+  char *funName = (char *)env->GetStringUTFChars(functionName, 0);
+  char **argTypes = new char *[argumentCount + 1];
+  void **arguments = new void *[argumentCount];
+  for (int i = 0; i < argumentCount; ++i)
   {
-    jstring argTypeString = (jstring)env->GetObjectArrayElement(arg_types, i);
-    jobject argument = env->GetObjectArrayElement(args, i);
+    jstring argTypeString = (jstring)env->GetObjectArrayElement(argumentTypes, i);
+    jobject argument = env->GetObjectArrayElement(argumentsArray, i);
 
     argTypes[i] = (char *)env->GetStringUTFChars(argTypeString, 0);
     env->DeleteLocalRef(argTypeString);
@@ -173,20 +172,20 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackIn
   }
 
   /// when return void, jstring which from native is null.
-  char *returnType = return_type == nullptr ? nullptr
-                                            : (char *)env->GetStringUTFChars(return_type, 0);
+  char *returnType = returnTypeStr == nullptr ? nullptr
+                                            : (char *)env->GetStringUTFChars(returnTypeStr, 0);
 
-  argTypes[argTypeLength] = returnType;
+  argTypes[argumentCount] = returnType;
 
   sem_t sem;
   bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
 
-  const Work work = [dartObject, argTypes, arguments, arg_count, funName, &sem, isSemInitSuccess]() {
-    NativeMethodCallback methodCallback = getCallbackMethod(dartObject, funName);
-    void *target = getDartObject(dartObject);
-    if (methodCallback != NULL && target != nullptr)
+  const Work work = [dartObjectAddress, argTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess]() {
+    NativeMethodCallback methodCallback = getCallbackMethod(dartObjectAddress, funName);
+    void *target = getDartObject(dartObjectAddress);
+    if (methodCallback != nullptr && target != nullptr)
     {
-      methodCallback(target, funName, arguments, argTypes, arg_count);
+      methodCallback(target, funName, arguments, argTypes, argumentCount);
     }
     if (isSemInitSuccess)
     {
@@ -195,9 +194,10 @@ extern "C" JNIEXPORT jobject JNICALL Java_com_dartnative_dart_1native_CallbackIn
   };
 
   const Work *work_ptr = new Work(work);
+  /// error
   bool notifyResult = NotifyDart(port, work_ptr);
 
-  jobject callbackResult = NULL;
+  jobject callbackResult = nullptr;
   if (isSemInitSuccess)
   {
     DNDebug("wait work execute");

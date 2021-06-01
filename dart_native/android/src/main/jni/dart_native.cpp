@@ -88,6 +88,11 @@ extern "C"
     return JNI_VERSION_1_6;
   }
 
+  JNIEXPORT void JNI_OnUnload(JavaVM* vm, void* reserved)
+  {
+      DNDebug("JNI_OnUnload");
+  }
+
   jclass _findClass(JNIEnv *env, const char *name)
   {
     jclass nativeClass = nullptr;
