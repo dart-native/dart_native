@@ -148,32 +148,21 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   Class('NSThread')
       .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
       .then((currentThread) {
-    NSObject description = currentThread.perform(SEL('description'));
-    String threadResult = NSString.fromPointer(description.pointer).raw;
-    print('currentThread: $threadResult');
+    print('currentThread: ${currentThread.description}');
   });
 
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);
 
-  Isolate.spawn(_checkTimer, stub.pointer.address);
-  Isolate.spawn(_checkTimer1, stub.pointer.address);
+  Isolate.spawn(_checkTimer, 'isolate0');
+  Isolate.spawn(_checkTimer, 'isolate1');
 }
 
-void _checkTimer(int addr) async {
-  RuntimeStub stub = RuntimeStub.fromPointer(Pointer.fromAddress(addr));
+void _checkTimer(String isolateID) async {
+  RuntimeStub stub = RuntimeStub();
   Timer.periodic(new Duration(seconds: 1), (Timer t) {
     stub.fooCompletion(() {
-      print('hello completion block on another isolate!');
-    });
-  });
-}
-
-void _checkTimer1(int addr) async {
-  RuntimeStub stub = RuntimeStub.fromPointer(Pointer.fromAddress(addr));
-  Timer.periodic(new Duration(seconds: 1), (Timer t) {
-    stub.fooCompletion(() {
-      print('hello completion block on third isolate!');
+      print('hello completion block on $isolateID!');
     });
   });
 }

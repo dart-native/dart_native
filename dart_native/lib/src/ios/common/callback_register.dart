@@ -55,14 +55,14 @@ _callback(
     // types: ret, self, _cmd, args...
     Pointer<Utf8> argTypePtr = typesPtrPtr.elementAt(i + 3).value;
     Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
-    if (argTypePtr.encodingForStruct == null) {
+    if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
     dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < dartTypes.length) {
       String dartType = dartTypes[i + 1];
       arg = boxingObjCBasicValue(dartType, arg);
-      arg = convertFromPointer(dartType, arg);
+      arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);
   }

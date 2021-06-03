@@ -9,10 +9,10 @@ final MethodSignature nativeMethodSignature =
     runtimeLib.lookupFunction<MethodSignature, MethodSignature>(
         'native_method_signature');
 
-typedef SignatureEncodingListC = Void Function(
-    Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
-typedef SignatureEncodingListD = void Function(
-    Pointer<Void> signature, Pointer<Pointer<Utf8>> typeEncodings);
+typedef SignatureEncodingListC = Void Function(Pointer<Void> signature,
+    Pointer<Pointer<Utf8>> typeEncodings, Int64 decodeRetVal);
+typedef SignatureEncodingListD = void Function(Pointer<Void> signature,
+    Pointer<Pointer<Utf8>> typeEncodings, int decodeRetVal);
 final SignatureEncodingListD nativeSignatureEncodingList =
     runtimeLib.lookupFunction<SignatureEncodingListC, SignatureEncodingListD>(
         'native_signature_encoding_list');
@@ -55,6 +55,8 @@ typedef InvokeMethodC = Pointer<Void> Function(
   Pointer<Pointer<Void>> args,
   Pointer<Void> callback,
   Int64 dartPort,
+  Int64 stringTypeBitmask,
+  Pointer<Pointer<Utf8>> retType,
 );
 typedef InvokeMethodD = Pointer<Void> Function(
   Pointer<Void> instance,
@@ -64,6 +66,8 @@ typedef InvokeMethodD = Pointer<Void> Function(
   Pointer<Pointer<Void>> args,
   Pointer<Void> callback,
   int dartPort,
+  int stringTypeBitmask,
+  Pointer<Pointer<Utf8>> retType,
 );
 final InvokeMethodD nativeInvokeMethod = runtimeLib
     .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
@@ -106,9 +110,19 @@ final BlockCreateD blockCreate = runtimeLib
     .lookupFunction<BlockCreateC, BlockCreateD>('native_block_create');
 
 typedef BlockInvokeC = Pointer<Void> Function(
-    Pointer<Void> block, Pointer<Pointer<Void>> args, Int64 dartPort);
+  Pointer<Void> block,
+  Pointer<Pointer<Void>> args,
+  Int64 dartPort,
+  Int64 stringTypeBitmask,
+  Pointer<Pointer<Utf8>> retType,
+);
 typedef BlockInvokeD = Pointer<Void> Function(
-    Pointer<Void> block, Pointer<Pointer<Void>> args, int dartPort);
+  Pointer<Void> block,
+  Pointer<Pointer<Void>> args,
+  int dartPort,
+  int stringTypeBitmask,
+  Pointer<Pointer<Utf8>> retType,
+);
 final BlockInvokeD blockInvoke = runtimeLib
     .lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');
 

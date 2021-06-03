@@ -22,7 +22,7 @@ DN_EXTERN NSMethodSignature * _Nullable
 native_method_signature(Class cls, SEL selector);
 
 DN_EXTERN void
-native_signature_encoding_list(NSMethodSignature *signature, const char * _Nonnull * _Nonnull typeEncodings);
+native_signature_encoding_list(NSMethodSignature *signature, const char * _Nonnull * _Nonnull typeEncodings, BOOL decodeRetVal);
 
 DN_EXTERN BOOL
 native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort);
@@ -33,14 +33,24 @@ native_protocol_method_types(Protocol *proto, SEL selector);
 DN_EXTERN Class _Nullable
 native_get_class(const char *className, Class superclass);
 
+
+/// Invoke Objective-C method.
+/// @param object instance or class object.
+/// @param selector selector of method.
+/// @param signature signature of method.
+/// @param queue dispatch queue for async method.
+/// @param args arguments passed to method.
+/// @param dartPort port for dart isolate.
+/// @param stringTypeBitmask bitmask for checking if an argument is a string.
+/// @param retType type of return value.
 DN_EXTERN void * _Nullable
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *), Dart_Port dartPort);
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void * _Nonnull * _Nullable args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask, const char *_Nonnull *_Nonnull retType);
 
 DN_EXTERN void *
 native_block_create(char *types, void *callback, Dart_Port dartPort);
 
 DN_EXTERN void *
-native_block_invoke(void *block, void * _Nonnull * _Nullable args, Dart_Port dartPort);
+native_block_invoke(void *block, void * _Nonnull * _Nullable args, Dart_Port dartPort, int64_t stringTypeBitmask);
 
 DN_EXTERN const char * _Nonnull * _Nonnull
 native_all_type_encodings(void);

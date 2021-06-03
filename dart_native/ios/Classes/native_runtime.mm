@@ -32,15 +32,18 @@ native_method_signature(Class cls, SEL selector) {
 }
 
 void
-native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings) {
+native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings, BOOL decodeRetVal) {
     if (!signature || !typeEncodings) {
         return;
     }
     
     for (NSUInteger i = 2; i < signature.numberOfArguments; i++) {
-        *(typeEncodings + i - 1) = [signature getArgumentTypeAtIndex:i];
+        const char *type = [signature getArgumentTypeAtIndex:i];
+        *(typeEncodings + i - 1) = native_type_encoding(type);
     }
-    *typeEncodings = signature.methodReturnType;
+    if (decodeRetVal) {
+        *typeEncodings = native_type_encoding(signature.methodReturnType);
+    }
 }
 
 BOOL
@@ -104,7 +107,7 @@ _mallocReturnStruct(NSMethodSignature *signature) {
 }
 
 void
-_fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset) {
+_fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
     for (NSUInteger i = offset; i < signature.numberOfArguments; i++) {
         const char *argType = [signature getArgumentTypeAtIndex:i];
         NSUInteger argsIndex = i - offset;
@@ -118,21 +121,60 @@ _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *i
         if (argType[0] == '{') {
             // Already put struct in pointer on Dart side.
             [invocation setArgument:args[argsIndex] atIndex:i];
+        } else if (argType[0] == '@' &&
+                   (stringTypeBitmask >> argsIndex & 0x1) == 1) {
+            const unichar *data = ((const unichar **)args)[argsIndex];
+            // First four uint16_t is for data length.
+            const NSUInteger lengthDataSize = 4;
+            uint64_t length = data[0];
+            for (int i = 1; i < lengthDataSize; i++) {
+                length <<= 16;
+                length |= data[i];
+            }
+            NSString *realArg = [NSString stringWithCharacters:data + lengthDataSize length:length];
+            [stringTypeBucket addObject:realArg];
+            free((void *)data); // Malloc data on dart side, need free here.
+            [invocation setArgument:&realArg atIndex:i];
         } else {
             [invocation setArgument:&args[argsIndex] atIndex:i];
         }
     }
 }
 
+
+/// Return data for NSString: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
+/// @param retVal origin return value
+/// @param retType type for return value
+void *_dataForNSStringReturnValue(NSString *retVal, const char **retType) {
+    // first bit is for return value.
+    *retType = native_all_type_encodings()[18];
+    NSUInteger length = 0;
+    const uint16_t *utf16BufferPtr = native_convert_nsstring_to_utf16(retVal, &length);
+    size_t size = sizeof(uint16_t) * length;
+    const size_t lengthDataSize = 4;
+    // free memory on dart side.
+    uint16_t *dataPtr = (uint16_t *)malloc(size + sizeof(uint16_t) * lengthDataSize);
+    memcpy(dataPtr + lengthDataSize, utf16BufferPtr, size);
+    uint16_t lengthData[4] = {
+        static_cast<uint16_t>(length >> 48 & 0xffff),
+        static_cast<uint16_t>(length >> 32 & 0xffff),
+        static_cast<uint16_t>(length >> 16 & 0xffff),
+        static_cast<uint16_t>(length & 0xffff)
+    };
+    memcpy(dataPtr, lengthData, sizeof(uint16_t) * lengthDataSize);
+    return dataPtr;
+}
+
 void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort) {
+native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
     if (!object || !selector || !signature) {
         return NULL;
     }
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
     invocation.target = object;
     invocation.selector = selector;
-    _fillArgsToInvocation(signature, args, invocation, 2);
+    NSMutableArray<NSString *> *stringTypeBucket = [NSMutableArray array];
+    _fillArgsToInvocation(signature, args, invocation, 2, stringTypeBitmask, stringTypeBucket);
     
     void *(^resultBlock)() = ^() {
         void *result = NULL;
@@ -144,8 +186,16 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
             } else {
                 [invocation getReturnValue:&result];
                 if (returnType == '@') {
-                    [DNObjectDealloc attachHost:(__bridge id)result
-                                       dartPort:dartPort];
+                    BOOL isNSString = [(__bridge id)result isKindOfClass:NSString.class];
+                    // highest bit is a flag for decode.
+                    BOOL decodeRetVal = (stringTypeBitmask & (1LL << 63)) != 0;
+                    // return value is a NSString and needs decode.
+                    if (isNSString && decodeRetVal) {
+                        result = _dataForNSStringReturnValue((__bridge NSString *)result, retType);
+                    } else {
+                        [DNObjectDealloc attachHost:(__bridge id)result
+                                           dartPort:dartPort];
+                    }
                 }
             }
         }
@@ -183,11 +233,15 @@ native_block_create(char *types, void *callback, Dart_Port dartPort) {
 }
 
 void *
-native_block_invoke(void *block, void **args, Dart_Port dartPort) {
+native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
+    if (!block) {
+        return nullptr;
+    }
     const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    _fillArgsToInvocation(signature, args, invocation, 1);
+    NSMutableArray<NSString *> *stringTypeBucket = [NSMutableArray array];
+    _fillArgsToInvocation(signature, args, invocation, 1, stringTypeBitmask, stringTypeBucket);
     [invocation invokeWithTarget:(__bridge id)block];
     void *result = NULL;
     const char returnType = signature.methodReturnType[0];
@@ -197,7 +251,12 @@ native_block_invoke(void *block, void **args, Dart_Port dartPort) {
             [invocation getReturnValue:result];
         } else {
             [invocation getReturnValue:&result];
-            if (returnType == '@') {
+            BOOL isNSString = [(__bridge id)result isKindOfClass:NSString.class];
+            BOOL decodeRetVal = (stringTypeBitmask & (1LL << 63)) != 0;
+            // return value is a NSString and needs decode.
+            if (isNSString && decodeRetVal) {
+                result = _dataForNSStringReturnValue((__bridge NSString *)result, retType);
+            } else {
                 [DNObjectDealloc attachHost:(__bridge id)result
                                    dartPort:dartPort];
             }
@@ -207,7 +266,7 @@ native_block_invoke(void *block, void **args, Dart_Port dartPort) {
 }
 
 // Use pointer as key of encoding string cache (on dart side).
-static const char *typeList[18] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool"};
+static const char *typeList[19] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool", "string"};
 
 const char **
 native_all_type_encodings() {
@@ -265,6 +324,7 @@ native_all_type_encodings() {
 
 #define PTR(type) COND(type, typeList[16])
 
+// When returns struct encoding, it needs to be freed.
 const char *
 native_type_encoding(const char *str) {
     if (!str || strlen(str) == 0) {
@@ -313,7 +373,7 @@ native_type_encoding(const char *str) {
     return str;
 }
 
-// Returns type encodings whose need be freed.
+// Returns type encodings whose need to be freed.
 const char **
 native_types_encoding(const char *str, int *count, int startIndex) {
     int argCount = DNTypeCount(str) - startIndex;
@@ -349,6 +409,7 @@ native_types_encoding(const char *str, int *count, int startIndex) {
     return argTypes;
 }
 
+// Returns struct encoding which will be freed.
 const char *
 native_struct_encoding(const char *encoding) {
     NSUInteger size, align;
@@ -376,7 +437,12 @@ native_struct_encoding(const char *encoding) {
     }
     [structType appendString:@"}"];
     free(elements);
-    return structType.UTF8String;
+    // Malloc struct type, it will be freed on dart side.
+    const char *encodeSource = structType.UTF8String;
+    size_t typeLength = strlen(encodeSource) + 1;
+    char *typePtr = (char *)malloc(sizeof(char) * typeLength);
+    strlcpy(typePtr, encodeSource, typeLength);
+    return typePtr;
 }
 
 bool

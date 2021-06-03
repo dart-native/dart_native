@@ -47,7 +47,7 @@ id boxingObjCType(dynamic e) {
   }
 }
 
-dynamic unboxingObjCType(id e) {
+dynamic unboxingObjCType(dynamic e) {
   if (e is id) {
     if (e.isKind(of: type(of: NSValue))) {
       return NSValue.fromPointer(e.pointer).raw;
@@ -59,10 +59,7 @@ dynamic unboxingObjCType(id e) {
       return NSDictionary.fromPointer(e.pointer).raw;
     } else if (e.isKind(of: type(of: NSSet))) {
       return NSSet.fromPointer(e.pointer).raw;
-    } else {
-      return e;
     }
-  } else {
-    throw 'Cannot unboxing element $e';
   }
+  return e;
 }

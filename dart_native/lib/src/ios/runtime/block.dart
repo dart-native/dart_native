@@ -137,8 +137,9 @@ class Block extends id {
     if (count != (args?.length ?? 0) + 2) {
       throw 'Args Count NOT match';
     }
-
+    int stringTypeBitmask = 0;
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
+    List<Pointer<Utf8>> structTypes = [];
     if (args != null) {
       argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
       for (var i = 0; i < args.length; i++) {
@@ -146,16 +147,36 @@ class Block extends id {
         if (arg == null) {
           arg = nil;
         }
-        storeValueToPointer(
-            arg, argsPtrPtr.elementAt(i), typesPtrPtr.elementAt(i + 2).value);
+        if (arg is String) {
+          stringTypeBitmask |= (0x1 << i);
+        }
+        var argTypePtr = typesPtrPtr.elementAt(i + 2).value;
+        if (argTypePtr.isStruct) {
+          structTypes.add(argTypePtr);
+        }
+        storeValueToPointer(arg, argsPtrPtr.elementAt(i), argTypePtr);
       }
     }
-    Pointer<Void> resultPtr = blockInvoke(pointer, argsPtrPtr, nativePort);
+
+    Pointer<Void> resultPtr = blockInvoke(
+        pointer, argsPtrPtr, nativePort, stringTypeBitmask, typesPtrPtr);
     if (argsPtrPtr != nullptr.cast()) {
       free(argsPtrPtr);
     }
-    dynamic result =
-        loadValueFromPointer(resultPtr, typesPtrPtr.elementAt(0).value);
+
+    var retTypePtr = typesPtrPtr.value;
+    if (retTypePtr.isStruct) {
+      structTypes.add(retTypePtr);
+    }
+    // return value is a String.
+    dynamic result;
+    if (retTypePtr.isString) {
+      result = loadStringFromPointer(resultPtr);
+    } else {
+      result = loadValueFromPointer(resultPtr, retTypePtr);
+    }
+    // free struct type memory (malloc on native side)
+    structTypes.forEach(free);
     return result;
   }
 }
@@ -177,17 +198,16 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
-    Pointer<Utf8> argTypePtr =
-        nativeTypeEncoding(typesPtrPtr.elementAt(i + 1).value);
+    Pointer<Utf8> argTypePtr = typesPtrPtr.elementAt(i + 1).value;
     Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
-    if (argTypePtr.encodingForStruct == null) {
+    if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
     dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
       arg = boxingObjCBasicValue(dartType, arg);
-      arg = convertFromPointer(dartType, arg);
+      arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);
   }
@@ -195,8 +215,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   dynamic result = Function.apply(block.function, args);
 
   if (result != null) {
-    Pointer<Utf8> resultTypePtr =
-        nativeTypeEncoding(typesPtrPtr.elementAt(0).value);
+    Pointer<Utf8> resultTypePtr = typesPtrPtr.elementAt(0).value;
     Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
     if (stret) {
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;

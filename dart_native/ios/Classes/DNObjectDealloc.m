@@ -54,6 +54,8 @@ _objc_isTaggedPointer(const void *ptr) {
     }
 }
 
+static int64_t fuxk;
+
 - (instancetype)initWithHost:(NSObject *)host
                     dartPort:(Dart_Port)dartPort {
     self = [super init];
