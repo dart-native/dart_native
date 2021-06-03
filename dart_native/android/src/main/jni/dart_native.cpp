@@ -22,15 +22,18 @@ extern "C"
   static jclass gStrCls;
 
   /// key is jobject, value is pai which contain jclass and reference count
-  static std::map<jobject, std::pair<jclass, int>> objectGlobalReference;
+  static std::map<jobject, std::pair<jclass, int> > objectGlobalReference;
 
-  void _addGlobalObject(jobject globalObject, jclass globalClass) {
+  void _addGlobalObject(jobject globalObject, jclass globalClass)
+  {
     std::pair<jclass, int> objPair = std::make_pair(globalClass, 0);
     objectGlobalReference[globalObject] = objPair;
   }
 
-  jclass _getGlobalClass(jobject globalObject) {
-    if (objectGlobalReference.find(globalObject) != objectGlobalReference.end()) {
+  jclass _getGlobalClass(jobject globalObject)
+  {
+    if (objectGlobalReference.find(globalObject) != objectGlobalReference.end())
+    {
       std::pair<jclass, int> objPair = objectGlobalReference[globalObject];
       return objPair.first;
     }
@@ -225,7 +228,7 @@ extern "C"
           {
             /// mark the last pointer as string
             /// dart will check this pointer
-            dataTypes[argumentCount] = (char *) "java.lang.String";
+            dataTypes[argumentCount] = (char *)"java.lang.String";
             nativeInvokeResult = convertToDartUtf16(env, (jstring)obj);
           }
           else
@@ -280,7 +283,8 @@ extern "C"
   }
 
   /// reference counter
-  void _updateObjectReference(jobject globalObject, bool isRetain) {
+  void _updateObjectReference(jobject globalObject, bool isRetain)
+  {
     DNDebug("_updateObjectReference %s", isRetain ? "retain" : "release");
     auto it = objectGlobalReference.find(globalObject);
     if (it == objectGlobalReference.end())
@@ -386,7 +390,7 @@ extern "C"
 
       if (strcmp(dataTypes[i], "java.lang.String") == 0)
       {
-        arguments[i] = (jstring) argument == nullptr ? reinterpret_cast<uint16_t *>((char *)"")
+        arguments[i] = (jstring)argument == nullptr ? reinterpret_cast<uint16_t *>((char *)"")
                                                     : convertToDartUtf16(env, (jstring)argument);
       }
       else
@@ -414,7 +418,7 @@ extern "C"
 
     const Work work = [dartObjectAddress, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess]() {
       NativeMethodCallback methodCallback = getCallbackMethod(dartObjectAddress, funName);
-      void *target = (void *) dartObjectAddress;
+      void *target = (void *)dartObjectAddress;
       if (methodCallback != nullptr && target != nullptr)
       {
         methodCallback(target, funName, arguments, dataTypes, argumentCount);
@@ -440,7 +444,7 @@ extern "C"
         }
         else
         {
-          callbackResult = (jobject) arguments[argumentCount];
+          callbackResult = (jobject)arguments[argumentCount];
         }
       }
       sem_destroy(&sem);
