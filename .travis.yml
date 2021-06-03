@@ -27,8 +27,7 @@ jobs:
         - unzip -qq gradle-3.5-bin.zip
         - export GRADLE_HOME=$PWD/gradle-3.5
         - export PATH=$GRADLE_HOME/bin:$PATH
-        - git clone https://github.com/flutter/flutter.git --depth 1
-        - git checkout 1.22.6
+        - git clone https://github.com/flutter/flutter.git --depth 1 --branch 1.22.6
         - export PATH=./flutter/bin:$PATH
         - flutter doctor
         - yes | sdkmanager "platforms;android-29"
@@ -45,8 +44,7 @@ jobs:
         - brew install libimobiledevice
         - brew install ideviceinstaller
         - brew install ios-deploy
-        - git clone https://github.com/flutter/flutter.git --depth 1
-        - git checkout 1.22.6
+        - git clone https://github.com/flutter/flutter.git --depth 1 --branch 1.22.6
         - export PATH=./flutter/bin:$PATH
         - flutter doctor
       script:
