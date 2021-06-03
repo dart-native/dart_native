@@ -21,8 +21,21 @@ extern "C"
   /// for invoke result compare
   static jclass gStrCls;
 
-  static std::map<jobject, jclass> objectGlobalCache;
-  static std::map<jobject, int> referenceCount;
+  /// key is jobject, value is pai which contain jclass and reference count
+  static std::map<jobject, std::pair<jclass, int>> objectGlobalReference;
+
+  void _addGlobalObject(jobject globalObject, jclass globalClass) {
+    std::pair<jclass, int> objPair = std::make_pair(globalClass, 0);
+    objectGlobalReference[globalObject] = objPair;
+  }
+
+  jclass _getGlobalClass(jobject globalObject) {
+    if (objectGlobalReference.find(globalObject) != objectGlobalReference.end()) {
+      std::pair<jclass, int> objPair = objectGlobalReference[globalObject];
+      return objPair.first;
+    }
+    return nullptr;
+  }
 
   void _detachThreadDestructor(void *arg)
   {
@@ -31,6 +44,7 @@ extern "C"
     detachKey = 0;
   }
 
+  /// each thread attach once
   JNIEnv *_getEnv()
   {
     if (gJvm == nullptr)
@@ -77,6 +91,7 @@ extern "C"
     gFindClassMethod = env->GetMethodID(classLoaderClass, "findClass",
                                         "(Ljava/lang/String;)Ljava/lang/Class;");
 
+    /// cache string class
     jclass strCls = env->FindClass("java/lang/String");
     gStrCls = static_cast<jclass>(env->NewGlobalRef(strCls));
 
@@ -94,6 +109,7 @@ extern "C"
     jclass nativeClass = nullptr;
     nativeClass = env->FindClass(name);
     jthrowable exception = env->ExceptionOccurred();
+    /// class loader not found class
     if (exception)
     {
       env->ExceptionClear();
@@ -106,6 +122,7 @@ extern "C"
   }
 
   /// fill all arguments to jvalues
+  /// when argument is string the stringTypeBitmask's bit is 1
   void _fillArgs(void **arguments, char **argumentTypes, jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask)
   {
     JNIEnv *env = _getEnv();
@@ -161,7 +178,7 @@ extern "C"
     jclass cls = _findClass(env, targetClassName);
     jobject newObj = _newObject(cls, arguments, argumentTypes, argumentCount, stringTypeBitmask);
     jobject gObj = env->NewGlobalRef(newObj);
-    objectGlobalCache[gObj] = static_cast<jclass>(env->NewGlobalRef(cls));
+    _addGlobalObject(gObj, static_cast<jclass>(env->NewGlobalRef(cls)));
 
     env->DeleteLocalRef(newObj);
     env->DeleteLocalRef(cls);
@@ -171,11 +188,16 @@ extern "C"
   /// invoke native method
   void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments, char **dataTypes, int argumentCount, char *returnType, uint32_t stringTypeBitmask)
   {
+    auto object = static_cast<jobject>(objPtr);
+    jclass cls = _getGlobalClass(object);
+    if (cls == nullptr)
+    {
+      DNError("invokeNativeMethod not find class");
+      return nullptr;
+    }
+
     void *nativeInvokeResult = nullptr;
     JNIEnv *env = _getEnv();
-
-    auto object = static_cast<jobject>(objPtr);
-    jclass cls = objectGlobalCache[object];
 
     auto *argValues = new jvalue[argumentCount];
     if (argumentCount > 0)
@@ -210,7 +232,7 @@ extern "C"
           {
             jclass objCls = env->GetObjectClass(obj);
             jobject gObj = env->NewGlobalRef(obj);
-            objectGlobalCache[gObj] = static_cast<jclass>(env->NewGlobalRef(objCls));
+            _addGlobalObject(gObj, static_cast<jclass>(env->NewGlobalRef(objCls)));
             nativeInvokeResult = gObj;
 
             env->DeleteLocalRef(objCls);
@@ -257,42 +279,36 @@ extern "C"
     return Dart_InitializeApiDL(data);
   }
 
-  /// retain native object
-  void _retain(void *objPtr)
-  {
-    auto object = static_cast<jobject>(objPtr);
-    auto it = referenceCount.find(object);
-    int refCount = it == referenceCount.end() ? 1 : referenceCount[object] + 1;
-    referenceCount[object] = refCount;
-  }
-
-  /// do release native object
-  void _releaseTargetObject(void *objPtr)
-  {
-    JNIEnv *env = _getEnv();
-    auto object = static_cast<jobject>(objPtr);
-    env->DeleteGlobalRef(objectGlobalCache[object]);
-    objectGlobalCache.erase(object);
-    env->DeleteGlobalRef(object);
-  }
-
-  /// check reference count, if no reference exits then release
-  void _release(void *objPtr)
-  {
-    auto object = static_cast<jobject>(objPtr);
-    if (referenceCount.find(object) == referenceCount.end())
+  /// reference counter
+  void _updateObjectReference(jobject globalObject, bool isRetain) {
+    DNDebug("_updateObjectReference %s", isRetain ? "retain" : "release");
+    auto it = objectGlobalReference.find(globalObject);
+    if (it == objectGlobalReference.end())
     {
-      DNError("release error not contain object");
+      DNError("_updateObjectReference %s error not contain this object!!!", isRetain ? "retain" : "release");
       return;
     }
-    int count = referenceCount[object];
-    if (count <= 1)
+
+    if (isRetain)
     {
-      referenceCount.erase(object);
-      _releaseTargetObject(objPtr);
+      /// dart object retain this dart object
+      /// reference++
+      it->second.second += 1;
       return;
     }
-    referenceCount[object] = count - 1;
+
+    /// release reference--
+    it->second.second -= 1;
+
+    /// no dart object retained this native object
+    if (it->second.second <= 0)
+    {
+      JNIEnv *env = _getEnv();
+      env->DeleteGlobalRef(it->second.first);
+      objectGlobalReference.erase(it);
+      env->DeleteGlobalRef(globalObject);
+      return;
+    }
   }
 
   /// release native object from cache
@@ -300,7 +316,7 @@ extern "C"
                            Dart_WeakPersistentHandle handle,
                            void *peer)
   {
-    _release(peer);
+    _updateObjectReference(static_cast<jobject>(peer), false);
   }
 
   /// retain native object
@@ -311,7 +327,7 @@ extern "C"
       DNError("Dart_IsError_DL");
       return;
     }
-    _retain(objPtr);
+    _updateObjectReference(static_cast<jobject>(objPtr), true);
     intptr_t size = 8;
     Dart_NewWeakPersistentHandle_DL(h, objPtr, size, RunFinalizer);
   }
@@ -377,7 +393,7 @@ extern "C"
       {
         jclass objCls = env->GetObjectClass(argument);
         jobject gObj = env->NewGlobalRef(argument);
-        objectGlobalCache[gObj] = static_cast<jclass>(env->NewGlobalRef(objCls));
+        _addGlobalObject(gObj, static_cast<jclass>(env->NewGlobalRef(objCls)));
         arguments[i] = gObj;
 
         env->DeleteLocalRef(objCls);
@@ -398,7 +414,7 @@ extern "C"
 
     const Work work = [dartObjectAddress, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess]() {
       NativeMethodCallback methodCallback = getCallbackMethod(dartObjectAddress, funName);
-      void *target = getDartObject(dartObjectAddress);
+      void *target = (void *) dartObjectAddress;
       if (methodCallback != nullptr && target != nullptr)
       {
         methodCallback(target, funName, arguments, dataTypes, argumentCount);

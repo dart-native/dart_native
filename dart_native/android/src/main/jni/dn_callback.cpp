@@ -6,9 +6,11 @@
 #include "dn_log.h"
 #include "dn_type_convert.h"
 
-static std::map<jlong, void *> targetCache;
+/// key is dart object pointer address, value is dart port
 static std::map<jlong, int64_t> dartPortCache;
-static std::map<void *, jobject> callbackObjCache;
+/// key is dart object pointer, value is native proxy object
+static std::map<void *, jobject> nativeProxyObjectCache;
+/// key is dart object pointer address, value is method
 static std::map<jlong, std::map<std::string, NativeMethodCallback>> callbackFunctionCache;
 
 void registerCallbackManager(jlong dartObjectAddress, char *functionName, void *callback)
@@ -31,8 +33,7 @@ void registerCallbackManager(jlong dartObjectAddress, char *functionName, void *
 void doRegisterNativeCallback(void *dartObject, jobject nativeProxyObject, char *funName, void *callback, Dart_Port dartPort)
 {
   auto dartObjectAddress = (jlong) dartObject;
-  callbackObjCache[dartObject] = nativeProxyObject;
-  targetCache[dartObjectAddress] = dartObject;
+  nativeProxyObjectCache[dartObject] = nativeProxyObject;
   dartPortCache[dartObjectAddress] = dartPort;
 
   registerCallbackManager(dartObjectAddress, funName, callback);
@@ -40,13 +41,13 @@ void doRegisterNativeCallback(void *dartObject, jobject nativeProxyObject, char 
 
 jobject getNativeCallbackProxyObject(void *dartObject)
 {
-  if (callbackObjCache.find(dartObject) == callbackObjCache.end())
+  if (nativeProxyObjectCache.find(dartObject) == nativeProxyObjectCache.end())
   {
     DNInfo("getNativeCallbackProxyObject: not contain this dart object");
     return nullptr;
   }
 
-  return callbackObjCache[dartObject];
+  return nativeProxyObjectCache[dartObject];
 }
 
 Dart_Port getCallbackDartPort(jlong dartObjectAddress)
@@ -58,17 +59,6 @@ Dart_Port getCallbackDartPort(jlong dartObjectAddress)
   }
 
   return dartPortCache[dartObjectAddress];
-}
-
-void *getDartObject(jlong dartObjectAddress)
-{
-  if (targetCache.find(dartObjectAddress) == targetCache.end())
-  {
-    DNInfo("getDartObject: targetCache not contain this dart object %d", dartObjectAddress);
-    return nullptr;
-  }
-
-  return targetCache[dartObjectAddress];
 }
 
 NativeMethodCallback getCallbackMethod(jlong dartObjectAddress, char *functionName)
