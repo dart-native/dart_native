@@ -24,20 +24,25 @@ extern "C"
   /// key is jobject, value is pai which contain jclass and reference count
   static std::map<jobject, std::pair<jclass, int> > objectGlobalReference;
 
+  /// protect objectGlobalReference
+  std::mutex globalReferenceMtx;
+
   void _addGlobalObject(jobject globalObject, jclass globalClass)
   {
+    globalReferenceMtx.lock();
+    std::lock_guard<std::mutex> lk(globalReferenceMtx);
     std::pair<jclass, int> objPair = std::make_pair(globalClass, 0);
     objectGlobalReference[globalObject] = objPair;
+    globalReferenceMtx.unlock();
   }
 
   jclass _getGlobalClass(jobject globalObject)
   {
-    if (objectGlobalReference.find(globalObject) != objectGlobalReference.end())
-    {
-      std::pair<jclass, int> objPair = objectGlobalReference[globalObject];
-      return objPair.first;
-    }
-    return nullptr;
+    globalReferenceMtx.lock();
+    auto it = objectGlobalReference.find(globalObject);
+    auto cls = it != objectGlobalReference.end() ? it->second.first : nullptr;
+    globalReferenceMtx.unlock();
+    return cls;
   }
 
   void _detachThreadDestructor(void *arg)
@@ -195,7 +200,8 @@ extern "C"
     jclass cls = _getGlobalClass(object);
     if (cls == nullptr)
     {
-      DNError("invokeNativeMethod not find class");
+      /// maybe use cache pointer but jobject is release
+      DNError("invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
       return nullptr;
     }
 
@@ -209,7 +215,7 @@ extern "C"
     }
 
     char *methodSignature = generateSignature(dataTypes, argumentCount, returnType);
-    DNDebug("call method %s %s", methodName, methodSignature);
+//    DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
 
     auto it = methodCallerMap.find(*returnType);
@@ -285,11 +291,13 @@ extern "C"
   /// reference counter
   void _updateObjectReference(jobject globalObject, bool isRetain)
   {
+    globalReferenceMtx.lock();
     DNDebug("_updateObjectReference %s", isRetain ? "retain" : "release");
     auto it = objectGlobalReference.find(globalObject);
     if (it == objectGlobalReference.end())
     {
       DNError("_updateObjectReference %s error not contain this object!!!", isRetain ? "retain" : "release");
+      globalReferenceMtx.unlock();
       return;
     }
 
@@ -298,6 +306,7 @@ extern "C"
       /// dart object retain this dart object
       /// reference++
       it->second.second += 1;
+      globalReferenceMtx.unlock();
       return;
     }
 
@@ -311,8 +320,8 @@ extern "C"
       env->DeleteGlobalRef(it->second.first);
       objectGlobalReference.erase(it);
       env->DeleteGlobalRef(globalObject);
-      return;
     }
+    globalReferenceMtx.unlock();
   }
 
   /// release native object from cache
@@ -387,7 +396,7 @@ extern "C"
       auto argTypeString = (jstring)env->GetObjectArrayElement(argumentTypes, i);
       auto argument = env->GetObjectArrayElement(argumentsArray, i);
       dataTypes[i] = (char *)env->GetStringUTFChars(argTypeString, 0);
-
+      DNError("not register this dart port! %s", dataTypes[i]);
       if (strcmp(dataTypes[i], "java.lang.String") == 0)
       {
         arguments[i] = (jstring)argument == nullptr ? reinterpret_cast<uint16_t *>((char *)"")
@@ -401,6 +410,7 @@ extern "C"
         arguments[i] = gObj;
 
         env->DeleteLocalRef(objCls);
+        DNError("over %s", dataTypes[i]);
       }
 
       env->DeleteLocalRef(argTypeString);
