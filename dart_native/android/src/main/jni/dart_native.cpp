@@ -212,7 +212,7 @@ extern "C"
     }
 
     char *methodSignature = generateSignature(dataTypes, argumentCount, returnType);
-//    DNDebug("call method %s %s", methodName, methodSignature);
+    DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
 
     auto it = methodCallerMap.find(*returnType);
@@ -390,7 +390,6 @@ extern "C"
       auto argTypeString = (jstring)env->GetObjectArrayElement(argumentTypes, i);
       auto argument = env->GetObjectArrayElement(argumentsArray, i);
       dataTypes[i] = (char *)env->GetStringUTFChars(argTypeString, 0);
-      DNError("not register this dart port! %s", dataTypes[i]);
       if (strcmp(dataTypes[i], "java.lang.String") == 0)
       {
         arguments[i] = (jstring)argument == nullptr ? reinterpret_cast<uint16_t *>((char *)"")
@@ -404,7 +403,6 @@ extern "C"
         arguments[i] = gObj;
 
         env->DeleteLocalRef(objCls);
-        DNError("over %s", dataTypes[i]);
       }
 
       env->DeleteLocalRef(argTypeString);
