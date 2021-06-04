@@ -24,8 +24,6 @@ extern "C"
 
   Dart_Port getCallbackDartPort(jlong dartObjectAddress);
 
-  void *getDartObject(jlong dartObjectAddress);
-
   NativeMethodCallback getCallbackMethod(jlong dartObjectAddress, char *functionName);
 
 #ifdef __cplusplus
