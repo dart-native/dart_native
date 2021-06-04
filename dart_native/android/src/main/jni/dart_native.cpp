@@ -30,7 +30,6 @@ extern "C"
   void _addGlobalObject(jobject globalObject, jclass globalClass)
   {
     globalReferenceMtx.lock();
-    std::lock_guard<std::mutex> lk(globalReferenceMtx);
     std::pair<jclass, int> objPair = std::make_pair(globalClass, 0);
     objectGlobalReference[globalObject] = objPair;
     globalReferenceMtx.unlock();
