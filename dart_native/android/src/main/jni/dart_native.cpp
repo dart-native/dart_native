@@ -29,18 +29,16 @@ extern "C"
 
   void _addGlobalObject(jobject globalObject, jclass globalClass)
   {
-    globalReferenceMtx.lock();
+    std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
     std::pair<jclass, int> objPair = std::make_pair(globalClass, 0);
     objectGlobalReference[globalObject] = objPair;
-    globalReferenceMtx.unlock();
   }
 
   jclass _getGlobalClass(jobject globalObject)
   {
-    globalReferenceMtx.lock();
+    std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
     auto it = objectGlobalReference.find(globalObject);
     auto cls = it != objectGlobalReference.end() ? it->second.first : nullptr;
-    globalReferenceMtx.unlock();
     return cls;
   }
 
@@ -290,13 +288,12 @@ extern "C"
   /// reference counter
   void _updateObjectReference(jobject globalObject, bool isRetain)
   {
-    globalReferenceMtx.lock();
+    std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
     DNDebug("_updateObjectReference %s", isRetain ? "retain" : "release");
     auto it = objectGlobalReference.find(globalObject);
     if (it == objectGlobalReference.end())
     {
       DNError("_updateObjectReference %s error not contain this object!!!", isRetain ? "retain" : "release");
-      globalReferenceMtx.unlock();
       return;
     }
 
@@ -305,7 +302,6 @@ extern "C"
       /// dart object retain this dart object
       /// reference++
       it->second.second += 1;
-      globalReferenceMtx.unlock();
       return;
     }
 
@@ -320,7 +316,6 @@ extern "C"
       objectGlobalReference.erase(it);
       env->DeleteGlobalRef(globalObject);
     }
-    globalReferenceMtx.unlock();
   }
 
   /// release native object from cache
