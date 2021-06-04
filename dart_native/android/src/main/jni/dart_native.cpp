@@ -444,7 +444,7 @@ extern "C"
         {
           callbackResult = convertToJavaUtf16(env, (char *)arguments[argumentCount], nullptr, 0);
         }
-        else
+        else if (strcmp(returnType, "void") != 0)
         {
           callbackResult = (jobject)arguments[argumentCount];
         }
