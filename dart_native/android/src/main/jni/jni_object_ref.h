@@ -13,26 +13,26 @@
 template <typename T>
 class JavaGlobalRef {
  public:
-  explicit JavaGlobalRef(T obj, JNIEnv *env): env_(env) {
-    this->obj_ = env->NewGlobalRef(obj);
+  explicit JavaGlobalRef(T t, JNIEnv *env): env(env) {
+    this->obj = env->NewGlobalRef(t);
   }
 
   JavaGlobalRef() = delete;
 
-  T Object() const { return static_cast<T>(obj_); }
+  T Object() const { return static_cast<T>(obj); }
 
   ~JavaGlobalRef() { this->DeleteGlobalRef(); }
 
  protected:
-  jobject obj_ = nullptr;
+  jobject obj = nullptr;
 
  private:
-  JNIEnv *env_;
+  JNIEnv *env;
 
   void DeleteGlobalRef() {
-    if (this->obj_) {
-      env_->DeleteGlobalRef(this->obj_);
-      this->obj_ = nullptr;
+    if (this->obj) {
+      env->DeleteGlobalRef(this->obj);
+      this->obj = nullptr;
     }
   }
 };
