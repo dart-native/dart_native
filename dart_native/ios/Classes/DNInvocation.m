@@ -32,7 +32,7 @@
     if (self) {
         _methodSignature = signature;
         _stret = stret;
-        _argumentsRetainedQueue = dispatch_queue_create("com.dartobjc.argumentsRetained", DISPATCH_QUEUE_CONCURRENT);
+        _argumentsRetainedQueue = dispatch_queue_create("com.dartnative.argumentsRetained", DISPATCH_QUEUE_CONCURRENT);
         NSUInteger numberOfArguments = signature.numberOfArguments;
         if (stret) {
             numberOfArguments++;

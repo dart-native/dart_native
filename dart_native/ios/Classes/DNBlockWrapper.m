@@ -153,7 +153,7 @@ static atomic_uint_fast64_t _seq = 0;
         }
     }
     free(_typeEncodings);
-    NotifyDeallocToDart(_sequence, _dartPort);
+    NotifyDeallocToDart((intptr_t)_sequence, _dartPort);
 }
 
 - (void)initBlockWithError:(out NSError **)error {

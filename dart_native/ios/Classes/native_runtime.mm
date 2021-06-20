@@ -6,10 +6,13 @@
 //
 
 #import "native_runtime.h"
+#import <objc/runtime.h>
+#import <mach/mach.h>
+#import <os/lock.h>
+#import <Foundation/Foundation.h>
 #include <stdlib.h>
 #include <functional>
-#import <objc/runtime.h>
-#import <Foundation/Foundation.h>
+
 #import "DNBlockWrapper.h"
 #import "DNFFIHelper.h"
 #import "DNMethodIMP.h"
@@ -22,8 +25,88 @@
 #error
 #endif
 
-NSMethodSignature *
-native_method_signature(Class cls, SEL selector) {
+#if TARGET_OS_OSX && __x86_64__
+    // 64-bit Mac - tag bit is LSB
+#   define OBJC_MSB_TAGGED_POINTERS 0
+#else
+    // Everything else - tag bit is MSB
+#   define OBJC_MSB_TAGGED_POINTERS 1
+#endif
+
+#if OBJC_MSB_TAGGED_POINTERS
+#   define _OBJC_TAG_MASK (1UL<<63)
+#else
+#   define _OBJC_TAG_MASK 1UL
+#endif
+
+#pragma mark - Readable and valid memory
+
+/// Returens true if a pointer is a tagged pointer
+/// @param ptr is the pointer to check
+bool objc_isTaggedPointer(const void *ptr) {
+    return ((uintptr_t)ptr & _OBJC_TAG_MASK) == _OBJC_TAG_MASK;
+}
+
+/// Returns true if the pointer points to readable and valid memory.
+/// @param pointer is the pointer to check
+bool native_isValidReadableMemory(const void *pointer) {
+    // Check for read permissions
+    vm_address_t address = (vm_address_t)pointer;
+    vm_size_t vmsize = 0;
+    mach_port_t object = 0;
+#if defined(__LP64__) && __LP64__
+    vm_region_basic_info_data_64_t info;
+    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
+    kern_return_t ret = vm_region_64(mach_task_self(), &address, &vmsize, VM_REGION_BASIC_INFO, (vm_region_info_t)&info, &infoCnt, &object);
+#else
+    vm_region_basic_info_data_t info;
+    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT;
+    kern_return_t ret = vm_region(mach_task_self(), &address, &vmsize, VM_REGION_BASIC_INFO, (vm_region_info_t)&info, &infoCnt, &object);
+#endif
+    // vm_region/vm_region_64 returned an error or no read permission
+    if (ret != KERN_SUCCESS || (info.protection&VM_PROT_READ) == 0) {
+        return false;
+    }
+    
+    // Read the memory
+    vm_offset_t data = 0;
+    mach_msg_type_number_t dataCnt = 0;
+    ret = vm_read(mach_task_self(), (vm_address_t)pointer, sizeof(uintptr_t), &data, &dataCnt);
+    if (ret != KERN_SUCCESS) {
+        // vm_read returned an error
+        return false;
+    }
+    return true;
+}
+
+/// Returns true if a pointer is valid
+/// @param pointer is the pointer to check
+bool native_isValidPointer(const void *pointer) {
+    if (pointer == nullptr) {
+        return false;
+    }
+    // Check for tagged pointers
+    if (objc_isTaggedPointer(pointer)) {
+        return true;
+    }
+    // Check if the pointer is aligned
+    if (((uintptr_t)pointer % sizeof(uintptr_t)) != 0) {
+        return false;
+    }
+    // Check if the pointer is not larger than VM_MAX_ADDRESS
+    if ((uintptr_t)pointer > MACH_VM_MAX_ADDRESS) {
+        return false;
+    }
+    // Check if the memory is valid and readable
+    if (!native_isValidReadableMemory(pointer)) {
+        return false;
+    }
+    return true;
+}
+
+#pragma mark - Objective-C runtime functions
+
+NSMethodSignature *native_method_signature(Class cls, SEL selector) {
     if (!selector) {
         return nil;
     }
@@ -31,8 +114,7 @@ native_method_signature(Class cls, SEL selector) {
     return signature;
 }
 
-void
-native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings, BOOL decodeRetVal) {
+void native_signature_encoding_list(NSMethodSignature *signature, const char **typeEncodings, BOOL decodeRetVal) {
     if (!signature || !typeEncodings) {
         return;
     }
@@ -46,25 +128,29 @@ native_signature_encoding_list(NSMethodSignature *signature, const char **typeEn
     }
 }
 
-BOOL
-native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort) {
+BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort) {
     Class cls = object_getClass(target);
     NSString *selName = [NSString stringWithFormat:@"dart_native_%@", NSStringFromSelector(selector)];
     SEL key = NSSelectorFromString(selName);
     DNMethodIMP *imp = objc_getAssociatedObject(cls, key);
     // Existing implemention can't be replaced. Flutter hot-reload must also be well handled.
-    if (!imp && [target respondsToSelector:selector]) {
-        return NO;
+    if ([target respondsToSelector:selector]) {
+        if (imp) {
+            [imp addDartPort:dartPort];
+            return YES;
+        } else {
+            return NO;
+        }
     }
     if (types != NULL) {
         NSError *error;
         DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types
                                                                   callback:(NativeMethodCallback)callback
-                                                                  dartPort:dartPort
                                                                      error:&error];
         if (error.code) {
             return NO;
         }
+        [methodIMP addDartPort:dartPort];
         class_replaceMethod(cls, selector, [methodIMP imp], types);
         // DNMethodIMP always exists.
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -73,8 +159,7 @@ native_add_method(id target, SEL selector, char *types, void *callback, Dart_Por
     return NO;
 }
 
-char *
-native_protocol_method_types(Protocol *proto, SEL selector) {
+char *native_protocol_method_types(Protocol *proto, SEL selector) {
     struct objc_method_description description = protocol_getMethodDescription(proto, selector, YES, YES);
     if (description.types == NULL) {
         description = protocol_getMethodDescription(proto, selector, NO, YES);
@@ -82,8 +167,7 @@ native_protocol_method_types(Protocol *proto, SEL selector) {
     return description.types;
 }
 
-Class
-native_get_class(const char *className, Class superclass) {
+Class native_get_class(const char *className, Class superclass) {
     Class result = objc_getClass(className);
     if (result) {
         return result;
@@ -96,8 +180,7 @@ native_get_class(const char *className, Class superclass) {
     return result;
 }
 
-void *
-_mallocReturnStruct(NSMethodSignature *signature) {
+void *_mallocReturnStruct(NSMethodSignature *signature) {
     const char *type = signature.methodReturnType;
     NSUInteger size;
     DNSizeAndAlignment(type, &size, NULL, NULL);
@@ -106,8 +189,7 @@ _mallocReturnStruct(NSMethodSignature *signature) {
     return result;
 }
 
-void
-_fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
+void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
     for (NSUInteger i = offset; i < signature.numberOfArguments; i++) {
         const char *argType = [signature getArgumentTypeAtIndex:i];
         NSUInteger argsIndex = i - offset;
@@ -131,7 +213,7 @@ _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *i
                 length <<= 16;
                 length |= data[i];
             }
-            NSString *realArg = [NSString stringWithCharacters:data + lengthDataSize length:length];
+            NSString *realArg = [NSString stringWithCharacters:data + lengthDataSize length:(NSUInteger)length];
             [stringTypeBucket addObject:realArg];
             free((void *)data); // Malloc data on dart side, need free here.
             [invocation setArgument:&realArg atIndex:i];
@@ -165,8 +247,7 @@ void *_dataForNSStringReturnValue(NSString *retVal, const char **retType) {
     return dataPtr;
 }
 
-void *
-native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
+void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
     if (!object || !selector || !signature) {
         return NULL;
     }
@@ -219,8 +300,7 @@ native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, di
     }
 }
 
-void *
-native_block_create(char *types, void *callback, Dart_Port dartPort) {
+void *native_block_create(char *types, void *callback, Dart_Port dartPort) {
     NSError *error;
     DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types
                                                                 callback:(NativeBlockCallback)callback
@@ -232,8 +312,7 @@ native_block_create(char *types, void *callback, Dart_Port dartPort) {
     return (__bridge void *)wrapper;
 }
 
-void *
-native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
+void *native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
     if (!block) {
         return nullptr;
     }
@@ -325,8 +404,7 @@ native_all_type_encodings() {
 #define PTR(type) COND(type, typeList[16])
 
 // When returns struct encoding, it needs to be freed.
-const char *
-native_type_encoding(const char *str) {
+const char *native_type_encoding(const char *str) {
     if (!str || strlen(str) == 0) {
         return NULL;
     }
@@ -374,8 +452,7 @@ native_type_encoding(const char *str) {
 }
 
 // Returns type encodings whose need to be freed.
-const char **
-native_types_encoding(const char *str, int *count, int startIndex) {
+const char **native_types_encoding(const char *str, int *count, int startIndex) {
     int argCount = DNTypeCount(str) - startIndex;
     const char **argTypes = (const char **)malloc(sizeof(char *) * argCount);
     if (argTypes == NULL) {
@@ -410,8 +487,7 @@ native_types_encoding(const char *str, int *count, int startIndex) {
 }
 
 // Returns struct encoding which will be freed.
-const char *
-native_struct_encoding(const char *encoding) {
+const char *native_struct_encoding(const char *encoding) {
     NSUInteger size, align;
     long length;
     DNSizeAndAlignment(encoding, &size, &align, &length);
@@ -445,8 +521,7 @@ native_struct_encoding(const char *encoding) {
     return typePtr;
 }
 
-bool
-LP64() {
+bool LP64() {
 #if defined(__LP64__) && __LP64__
     return true;
 #else
@@ -454,8 +529,7 @@ LP64() {
 #endif
 }
 
-bool
-NS_BUILD_32_LIKE_64() {
+bool NS_BUILD_32_LIKE_64() {
 #if defined(NS_BUILD_32_LIKE_64) && NS_BUILD_32_LIKE_64
     return true;
 #else
@@ -463,21 +537,18 @@ NS_BUILD_32_LIKE_64() {
 #endif
 }
 
-dispatch_queue_main_t
-_dispatch_get_main_queue(void) {
+dispatch_queue_main_t _dispatch_get_main_queue(void) {
     return dispatch_get_main_queue();
 }
 
-void
-native_mark_autoreleasereturn_object(id object) {
+void native_mark_autoreleasereturn_object(id object) {
     int64_t address = (int64_t)object;
     [NSThread.currentThread dn_performWaitingUntilDone:YES block:^{
         NSThread.currentThread.threadDictionary[@(address)] = object;
     }];
 }
 
-const uint16_t *
-native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length) {
+const uint16_t *native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length) {
     NSData *data = [string dataUsingEncoding:NSUTF16StringEncoding];
     // UTF16, 2-byte per unit
     *length = data.length / 2;
@@ -531,7 +602,7 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
         sema = dispatch_semaphore_create(0);
     }
     NativeBlockCallback callback = wrapper.callback;
-    const Work work = [wrapper, numberOfArguments, callback, sema, invocation]() {
+    const Work work = [=]() {
         callback(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
@@ -555,25 +626,32 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                                int numberOfArguments,
                                const char **types) {
     BOOL blocking = strcmp(types[0], "v") != 0;
-    dispatch_semaphore_t sema;
+    dispatch_group_t group;
     if (blocking) {
-        sema = dispatch_semaphore_create(0);
+        group = dispatch_group_create();
     }
     NativeMethodCallback callback = methodIMP.callback;
-    const Work work = [invocation, methodIMP, numberOfArguments, types, callback, sema]() {
+    const Work work = [=]() {
         callback(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
                  types,
                  methodIMP.stret);
-        if (sema) {
-            dispatch_semaphore_signal(sema);
+        if (blocking) {
+            dispatch_group_leave(group);
         }
     };
     const Work* work_ptr = new Work(work);
-    BOOL success = NotifyDart(methodIMP.dartPort, work_ptr);
-    if (sema && success) {
-        dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    
+    NSSet<NSNumber *> *dartPorts = methodIMP.dartPorts;
+    for (NSNumber *port in dartPorts) {
+        BOOL success = NotifyDart(port.integerValue, work_ptr);
+        if (blocking && success) {
+            dispatch_group_enter(group);
+        }
+    }
+    if (blocking) {
+        dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
     }
 }
 
@@ -594,24 +672,89 @@ void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
 
 #pragma mark - Dart Finalizer
 
-static void RunFinalizer(void *isolate_callback_data,
+static NSMutableDictionary<NSNumber *, NSNumber *> *objectRefCount = [NSMutableDictionary dictionary];
+
+API_AVAILABLE(ios(10.0))
+static os_unfair_lock _refCountUnfairLock = OS_UNFAIR_LOCK_INIT;
+static NSLock *_refCountLock = [[NSLock alloc] init];
+
+static void _RunFinalizer(void *isolate_callback_data,
                          Dart_WeakPersistentHandle handle,
                          void *peer) {
+    NSNumber *address = @((intptr_t)peer);
+    NSUInteger refCount = objectRefCount[address].unsignedIntegerValue;
+    if (refCount > 1) {
+        objectRefCount[address] = @(refCount - 1);
+        return;
+    }
     SEL selector = NSSelectorFromString(@"release");
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     [(__bridge id)peer performSelector:selector];
     #pragma clang diagnostic pop
+    objectRefCount[address] = nil;
 }
 
-void PassObjectToCUseDynamicLinking(Dart_Handle h, id object) {
+static void RunFinalizer(void *isolate_callback_data,
+                         Dart_WeakPersistentHandle handle,
+                         void *peer) {
+    if (@available(iOS 10.0, *)) {
+        os_unfair_lock_lock(&_refCountUnfairLock);
+        _RunFinalizer(isolate_callback_data, handle, peer);
+        os_unfair_lock_unlock(&_refCountUnfairLock);
+    } else {
+        [_refCountLock lock];
+        _RunFinalizer(isolate_callback_data, handle, peer);
+        [_refCountLock unlock];
+    }
+}
+
+DNPassObjectResult _PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer) {
+    NSNumber *address = @((intptr_t)pointer);
+    NSUInteger refCount = objectRefCount[address].unsignedIntegerValue;
+    // pointer is already retained by dart object, just increase its reference count.
+    if (refCount > 0) {
+        Dart_NewWeakPersistentHandle_DL(h, pointer, 8, RunFinalizer);
+        objectRefCount[address] = @(refCount + 1);
+        return DNPassObjectResultSuccess;
+    }
+    // First invoking on pointer. Slow path.
+    bool isValid = native_isValidPointer(pointer);
+    if (!isValid) {
+        return DNPassObjectResultFailed;
+    }
+    
+    id object = (__bridge id)pointer;
+    if (object_isClass(object)) {
+        return DNPassObjectResultFailed;
+    }
+    // DartVM Error.
+    if (Dart_IsError_DL(h)) {
+        return DNPassObjectResultFailed;
+    }
     // Only Block handles lifetime of BlockWrapper. So we can't transfer it to Dart.
-    if (Dart_IsError_DL(h) || [object isKindOfClass:DNBlockWrapper.class]) {
-        return;
+    if ([object isKindOfClass:DNBlockWrapper.class]) {
+        return DNPassObjectResultNeedless;
     }
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     [object performSelector:NSSelectorFromString(@"retain")];
     #pragma clang diagnostic pop
-    Dart_NewWeakPersistentHandle_DL(h, (__bridge void *)(object), 8, RunFinalizer);
+    Dart_NewWeakPersistentHandle_DL(h, pointer, 8, RunFinalizer);
+    objectRefCount[address] = @1;
+    return DNPassObjectResultSuccess;
+}
+
+DNPassObjectResult PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer) {
+    DNPassObjectResult result;
+    if (@available(iOS 10.0, *)) {
+        os_unfair_lock_lock(&_refCountUnfairLock);
+        result = _PassObjectToCUseDynamicLinking(h, pointer);
+        os_unfair_lock_unlock(&_refCountUnfairLock);
+    } else {
+        [_refCountLock lock];
+        result = _PassObjectToCUseDynamicLinking(h, pointer);
+        [_refCountLock unlock];
+    }
+    return result;
 }
