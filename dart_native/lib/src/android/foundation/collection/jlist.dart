@@ -6,7 +6,7 @@ import 'package:ffi/ffi.dart';
 
 /// Stands for `List` in Android.
 const String CLS_LIST = "java/util/List";
-const String CLS_ARRAYLIST = "java/util/ArrayList";
+const String CLS_ARRAY_LIST = "java/util/ArrayList";
 
 class JList extends JSubclass<List> {
   JList(List value, {String clsName: CLS_LIST, InitSubclass init: _new})
@@ -20,11 +20,15 @@ class JList extends JSubclass<List> {
     List temp = List.filled(count, nullptr, growable: false);
     String itemType = "";
     for (var i = 0; i < count; i++) {
-      Pointer<Void> itemPtr = invoke("get", [i], "Ljava/lang/Object;");
+      dynamic item = invoke("get", [i], "Ljava/lang/Object;");
       if (itemType == "") {
-        itemType = _getItemClass(itemPtr);
+        if (item is String) {
+          itemType = "java.lang.String";
+        } else {
+          itemType = _getItemClass(item);
+        }
       }
-      temp[i] = unBoxingWrapperClass(itemPtr, itemType);
+      temp[i] = unBoxingWrapperClass(item, itemType);
     }
     raw = temp;
   }
@@ -36,7 +40,7 @@ Pointer<Utf8> _argSignature = "Ljava/lang/Object;".toNativeUtf8();
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is List) {
     ///'List' default implementation 'ArrayList'.
-    if (clsName == CLS_LIST) clsName = CLS_ARRAYLIST;
+    if (clsName == CLS_LIST) clsName = CLS_ARRAY_LIST;
 
     JObject nativeList = JObject(clsName);
 
@@ -44,8 +48,8 @@ Pointer<Void> _new(dynamic value, String clsName) {
       return nativeList.pointer;
     }
     for (var i = 0; i < value.length; i++) {
-      nativeList.invoke(
-          "add", [boxingWrapperClass(value[i])], "Z", [_argSignature]);
+      nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z",
+          argsSignature: [_argSignature]);
     }
     return nativeList.pointer;
   } else {

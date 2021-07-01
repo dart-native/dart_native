@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/callback_manager.dart';
-import 'package:dart_native/src/ios/runtime/nsobject.dart';
+import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
 
 DynamicLibrary _runtimeLib;
 DynamicLibrary get runtimeLib {
@@ -24,5 +24,4 @@ final initializeApi = runtimeLib.lookupFunction<IntPtr Function(Pointer<Void>),
     int Function(Pointer<Void>)>("InitDartApiDL");
 
 final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData);
-
 final initDartAPISuccess = _dartAPIResult == 0;

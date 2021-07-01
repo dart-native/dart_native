@@ -17,28 +17,43 @@ dynamic boxingWrapperClass(dynamic value) {
     return Double(value);
   } else if (value is List) {
     return JList(value);
-  } else if (value is String){
-    // todo support java string
-    // return JObject(value);
-  } else if (value is JObject) {
+  } else if (value is Set) {
+    return JSet(value);
+  } else if (value is bool) {
+    return Boolean(value);
+  } else {
     return value;
   }
 }
 
-dynamic unBoxingWrapperClass(Pointer<Void> ptr, String itemType) {
-  switch (itemType) {
-    case "java.lang.Integer": return Integer.fromPointer(ptr).raw;
-    case "java.lang.Boolean": return Boolean.fromPointer(ptr).raw;
-    case "java.lang.Byte": return Byte.fromPointer(ptr).raw;
-    case "java.lang.Character": return Character.fromPointer(ptr).raw;
-    case "java.lang.Double": return Double.fromPointer(ptr).raw;
-    case "java.lang.Float": return Float.fromPointer(ptr).raw;
-    case "java.lang.Long": return Long.fromPointer(ptr).raw;
-    case "java.lang.Short": return Short.fromPointer(ptr).raw;
+dynamic unBoxingWrapperClass(dynamic value, String valueType) {
+  switch (valueType) {
+    case "java.lang.Integer":
+      return Integer.fromPointer(value).raw;
+    case "java.lang.Boolean":
+      return Boolean.fromPointer(value).raw;
+    case "java.lang.Byte":
+      return Byte.fromPointer(value).raw;
+    case "java.lang.Character":
+      return Character.fromPointer(value).raw;
+    case "java.lang.Double":
+      return Double.fromPointer(value).raw;
+    case "java.lang.Float":
+      return Float.fromPointer(value).raw;
+    case "java.lang.Long":
+      return Long.fromPointer(value).raw;
+    case "java.lang.Short":
+      return Short.fromPointer(value).raw;
     case "java.util.List":
     case "java.util.ArrayList":
-      return JList.fromPointer(ptr).raw;
-    default: return JObject(itemType?.replaceAll(".", "/"), pointer: ptr);
+      return JList.fromPointer(value).raw;
+    case "java.util.Set":
+    case "java.util.HashSet":
+      return JSet.fromPointer(value).raw;
+    case "java.lang.String":
+      return value;
+    default:
+      return JObject(valueType?.replaceAll(".", "/") ?? "java.lang.Object",
+          pointer: value);
   }
 }
-

@@ -17,7 +17,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    // initPlatformState();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -33,7 +33,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         "Flutter Channel String Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
     time = DateTime.now().millisecondsSinceEpoch;
     for (var i = 0; i < 10000; i++) {
-      String _ = stub.getString(testString);
+      // String _ = stub.getString(testString);
     }
     print("DartNative String Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
 
@@ -45,7 +45,7 @@ class _AndroidNewApp extends State<AndroidNewApp> {
         "Flutter Channel int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
     time = DateTime.now().millisecondsSinceEpoch;
     for (var i = 0; i < 10000; i++) {
-      int _ = stub.getInt(100);
+      // int _ = stub.getInt(100);
     }
     print("DartNative int Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
   }

@@ -23,7 +23,6 @@ class _IOSAppState extends State<IOSApp> {
   Future<void> initPlatformState() async {
     RuntimeSon stub = RuntimeSon();
     DelegateStub delegate = DelegateStub();
-    testIOS(stub, delegate);
     // Benchmark
     String testString =
         'This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖';
@@ -41,6 +40,7 @@ class _IOSAppState extends State<IOSApp> {
     }
 
     print("DartNative Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
+    testIOS(stub, delegate);
   }
 
   @override

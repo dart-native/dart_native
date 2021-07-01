@@ -4,7 +4,9 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by huizzzhou on 3/26/21.
@@ -80,11 +82,11 @@ public class ArrayListConverter {
     /************************object type list to array***************************************/
 
     public Object[] objectListToArray(List<Object> arguments) {
-        Object[] doubleArray = new Object[arguments.size()];
+        Object[] objectArray = new Object[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
-            doubleArray[i] = arguments.get(i);
+            objectArray[i] = arguments.get(i);
         }
-        return doubleArray;
+        return objectArray;
     }
 
 
@@ -138,5 +140,14 @@ public class ArrayListConverter {
 
         return arrayList;
     }
-    
+
+    /************************set to list***************************************/
+
+    public List setToList(HashSet<Object> set) {
+        if (set == null || set.size() == 0) {
+            return new ArrayList();
+        }
+
+        return new ArrayList<Object>(set);
+    }
 }
