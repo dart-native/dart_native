@@ -18,13 +18,13 @@ class Class extends id {
   ///
   /// Obtain an existing class by [name], or creating a new class using [name] and
   /// its [superclass].
-  factory Class(String name, [Class superclass]) {
+  factory Class(String name, [Class? superclass]) {
     Pointer<Void> ptr = _getClass(name, superclass);
     if (ptr == nullptr) {
-      throw 'class $name is not exists!';
+      throw 'class $name does not exist!';
     }
     if (_cache.containsKey(ptr.address)) {
-      return _cache[ptr.address];
+      return _cache[ptr.address]!;
     } else {
       return Class._internal(name, ptr);
     }
@@ -32,11 +32,11 @@ class Class extends id {
 
   factory Class.fromPointer(Pointer<Void> ptr) {
     if (ptr == nullptr) {
-      return null;
+      throw 'Pointer does not exist';
     }
     int key = ptr.address;
     if (_cache.containsKey(key)) {
-      return _cache[key];
+      return _cache[key]!;
     } else {
       if (object_isClass(ptr) != 0) {
         String name = class_getName(ptr).toDartString();
@@ -47,7 +47,7 @@ class Class extends id {
     }
   }
 
-  Class._internal(this.name, Pointer ptr) : super(ptr) {
+  Class._internal(this.name, Pointer ptr) : super(ptr.cast<Void>()) {
     _cache[ptr.address] = this;
   }
 
@@ -57,17 +57,17 @@ class Class extends id {
   }
 }
 
-Pointer<Void> _getClass(String className, [Class superclass]) {
+Pointer<Void> _getClass(String? className, [Class? superclass]) {
   if (className == null) {
     className = 'NSObject';
   }
   final classNamePtr = className.toNativeUtf8();
-  Pointer<Void> basePtr = superclass?.pointer;
+  Pointer<Void>? basePtr = superclass?.pointer;
   Pointer<Void> result;
   if (superclass == null) {
     result = objc_getClass(classNamePtr);
   } else {
-    result = nativeGetClass(classNamePtr, basePtr);
+    result = nativeGetClass(classNamePtr, basePtr!);
   }
   calloc.free(classNamePtr);
   return result;

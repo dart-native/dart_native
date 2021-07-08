@@ -48,10 +48,10 @@ Pointer<Void> _mainQueue = dispatch_get_main_queue();
 /// An object that manages the execution of tasks serially or concurrently on
 /// your app's main thread or on a background thread.
 class DispatchQueue {
-  Pointer<Void> _queue;
+  late Pointer<Void> _queue;
   Pointer<Void> get pointer => _queue;
 
-  DispatchQueue.global({DispatchQoS qos}) {
+  DispatchQueue.global({DispatchQoS? qos}) {
     if (qos == null) {
       qos = DispatchQoS.useDefault;
     }

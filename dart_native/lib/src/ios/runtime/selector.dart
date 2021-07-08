@@ -14,10 +14,10 @@ class SEL {
 
   factory SEL(String selectorName) {
     if (selectorName == null) {
-      return null;
+      throw 'Invalid selector name';
     }
     if (_cache.containsKey(selectorName)) {
-      return _cache[selectorName];
+      return _cache[selectorName]!;
     }
     final selectorNamePtr = selectorName.toNativeUtf8();
     Pointer<Void> ptr = sel_registerName(selectorNamePtr);
@@ -28,7 +28,7 @@ class SEL {
   factory SEL.fromPointer(Pointer<Void> ptr) {
     String selName = sel_getName(ptr).toDartString();
     if (_cache.containsKey(selName)) {
-      return _cache[selName];
+      return _cache[selName]!;
     } else {
       return SEL._internal(selName, ptr);
     }
@@ -43,7 +43,8 @@ class SEL {
   }
 
   bool operator ==(other) {
-    return _selPtr == other._selPtr;
+    if (other is SEL) return _selPtr == other._selPtr;
+    return false;
   }
 
   int get hashCode {

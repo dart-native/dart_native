@@ -35,7 +35,7 @@ class JMap extends JSubclass<Map> {
   }
 }
 
-Pointer<Utf8> _argSignature = Utf8.toUtf8("Ljava/lang/Object;");
+Pointer<Utf8> _argSignature = "Ljava/lang/Object;".toNativeUtf8();
 
 /// New native 'HashMap'.
 Pointer<Void> _new(dynamic value, String clsName) {
@@ -44,7 +44,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
     JObject nativeMap = JObject(clsName);
 
     if (value == null) {
-      return nativeMap.pointer;
+      return nativeMap.pointer.cast<Void>();
     }
     value.forEach((key, value) {
       nativeMap.invoke(
@@ -53,7 +53,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
           "Ljava/lang/Object;",
           argsSignature: [_argSignature, _argSignature]);
     });
-    return nativeMap.pointer;
+    return nativeMap.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing JList.';
   }

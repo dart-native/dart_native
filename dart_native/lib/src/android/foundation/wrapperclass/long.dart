@@ -18,7 +18,7 @@ class Long extends JSubclass<int> {
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
     JObject object = JObject.parameterConstructor(clsName, [long(value)]);
-    return object.pointer;
+    return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Long.';
   }

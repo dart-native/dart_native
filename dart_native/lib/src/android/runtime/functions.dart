@@ -19,7 +19,7 @@ final Pointer<Void> Function(
         Pointer<Pointer<Void>> argsPtrs,
         Pointer<Pointer<Utf8>> typePtrs,
         int argCount,
-        int stringTypeBitmask) nativeCreateObject =
+        int stringTypeBitmask)? nativeCreateObject =
     nativeDylib
         ?.lookup<
             NativeFunction<
@@ -48,7 +48,7 @@ final Pointer<Void> Function(
         Pointer<Pointer<Utf8>> typePtrs,
         int argCount,
         Pointer<Utf8> returnType,
-        int stringTypeBitmask) nativeInvoke =
+        int stringTypeBitmask)? nativeInvoke =
     nativeDylib
         ?.lookup<
             NativeFunction<
@@ -65,7 +65,7 @@ final Pointer<Void> Function(
 ///
 /// dart对象与native对象绑定
 ///
-final void Function(Object, Pointer<Void>) passJObjectToC = nativeDylib
+final void Function(Object, Pointer<Void>)? passJObjectToC = nativeDylib
     ?.lookup<NativeFunction<Void Function(Handle, Pointer<Void>)>>(
         "PassObjectToCUseDynamicLinking")
     ?.asFunction();
@@ -74,7 +74,7 @@ final void Function(Object, Pointer<Void>) passJObjectToC = nativeDylib
 /// 注册异步回调函数
 ///
 final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
-        Pointer<NativeFunction<MethodNativeCallback>>, int)
+        Pointer<NativeFunction<MethodNativeCallback>>, int)?
     registerNativeCallback = nativeDylib
         ?.lookup<
             NativeFunction<
@@ -85,4 +85,3 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<NativeFunction<MethodNativeCallback>> function,
                     Int64 dartPort)>>("registerNativeCallback")
         ?.asFunction();
-

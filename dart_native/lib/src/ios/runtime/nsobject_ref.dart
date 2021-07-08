@@ -10,8 +10,8 @@ import 'package:ffi/ffi.dart';
 /// This Class is an experimental implementation.
 /// Broken changes are likely in the future.
 class NSObjectRef<T extends id> {
-  T value;
-  Pointer<Pointer<Void>> _ptr;
+  late T value;
+  late Pointer<Pointer<Void>> _ptr;
   Pointer<Pointer<Void>> get pointer => _ptr;
 
   NSObjectRef() {

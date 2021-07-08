@@ -35,7 +35,7 @@ Map<Pointer<Void>, List<Finalizer>> _finalizerMap = {};
 
 addFinalizerForObject(NSObject obj) {
   if (obj.finalizer != null) {
-    List<Finalizer> finalizers = _finalizerMap[obj.pointer];
+    List<Finalizer>? finalizers = _finalizerMap[obj.pointer];
     if (finalizers == null) {
       finalizers = [obj.finalizer];
     } else {
@@ -46,7 +46,7 @@ addFinalizerForObject(NSObject obj) {
 }
 
 removeFinalizerForObject(NSObject obj) {
-  List<Finalizer> finalizers = _finalizerMap[obj.pointer];
+  List<Finalizer>? finalizers = _finalizerMap[obj.pointer];
   finalizers?.remove(obj.finalizer);
 }
 

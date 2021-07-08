@@ -5,13 +5,13 @@ import 'package:source_gen/source_gen.dart';
 class Collector {
   Collector();
 
-  static String packageName;
+  static String? packageName;
   Set<String> classes = Set();
   Set<String> importFiles = Set();
 
   void collect(
-      ClassElement element, ConstantReader annotation, BuildStep buildStep) {
-    final String className = element.name;
+      Element element, ConstantReader annotation, BuildStep buildStep) {
+    final String className = element.name!;
     classes.add(className);
 
     Collector.packageName = buildStep.inputId.package;

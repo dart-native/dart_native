@@ -25,7 +25,7 @@ class NSValue extends NSSubclass {
     if (raw == null) {
       // TODO: Do these things on native.
       String encoding = perform(SEL('objCType'));
-      String selName = _selNameForNativeValue(encoding);
+      String? selName = _selNameForNativeValue(encoding);
       if (selName == null) {
         throw 'Invalid encoding type for NSValue: $encoding';
       } else {
@@ -44,10 +44,10 @@ class NSValue extends NSSubclass {
     }
   }
 
-  String _selNameForNativeValue(String encoding) {
+  String? _selNameForNativeValue(String encoding) {
     if (encoding.startsWith('{')) {
       // Structs
-      String structName = structNameForEncoding(encoding);
+      String? structName = structNameForEncoding(encoding);
       if (structName == null) {
         return null;
       }

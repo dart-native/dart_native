@@ -23,16 +23,16 @@ abstract class NSObjectProtocol {
   NSObjectProtocol self();
 
   /// Returns a Boolean value that indicates whether the receiver is an instance of given class or an instance of any class that inherits from that class.
-  bool isKind({@required Class of});
+  bool isKind({required Class of});
 
   /// Returns a Boolean value that indicates whether the receiver is an instance of a given class.
-  bool isMember({@required Class of});
+  bool isMember({required Class of});
 
   /// Returns a Boolean value that indicates whether the receiver implements or inherits a method that can respond to a specified message.
-  bool responds({@required SEL to});
+  bool responds({required SEL to});
 
   /// Returns a Boolean value that indicates whether the receiver conforms to a given protocol.
-  bool conforms({@required Protocol to});
+  bool conforms({required Protocol to});
 
   /// Returns a string that describes the contents of the receiver.
   String get description;
@@ -43,18 +43,18 @@ abstract class NSObjectProtocol {
   /// Sends a specified message to the receiver and returns the result of the message.
   dynamic perform(SEL selector, {List args});
 
-  /// Returns a Boolean value that indicates whether the receiver does not descend from NSObject.
+  /// Returns a Boolean value that indicates whether the receiver does not descend froms NSObject.
   bool isProxy();
 }
 
 /// Returns the class object for the receiver’s class.
-Class type({@required dynamic of}) {
+Class type({required dynamic of}) {
   if (of is NSObjectProtocol) {
     return of.perform(SEL('class'));
   } else if (of is Type) {
     return Class(of.toString());
   } else if (of is Pointer) {
-    return NSObject.fromPointer(of).perform(SEL('class'));
+    return NSObject.fromPointer(of.cast<Void>()).perform(SEL('class'));
   } else {
     return Class(of.runtimeType.toString());
   }

@@ -13,7 +13,7 @@ class CallBackManager {
 
   registerCallBack(
       Pointer<Void> targetPtr, String functionName, Function function) {
-    Map<String, Function> methodsMap = _callbackManager[targetPtr];
+    Map<String, Function>? methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
       methodsMap = {functionName: function};
     } else {
@@ -22,9 +22,9 @@ class CallBackManager {
     _callbackManager[targetPtr] = methodsMap;
   }
 
-  Function getCallbackFunctionOnTarget(
+  Function? getCallbackFunctionOnTarget(
       Pointer<Void> targetPtr, String functionName) {
-    Map<String, Function> methodsMap = _callbackManager[targetPtr];
+    Map<String, Function>? methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
       return null;
     }

@@ -5,11 +5,11 @@
 /// @NativeAvailable(ios: '11.0')
 /// ```
 class NativeAvailable {
-  final String ios;
-  final String macos;
-  final String tvos;
-  final String watchos;
-  final String android;
+  final String? ios;
+  final String? macos;
+  final String? tvos;
+  final String? watchos;
+  final String? android;
   const NativeAvailable(
       {this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
@@ -30,7 +30,7 @@ const NativePlatform android = const NativePlatform();
 /// You can mark three [NativePlatform] at most.
 class NativeUnavailable {
   const NativeUnavailable(NativePlatform p0,
-      [NativePlatform p1, NativePlatform p2]);
+      [NativePlatform? p1, NativePlatform? p2]);
 }
 
 /// Annotation for deprecated API on native platforms.
@@ -41,11 +41,11 @@ class NativeUnavailable {
 /// @NativeDeprecated(ios: ['10.0', '10.4'])
 /// ```
 class NativeDeprecated {
-  final List<String> ios;
-  final List<String> macos;
-  final List<String> tvos;
-  final List<String> watchos;
-  final List<String> android;
+  final List<String>? ios;
+  final List<String>? macos;
+  final List<String>? tvos;
+  final List<String>? watchos;
+  final List<String>? android;
   const NativeDeprecated(String message,
       {this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
