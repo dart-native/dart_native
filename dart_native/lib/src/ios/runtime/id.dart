@@ -13,7 +13,7 @@ import 'package:dart_native/src/ios/runtime/message.dart';
 class id implements NSObjectProtocol {
   /// Stands for `isa` in iOS.
   Class? get isa {
-    if (_ptr == null || _ptr == nullptr) {
+    if (_ptr == nullptr) {
       return null;
     }
     Pointer<Void> isaPtr = object_getClass(_ptr);

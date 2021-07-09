@@ -45,7 +45,7 @@ class JObject extends JClass {
         classNamePtr,
         nativeArguments.pointers,
         nativeArguments.typePointers,
-        args?.length ?? 0,
+        args.length,
         nativeArguments.stringTypeBitmask);
     calloc.free(classNamePtr);
     passJObjectToNative(this);
@@ -130,11 +130,11 @@ class NativeArguments {
   NativeArguments(this.pointers, this.typePointers, this.stringTypeBitmask);
 
   void freePointers() {
-    if (pointers != null) {
-      calloc.free(pointers);
-    }
-    if (typePointers != null) {
-      calloc.free(typePointers);
-    }
+    //if (pointers != null) {
+    calloc.free(pointers);
+    //}
+    //  if (typePointers != null) {
+    calloc.free(typePointers);
+    //}
   }
 }

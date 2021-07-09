@@ -13,9 +13,6 @@ class SEL {
   static final Map<String, SEL> _cache = <String, SEL>{};
 
   factory SEL(String selectorName) {
-    if (selectorName == null) {
-      throw 'Invalid selector name';
-    }
     if (_cache.containsKey(selectorName)) {
       return _cache[selectorName]!;
     }

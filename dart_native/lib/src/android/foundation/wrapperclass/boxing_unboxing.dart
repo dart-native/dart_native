@@ -53,7 +53,6 @@ dynamic unBoxingWrapperClass(dynamic value, String valueType) {
     case "java.lang.String":
       return value;
     default:
-      return JObject(valueType?.replaceAll(".", "/") ?? "java.lang.Object",
-          pointer: value);
+      return JObject(valueType.replaceAll(".", "/"), pointer: value);
   }
 }

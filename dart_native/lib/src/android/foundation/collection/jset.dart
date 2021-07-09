@@ -30,10 +30,11 @@ Pointer<Utf8> _argSignature = "Ljava/lang/Object;".toNativeUtf8();
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is Set) {
     JObject nativeSet = JObject(clsName);
+    /* Deprecated due to null safety
     if (value == null) {
       return nativeSet.pointer.cast<Void>();
     }
-
+    */
     for (var element in value) {
       nativeSet.invoke("add", [boxingWrapperClass(element)], "Z",
           argsSignature: [_argSignature]);

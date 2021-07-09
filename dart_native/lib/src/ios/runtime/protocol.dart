@@ -72,10 +72,11 @@ bool registerProtocolCallback(
   Protocol protocol = Protocol(protoName);
 
   //This null check is deprecated
-  if (protocol == null) {
+  /* if (protocol == null) {
     // FIXME: Use Dart Function signature to create a native method.
     throw 'Protocol($protoName) never used in native code! Cannot get Protocol by its name!';
   }
+  */
   Pointer<Utf8> types =
       nativeProtocolMethodTypes(protocol.toPointer(), selector.toPointer());
   return registerMethodCallback(target, selector, callback, types);

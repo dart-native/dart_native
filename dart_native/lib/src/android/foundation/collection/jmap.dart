@@ -43,9 +43,11 @@ Pointer<Void> _new(dynamic value, String clsName) {
     ///'Map' default implementation 'HashMap'.
     JObject nativeMap = JObject(clsName);
 
+    /* Deprecated due to null safety
     if (value == null) {
       return nativeMap.pointer.cast<Void>();
     }
+    */
     value.forEach((key, value) {
       nativeMap.invoke(
           "put",

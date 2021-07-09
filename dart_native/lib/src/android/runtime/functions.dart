@@ -21,7 +21,7 @@ final Pointer<Void> Function(
         int argCount,
         int stringTypeBitmask)? nativeCreateObject =
     nativeDylib
-        ?.lookup<
+        .lookup<
             NativeFunction<
                 Pointer<Void> Function(
                     Pointer<Utf8> clsName,
@@ -29,7 +29,7 @@ final Pointer<Void> Function(
                     Pointer<Pointer<Utf8>> typePtrs,
                     Int32 argCount,
                     Uint32 stringTypeBitmask)>>("createTargetObject")
-        ?.asFunction();
+        .asFunction();
 
 /// 调用native方法
 ///
@@ -50,7 +50,7 @@ final Pointer<Void> Function(
         Pointer<Utf8> returnType,
         int stringTypeBitmask)? nativeInvoke =
     nativeDylib
-        ?.lookup<
+        .lookup<
             NativeFunction<
                 Pointer<Void> Function(
                     Pointer<Void> objectPtr,
@@ -60,15 +60,15 @@ final Pointer<Void> Function(
                     Int32 argCount,
                     Pointer<Utf8> returnType,
                     Uint32 stringTypeBitmask)>>("invokeNativeMethod")
-        ?.asFunction();
+        .asFunction();
 
 ///
 /// dart对象与native对象绑定
 ///
 final void Function(Object, Pointer<Void>)? passJObjectToC = nativeDylib
-    ?.lookup<NativeFunction<Void Function(Handle, Pointer<Void>)>>(
+    .lookup<NativeFunction<Void Function(Handle, Pointer<Void>)>>(
         "PassObjectToCUseDynamicLinking")
-    ?.asFunction();
+    .asFunction();
 
 ///
 /// 注册异步回调函数
@@ -76,7 +76,7 @@ final void Function(Object, Pointer<Void>)? passJObjectToC = nativeDylib
 final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
         Pointer<NativeFunction<MethodNativeCallback>>, int)?
     registerNativeCallback = nativeDylib
-        ?.lookup<
+        .lookup<
             NativeFunction<
                 Void Function(
                     Pointer<Void> dartObject,
@@ -84,4 +84,4 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<Utf8> funName,
                     Pointer<NativeFunction<MethodNativeCallback>> function,
                     Int64 dartPort)>>("registerNativeCallback")
-        ?.asFunction();
+        .asFunction();

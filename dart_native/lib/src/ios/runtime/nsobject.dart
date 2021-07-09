@@ -29,7 +29,7 @@ class NSObject extends id {
   /// Before calling [fromPointer], MAKE SURE the [ptr] for object exists.
   /// If [ptr] was already freed, you would get a crash!
   NSObject.fromPointer(Pointer<Void> ptr) : super(ptr) {
-    if (ptr == null || object_isClass(ptr) != 0) {
+    if (object_isClass(ptr) != 0) {
       throw 'Pointer $ptr is not for NSObject!';
     }
     passObjectToNative(this);
