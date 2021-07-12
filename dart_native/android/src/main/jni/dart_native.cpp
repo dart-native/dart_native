@@ -440,11 +440,15 @@ extern "C"
       if (notifyResult)
       {
         sem_wait(&sem);
-        if (strcmp(returnType, "java.lang.String") == 0)
+        if (returnType == nullptr || strcmp(returnType, "void") == 0)
+        {
+          DNDebug("Native callback to Dart return type is void");
+        }
+        else if (strcmp(returnType, "java.lang.String") == 0)
         {
           callbackResult = convertToJavaUtf16(env, (char *)arguments[argumentCount], nullptr, 0);
         }
-        else if (strcmp(returnType, "void") != 0)
+        else
         {
           callbackResult = (jobject)arguments[argumentCount];
         }
