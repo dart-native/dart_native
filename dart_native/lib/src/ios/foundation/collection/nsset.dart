@@ -21,7 +21,7 @@ class NSSet extends NSSubclass<Set> {
 
   List get allObjects {
     Pointer<Void> ptr = perform(SEL('allObjects'), decodeRetVal: false);
-    return NSArray.fromPointer(ptr).raw;
+    return NSArray.fromPointer(ptr).raw!;
   }
 }
 

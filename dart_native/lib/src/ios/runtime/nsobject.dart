@@ -14,9 +14,9 @@ typedef void Finalizer();
 ///
 /// The root class of most Objective-C class hierarchies, from which subclasses inherit a basic interface to the runtime system and the ability to behave as Objective-C objects.
 class NSObject extends id {
-  late Finalizer _finalizer;
-  Finalizer get finalizer => _finalizer;
-  set finalizer(Finalizer f) {
+  Finalizer? _finalizer;
+  Finalizer? get finalizer => _finalizer;
+  set finalizer(Finalizer? f) {
     removeFinalizerForObject(this);
     _finalizer = f;
     addFinalizerForObject(this);
