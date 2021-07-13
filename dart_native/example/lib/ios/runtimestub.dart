@@ -244,9 +244,7 @@ class RuntimeStub extends NSObject {
   }
 
   String fooNSString(String str) {
-    Pointer<Void> result =
-        perform(SEL('fooNSString:'), args: [str], decodeRetVal: false);
-    return NSString.fromPointer(result).raw;
+    return perform(SEL('fooNSString:'), args: [str]);
   }
 
   Future<dynamic> fooNSStringAsync(String str) async {
@@ -257,9 +255,7 @@ class RuntimeStub extends NSObject {
 
   String fooNSMutableString(String str) {
     NSMutableString _str = NSMutableString(str);
-    Pointer<Void> result =
-        perform(SEL('fooNSMutableString:'), args: [_str], decodeRetVal: false);
-    return NSMutableString.fromPointer(result).raw;
+    return perform(SEL('fooNSMutableString:'), args: [_str]);
   }
 
   bool fooWithError(NSObjectRef<NSError> error) {

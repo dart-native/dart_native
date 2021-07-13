@@ -20,7 +20,7 @@ Write native code using Dart. This package liberates you from native code and lo
 
   # Release
   s.source_files = 'Classes/DartNativePlugin.*'
-  s.vendored_frameworks = 'DartNative.framework'
+  s.vendored_frameworks = 'DartNative.xcframework'
   
   s.public_header_files = 'Classes/DartNativePlugin.h'
   s.dependency 'Flutter'

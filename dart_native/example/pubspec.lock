@@ -168,7 +168,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.3.19"
+    version: "0.3.20"
   dart_native_gen:
     dependency: transitive
     description:

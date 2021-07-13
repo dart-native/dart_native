@@ -148,10 +148,12 @@ static atomic_uint_fast64_t _seq = 0;
     ffi_closure_free(_closure);
     free(_descriptor);
     for (int i = 0; i < _numberOfArguments; i++) {
-        free((void *)_typeEncodings[i]);
+        if (*_typeEncodings[i] == '{') {
+            free((void *)_typeEncodings[i]);
+        }
     }
     free(_typeEncodings);
-    NotifyDeallocToDart(_sequence, _dartPort);
+    NotifyDeallocToDart((intptr_t)_sequence, _dartPort);
 }
 
 - (void)initBlockWithError:(out NSError **)error {
@@ -280,16 +282,7 @@ static atomic_uint_fast64_t _seq = 0;
             }
         }
         
-        const char *encodeSource = encode.UTF8String;
-        size_t typeLength = strlen(encodeSource) + 1;
-        size_t size = sizeof(char) * typeLength;
-        char *typePtr = (char *)malloc(size);
-        if (typePtr == NULL) {
-            DN_ERROR(DNCreateTypeEncodingError, @"malloc for type encoding fail: %s", encodeSource);
-            return nil;
-        }
-        strlcpy(typePtr, encode.UTF8String, typeLength);
-        self.typeEncodings[i] = typePtr;
+        self.typeEncodings[i] = native_type_encoding(encode.UTF8String);
         
         int length = DNTypeLengthWithTypeName(typeStr);
         

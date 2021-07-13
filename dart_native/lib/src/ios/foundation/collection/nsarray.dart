@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/runtime.dart';
-import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:ffi/ffi.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
@@ -18,7 +17,7 @@ class NSArray extends NSSubclass<List> {
     int count = perform(SEL('count'));
     List temp = List(count);
     for (var i = 0; i < count; i++) {
-      id e = objectAtIndex(i);
+      var e = objectAtIndex(i);
       temp[i] = unboxingObjCType(e);
     }
     raw = temp;
@@ -26,7 +25,7 @@ class NSArray extends NSSubclass<List> {
 
   int get count => perform(SEL('count'));
 
-  id objectAtIndex(int index) {
+  dynamic objectAtIndex(int index) {
     return perform(SEL('objectAtIndex:'), args: [index]);
   }
 }

@@ -10,7 +10,7 @@ class Double extends JSubclass<double> {
   Double(double value) : super(value, _new, CLS_DOUBLE);
 
   Double.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_DOUBLE) {
-    raw = invoke("doubleValue", [], "F");
+    raw = invoke("doubleValue", [], "D");
   }
 }
 

@@ -5,7 +5,7 @@ import 'package:dart_native_example/android/runtimestub.dart';
 
 class DelegateStub extends JObject with SampleDelegate {
   DelegateStub([Pointer ptr])
-      : super("com/dartnative/dart_native_example/SampleDelegate", pointer: ptr) {
+      : super("com/dartnative/dart_native_example/SampleDelegate", pointer: ptr, isInterface: true) {
     super.registerSampleDelegate();
   }
 
@@ -30,7 +30,8 @@ class DelegateStub extends JObject with SampleDelegate {
   }
 
   @override
-  callbackComplex(int i, double d, String s) {
+  bool callbackComplex(int i, double d, String s) {
     print("callbackComplex from native $i $d $s");
+    return true;
   }
 }

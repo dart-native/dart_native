@@ -14,12 +14,15 @@ import 'package:ffi/ffi.dart';
 typedef void _AsyncMessageCallback(dynamic result);
 
 Pointer<Void> _sendMsgToNative(
-    Pointer<Void> target,
-    Pointer<Void> selector,
-    Pointer<Void> signature,
-    Pointer<Pointer<Void>> args,
-    DispatchQueue queue,
-    Pointer<Void> callbackPtr) {
+  Pointer<Void> target,
+  Pointer<Void> selector,
+  Pointer<Void> signature,
+  Pointer<Pointer<Void>> args,
+  DispatchQueue queue,
+  Pointer<Void> callbackPtr,
+  int stringTypeBitmask,
+  Pointer<Pointer<Utf8>> retType,
+) {
   Pointer<Void> result;
   Pointer<Void> queuePtr = queue != null ? queue.pointer : nullptr.cast();
   // This awful code dues to this issue: https://github.com/dart-lang/sdk/issues/39488
@@ -32,8 +35,8 @@ Pointer<Void> _sendMsgToNative(
   if (callbackPtr == nullptr) {
     callbackPtr = nullptr.cast();
   }
-  result = nativeInvokeMethod(
-      target, selector, signature, queuePtr, args, callbackPtr, nativePort);
+  result = nativeInvokeMethod(target, selector, signature, queuePtr, args,
+      callbackPtr, nativePort, stringTypeBitmask, retType);
   return result;
 }
 
@@ -84,10 +87,12 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
     cache[selector] = signaturePtr;
   }
-  nativeSignatureEncodingList(signaturePtr, typeEncodingsPtrPtr);
+  nativeSignatureEncodingList(
+      signaturePtr, typeEncodingsPtrPtr, decodeRetVal ? 1 : 0);
 
+  List<Pointer<Utf8>> structTypes = [];
   List<NSObjectRef> outRefArgs = [];
-
+  int stringTypeBitmask = decodeRetVal ? 1 << 63 : 0;
   Pointer<Pointer<Void>> pointers;
   if (args != null) {
     pointers = allocate<Pointer<Void>>(count: argCount);
@@ -98,8 +103,13 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
       } else if (arg is NSObjectRef) {
         outRefArgs.add(arg);
       }
-      Pointer<Utf8> argTypePtr =
-          nativeTypeEncoding(typeEncodingsPtrPtr.elementAt(i + 1).value);
+      if (arg is String) {
+        stringTypeBitmask |= (0x1 << i);
+      }
+      Pointer<Utf8> argTypePtr = typeEncodingsPtrPtr.elementAt(i + 1).value;
+      if (argTypePtr.isStruct) {
+        structTypes.add(argTypePtr);
+      }
       storeValueToPointer(arg, pointers.elementAt(i), argTypePtr);
     }
   }
@@ -115,23 +125,36 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     }
   }
 
-  Pointer<Void> resultPtr = _sendMsgToNative(
-      target, selectorPtr, signaturePtr, pointers, onQueue, callbackPtr);
+  Pointer<Void> resultPtr = _sendMsgToNative(target, selectorPtr, signaturePtr,
+      pointers, onQueue, callbackPtr, stringTypeBitmask, typeEncodingsPtrPtr);
   if (pointers != null) {
     free(pointers);
   }
 
+  dynamic result;
+
   if (callback == null) {
-    dynamic result = resultPtr;
+    result = resultPtr;
+    // need decode return value
     if (decodeRetVal) {
-      Pointer<Utf8> resultTypePtr =
-          nativeTypeEncoding(typeEncodingsPtrPtr.value);
-      result = loadValueFromPointer(resultPtr, resultTypePtr);
+      Pointer<Utf8> resultTypePtr = typeEncodingsPtrPtr.value;
+      // return value is a String.
+      if (resultTypePtr.isString) {
+        result = loadStringFromPointer(resultPtr);
+      } else {
+        result = loadValueFromPointer(resultPtr, resultTypePtr);
+      }
+
+      if (resultTypePtr.isStruct) {
+        structTypes.add(resultTypePtr);
+      }
       outRefArgs.forEach((ref) => ref.syncValue());
     }
-    free(typeEncodingsPtrPtr);
-    return result;
   }
+  // free struct type memory (malloc on native side)
+  structTypes.forEach(free);
+  free(typeEncodingsPtrPtr);
+  return result;
 }
 
 /// Send a message synchronously to [target], which should be an instance in iOS.

@@ -1,3 +1,7 @@
+## 0.3.20
+
+* [Feature] Support 64 bit on Android.
+
 ## 0.3.19
 
 * [Fix] Some crash on Android.

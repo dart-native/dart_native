@@ -1,4 +1,3 @@
-import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
 import 'package:dart_native/dart_native.dart';
@@ -59,16 +58,8 @@ testAndroid(RuntimeStub stub) {
   use = currentTimeMillis() - ms;
   print('testlog, cost:$use');
 
-  bool resultCall = stub.complexCall(
-      "test",
-      10,
-      'a',
-      10.0,
-      12.0,
-      1,
-      2,
-      10000,
-      false);
+  bool resultCall =
+      stub.complexCall("test", 10, 'a', 10.0, 12.0, 1, 2, 10000, false);
   print('call result:$resultCall');
 
   Entity entity = stub.createEntity();
@@ -76,10 +67,6 @@ testAndroid(RuntimeStub stub) {
   print('stub get time : ${stub.getTime(entity)}');
 
   print('new entity get time : ${stub.getTime(new Entity())}');
-
-  stub.setDelegateListener(DelegateStub());
-
-  print("integer ${stub.getInteger()}");
 
   List list = stub.getList([1, 2, 3, 4]);
   for (int item in list) {
@@ -96,7 +83,11 @@ testAndroid(RuntimeStub stub) {
     print("item $item");
   }
 
-  list = stub.getCycleList([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+  list = stub.getCycleList([
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+  ]);
   for (List items in list) {
     for (int item in items) {
       print("item $item");
@@ -106,6 +97,26 @@ testAndroid(RuntimeStub stub) {
   List byteArray = stub.getByteArray([byte(1), byte(2), byte(3)]);
   for (int byte in byteArray) {
     print("item $byte");
+  }
+
+  Set intSet = stub.getIntSet(Set.from([1, 2, 3]));
+  for (int setInt in intSet) {
+    print("intSet $setInt");
+  }
+
+  Set fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
+  for (double setF in fSet) {
+    print("fSet $setF");
+  }
+
+  Map map = stub.getMap({"1": 10, "2": 20, "3": 30});
+  map.forEach((key, value) {
+    print("map from native $key : $value");
+  });
+  //
+  List strList = stub.getStringList(["test啊 emoji🤣", "emoji🤣"]);
+  for (var item in strList) {
+    print("item $item");
   }
 }
 

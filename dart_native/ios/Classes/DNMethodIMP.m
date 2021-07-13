@@ -33,6 +33,8 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSMethodSignature *signature;
 @property (nonatomic, getter=hasStret, readwrite) BOOL stret;
+@property (nonatomic) NSMutableSet<NSNumber *> *internalDartPorts;
+@property (nonatomic) dispatch_queue_t portsQueue;
 
 @end
 
@@ -40,7 +42,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncoding
                             callback:(NativeMethodCallback)callback
-                            dartPort:(Dart_Port)dartPort
                                error:(out NSError **)error {
     self = [super init];
     if (self) {
@@ -55,7 +56,8 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         strlcpy(_typeEncoding, typeEncoding, length);
         _callback = callback;
         _thread = NSThread.currentThread;
-        _dartPort = dartPort;
+        _internalDartPorts = [NSMutableSet set];
+        _portsQueue = dispatch_queue_create("com.dartnative.methodimp", DISPATCH_QUEUE_CONCURRENT);
         _signature = [NSMethodSignature signatureWithObjCTypes:_typeEncoding];
     }
     return self;
@@ -68,7 +70,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (IMP)imp {
     if (!_methodIMP) {
-        NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:self.typeEncoding];
+        NSUInteger numberOfArguments = [self prepCIF:&_cif withEncodeString:self.typeEncoding];
         if (numberOfArguments == -1) { // Unknown encode.
             return nil;
         }
@@ -84,7 +86,21 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     return _methodIMP;
 }
 
-- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str {
+- (NSSet<NSNumber *> *)dartPorts {
+    __block NSSet<NSNumber *> *temp;
+    dispatch_sync(self.portsQueue, ^{
+        temp = [self.internalDartPorts copy];
+    });
+    return temp;
+}
+
+- (void)addDartPort:(Dart_Port)port {
+    dispatch_barrier_async(self.portsQueue, ^{
+        [self.internalDartPorts addObject:@(port)];
+    });
+}
+
+- (int)prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str {
     int argCount;
     ffi_type **argTypes;
     ffi_type *returnType;
@@ -167,8 +183,8 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
             args[i + indexOffset] = temp;
         }
     }
-    
-    const char **types = native_types_encoding(methodIMP.typeEncoding, NULL, 0);
+    int typesCount = 0;
+    const char **types = native_types_encoding(methodIMP.typeEncoding, &typesCount, 0);
     if (!types) {
         return;
     }
@@ -189,6 +205,11 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     } else {
         [invocation retainArguments];
         NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
+    }
+    for (int i = 0; i < typesCount; i++) {
+        if (*types[i] == '{') {
+            free((void *)types[i]);
+        }
     }
     free(types);
     retObjectAddr = (int64_t)*(void **)retAddr;
