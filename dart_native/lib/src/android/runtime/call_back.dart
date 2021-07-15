@@ -11,11 +11,12 @@ void registerCallback(dynamic target, Function function, String functionName) {
     print("register error not JObject");
     return;
   }
-  Pointer<Void> targetPtr = target.pointer;
+  Pointer<Void> targetPtr = target.pointer.cast<Void>();
   Pointer<Utf8> targetName = target.className.toNativeUtf8();
   Pointer<Utf8> funNamePtr = functionName.toNativeUtf8();
   CallBackManager.instance.registerCallBack(targetPtr, functionName, function);
-  registerNativeCallback(targetPtr, targetName, funNamePtr, _callbackPtr, nativePort);
+  registerNativeCallback!(
+      targetPtr, targetName, funNamePtr, _callbackPtr, nativePort);
   calloc.free(targetName);
   calloc.free(funNamePtr);
 }
@@ -30,20 +31,20 @@ _callback(
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
     int argCount) {
   String functionName = funNamePtr.cast<Utf8>().toDartString();
-  Function function = CallBackManager.instance
+  Function? function = CallBackManager.instance
       .getCallbackFunctionOnTarget(targetPtr, functionName);
   if (function == null) {
-    print("function $functionName not register!!!");
+    print("function $functionName not registered!!!");
     return null;
   }
   List args = [];
   for (var i = 0; i < argCount; i++) {
     Pointer<Utf8> argTypePtr = argTypesPtrPtr.elementAt(i).value;
     Pointer<Void> argPtr = argsPtrPtr.elementAt(i).value;
-    final String argType = Utf8.fromUtf8(argTypePtr.cast());
+    final String argType = argTypePtr.cast().toString();
     dynamic arg = argType == "java.lang.String"
-                  ? fromUtf16(argPtr)
-                  : unBoxingWrapperClass(argPtr, argType);
+        ? fromUtf16(argPtr)
+        : unBoxingWrapperClass(argPtr, argType);
     args.add(arg);
   }
 
@@ -56,9 +57,8 @@ _callback(
     }
 
     dynamic wrapperResult = boxingWrapperClass(result);
-    argsPtrPtr.elementAt(argCount).value = wrapperResult is JObject
-                                            ? wrapperResult.pointer
-                                            : wrapperResult;
+    argsPtrPtr.elementAt(argCount).value =
+        wrapperResult is JObject ? wrapperResult.pointer : wrapperResult;
   }
 }
 

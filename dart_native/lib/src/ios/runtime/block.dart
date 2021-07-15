@@ -26,9 +26,12 @@ final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
 ///
 /// You can create [Block] from Dart [Function], or just obtain [Block] from
 /// native pointer address.
+
+final Block nilBlock = Block.fromPointer(nullptr);
+
 class Block extends id {
-  Function function;
-  NSObject _wrapper; // Block hold wrapper
+  Function? function;
+  NSObject? _wrapper; // Block hold wrapper
   List<String> types = [];
   int sequence = -1;
 
@@ -44,7 +47,7 @@ class Block extends id {
     Pointer<Void> blockWrapperPtr =
         blockCreate(typeStringPtr, _callbackPtr, nativePort);
     if (blockWrapperPtr == nullptr) {
-      return nil;
+      return nilBlock;
     }
     NSObject blockWrapper = NSObject.fromPointer(blockWrapperPtr);
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
@@ -69,20 +72,21 @@ class Block extends id {
 
   /// This [isa] block in iOS, but it's meaningless for a block created
   /// by Dart function.
-  Class get isa {
+  Class? get isa {
     if (function != null) {
-      return null;
+      throw 'Block created by Dart';
     }
     return super.isa;
   }
 
-  /// Superclass for block in iOS, but it's meaningless for a block
+  /// Superclass for block in iOS, meaningless for a block
   /// created by Dart function.
   Class get superclass {
     if (function != null) {
-      return null;
+      throw 'Block created by Dart';
+      //return null;
     }
-    return isa.perform(SEL('superclass'));
+    return isa!.perform(SEL('superclass'));
   }
 
   String get description {
@@ -99,9 +103,9 @@ class Block extends id {
 
   /// Copy a new [Block] by calling `Block_copy` function.
   ///
-  /// Copy a block created by Dart function is invalid, because it's used for
+  /// Copying a block created by Dart function is invalid, because it's used for
   /// callback from native to Dart.
-  Block copy() {
+  Block? copy() {
     if (pointer == nullptr || function != null) {
       return null;
     }
@@ -123,7 +127,7 @@ class Block extends id {
   ///
   /// Invoking a block created by Dart function is invalid, because it's used
   /// for callback from native to Dart.
-  dynamic invoke([List args]) {
+  dynamic invoke([List? args]) {
     if (pointer == nullptr || function != null) {
       return null;
     }
@@ -176,7 +180,7 @@ class Block extends id {
       result = loadValueFromPointer(resultPtr, retTypePtr);
     }
     // free struct type memory (malloc on native side)
-    structTypes.forEach(free);
+    structTypes.forEach(calloc.free);
     return result;
   }
 }
@@ -189,12 +193,12 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   // If stret, the first arg contains address of a pointer of returned struct. Other args move backwards.
   // This is the index for first argument of block in argsPtrPtrPtr list.
   int argStartIndex = stret ? 2 : 1;
-  Block block = blockForSequence[seq];
+  Block? block = blockForSequence[seq];
   if (block == null) {
     throw 'Can\'t find block by sequence $seq';
   }
   List args = [];
-  Pointer pointer = block._wrapper.perform(SEL('typeEncodings'));
+  Pointer pointer = block._wrapper!.perform(SEL('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
@@ -212,7 +216,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     args.add(arg);
   }
 
-  dynamic result = Function.apply(block.function, args);
+  dynamic result = Function.apply(block.function!, args);
 
   if (result != null) {
     Pointer<Utf8> resultTypePtr = typesPtrPtr.elementAt(0).value;
@@ -221,7 +225,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
-      PointerWrapper wrapper =
+      PointerWrapper? wrapper =
           storeValueToPointer(result, realRetPtrPtr, resultTypePtr);
       if (wrapper != null) {
         storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);

@@ -33,9 +33,9 @@ extension TypeEncodings on Pointer<Utf8> {
   static final Pointer<Utf8> string = _typeEncodings.elementAt(18).value;
 
   // Return encoding only if type is struct.
-  String get encodingForStruct {
+  String? get encodingForStruct {
     if (isStruct) {
-      return this.toNativeUtf8();
+      return this.toDartString();
     }
     return null;
   }
@@ -122,7 +122,7 @@ Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
     ptr.cast<Double>().value = object;
   },
   TypeEncodings.cstring: (Pointer ptr, dynamic object) {
-    return storeCStringToPointer(object, ptr);
+    return storeCStringToPointer(object, ptr.cast<Pointer<Void>>());
   },
 };
 
@@ -142,7 +142,7 @@ dynamic storeValueToPointer(
       // waiting for ffi bool type support.
       object = object ? 1 : 0;
     }
-    Function strategy = _storeValueStrategyMap[encoding];
+    Function? strategy = _storeValueStrategyMap[encoding];
     if (strategy == null) {
       throw '$object not match type $encoding!';
     } else {
@@ -186,7 +186,7 @@ dynamic storeValueToPointer(
   }
 }
 
-PointerWrapper storeStructToPointer(
+PointerWrapper? storeStructToPointer(
     Pointer<Pointer<Void>> ptr, dynamic object) {
   if (object is NativeStruct) {
     Pointer<Void> result = object.addressOf.cast<Void>();
@@ -285,13 +285,13 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
   if (encoding.isNum || encoding == TypeEncodings.b) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
-    result = Function.apply(_loadValueStrategyMap[encoding], [data]);
+    result = Function.apply(_loadValueStrategyMap[encoding]!, [data]);
     if (encoding == TypeEncodings.b) {
       result = result != 0;
     }
   } else {
     // object
-    Function strategy = _loadValueStrategyMap[encoding];
+    Function? strategy = _loadValueStrategyMap[encoding];
     if (strategy != null) {
       // built-in class.
       if (ptr == nullptr) {
@@ -314,7 +314,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
   return result;
 }
 
-String structNameForEncoding(String encoding) {
+String? structNameForEncoding(String encoding) {
   int index = encoding.indexOf('=');
   if (index != -1) {
     String result = encoding.substring(1, index);
@@ -338,18 +338,18 @@ String loadStringFromPointer(Pointer<Void> ptr) {
   // get utf16 data
   Int16List data = dataPtr.elementAt(lengthDataSize).asTypedList(length);
   String result = String.fromCharCodes(data);
-  // malloc dataPtr on native side, shoule free the memory.
-  free(dataPtr);
+  // malloc dataPtr on native side, should free the memory.
+  calloc.free(dataPtr);
   return result;
 }
 
-NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {
+NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
   if (encoding == null) {
     return null;
   }
-  String structName = structNameForEncoding(encoding);
+  String? structName = structNameForEncoding(encoding);
   if (structName != null) {
-    NativeStruct result;
+    NativeStruct? result;
     // struct
     switch (structName) {
       case 'CGSize':

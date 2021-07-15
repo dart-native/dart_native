@@ -44,7 +44,7 @@ _callback(
       .value
       .cast<Pointer<Void>>()
       .value;
-  Function function =
+  Function? function =
       CallbackManager.shared.getCallbackForSelectorOnTarget(targetPtr, selPtr);
   if (function == null) {
     return null;
@@ -75,7 +75,7 @@ _callback(
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
-      PointerWrapper wrapper = storeValueToPointer(
+      PointerWrapper? wrapper = storeValueToPointer(
           result, realRetPtrPtr, typesPtrPtr.elementAt(0).value);
       if (wrapper != null) {
         storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);

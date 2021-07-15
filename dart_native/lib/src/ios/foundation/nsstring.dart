@@ -58,7 +58,7 @@ Pointer<Void> _new(dynamic value, Class isa) {
 extension Utf16Buffer on List<int> {
   Pointer<Uint16> toUtf16Buffer() {
     final count = length + 1;
-    final Pointer<Uint16> result = calloc<Uint16>(count: count);
+    final Pointer<Uint16> result = calloc<Uint16>(count);
     final Uint16List typedList = result.asTypedList(count);
     typedList.setAll(0, this);
     typedList[this.length] = 0;

@@ -7,20 +7,20 @@ import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 abstract class NativeStruct {
   Pointer get addressOf;
 
-  PointerWrapper _wrapper;
+  PointerWrapper? _wrapper;
   PointerWrapper get wrapper {
     if (_wrapper == null) {
       _wrapper = PointerWrapper();
     }
     Pointer<Void> result = addressOf.cast<Void>();
-    _wrapper.value = result;
-    return _wrapper;
+    _wrapper!.value = result;
+    return _wrapper!;
   }
 }
 
 class NSUInteger32x2 extends Struct {
   @Uint32()
-  int i1, i2;
+  external int i1, i2;
 
   static Pointer<NSUInteger32x2> callocPointer(int i1, int i2) =>
       calloc<NSUInteger32x2>()
@@ -30,7 +30,7 @@ class NSUInteger32x2 extends Struct {
 
 class NSUInteger64x2 extends Struct {
   @Uint64()
-  int i1, i2;
+  external int i1, i2;
 
   static Pointer<NSUInteger64x2> callocPointer(int i1, int i2) =>
       calloc<NSUInteger64x2>()
@@ -39,8 +39,8 @@ class NSUInteger64x2 extends Struct {
 }
 
 class NSUIntegerx2Wrapper extends NativeStruct {
-  Pointer<NSUInteger32x2> _ptr32;
-  Pointer<NSUInteger64x2> _ptr64;
+  late Pointer<NSUInteger32x2> _ptr32;
+  late Pointer<NSUInteger64x2> _ptr64;
 
   bool get _is64bit => LP64 || NS_BUILD_32_LIKE_64;
 
@@ -83,7 +83,8 @@ class NSUIntegerx2Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    return i1 == other.i1 && i2 == other.i2;
+    if (other is NSUIntegerx2Wrapper) return i1 == other.i1 && i2 == other.i2;
+    return false;
   }
 
   @override
@@ -97,7 +98,7 @@ class NSUIntegerx2Wrapper extends NativeStruct {
 
 class CGFloat32x2 extends Struct {
   @Float()
-  double d1, d2;
+  external double d1, d2;
 
   static Pointer<CGFloat32x2> callocPointer(double d1, double d2) =>
       calloc<CGFloat32x2>()
@@ -107,7 +108,7 @@ class CGFloat32x2 extends Struct {
 
 class CGFloat64x2 extends Struct {
   @Double()
-  double d1, d2;
+  external double d1, d2;
 
   static Pointer<CGFloat64x2> callocPointer(double d1, double d2) =>
       calloc<CGFloat64x2>()
@@ -116,8 +117,8 @@ class CGFloat64x2 extends Struct {
 }
 
 class CGFloatx2Wrapper extends NativeStruct {
-  Pointer<CGFloat32x2> _ptr32;
-  Pointer<CGFloat64x2> _ptr64;
+  late Pointer<CGFloat32x2> _ptr32;
+  late Pointer<CGFloat64x2> _ptr64;
 
   double get d1 => LP64 ? _ptr64.ref.d1 : _ptr32.ref.d1;
   set d1(double d1) {
@@ -158,7 +159,8 @@ class CGFloatx2Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    return d1 == other.d1 && d2 == other.d2;
+    if (other is CGFloatx2Wrapper) return d1 == other.d1 && d2 == other.d2;
+    return false;
   }
 
   @override
@@ -172,7 +174,7 @@ class CGFloatx2Wrapper extends NativeStruct {
 
 class CGFloat32x4 extends Struct {
   @Float()
-  double d1, d2, d3, d4;
+  external double d1, d2, d3, d4;
 
   static Pointer<CGFloat32x4> callocPointer(
           double d1, double d2, double d3, double d4) =>
@@ -185,7 +187,7 @@ class CGFloat32x4 extends Struct {
 
 class CGFloat64x4 extends Struct {
   @Double()
-  double d1, d2, d3, d4;
+  external double d1, d2, d3, d4;
 
   static Pointer<CGFloat64x4> callocPointer(
           double d1, double d2, double d3, double d4) =>
@@ -197,8 +199,8 @@ class CGFloat64x4 extends Struct {
 }
 
 class CGFloatx4Wrapper extends NativeStruct {
-  Pointer<CGFloat32x4> _ptr32;
-  Pointer<CGFloat64x4> _ptr64;
+  late Pointer<CGFloat32x4> _ptr32;
+  late Pointer<CGFloat64x4> _ptr64;
 
   double get d1 => LP64 ? _ptr64.ref.d1 : _ptr32.ref.d1;
   set d1(double d1) {
@@ -257,7 +259,12 @@ class CGFloatx4Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    return d1 == other.d1 && d2 == other.d2 && d3 == other.d3 && d4 == other.d4;
+    if (other is CGFloatx4Wrapper)
+      return d1 == other.d1 &&
+          d2 == other.d2 &&
+          d3 == other.d3 &&
+          d4 == other.d4;
+    return false;
   }
 
   @override
@@ -271,7 +278,7 @@ class CGFloatx4Wrapper extends NativeStruct {
 
 class CGFloat32x6 extends Struct {
   @Float()
-  double d1, d2, d3, d4, d5, d6;
+  external double d1, d2, d3, d4, d5, d6;
 
   static Pointer<CGFloat32x6> callocPointer(
           double d1, double d2, double d3, double d4, double d5, double d6) =>
@@ -286,7 +293,7 @@ class CGFloat32x6 extends Struct {
 
 class CGFloat64x6 extends Struct {
   @Double()
-  double d1, d2, d3, d4, d5, d6;
+  external double d1, d2, d3, d4, d5, d6;
 
   static Pointer<CGFloat64x6> callocPointer(
           double d1, double d2, double d3, double d4, double d5, double d6) =>
@@ -300,8 +307,8 @@ class CGFloat64x6 extends Struct {
 }
 
 class CGFloatx6Wrapper extends NativeStruct {
-  Pointer<CGFloat32x6> _ptr32;
-  Pointer<CGFloat64x6> _ptr64;
+  late Pointer<CGFloat32x6> _ptr32;
+  late Pointer<CGFloat64x6> _ptr64;
 
   double get d1 => LP64 ? _ptr64.ref.d1 : _ptr32.ref.d1;
   set d1(double d1) {
@@ -379,12 +386,14 @@ class CGFloatx6Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    return d1 == other.d1 &&
-        d2 == other.d2 &&
-        d3 == other.d3 &&
-        d4 == other.d4 &&
-        d5 == other.d5 &&
-        d6 == other.d6;
+    if (other is CGFloatx6Wrapper)
+      return d1 == other.d1 &&
+          d2 == other.d2 &&
+          d3 == other.d3 &&
+          d4 == other.d4 &&
+          d5 == other.d5 &&
+          d6 == other.d6;
+    return false;
   }
 
   @override
@@ -404,7 +413,22 @@ class CGFloatx6Wrapper extends NativeStruct {
 
 class CGFloat32x16 extends Struct {
   @Float()
-  double d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16;
+  external double d1,
+      d2,
+      d3,
+      d4,
+      d5,
+      d6,
+      d7,
+      d8,
+      d9,
+      d10,
+      d11,
+      d12,
+      d13,
+      d14,
+      d15,
+      d16;
 
   static Pointer<CGFloat32x16> callocPointer(
           double d1,
@@ -444,7 +468,22 @@ class CGFloat32x16 extends Struct {
 
 class CGFloat64x16 extends Struct {
   @Double()
-  double d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15, d16;
+  external double d1,
+      d2,
+      d3,
+      d4,
+      d5,
+      d6,
+      d7,
+      d8,
+      d9,
+      d10,
+      d11,
+      d12,
+      d13,
+      d14,
+      d15,
+      d16;
 
   static Pointer<CGFloat64x16> callocPointer(
           double d1,
@@ -483,8 +522,8 @@ class CGFloat64x16 extends Struct {
 }
 
 class CGFloatx16Wrapper extends NativeStruct {
-  Pointer<CGFloat32x16> _ptr32;
-  Pointer<CGFloat64x16> _ptr64;
+  late Pointer<CGFloat32x16> _ptr32;
+  late Pointer<CGFloat64x16> _ptr64;
 
   double get d1 => LP64 ? _ptr64.ref.d1 : _ptr32.ref.d1;
   set d1(double d1) {
@@ -669,22 +708,24 @@ class CGFloatx16Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    return d1 == other.d1 &&
-        d2 == other.d2 &&
-        d3 == other.d3 &&
-        d4 == other.d4 &&
-        d5 == other.d5 &&
-        d6 == other.d6 &&
-        d7 == other.d7 &&
-        d8 == other.d8 &&
-        d9 == other.d9 &&
-        d10 == other.d10 &&
-        d11 == other.d11 &&
-        d12 == other.d12 &&
-        d13 == other.d13 &&
-        d14 == other.d14 &&
-        d15 == other.d15 &&
-        d16 == other.d16;
+    if (other is CGFloatx16Wrapper)
+      return d1 == other.d1 &&
+          d2 == other.d2 &&
+          d3 == other.d3 &&
+          d4 == other.d4 &&
+          d5 == other.d5 &&
+          d6 == other.d6 &&
+          d7 == other.d7 &&
+          d8 == other.d8 &&
+          d9 == other.d9 &&
+          d10 == other.d10 &&
+          d11 == other.d11 &&
+          d12 == other.d12 &&
+          d13 == other.d13 &&
+          d14 == other.d14 &&
+          d15 == other.d15 &&
+          d16 == other.d16;
+    return false;
   }
 
   @override

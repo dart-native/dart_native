@@ -1,4 +1,5 @@
 import 'package:dart_native/src/common/native_basic_type.dart';
+import 'package:flutter/material.dart';
 
 class NativeBox<T> {
   final T raw;
@@ -8,7 +9,8 @@ class NativeBox<T> {
     if (other is T) {
       return raw == other;
     }
-    return raw == other.raw;
+    if (other is NativeBox) return raw == other.raw;
+    return false;
   }
 
   @override
@@ -21,10 +23,10 @@ class NativeBox<T> {
 }
 
 class NativeNumBox<T extends num> extends NativeBox<T> {
-  const NativeNumBox(num raw) : super(raw);
+  const NativeNumBox(T raw) : super(raw);
 
   /// Addition operator.
-  T operator +(other) {
+  num operator +(other) {
     if (other == null) {
       return raw;
     }
@@ -35,7 +37,7 @@ class NativeNumBox<T extends num> extends NativeBox<T> {
   }
 
   /// Subtraction operator.
-  T operator -(other) {
+  num operator -(other) {
     if (other == null) {
       return raw;
     }
@@ -46,7 +48,7 @@ class NativeNumBox<T extends num> extends NativeBox<T> {
   }
 
   /// Multiplication operator.
-  T operator *(other) {
+  num operator *(other) {
     if (other == null) {
       return raw;
     }
@@ -69,7 +71,7 @@ class NativeNumBox<T extends num> extends NativeBox<T> {
 }
 
 class NativeIntBox extends NativeNumBox<int> {
-  const NativeIntBox(num raw) : super(raw);
+  const NativeIntBox(int raw) : super(raw);
 
   int operator &(dynamic other) {
     if (other == null) {
@@ -105,14 +107,14 @@ class NativeIntBox extends NativeNumBox<int> {
     return ~raw;
   }
 
-  int operator <<(int shiftAmount) {
+  int operator <<(int? shiftAmount) {
     if (shiftAmount == null) {
       return raw;
     }
     return raw << shiftAmount;
   }
 
-  int operator >>(int shiftAmount) {
+  int operator >>(int? shiftAmount) {
     if (shiftAmount == null) {
       return raw;
     }

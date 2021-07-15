@@ -36,88 +36,78 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
 };
 
 dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
-    {Pointer<Pointer<Utf8>> typePtr, Pointer<Utf8> argSignature}) {
+    {Pointer<Pointer<Utf8>>? typePtr, Pointer<Utf8>? argSignature}) {
   if (object == null) {
     return;
   }
-
   if (object is byte) {
     ptr.cast<Int32>().value = object.raw;
-    typePtr?.value =
-        argSignature != null ? argSignature : _pointerForEncode[ValueType.byte];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.byte]!;
     return;
   }
 
   if (object is short) {
     ptr.cast<Int16>().value = object.raw;
-    typePtr?.value = argSignature != null
-        ? argSignature
-        : _pointerForEncode[ValueType.short];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.short]!;
     return;
   }
 
   if (object is long) {
     ptr.cast<Int64>().value = object.raw;
-    typePtr?.value =
-        argSignature != null ? argSignature : _pointerForEncode[ValueType.long];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.long]!;
     return;
   }
 
   if (object is int) {
     ptr.cast<Int32>().value = object;
-    typePtr?.value =
-        argSignature != null ? argSignature : _pointerForEncode[ValueType.int];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.int]!;
     return;
   }
 
   if (object is bool) {
     ptr.cast<Int32>().value = object ? 1 : 0;
-    typePtr?.value =
-        argSignature != null ? argSignature : _pointerForEncode[ValueType.bool];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.bool]!;
     return;
   }
 
   if (object is float) {
     ptr.cast<Float>().value = object.raw;
-    typePtr?.value = argSignature != null
-        ? argSignature
-        : _pointerForEncode[ValueType.float];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.float]!;
     return;
   }
 
   if (object is double) {
     ptr.cast<Double>().value = object;
-    typePtr?.value = argSignature != null
-        ? argSignature
-        : _pointerForEncode[ValueType.double];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.double]!;
     return;
   }
 
   if (object is char) {
     ptr.cast<Uint16>().value = object.raw;
-    typePtr?.value =
-        argSignature != null ? argSignature : _pointerForEncode[ValueType.char];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.char]!;
     return;
   }
 
   if (object is String) {
     ptr.cast<Pointer<Uint16>>().value = toUtf16(object);
-    typePtr?.value = argSignature != null
-        ? argSignature
-        : _pointerForEncode[ValueType.string];
+    typePtr?.value = argSignature ?? _pointerForEncode[ValueType.string]!;
     return;
   }
 
   if (object is JArray) {
-    ptr.value = object.pointer;
-    typePtr?.value = argSignature != null ? argSignature : object.arraySignature.toNativeUtf8();
+    ptr.value = object.pointer.cast<Void>();
+    typePtr?.value = argSignature != null
+        ? argSignature
+        : object.arraySignature.toNativeUtf8();
     return;
   }
 
   if (object is JClass) {
     if (object is JObject) {
-      ptr.value = object.pointer;
-      typePtr?.value = argSignature != null ? argSignature : 'L${object.className};'.toNativeUtf8();
+      ptr.value = object.pointer.cast<Void>();
+      typePtr?.value = argSignature != null
+          ? argSignature
+          : 'L${object.className};'.toNativeUtf8();
     }
     return;
   }
@@ -126,19 +116,19 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     ptr.value = object.cast();
     typePtr?.value = argSignature != null
         ? argSignature
-        : Utf8.toUtf8("UNKNOWN_NATIVE_TYPE");
+        : "UNKNOWN_NATIVE_TYPE".toNativeUtf8();
     return;
   }
 }
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
-    {Pointer<Pointer<Utf8>> typePtr}) {
+    {required Pointer<Pointer<Utf8>> typePtr}) {
   dynamic result;
   if (returnType == "V") {
     return;
   }
 
-  if (Utf8.fromUtf8(typePtr.value) == "java.lang.String") {
+  if (typePtr.value.toDartString() == "java.lang.String") {
     return fromUtf16(ptr);
   }
 
@@ -181,7 +171,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
 
 Pointer<Uint16> toUtf16(String value) {
   final units = value.codeUnits;
-  final Pointer<Uint16> charPtr = calloc<Uint16>(count: units.length + 4);
+  final Pointer<Uint16> charPtr = calloc<Uint16>(units.length + 4);
   final Uint16List uintList = charPtr.asTypedList(units.length + 4);
 
   final valueLength = units.length;

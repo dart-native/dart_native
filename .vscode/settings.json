@@ -1,5 +1,10 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
     "git.ignoreLimitWarning": true,
-    "dart.flutterSdkPath": "/Users/yangxiaoyu/flutter"
+    "dart.flutterSdkPaths": [
+        "~/Downloads/flutter",
+        "~/Downloads/flutter-2"
+
+    ],
+    "dart.flutterSdkPath": "/Users/trissymren/Downloads/flutter"
 }

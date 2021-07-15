@@ -14,22 +14,22 @@ typedef void Finalizer();
 ///
 /// The root class of most Objective-C class hierarchies, from which subclasses inherit a basic interface to the runtime system and the ability to behave as Objective-C objects.
 class NSObject extends id {
-  Finalizer _finalizer;
-  Finalizer get finalizer => _finalizer;
-  set finalizer(Finalizer f) {
+  Finalizer? _finalizer;
+  Finalizer? get finalizer => _finalizer;
+  set finalizer(Finalizer? f) {
     removeFinalizerForObject(this);
     _finalizer = f;
     addFinalizerForObject(this);
   }
 
-  NSObject([Class isa]) : super(_new(isa)) {
+  NSObject([Class? isa]) : super(_new(isa)) {
     passObjectToNative(this);
   }
 
-  /// Before call [fromPointer], MAKE SURE the [ptr] for object exists.
+  /// Before calling [fromPointer], MAKE SURE the [ptr] for object exists.
   /// If [ptr] was already freed, you would get a crash!
   NSObject.fromPointer(Pointer<Void> ptr) : super(ptr) {
-    if (ptr == null || object_isClass(ptr) != 0) {
+    if (object_isClass(ptr) != 0) {
       throw 'Pointer $ptr is not for NSObject!';
     }
     passObjectToNative(this);
@@ -53,7 +53,7 @@ class NSObject extends id {
     return perform(SEL('autorelease'));
   }
 
-  static Pointer<Void> _new(Class isa) {
+  static Pointer<Void> _new(Class? isa) {
     if (isa == null) {
       isa = Class('NSObject');
     }
@@ -62,7 +62,7 @@ class NSObject extends id {
   }
 }
 
-Pointer<Void> alloc(Class isa) {
+Pointer<Void> alloc(Class? isa) {
   if (isa == null) {
     isa = Class('NSObject');
   }
@@ -94,7 +94,7 @@ dynamic objcInstanceFromPointer(String type, dynamic arg) {
   if (arg is NSObject) {
     ptr = arg.pointer;
   } else if (arg is Pointer) {
-    ptr = arg;
+    ptr = arg.cast<Void>();
   } else {
     return arg;
   }
@@ -103,11 +103,11 @@ dynamic objcInstanceFromPointer(String type, dynamic arg) {
     return arg;
   }
 
-  ConvertorFromPointer convertor = _convertorCache[type];
+  ConvertorFromPointer? convertor = _convertorCache[type];
   if (convertor != null) {
     return convertor(ptr);
   } else if (arg is Pointer) {
-    return NSObject.fromPointer(arg);
+    return NSObject.fromPointer(arg.cast<Void>());
   }
   return arg;
 }

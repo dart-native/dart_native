@@ -15,7 +15,7 @@ class CallbackManager {
 
   setCallbackForSelectorOnTarget(
       Pointer<Void> targetPtr, Pointer<Void> selectorPtr, Function function) {
-    Map<Pointer<Void>, Function> methodsMap = _callbackManager[targetPtr];
+    Map<Pointer<Void>, Function>? methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
       methodsMap = {selectorPtr: function};
     } else {
@@ -24,9 +24,9 @@ class CallbackManager {
     _callbackManager[targetPtr] = methodsMap;
   }
 
-  Function getCallbackForSelectorOnTarget(
+  Function? getCallbackForSelectorOnTarget(
       Pointer<Void> targetPtr, Pointer<Void> selectorPtr) {
-    Map<Pointer<Void>, Function> methodsMap = _callbackManager[targetPtr];
+    Map<Pointer<Void>, Function>? methodsMap = _callbackManager[targetPtr];
     if (methodsMap == null) {
       return null;
     }
