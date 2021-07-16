@@ -9,19 +9,20 @@
 #include "dn_method_call.h"
 #include "dn_signature_helper.h"
 #include "dn_callback.h"
+#include "jni_object_ref.h"
 
 extern "C"
 {
 
   static JavaVM *gJvm = nullptr;
-  static jobject gClassLoader;
+  static JavaGlobalRef<jobject> *gClassLoader = nullptr;
   static jmethodID gFindClassMethod;
   static pthread_key_t detachKey = 0;
 
   /// for invoke result compare
-  static jclass gStrCls;
+  static JavaGlobalRef<jclass> *gStrCls = nullptr;
 
-  /// key is jobject, value is pai which contain jclass and reference count
+  /// key is jobject, value is pair which contain jclass and reference count
   static std::map<jobject, std::pair<jclass, int> > objectGlobalReference;
 
   /// protect objectGlobalReference
@@ -92,13 +93,13 @@ extern "C"
     auto getClassLoaderMethod = env->GetMethodID(pluginClass, "getClassLoader",
                                                  "()Ljava/lang/ClassLoader;");
     auto classLoader = env->CallObjectMethod(plugin, getClassLoaderMethod);
-    gClassLoader = env->NewGlobalRef(classLoader);
+    gClassLoader = new JavaGlobalRef<jobject>(env->NewGlobalRef(classLoader), env);
     gFindClassMethod = env->GetMethodID(classLoaderClass, "findClass",
                                         "(Ljava/lang/String;)Ljava/lang/Class;");
 
     /// cache string class
     jclass strCls = env->FindClass("java/lang/String");
-    gStrCls = static_cast<jclass>(env->NewGlobalRef(strCls));
+    gStrCls = new JavaGlobalRef<jclass>(static_cast<jclass>(env->NewGlobalRef(strCls)), env);
 
     env->DeleteLocalRef(classLoader);
     env->DeleteLocalRef(plugin);
@@ -119,7 +120,7 @@ extern "C"
     {
       env->ExceptionClear();
       DNDebug("findClass exception");
-      return static_cast<jclass>(env->CallObjectMethod(gClassLoader,
+      return static_cast<jclass>(env->CallObjectMethod(gClassLoader->Object(),
                                                        gFindClassMethod,
                                                        env->NewStringUTF(name)));
     }
@@ -227,7 +228,7 @@ extern "C"
         jobject obj = env->CallObjectMethodA(object, method, argValues);
         if (obj != nullptr)
         {
-          if (env->IsInstanceOf(obj, gStrCls))
+          if (env->IsInstanceOf(obj, gStrCls->Object()))
           {
             /// mark the last pointer as string
             /// dart will check this pointer
@@ -380,7 +381,8 @@ extern "C"
       return nullptr;
     }
 
-    char *funName = (char *)env->GetStringUTFChars(functionName, 0);
+    char *funName = functionName == nullptr ? nullptr
+                                            : (char *)env->GetStringUTFChars(functionName, 0);
     char **dataTypes = new char *[argumentCount + 1];
     void **arguments = new void *[argumentCount + 1];
 
@@ -456,8 +458,14 @@ extern "C"
       sem_destroy(&sem);
     }
 
-    env->ReleaseStringUTFChars(returnTypeStr, returnType);
-    env->ReleaseStringUTFChars(functionName, funName);
+    if (returnTypeStr != nullptr)
+    {
+      env->ReleaseStringUTFChars(returnTypeStr, returnType);
+    }
+    if (functionName != nullptr)
+    {
+      env->ReleaseStringUTFChars(functionName, funName);
+    }
     delete[] arguments;
     delete[] dataTypes;
 
