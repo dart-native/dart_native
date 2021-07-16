@@ -380,7 +380,8 @@ extern "C"
       return nullptr;
     }
 
-    char *funName = (char *)env->GetStringUTFChars(functionName, 0);
+    char *funName = functionName == nullptr ? nullptr
+                                            : (char *)env->GetStringUTFChars(functionName, 0);
     char **dataTypes = new char *[argumentCount + 1];
     void **arguments = new void *[argumentCount + 1];
 
@@ -456,8 +457,14 @@ extern "C"
       sem_destroy(&sem);
     }
 
-    env->ReleaseStringUTFChars(returnTypeStr, returnType);
-    env->ReleaseStringUTFChars(functionName, funName);
+    if (returnTypeStr != nullptr)
+    {
+      env->ReleaseStringUTFChars(returnTypeStr, returnType);
+    }
+    if (functionName != nullptr)
+    {
+      env->ReleaseStringUTFChars(functionName, funName);
+    }
     delete[] arguments;
     delete[] dataTypes;
 
