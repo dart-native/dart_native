@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
-import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
@@ -57,8 +57,8 @@ class NSObject extends id {
     if (isa == null) {
       isa = Class('NSObject');
     }
-    NSObject result = isa.perform(SEL('new'));
-    return result.autorelease().pointer;
+    Pointer<Void> resultPtr = isa.perform(SEL('new'), decodeRetVal: false);
+    return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
   }
 }
 

@@ -126,9 +126,9 @@ typedef BlockInvokeD = Pointer<Void> Function(
 final BlockInvokeD blockInvoke = runtimeLib
     .lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');
 
-final void Function(Pointer<Void>) markAutoreleasereturnObject = nativeDylib
+final void Function(Pointer<Void>) retainObject = nativeDylib
     .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
-        'native_mark_autoreleasereturn_object')
+        'native_retain_object')
     .asFunction();
 
 typedef ConvertNSStringToUTF16 = Pointer<Void> Function(
