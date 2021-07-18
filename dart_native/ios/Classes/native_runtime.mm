@@ -17,7 +17,6 @@
 #import "DNFFIHelper.h"
 #import "DNMethodIMP.h"
 #import "DNObjectDealloc.h"
-#import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
 #import "DNInvocation.h"
 
@@ -34,10 +33,22 @@
 #endif
 
 #if OBJC_MSB_TAGGED_POINTERS
-#   define _OBJC_TAG_MASK (1UL<<63)
+#   define _OBJC_TAG_MASK (1ULL<<63)
 #else
 #   define _OBJC_TAG_MASK 1UL
 #endif
+
+#pragma mark - Config
+
+static bool _canThrowException = false;
+
+void DartNativeSetThrowException(bool canThrow) {
+    _canThrowException = canThrow;
+}
+
+bool DartNativeCanThrowException() {
+    return _canThrowException;
+}
 
 #pragma mark - Readable and valid memory
 
@@ -136,7 +147,6 @@ BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dar
     // Existing implemention can't be replaced. Flutter hot-reload must also be well handled.
     if ([target respondsToSelector:selector]) {
         if (imp) {
-            [imp addDartPort:dartPort];
             return YES;
         } else {
             return NO;
@@ -150,7 +160,6 @@ BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dar
         if (error.code) {
             return NO;
         }
-        [methodIMP addDartPort:dartPort];
         class_replaceMethod(cls, selector, [methodIMP imp], types);
         // DNMethodIMP always exists.
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -230,9 +239,9 @@ void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocati
 void *_dataForNSStringReturnValue(NSString *retVal, const char **retType) {
     // first bit is for return value.
     *retType = native_all_type_encodings()[18];
-    NSUInteger length = 0;
+    uint64_t length = 0;
     const uint16_t *utf16BufferPtr = native_convert_nsstring_to_utf16(retVal, &length);
-    size_t size = sizeof(uint16_t) * length;
+    size_t size = sizeof(uint16_t) * (size_t)length;
     const size_t lengthDataSize = 4;
     // free memory on dart side.
     uint16_t *dataPtr = (uint16_t *)malloc(size + sizeof(uint16_t) * lengthDataSize);
@@ -345,26 +354,65 @@ void *native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t 
 }
 
 // Use pointer as key of encoding string cache (on dart side).
-static const char *typeList[19] = {"sint8", "sint16", "sint32", "sint64", "uint8", "uint16", "uint32", "uint64", "float32", "float64", "object", "class", "selector", "block", "char *", "void", "ptr", "bool", "string"};
+#define DEF_NATIVE_TYPE(name) const char *native_type_##name = #name;
+DEF_NATIVE_TYPE(sint8)
+DEF_NATIVE_TYPE(sint16)
+DEF_NATIVE_TYPE(sint32)
+DEF_NATIVE_TYPE(sint64)
+DEF_NATIVE_TYPE(uint8)
+DEF_NATIVE_TYPE(uint16)
+DEF_NATIVE_TYPE(uint32)
+DEF_NATIVE_TYPE(uint64)
+DEF_NATIVE_TYPE(float32)
+DEF_NATIVE_TYPE(float64)
+DEF_NATIVE_TYPE(object)
+DEF_NATIVE_TYPE(class)
+DEF_NATIVE_TYPE(selector)
+DEF_NATIVE_TYPE(block)
+DEF_NATIVE_TYPE(char_ptr)
+DEF_NATIVE_TYPE(void)
+DEF_NATIVE_TYPE(ptr)
+DEF_NATIVE_TYPE(bool)
+DEF_NATIVE_TYPE(string)
+
+static const char *typeList[] = {
+    native_type_sint8,
+    native_type_sint16,
+    native_type_sint32,
+    native_type_sint64,
+    native_type_uint8,
+    native_type_uint16,
+    native_type_uint32,
+    native_type_uint64,
+    native_type_float32,
+    native_type_float64,
+    native_type_object,
+    native_type_class,
+    native_type_selector,
+    native_type_block,
+    native_type_char_ptr,
+    native_type_void,
+    native_type_ptr,
+    native_type_bool,
+    native_type_string
+};
 
 const char **
 native_all_type_encodings() {
     return typeList;
 }
 
-
 #define SINT(type) do { \
-    if (str[0] == @encode(type)[0]) \
-    { \
+    if (str[0] == @encode(type)[0]) { \
         size_t size = sizeof(type); \
         if (size == 1) { \
-            return typeList[0]; \
+            return native_type_sint8; \
         } else if (size == 2) { \
-            return typeList[1]; \
+            return native_type_sint16; \
         } else if (size == 4) { \
-            return typeList[2]; \
+            return native_type_sint32; \
         } else if (size == 8) { \
-            return typeList[3]; \
+            return native_type_sint64; \
         } else { \
             NSLog(@"Unknown size for type %s", #type); \
             abort(); \
@@ -373,17 +421,16 @@ native_all_type_encodings() {
 } while(0)
 
 #define UINT(type) do { \
-    if (str[0] == @encode(type)[0]) \
-    { \
+    if (str[0] == @encode(type)[0]) { \
         size_t size = sizeof(type); \
         if (size == 1) { \
-            return typeList[4]; \
+            return native_type_uint8; \
         } else if (size == 2) { \
-            return typeList[5]; \
+            return native_type_uint16; \
         } else if (size == 4) { \
-            return typeList[6]; \
+            return native_type_uint32; \
         } else if (size == 8) { \
-            return typeList[7]; \
+            return native_type_uint64; \
         } else { \
             NSLog(@"Unknown size for type %s", #type); \
             abort(); \
@@ -397,11 +444,12 @@ native_all_type_encodings() {
 } while(0)
 
 #define COND(type, name) do { \
-    if (str[0] == @encode(type)[0]) \
-    return name; \
+    if (str[0] == @encode(type)[0]) {\
+        return name; \
+    } \
 } while(0)
 
-#define PTR(type) COND(type, typeList[16])
+#define PTR(type) COND(type, native_type_ptr)
 
 // When returns struct encoding, it needs to be freed.
 const char *native_type_encoding(const char *str) {
@@ -409,26 +457,26 @@ const char *native_type_encoding(const char *str) {
         return NULL;
     }
     
-    COND(_Bool, typeList[17]);
+    COND(_Bool, native_type_bool);
     SINT(signed char);
     UINT(unsigned char);
     INT(short);
     INT(int);
     INT(long);
     INT(long long);
-    COND(float, typeList[8]);
-    COND(double, typeList[9]);
+    COND(float, native_type_float32);
+    COND(double, native_type_float64);
     
     if (strcmp(str, "@?") == 0) {
-        return typeList[13];
+        return native_type_block;
     }
     
-    COND(id, typeList[10]);
-    COND(Class, typeList[11]);
-    COND(SEL, typeList[12]);
+    COND(id, native_type_object);
+    COND(Class, native_type_class);
+    COND(SEL, native_type_selector);
     PTR(void *);
-    COND(char *, typeList[14]);
-    COND(void, typeList[15]);
+    COND(char *, native_type_char_ptr);
+    COND(void, native_type_void);
     
     // Ignore Method Encodings
     switch (*str) {
@@ -541,14 +589,23 @@ dispatch_queue_main_t _dispatch_get_main_queue(void) {
     return dispatch_get_main_queue();
 }
 
-void native_mark_autoreleasereturn_object(id object) {
-    int64_t address = (int64_t)object;
-    [NSThread.currentThread dn_performWaitingUntilDone:YES block:^{
-        NSThread.currentThread.threadDictionary[@(address)] = object;
-    }];
+void native_retain_object(id object) {
+    SEL selector = NSSelectorFromString(@"retain");
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    [object performSelector:selector];
+    #pragma clang diagnostic pop
 }
 
-const uint16_t *native_convert_nsstring_to_utf16(NSString *string, NSUInteger *length) {
+void native_release_object(id object) {
+    SEL selector = NSSelectorFromString(@"release");
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    [object performSelector:selector];
+    #pragma clang diagnostic pop
+}
+
+const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t *length) {
     NSData *data = [string dataUsingEncoding:NSUTF16StringEncoding];
     // UTF16, 2-byte per unit
     *length = data.length / 2;
@@ -593,14 +650,18 @@ void ExecuteCallback(Work* work_ptr) {
 
 #pragma mark - Async Block Callback
 
+static NSString * const BlockingUIExceptionReason = @"Calling dart function from main thread will blocking the UI";
+NSExceptionName BlockingUI = @"BlockingUIException";
+
 void NotifyBlockInvokeToDart(DNInvocation *invocation,
                              DNBlockWrapper *wrapper,
                              int numberOfArguments) {
-    BOOL blocking = strcmp(wrapper.typeEncodings[0], "v") != 0;
-    dispatch_semaphore_t sema;
-    if (blocking) {
-        sema = dispatch_semaphore_create(0);
+    if (NSThread.isMainThread && DartNativeCanThrowException()) {
+        @throw [NSException exceptionWithName:BlockingUI
+                                       reason:BlockingUIExceptionReason
+                                     userInfo:nil];
     }
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     NativeBlockCallback callback = wrapper.callback;
     const Work work = [=]() {
         callback(invocation.realArgs,
@@ -608,13 +669,11 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
                  numberOfArguments,
                  wrapper.hasStret,
                  wrapper.sequence);
-        if (sema) {
-            dispatch_semaphore_signal(sema);
-        }
+        dispatch_semaphore_signal(sema);
     };
     const Work* work_ptr = new Work(work);
     BOOL success = NotifyDart(wrapper.dartPort, work_ptr);
-    if (sema && success) {
+    if (success) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
 }
@@ -625,11 +684,12 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                                DNMethodIMP *methodIMP,
                                int numberOfArguments,
                                const char **types) {
-    BOOL blocking = strcmp(types[0], "v") != 0;
-    dispatch_group_t group;
-    if (blocking) {
-        group = dispatch_group_create();
+    if (NSThread.isMainThread && DartNativeCanThrowException()) {
+        @throw [NSException exceptionWithName:BlockingUI
+                                       reason:BlockingUIExceptionReason
+                                     userInfo:nil];
     }
+    dispatch_group_t group = dispatch_group_create();
     NativeMethodCallback callback = methodIMP.callback;
     const Work work = [=]() {
         callback(invocation.realArgs,
@@ -637,22 +697,18 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                  numberOfArguments,
                  types,
                  methodIMP.stret);
-        if (blocking) {
-            dispatch_group_leave(group);
-        }
+        dispatch_group_leave(group);
     };
     const Work* work_ptr = new Work(work);
-    
-    NSSet<NSNumber *> *dartPorts = methodIMP.dartPorts;
+    DNObjectDealloc *dealloc = [DNObjectDealloc objectForHost:(__bridge id)(*(void **)invocation.args[0])];
+    NSSet<NSNumber *> *dartPorts = dealloc.dartPorts;
     for (NSNumber *port in dartPorts) {
         BOOL success = NotifyDart(port.integerValue, work_ptr);
-        if (blocking && success) {
+        if (success) {
             dispatch_group_enter(group);
         }
     }
-    if (blocking) {
-        dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    }
+    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 }
 
 #pragma mark - Native Dealloc Callback
@@ -687,11 +743,7 @@ static void _RunFinalizer(void *isolate_callback_data,
         objectRefCount[address] = @(refCount - 1);
         return;
     }
-    SEL selector = NSSelectorFromString(@"release");
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    [(__bridge id)peer performSelector:selector];
-    #pragma clang diagnostic pop
+    native_release_object((__bridge id)peer );
     objectRefCount[address] = nil;
 }
 
@@ -736,10 +788,7 @@ DNPassObjectResult _PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer)
     if ([object isKindOfClass:DNBlockWrapper.class]) {
         return DNPassObjectResultNeedless;
     }
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    [object performSelector:NSSelectorFromString(@"retain")];
-    #pragma clang diagnostic pop
+    native_retain_object(object);
     Dart_NewWeakPersistentHandle_DL(h, pointer, 8, RunFinalizer);
     objectRefCount[address] = @1;
     return DNPassObjectResultSuccess;

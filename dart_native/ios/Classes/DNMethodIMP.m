@@ -9,9 +9,9 @@
 #import "DNFFIHelper.h"
 #import "native_runtime.h"
 #import "DNInvocation.h"
-#import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
 #import "DNError.h"
+#import "DNObjectDealloc.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -28,13 +28,10 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) char *typeEncoding;
-@property (nonatomic) NSThread *thread;
 @property (nonatomic, readwrite) NativeMethodCallback callback;
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSMethodSignature *signature;
 @property (nonatomic, getter=hasStret, readwrite) BOOL stret;
-@property (nonatomic) NSMutableSet<NSNumber *> *internalDartPorts;
-@property (nonatomic) dispatch_queue_t portsQueue;
 
 @end
 
@@ -55,9 +52,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         }
         strlcpy(_typeEncoding, typeEncoding, length);
         _callback = callback;
-        _thread = NSThread.currentThread;
-        _internalDartPorts = [NSMutableSet set];
-        _portsQueue = dispatch_queue_create("com.dartnative.methodimp", DISPATCH_QUEUE_CONCURRENT);
         _signature = [NSMethodSignature signatureWithObjCTypes:_typeEncoding];
     }
     return self;
@@ -84,20 +78,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         }
     }
     return _methodIMP;
-}
-
-- (NSSet<NSNumber *> *)dartPorts {
-    __block NSSet<NSNumber *> *temp;
-    dispatch_sync(self.portsQueue, ^{
-        temp = [self.internalDartPorts copy];
-    });
-    return temp;
-}
-
-- (void)addDartPort:(Dart_Port)port {
-    dispatch_barrier_async(self.portsQueue, ^{
-        [self.internalDartPorts addObject:@(port)];
-    });
 }
 
 - (int)prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str {
@@ -197,25 +177,19 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     invocation.realRetValue = ret;
     
     int64_t retAddr = (int64_t)(invocation.realRetValue);
-    
-    if (methodIMP.thread == NSThread.currentThread) {
-        void(*callback)(void **args, void *ret, int numberOfArguments, const char **types, BOOL stret) = methodIMP.callback;
-        // args: target, selector, realArgs...
-        callback(args, ret, numberOfArguments, types, methodIMP.hasStret);
-    } else {
-        [invocation retainArguments];
-        NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
-    }
+    [invocation retainArguments];
+    NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
     for (int i = 0; i < typesCount; i++) {
         if (*types[i] == '{') {
             free((void *)types[i]);
         }
     }
-    free(types);
+    
     retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, methodIMP, invocation);
-    [methodIMP.thread dn_performBlock:^{
-        NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
-    }];
+    if (strcmp(types[0], "object") == 0) {
+        native_release_object((__bridge id)*(void **)retAddr);
+    }
+    free(types);
 }
 

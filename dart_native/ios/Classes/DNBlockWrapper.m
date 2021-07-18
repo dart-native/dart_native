@@ -10,7 +10,6 @@
 #import "DNFFIHelper.h"
 #import "DNInvocation.h"
 #import <objc/runtime.h>
-#import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
 #import "native_runtime.h"
 #import "DNError.h"
@@ -382,9 +381,10 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     }
     retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, wrapper, invocation);
-    [wrapper.thread dn_performBlock:^{
-        NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
-    }];
+    const char *type = wrapper.typeEncodings[0];
+    if (type == native_type_object || type == native_type_block) {
+        native_release_object((__bridge id)*(void **)retAddr);
+    }
 }
 
 

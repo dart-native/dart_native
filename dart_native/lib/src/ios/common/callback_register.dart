@@ -15,7 +15,7 @@ bool registerMethodCallback(
   Pointer<Void> targetPtr = target.pointer;
   Pointer<Void> selectorPtr = selector.toPointer();
   CallbackManager.shared
-      .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, null);
+      .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
   int result =
       nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr, nativePort);
   return result != 0;
@@ -84,7 +84,7 @@ _callback(
     }
   }
   if (result is id) {
-    markAutoreleasereturnObject(result.pointer);
+    retainObject(result.pointer);
   }
 }
 

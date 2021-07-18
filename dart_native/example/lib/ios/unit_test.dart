@@ -160,9 +160,11 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
 
 void _checkTimer(String isolateID) async {
   RuntimeStub stub = RuntimeStub();
+  DelegateStub delegate = DelegateStub();
   Timer.periodic(new Duration(seconds: 1), (Timer t) {
     stub.fooCompletion(() {
       print('hello completion block on $isolateID!');
     });
+    stub.fooDelegate(delegate);
   });
 }

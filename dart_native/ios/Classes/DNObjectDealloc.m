@@ -6,45 +6,44 @@
 //
 
 #import "DNObjectDealloc.h"
-#import <objc/runtime.h>
 #import "native_runtime.h"
 
 @interface DNObjectDealloc ()
 
-@property (nonatomic, readonly, weak) NSObject *host;
 @property (nonatomic, readonly) intptr_t hostAddress;
-@property (nonatomic, readonly) Dart_Port dartPort;
 
 @end
 
 @implementation DNObjectDealloc
 
-+ (void)attachHost:(NSObject *)host
-          dartPort:(Dart_Port)dartPort {
-    if (!host || objc_getAssociatedObject(host, @selector(initWithHost:dartPort:))) {
-        return;
-    }
-    if (!objc_isTaggedPointer((__bridge const void *)(host)) ||
-        [host isKindOfClass:NSClassFromString(@"__NSMallocBlock")]) {
-        __unused DNObjectDealloc *dealloc = [[self alloc] initWithHost:host
-                                                              dartPort:dartPort];
-    }
-}
+static const void *DNObjectDeallocStorageKey = (void *)&DNObjectDeallocStorageKey;
 
 - (instancetype)initWithHost:(NSObject *)host
-                    dartPort:(Dart_Port)dartPort {
-    self = [super init];
+                  storageKey:(nonnull const void *)storageKey {
+    self = [super initWithHost:host storageKey:storageKey];
     if (self) {
-        _host = host;
         _hostAddress = (intptr_t)host;
-        _dartPort = dartPort;
-        objc_setAssociatedObject(host, _cmd, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return self;
 }
 
++ (instancetype)objectForHost:(NSObject *)host {
+    return [super objectForHost:host storageKey:DNObjectDeallocStorageKey];
+}
+
++ (nullable instancetype)attachHost:(NSObject *)host
+                           dartPort:(Dart_Port)dartPort {
+    DNObjectDealloc *dealloc = [super attachHost:host
+                                        dartPort:dartPort
+                                      storageKey:DNObjectDeallocStorageKey];
+    return dealloc;
+}
+
 - (void)dealloc {
-    NotifyDeallocToDart(_hostAddress, _dartPort);
+    NSSet<NSNumber *> *dartPorts = self.dartPorts;
+    for (NSNumber *dartPort in dartPorts) {
+        NotifyDeallocToDart(_hostAddress, dartPort.integerValue);
+    }
 }
 
 @end
