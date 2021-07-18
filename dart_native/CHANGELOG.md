@@ -1,3 +1,7 @@
+## 0.3.22
+
+* [Fix] Callbacks from multi-isolates on iOS.
+
 ## 0.3.21
 
 * [Fix] Some crash on Android.
