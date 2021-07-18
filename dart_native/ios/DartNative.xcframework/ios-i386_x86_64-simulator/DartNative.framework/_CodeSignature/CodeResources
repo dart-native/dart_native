@@ -4,13 +4,89 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>Headers/DNMacro.h</key>
+		<data>
+		GJnW4UhOEgNT/y0AEsYLfzdmrzs=
+		</data>
+		<key>Headers/dart_api.h</key>
+		<data>
+		VQu4Nqngu7iM4YqY3fPicisrAyQ=
+		</data>
+		<key>Headers/dart_api_dl.h</key>
+		<data>
+		hwEsVyoHKiCy1UK74kll1DbsAeM=
+		</data>
+		<key>Headers/dart_native_api.h</key>
+		<data>
+		uvLtmsmi9vFv3hUkJcoF1IvQY6U=
+		</data>
+		<key>Headers/native_runtime.h</key>
+		<data>
+		taosNnCzupkid3NdpsYzc2UtiP4=
+		</data>
 		<key>Info.plist</key>
 		<data>
 		RuLEjk/8qH9F4mh8AFUuude3DWk=
 		</data>
 	</dict>
 	<key>files2</key>
-	<dict/>
+	<dict>
+		<key>Headers/DNMacro.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			GJnW4UhOEgNT/y0AEsYLfzdmrzs=
+			</data>
+			<key>hash2</key>
+			<data>
+			JBEFj6YSs9VvTZlZ74Q2yW9Skmb0W6jfMTyht84VAoM=
+			</data>
+		</dict>
+		<key>Headers/dart_api.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			VQu4Nqngu7iM4YqY3fPicisrAyQ=
+			</data>
+			<key>hash2</key>
+			<data>
+			1Uo7nmP4biKKoUzNpyJL+VrSzf2TBYWgyymO7HnRL/E=
+			</data>
+		</dict>
+		<key>Headers/dart_api_dl.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			hwEsVyoHKiCy1UK74kll1DbsAeM=
+			</data>
+			<key>hash2</key>
+			<data>
+			txSeq5Yy+JvbV89pZJ4RMFQAg7x2Jj/cVzfA/CEF/DI=
+			</data>
+		</dict>
+		<key>Headers/dart_native_api.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			uvLtmsmi9vFv3hUkJcoF1IvQY6U=
+			</data>
+			<key>hash2</key>
+			<data>
+			jQ3DCWvbFo+vAzIb+Z91AvY/ApBY6z9dWXXY8ei1ssU=
+			</data>
+		</dict>
+		<key>Headers/native_runtime.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			taosNnCzupkid3NdpsYzc2UtiP4=
+			</data>
+			<key>hash2</key>
+			<data>
+			aozDyxoflaK4S6/reqrRturfp0tEiuR+7VuamiQgjbM=
+			</data>
+		</dict>
+	</dict>
 	<key>rules</key>
 	<dict>
 		<key>^.*</key>
