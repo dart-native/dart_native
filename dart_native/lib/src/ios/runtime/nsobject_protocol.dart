@@ -4,7 +4,6 @@ import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/protocol.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
-import 'package:flutter/foundation.dart';
 
 /// Stands for `@protocol NSObject` in iOS.
 ///

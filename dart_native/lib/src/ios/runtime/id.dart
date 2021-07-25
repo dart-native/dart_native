@@ -5,7 +5,6 @@ import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
-import 'package:flutter/foundation.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
 
 /// Stands for `id` in iOS.

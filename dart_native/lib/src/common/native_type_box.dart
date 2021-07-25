@@ -1,5 +1,4 @@
 import 'package:dart_native/src/common/native_basic_type.dart';
-import 'package:flutter/material.dart';
 
 class NativeBox<T> {
   final T raw;

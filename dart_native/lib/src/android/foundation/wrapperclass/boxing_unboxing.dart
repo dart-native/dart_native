@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:dart_native/dart_native.dart';
 
 dynamic boxingWrapperClass(dynamic value) {
