@@ -27,7 +27,7 @@
     self = [super init];
     if (self) {
         _object = [NSObject new];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
             [NSNotificationCenter.defaultCenter postNotificationName:@"SampleDartNotification" object:nil];
         });
     }
@@ -232,7 +232,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooCStringBlock:(CStringRetBlock)block {
     char *arg = "test c-string";
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             char *result = block(arg);
             DDLogInfo(@"%s result: %s", __FUNCTION__, result);
@@ -242,7 +242,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         NSObject *result = [delegate callback];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, result);
     });
@@ -250,7 +250,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooStructDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         CGRect result = [delegate callbackStruct:CGRectMake(1.1, 2.2, 3.3, 4.4)];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, NSStringFromCGRect(result));
     });

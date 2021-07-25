@@ -1,3 +1,15 @@
+## 0.3.22
+
+* [Fix] Callbacks from multi-isolates on iOS.
+
+## 0.3.21
+
+* [Fix] Some crash on Android.
+
+## 0.3.20
+
+* [Feature] Support 64 bit on Android.
+
 ## 0.3.19
 
 * [Fix] Some crash on Android.

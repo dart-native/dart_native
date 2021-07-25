@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
-import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
@@ -23,16 +23,13 @@ class NSObject extends id {
   }
 
   NSObject([Class? isa]) : super(_new(isa)) {
-    passObjectToNative(this);
+    bindLifecycleOnNative(this);
   }
 
   /// Before calling [fromPointer], MAKE SURE the [ptr] for object exists.
   /// If [ptr] was already freed, you would get a crash!
   NSObject.fromPointer(Pointer<Void> ptr) : super(ptr) {
-    if (object_isClass(ptr) != 0) {
-      throw 'Pointer $ptr is not for NSObject!';
-    }
-    passObjectToNative(this);
+    bindLifecycleOnNative(this);
   }
 
   NSObject init() {
@@ -57,8 +54,8 @@ class NSObject extends id {
     if (isa == null) {
       isa = Class('NSObject');
     }
-    NSObject result = isa.perform(SEL('new'));
-    return result.autorelease().pointer;
+    Pointer<Void> resultPtr = isa.perform(SEL('new'), decodeRetVal: false);
+    return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
   }
 }
 

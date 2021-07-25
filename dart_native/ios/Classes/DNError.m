@@ -13,3 +13,15 @@
 
 /// MARK: Error
 NSString * const DNErrorDomain = @"com.dartnative.bridge";
+
+NSError *DNErrorWithUnderlyingError(NSError *error, NSError *underlyingError) {
+    if (!error) {
+        return underlyingError;
+    }
+    if (!underlyingError || error.userInfo[NSUnderlyingErrorKey]) {
+        return error;
+    }
+    NSMutableDictionary *mutableUserInfo = [error.userInfo mutableCopy];
+    mutableUserInfo[NSUnderlyingErrorKey] = underlyingError;
+    return [NSError errorWithDomain:error.domain code:error.code userInfo:mutableUserInfo];
+}

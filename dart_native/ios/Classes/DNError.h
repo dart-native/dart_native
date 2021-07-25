@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DNMacro.h"
 
 #define DN_ERROR(errorCode, desc, ...) \
 if (error) { \
@@ -27,16 +28,6 @@ typedef NS_ERROR_ENUM(DNErrorDomain, DNErrorCode) {
     DNCreateBlockError, // creating block fail.
 };
 
-static NSError * DNErrorWithUnderlyingError(NSError *error, NSError *underlyingError) {
-    if (!error) {
-        return underlyingError;
-    }
-    if (!underlyingError || error.userInfo[NSUnderlyingErrorKey]) {
-        return error;
-    }
-    NSMutableDictionary *mutableUserInfo = [error.userInfo mutableCopy];
-    mutableUserInfo[NSUnderlyingErrorKey] = underlyingError;
-    return [NSError errorWithDomain:error.domain code:error.code userInfo:mutableUserInfo];
-}
+DN_EXTERN NSError *DNErrorWithUnderlyingError(NSError *error, NSError *underlyingError);
 
 NS_ASSUME_NONNULL_END

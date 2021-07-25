@@ -9,9 +9,9 @@
 #import "DNFFIHelper.h"
 #import "native_runtime.h"
 #import "DNInvocation.h"
-#import "NSThread+DartNative.h"
 #import "DNPointerWrapper.h"
 #import "DNError.h"
+#import "DNObjectDealloc.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -28,7 +28,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) char *typeEncoding;
-@property (nonatomic) NSThread *thread;
 @property (nonatomic, readwrite) NativeMethodCallback callback;
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSMethodSignature *signature;
@@ -40,7 +39,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncoding
                             callback:(NativeMethodCallback)callback
-                            dartPort:(Dart_Port)dartPort
                                error:(out NSError **)error {
     self = [super init];
     if (self) {
@@ -54,8 +52,6 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         }
         strlcpy(_typeEncoding, typeEncoding, length);
         _callback = callback;
-        _thread = NSThread.currentThread;
-        _dartPort = dartPort;
         _signature = [NSMethodSignature signatureWithObjCTypes:_typeEncoding];
     }
     return self;
@@ -68,7 +64,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (IMP)imp {
     if (!_methodIMP) {
-        NSUInteger numberOfArguments = [self _prepCIF:&_cif withEncodeString:self.typeEncoding];
+        NSUInteger numberOfArguments = [self prepCIF:&_cif withEncodeString:self.typeEncoding];
         if (numberOfArguments == -1) { // Unknown encode.
             return nil;
         }
@@ -84,7 +80,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     return _methodIMP;
 }
 
-- (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str {
+- (int)prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str {
     int argCount;
     ffi_type **argTypes;
     ffi_type *returnType;
@@ -181,25 +177,19 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     invocation.realRetValue = ret;
     
     int64_t retAddr = (int64_t)(invocation.realRetValue);
-    
-    if (methodIMP.thread == NSThread.currentThread) {
-        void(*callback)(void **args, void *ret, int numberOfArguments, const char **types, BOOL stret) = methodIMP.callback;
-        // args: target, selector, realArgs...
-        callback(args, ret, numberOfArguments, types, methodIMP.hasStret);
-    } else {
-        [invocation retainArguments];
-        NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
-    }
+    [invocation retainArguments];
+    NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
     for (int i = 0; i < typesCount; i++) {
         if (*types[i] == '{') {
             free((void *)types[i]);
         }
     }
-    free(types);
+    
     retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, methodIMP, invocation);
-    [methodIMP.thread dn_performBlock:^{
-        NSThread.currentThread.threadDictionary[@(retObjectAddr)] = nil;
-    }];
+    if (strcmp(types[0], "object") == 0) {
+        native_release_object((__bridge id)*(void **)retAddr);
+    }
+    free(types);
 }
 
