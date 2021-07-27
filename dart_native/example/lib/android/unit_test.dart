@@ -1,6 +1,23 @@
+import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native_example/dn_unit_test.dart';
+
+/// Android unit test implementation.
+class DNAndroidUnitTest with DNUnitTestBase {
+  final stub = RuntimeStub();
+
+  @override
+  String fooString(String str) {
+    return stub.getString(str);
+  }
+
+  @override
+  void runAllUnitTests() {
+    testAndroid(stub);
+  }
+}
 
 testAndroid(RuntimeStub stub) {
   int ms = currentTimeMillis();
@@ -118,6 +135,8 @@ testAndroid(RuntimeStub stub) {
   for (var item in strList) {
     print("item $item");
   }
+
+  stub.setDelegateListener(DelegateStub());
 }
 
 int currentTimeMillis() {
