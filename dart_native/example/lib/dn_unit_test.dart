@@ -6,7 +6,7 @@ import 'package:dart_native_example/ios/unit_test.dart';
 ///
 /// dart native unit test.
 /// It is a example to use dart_native.
-/// Dart can use this class dispatch to all platform.
+/// Dart use this dispatch to all platform.
 ///
 class DNUnitTest {
   DNUnitTestBase _unitTest;
