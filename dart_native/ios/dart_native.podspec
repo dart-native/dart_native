@@ -19,7 +19,7 @@ Write native code using Dart. This package liberates you from native code and lo
   # s.vendored_libraries = 'libffi/libffi.a'
 
   # Release
-  s.source_files = 'Classes/DartNativePlugin.*'
+  s.source_files = 'Classes/DartNativePlugin.*', 'Classes/native_runtime.h', 'Classes/DNMacro.h', 'common/include/dart_api_dl.h', 'common/include/dart_api.h', 'common/include/dart_native_api.h'
   s.vendored_frameworks = 'DartNative.xcframework'
   
   s.public_header_files = 'Classes/DartNativePlugin.h', 'Classes/native_runtime.h', 'Classes/DNMacro.h', 'common/include/dart_api_dl.h', 'common/include/dart_api.h', 'common/include/dart_native_api.h'
