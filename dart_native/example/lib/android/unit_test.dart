@@ -2,6 +2,8 @@ import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
 import 'package:dart_native/dart_native.dart';
 
+import 'delegate_stub.dart';
+
 testAndroid(RuntimeStub stub) {
   int ms = currentTimeMillis();
   double resultDouble = stub.getDouble(10.0);
@@ -118,6 +120,9 @@ testAndroid(RuntimeStub stub) {
   for (var item in strList) {
     print("item $item");
   }
+
+  stub.setDelegateListener(DelegateStub());
+
 }
 
 int currentTimeMillis() {

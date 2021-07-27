@@ -41,7 +41,7 @@ _callback(
   for (var i = 0; i < argCount; i++) {
     Pointer<Utf8> argTypePtr = argTypesPtrPtr.elementAt(i).value;
     Pointer<Void> argPtr = argsPtrPtr.elementAt(i).value;
-    final String argType = argTypePtr.cast().toString();
+    final String argType = argTypePtr.toDartString();
     dynamic arg = argType == "java.lang.String"
         ? fromUtf16(argPtr)
         : unBoxingWrapperClass(argPtr, argType);
@@ -49,7 +49,6 @@ _callback(
   }
 
   dynamic result = Function.apply(function, args);
-
   if (result != null) {
     if (result is String) {
       argsPtrPtr.elementAt(argCount).value = toUtf16(result).cast();
