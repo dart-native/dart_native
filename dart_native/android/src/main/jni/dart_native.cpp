@@ -321,7 +321,6 @@ extern "C"
 
   /// release native object from cache
   static void RunFinalizer(void *isolate_callback_data,
-                           Dart_WeakPersistentHandle handle,
                            void *peer)
   {
     _updateObjectReference(static_cast<jobject>(peer), false);

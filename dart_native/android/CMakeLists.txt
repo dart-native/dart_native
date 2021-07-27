@@ -17,7 +17,7 @@ add_library( # Specifies the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             src/main/jni/include/dart_api_dl.c
+             ../ios/common/include/dart_api_dl.c
              src/main/jni/dart_native.cpp
              src/main/jni/dn_type_convert.cpp
              src/main/jni/dn_method_call.cpp
@@ -38,4 +38,4 @@ add_library( # Specifies the name of the library.
             # included in the NDK.
             ${log-lib} )
 
-    include_directories(src/main/jni/include)
+    include_directories(../ios/common/include)
