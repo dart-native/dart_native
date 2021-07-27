@@ -213,7 +213,6 @@ extern "C"
     }
 
     char *methodSignature = generateSignature(dataTypes, argumentCount, returnType);
-    DNDebug("call method %s %s", methodName, methodSignature);
     jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
 
     auto it = methodCallerMap.find(*returnType);
