@@ -103,7 +103,7 @@ A comparison of the task of "checking if an app needs to be installed" is shown 
 ## Examples
 ##### iOS:
 
-Dart code:
+Dart code (generated):
 
 ```dart
 // new Objective-C object.
@@ -120,7 +120,7 @@ CGRect rect = stub.fooCGRect(CGRect(4, 3, 2, 1));
 print(rect);
 
 ```
-Objective-C code:
+Corresponding Objective-C code:
 
 ```objc
 typedef int(^BarBlock)(NSObject *a);
@@ -137,7 +137,7 @@ More iOS examples see: [ios_unit_test.dart](/dart_native/example/lib/ios/unit_te
 
 ##### Android:
 
-Dart code:
+Dart code (generated):
 ```dart
 // new Java object.
 RuntimeStub stub = RuntimeStub();
@@ -149,7 +149,7 @@ List list = stub.getList([1, 2, 3, 4]);
 stub.setDelegateListener(DelegateStub());
 
 ```
-Java code:
+Corresponding Java code:
 
 ```java
 public class RuntimeStub {
