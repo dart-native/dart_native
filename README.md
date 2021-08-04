@@ -26,7 +26,7 @@ iOS & Android
 
 ## Usage
 
-1. Add ```dart_native``` to dependencies and ```source_gen``` to dev_dependencies.
+1. Add ```dart_native``` to dependencies and ```build_runner``` to dev_dependencies.
 
 2. Generate Dart wrapper code with [@dartnative/codegen](https://www.npmjs.com/package/@dartnative/codegen) or write Dart code manually.
 
