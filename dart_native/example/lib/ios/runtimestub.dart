@@ -36,6 +36,8 @@ typedef CGAffineTransform StretBlock(CGAffineTransform a);
 
 typedef CString CStringRetBlock(CString a);
 
+typedef NSDictionary NSDictionaryRetBlock(NSDictionary a);
+
 typedef CGFloat CGFloatRetBlock(CGFloat a);
 
 @native
@@ -233,6 +235,10 @@ class RuntimeStub extends NSObject {
 
   void fooCStringBlock(CStringRetBlock block) {
     perform(SEL('fooCStringBlock:'), args: [block]);
+  }
+
+  void fooNSDictionaryBlock(NSDictionaryRetBlock block) {
+    perform(SEL('fooNSDictionaryBlock:'), args: [block]);
   }
 
   void fooDelegate(SampleDelegate delegate) {
