@@ -10,4 +10,4 @@ build/
 
 .cxx/
 
-.fvm/
+**/.fvm/flutter_sdk

@@ -18,7 +18,7 @@ class NSDictionary extends NSSubclass<Map> {
     var values = allValues;
     Map temp = {};
     for (var i = 0; i < keys.length; i++) {
-      temp[keys[i]] = values;
+      temp[keys[i]] = values[i];
     }
     raw = temp;
   }
