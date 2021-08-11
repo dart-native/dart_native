@@ -13,45 +13,45 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 class NSError extends NSObject {
   String get domain {
     Pointer<Void> result = perform('domain'.toSEL(), decodeRetVal: false);
-    return NSString.fromPointer(result).raw!;
+    return NSString.fromPointer(result).raw;
   }
 
   int get code => perform('code'.toSEL());
 
   Map get userInfo {
     Pointer<Void> result = perform('userInfo'.toSEL(), decodeRetVal: false);
-    return NSDictionary.fromPointer(result).raw!;
+    return NSDictionary.fromPointer(result).raw;
   }
 
   String get localizedDescription {
     Pointer<Void> result =
         perform('localizedDescription'.toSEL(), decodeRetVal: false);
-    return NSString.fromPointer(result).raw!;
+    return NSString.fromPointer(result).raw;
   }
 
   String get localizedFailureReason {
     Pointer<Void> result =
         perform('localizedFailureReason'.toSEL(), decodeRetVal: false);
-    return NSString.fromPointer(result).raw!;
+    return NSString.fromPointer(result).raw;
   }
 
   String get localizedRecoverySuggestion {
     Pointer<Void> result =
         perform('localizedRecoverySuggestion'.toSEL(), decodeRetVal: false);
-    return NSString.fromPointer(result).raw!;
+    return NSString.fromPointer(result).raw;
   }
 
   List get localizedRecoveryOptions {
     Pointer<Void> result =
         perform('localizedRecoveryOptions'.toSEL(), decodeRetVal: false);
-    return NSArray.fromPointer(result).raw!;
+    return NSArray.fromPointer(result).raw;
   }
 
   NSObject get recoveryAttempter => perform('recoveryAttempter'.toSEL());
 
   String get helpAnchor {
     Pointer<Void> result = perform('helpAnchor'.toSEL(), decodeRetVal: false);
-    return NSString.fromPointer(result).raw!;
+    return NSString.fromPointer(result).raw;
   }
 
   NSError.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);

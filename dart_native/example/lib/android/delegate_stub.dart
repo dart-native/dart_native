@@ -4,8 +4,9 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 
 class DelegateStub extends JObject with SampleDelegate {
-  DelegateStub([Pointer ptr])
-      : super("com/dartnative/dart_native_example/SampleDelegate", pointer: ptr, isInterface: true) {
+  DelegateStub([Pointer? ptr])
+      : super("com/dartnative/dart_native_example/SampleDelegate",
+            pointer: ptr, isInterface: true) {
     super.registerSampleDelegate();
   }
 

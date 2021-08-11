@@ -27,13 +27,13 @@ class NSDictionary extends NSSubclass<Map> {
 
   List get allKeys {
     Pointer<Void> keysPtr = perform(SEL('allKeys'), decodeRetVal: false);
-    return NSArray.fromPointer(keysPtr).raw!;
+    return NSArray.fromPointer(keysPtr).raw;
   }
 
   List get allValues {
     Pointer<Void> valuesPtr = perform(SEL('allValues'), decodeRetVal: false);
     return NSArray.fromPointer(valuesPtr)
-        .raw!
+        .raw
         .map((e) => unboxingObjCType(e))
         .toList();
   }

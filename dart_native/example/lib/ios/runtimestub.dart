@@ -36,13 +36,13 @@ typedef CGAffineTransform StretBlock(CGAffineTransform a);
 
 typedef CString CStringRetBlock(CString a);
 
-typedef NSDictionary NSDictionaryRetBlock(NSDictionary a);
+typedef NSDictionary? NSDictionaryRetBlock(NSDictionary? a);
 
 typedef CGFloat CGFloatRetBlock(CGFloat a);
 
 @native
 class RuntimeStub extends NSObject {
-  RuntimeStub([Class isa]) : super(isa ?? Class('RuntimeStub'));
+  RuntimeStub([Class? isa]) : super(isa ?? Class('RuntimeStub'));
 
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
@@ -94,7 +94,7 @@ class RuntimeStub extends NSObject {
     return perform(SEL('fooCharPtr:'), args: [charPtr]);
   }
 
-  Class fooClass(Class cls) {
+  Class fooClass(Class? cls) {
     Pointer<Void> result =
         perform(SEL('fooClass:'), args: [cls], decodeRetVal: false);
     return Class.fromPointer(result);

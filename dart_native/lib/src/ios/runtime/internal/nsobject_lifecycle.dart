@@ -30,20 +30,23 @@ void _dealloc(Pointer<Void> ptr) {
     CallbackManager.shared.clearAllCallbackOnTarget(ptr);
     removeBlockOnSequence(ptr.address);
     _finalizerMap[ptr]?.forEach((element) {
-      element!();
+      element();
     });
     _finalizerMap.remove(ptr);
   }
 }
 
-Map<Pointer<Void>, List<Finalizer?>> _finalizerMap = {};
+Map<Pointer<Void>, List<Finalizer>> _finalizerMap = {};
 
 addFinalizerForObject(NSObject obj) {
-  List<Finalizer?>? finalizers = _finalizerMap[obj.pointer];
+  if (obj.finalizer == null) {
+    return;
+  }
+  List<Finalizer>? finalizers = _finalizerMap[obj.pointer];
   if (finalizers == null) {
-    finalizers = [obj.finalizer];
+    finalizers = [obj.finalizer!];
   } else {
-    finalizers.add(obj.finalizer);
+    finalizers.add(obj.finalizer!);
   }
   _finalizerMap[obj.pointer] = finalizers;
 }

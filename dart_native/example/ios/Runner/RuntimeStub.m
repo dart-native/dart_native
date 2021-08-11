@@ -241,7 +241,10 @@ API_AVAILABLE(ios(11.0)){
 }
 
 - (void)fooNSDictionaryBlock:(NSDictionary *(^)(NSDictionary *dict))block {
-    NSDictionary *arg = @{@1: @2};
+    NSDictionary *arg = @{
+        @"gTKPFileUploadManangerResultInfo": @"\\U4e0a\\U4f20\\U8017\\U65f6:2.6 \\U79d2\n\n\\U6587\\U4ef6\\U5927\\U5c0f: 5.54 MB\n\n\\U4e0a\\U4f20\\U901f\\U5ea6:2.11 MB/s\n\n\\U4e0b\\U8f7d\\U94fe\\U63a5:http://sinian-1258344701.cos.ap-nanjing.myqcloud.com/assets/933AE868-A26E-46D2-8E8B-A8E92B9EFF3D_2323232323_2021_08_11_00_36_00_992.png\n\n\\U8fd4\\U56deHTTP\\U5934\\U90e8:\n{\n    Connection = \"keep-alive\";\n    \"Content-Type\" = \"application/xml\";\n    Date = \"Tue, 10 Aug 2021 16:36:03 GMT\";\n    Server = \"tencent-cos\";\n    \"Transfer-Encoding\" = Identity;\n    \"x-cos-hash-crc64ecma\" = 12023060598383007072;\n    \"x-cos-request-id\" = \"NjExMmFhZjNfMTQ1MWU0MDlfMmY5NWNfOTdmYmYyZA==\";\n}\n\\U8fd4\\U56deHTTP Body\\U5185\\U5bb9:\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<CompleteMultipartUploadResult xmlns=\"http://www.qcloud.com/document/product/436/7751\">\n\t<Location>http://sinian-1258344701.cos.ap-nanjing.myqcloud.com/assets/933AE868-A26E-46D2-8E8B-A8E92B9EFF3D_2323232323_2021_08_11_00_36_00_992.png</Location>\n\t<Bucket>sinian-1258344701</Bucket>\n\t<Key>assets/933AE868-A26E-46D2-8E8B-A8E92B9EFF3D_2323232323_2021_08_11_00_36_00_992.png</Key>\n\t<ETag>&quot;ffd2a644a86be87375d9bd076beedd6d-6&quot;</ETag>\n</CompleteMultipartUploadResult>\n\n\n",
+        @"gTKPFileUploadManangerResultUrl": @"http://sinian-1258344701.file.myqcloud.com/assets/933AE868-A26E-46D2-8E8B-A8E92B9EFF3D_2323232323_2021_08_11_00_36_00_992.png",
+    };
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             NSDictionary *result = block(arg);

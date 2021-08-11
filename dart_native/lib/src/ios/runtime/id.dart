@@ -86,7 +86,7 @@ class id implements NSObjectProtocol {
   /// presentation in the debugger.
   String get debugDescription {
     NSObject result = perform(SEL('debugDescription'));
-    return NSString.fromPointer(result.pointer).raw!;
+    return NSString.fromPointer(result.pointer).raw;
   }
 
   /// Sends a specified message to the receiver and returns the result of the

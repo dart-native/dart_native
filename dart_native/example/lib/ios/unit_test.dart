@@ -123,7 +123,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
     return CString('test return cstring');
   });
 
-  stub.fooNSDictionaryBlock((NSDictionary dict) {
+  stub.fooNSDictionaryBlock((NSDictionary? dict) {
     print('hello block nsdictionary! $dict');
     return dict;
   });

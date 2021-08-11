@@ -442,17 +442,25 @@ List<String> _nativeTypeNames = [
 List<String> dartTypeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
+  List<String> result = [];
   if (argsAndRet.length == 2) {
     String args = argsAndRet.first;
     String ret = argsAndRet.last.replaceAll('Null', 'void');
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      return '$ret, $args'.split(', ');
+      result = '$ret, $args'.split(', ');
     } else {
-      return [ret];
+      result = [ret];
     }
   }
-  return [];
+  // handle nullsafety, such as [NSString?]
+  result = result.map((e) {
+    if (e.endsWith("?")) {
+      e = e.substring(0, e.length - 1);
+    }
+    return e;
+  }).toList();
+  return result;
 }
 
 List<String> nativeTypeStringForDartTypes(List<String> types) {
