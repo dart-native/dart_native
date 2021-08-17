@@ -1,3 +1,7 @@
+## [0.1.2] - Upgrade dependencies.
+
+## [0.1.1] - Upgrade dependencies.
+
 ## [0.1.0] - Fix empty content.
 
 ## [0.0.6] - Fix `runDartNative`.

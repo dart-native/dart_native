@@ -1,19 +1,25 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/runtime.dart';
-import 'package:dart_native/src/ios/runtime/functions.dart';
+import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:ffi/ffi.dart';
 
+/// Stands for `Class` in iOS.
+///
+/// An opaque type that represents an Objective-C class.
 class Class extends id {
   String name;
 
   static final Map<int, Class> _cache = <int, Class>{};
 
-  /// An opaque type that represents an Objective-C class.
-  factory Class(String name, [Class base]) {
-    Pointer<Void> ptr = _getClass(name, base);
+  /// Create a class for Objective-C.
+  ///
+  /// Obtain an existing class by [name], or creating a new class using [name] and
+  /// its [superclass].
+  factory Class(String name, [Class superclass]) {
+    Pointer<Void> ptr = _getClass(name, superclass);
     if (ptr == nullptr) {
       throw 'class $name is not exists!';
     }
@@ -51,14 +57,14 @@ class Class extends id {
   }
 }
 
-Pointer<Void> _getClass(String className, [Class base]) {
+Pointer<Void> _getClass(String className, [Class superclass]) {
   if (className == null) {
     className = 'NSObject';
   }
   final classNamePtr = Utf8.toUtf8(className);
-  Pointer<Void> basePtr = base?.pointer;
+  Pointer<Void> basePtr = superclass?.pointer;
   Pointer<Void> result;
-  if (base == null) {
+  if (superclass == null) {
     result = objc_getClass(classNamePtr);
   } else {
     result = nativeGetClass(classNamePtr, basePtr);

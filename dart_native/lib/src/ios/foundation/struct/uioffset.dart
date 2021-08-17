@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
+/// Stands for `UIOffset` in iOS.
 class UIOffset extends CGFloatx2Wrapper {
   double get horizontal => d1;
   set horizontal(double width) {

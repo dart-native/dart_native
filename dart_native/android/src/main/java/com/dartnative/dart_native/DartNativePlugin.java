@@ -1,18 +1,29 @@
 package com.dartnative.dart_native;
 
+import android.text.TextUtils;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.plugin.common.BinaryMessenger;
 
 /** DartNativePlugin */
 public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
+
+  public static final String TAG = "DartNativePlugin";
+
+  public static String sSoPath = "libdart_native.so";
+
   @Override
-  public void onAttachedToEngine(FlutterPluginBinding flutterPluginBinding) {
-    final MethodChannel channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "dart_native");
-    channel.setMethodCallHandler(new DartNativePlugin());
+  public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    BinaryMessenger messenger = flutterPluginBinding.getBinaryMessenger();
+    final MethodChannel channel = new MethodChannel(messenger, "dart_native");
+    channel.setMethodCallHandler(this);
   }
 
   // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -30,25 +41,25 @@ public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
   }
 
   @Override
-  public void onMethodCall(MethodCall call, Result result) {
-    if (call.method.equals("getPlatformVersionInt")) {
-      result.success(1);
-    }else if (call.method.equals("getPlatformVersionDouble")) {
-      result.success(100.23d);
-    }else if (call.method.equals("getPlatformVersionByte")) {
-      byte ret = 1;
-      result.success((byte)ret);
-    }else if (call.method.equals("getPlatformVersionString")) {
-      String ret = "abcd";
-      result.success(ret);
-    }else if (call.method.equals("getPlatformVersion")) {
-      result.success("Android " + android.os.Build.VERSION.RELEASE);
+  public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
+    if (call.method.equals("getDylibPath")) {
+      result.success(sSoPath);
     } else {
       result.notImplemented();
     }
   }
 
+  public static void setSoPath(String soPath) {
+    Log.d(TAG, "so path : " + soPath);
+    if (!TextUtils.isEmpty(soPath)) {
+      sSoPath = soPath;
+      System.load(soPath);
+      return;
+    }
+    System.loadLibrary("dart_native");
+  }
+
   @Override
-  public void onDetachedFromEngine(FlutterPluginBinding binding) {
+  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
   }
 }

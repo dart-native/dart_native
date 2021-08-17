@@ -5,7 +5,7 @@ import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/native_runtime.dart';
+import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
@@ -16,7 +16,8 @@ bool registerMethodCallback(
   Pointer<Void> selectorPtr = selector.toPointer();
   CallbackManager.shared
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
-  int result = nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr);
+  int result =
+      nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr, nativePort);
   return result != 0;
 }
 
@@ -54,14 +55,14 @@ _callback(
     // types: ret, self, _cmd, args...
     Pointer<Utf8> argTypePtr = typesPtrPtr.elementAt(i + 3).value;
     Pointer<Void> ptr = argsPtrPtrPtr.elementAt(i + argStartIndex).value.cast();
-    if (argTypePtr.encodingForStruct == null) {
+    if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
     dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < dartTypes.length) {
       String dartType = dartTypes[i + 1];
       arg = boxingObjCBasicValue(dartType, arg);
-      arg = convertFromPointer(dartType, arg);
+      arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);
   }
@@ -83,7 +84,7 @@ _callback(
     }
   }
   if (result is id) {
-    markAutoreleasereturnObject(result.pointer);
+    retainObject(result.pointer);
   }
 }
 

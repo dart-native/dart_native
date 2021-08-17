@@ -13,19 +13,24 @@ import 'package:dart_native/src/ios/foundation/struct/nsdirectionaledgeinsets.da
 import 'package:dart_native/src/ios/foundation/struct/nsrange.dart';
 import 'package:dart_native/src/ios/foundation/struct/uioffset.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
-import 'package:dart_native/src/ios/runtime/nssubclass.dart';
+import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
+/// Stands for `NSValue` in iOS.
 @native
 class NSValue extends NSSubclass {
   NSValue(dynamic value) : super(value, _new);
 
   NSValue.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     if (raw == null) {
-      // TODO: should raw be objCType?
+      // TODO: Do these things on native.
       String encoding = perform(SEL('objCType'));
       String selName = _selNameForNativeValue(encoding);
-      raw = msgSend(this.pointer, SEL(selName), auto: false);
+      if (selName == null) {
+        throw 'Invalid encoding type for NSValue: $encoding';
+      } else {
+        raw = msgSend(this.pointer, SEL(selName));
+      }
     }
   }
 
@@ -43,13 +48,15 @@ class NSValue extends NSSubclass {
     if (encoding.startsWith('{')) {
       // Structs
       String structName = structNameForEncoding(encoding);
+      if (structName == null) {
+        return null;
+      }
       return '${structName}Value';
     } else if (encoding.length == 1 &&
         _encodingToNativeValueName.containsKey(encoding)) {
       return '${_encodingToNativeValueName[encoding]}Value';
-    } else {
-      throw 'Invalid encoding type for NSValue: $encoding';
     }
+    return null;
   }
 
   static NSValue valueWithPointer(Pointer value) {

@@ -88,7 +88,6 @@ class NSUIntegerx2Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    if (other == null) return false;
     return i1 == other.i1 && i2 == other.i2;
   }
 
@@ -169,7 +168,6 @@ class CGFloatx2Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    if (other == null) return false;
     return d1 == other.d1 && d2 == other.d2;
   }
 
@@ -274,7 +272,6 @@ class CGFloatx4Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    if (other == null) return false;
     return d1 == other.d1 && d2 == other.d2 && d3 == other.d3 && d4 == other.d4;
   }
 
@@ -404,7 +401,6 @@ class CGFloatx6Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    if (other == null) return false;
     return d1 == other.d1 &&
         d2 == other.d2 &&
         d3 == other.d3 &&
@@ -702,7 +698,6 @@ class CGFloatx16Wrapper extends NativeStruct {
   }
 
   bool operator ==(other) {
-    if (other == null) return false;
     return d1 == other.d1 &&
         d2 == other.d2 &&
         d3 == other.d3 &&

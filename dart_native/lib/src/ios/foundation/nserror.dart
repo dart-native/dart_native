@@ -8,6 +8,7 @@ import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
+/// Stands for `NSError` in iOS.
 @native
 class NSError extends NSObject {
   String get domain {

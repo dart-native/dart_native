@@ -8,7 +8,7 @@ Automatic type conversion solution for dart_native based on source_gen through a
 
 ## Getting Started
 
-1. Add `source_gen` package to `dev_dependencies` in your `pubspec.yaml`.
+1. Add `build_runner` package to `dev_dependencies` in your `pubspec.yaml`.
 
 ```yaml
 dev_dependencies:

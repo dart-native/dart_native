@@ -27,7 +27,7 @@ jobs:
         - unzip -qq gradle-3.5-bin.zip
         - export GRADLE_HOME=$PWD/gradle-3.5
         - export PATH=$GRADLE_HOME/bin:$PATH
-        - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+        - git clone https://github.com/flutter/flutter.git --depth 1 --branch 1.22.6
         - export PATH=./flutter/bin:$PATH
         - flutter doctor
         - yes | sdkmanager "platforms;android-29"
@@ -41,10 +41,10 @@ jobs:
       before_install: cd dart_native/example
       before_script:
         - brew update
-        - brew install --HEAD libimobiledevice
+        - brew install libimobiledevice
         - brew install ideviceinstaller
         - brew install ios-deploy
-        - git clone https://github.com/flutter/flutter.git -b stable --depth 1
+        - git clone https://github.com/flutter/flutter.git --depth 1 --branch 1.22.6
         - export PATH=./flutter/bin:$PATH
         - flutter doctor
       script:
