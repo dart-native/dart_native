@@ -1,11 +1,15 @@
 //
 //  DNInvocation.m
-//  dart_native
+//  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/31.
 //
 
 #import "DNInvocation.h"
+
+#if !__has_feature(objc_arc)
+#error
+#endif
 
 @interface DNInvocation ()
 
@@ -28,7 +32,7 @@
     if (self) {
         _methodSignature = signature;
         _stret = stret;
-        _argumentsRetainedQueue = dispatch_queue_create("com.dartobjc.argumentsRetained", DISPATCH_QUEUE_CONCURRENT);
+        _argumentsRetainedQueue = dispatch_queue_create("com.dartnative.argumentsRetained", DISPATCH_QUEUE_CONCURRENT);
         NSUInteger numberOfArguments = signature.numberOfArguments;
         if (stret) {
             numberOfArguments++;
@@ -153,6 +157,9 @@
 }
 
 - (void)_retainPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key {
+    if (!pointer || *encode == 'v') {
+        return;
+    }
     void *p = *pointer;
     if (!p) {
         return;

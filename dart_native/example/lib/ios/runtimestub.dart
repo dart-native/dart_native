@@ -244,20 +244,22 @@ class RuntimeStub extends NSObject {
   }
 
   String fooNSString(String str) {
-    Pointer<Void> result =
-        perform(SEL('fooNSString:'), args: [str], decodeRetVal: false);
-    return NSString.fromPointer(result).raw;
+    return perform(SEL('fooNSString:'), args: [str]);
+  }
+
+  Future<dynamic> fooNSStringAsync(String str) async {
+    return performAsync(SEL('fooNSString:'), args: [str]).then((value) {
+      return NSString.fromPointer(value.pointer).raw;
+    });
   }
 
   String fooNSMutableString(String str) {
     NSMutableString _str = NSMutableString(str);
-    Pointer<Void> result =
-        perform(SEL('fooNSMutableString:'), args: [_str], decodeRetVal: false);
-    return NSMutableString.fromPointer(result).raw;
+    return perform(SEL('fooNSMutableString:'), args: [_str]);
   }
 
-  void fooWithError(NSObjectRef<NSError> error) {
-    perform(SEL('fooWithError:'), args: [error]);
+  bool fooWithError(NSObjectRef<NSError> error) {
+    return perform(SEL('fooWithError:'), args: [error]);
   }
 
   TestOptions fooWithOptions(TestOptions options) {

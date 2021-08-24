@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
+/// Stands for `CGSize` in iOS.
 class CGSize extends CGFloatx2Wrapper {
   double get width => d1;
   set width(double width) {

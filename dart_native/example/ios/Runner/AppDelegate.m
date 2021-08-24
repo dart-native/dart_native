@@ -1,19 +1,32 @@
 #import "AppDelegate.h"
 #import "GeneratedPluginRegistrant.h"
 #import <CocoaLumberjack/CocoaLumberjack.h>
+
+#if __has_include(<dart_native/dart_native.h>)
+#import <dart_native/dart_native.h>
+#else
+@import dart_native;
+#endif
+
 #import "RuntimeSon.h"
+
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+#if DEBUG
+    DartNativeSetThrowException(true);
+#else
+    DartNativeSetThrowException(false);
+#endif
     FlutterViewController *controller = (FlutterViewController*)self.window.rootViewController;
 
     FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:@"sample.dartnative.com"
                                                                        binaryMessenger:controller.binaryMessenger];
     RuntimeSon *son = [RuntimeSon new];
     [channel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
-        if ([call.method isEqualToString:@"fooNSString:"]) {
+        if ([call.method isEqualToString:@"fooString"]) {
             result([son fooNSString:call.arguments]);
         }
     }];

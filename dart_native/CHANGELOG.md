@@ -1,3 +1,76 @@
+## 0.3.22
+
+* [Fix] Callbacks from multi-isolates on iOS.
+
+## 0.3.21
+
+* [Fix] Some crash on Android.
+
+## 0.3.20
+
+* [Feature] Support 64 bit on Android.
+
+## 0.3.19
+
+* [Fix] Some crash on Android.
+
+## 0.3.18
+
+* [Feature] Support multi-isolates.
+
+## 0.3.17
+
+* [Fix] Type encoding issue on iOS.
+
+## 0.3.16
+
+* [Fix] JNI environment issue on Android.
+
+## 0.3.15
+
+* [Fix] Performance issue on iOS.
+
+## 0.3.14
+
+* [Feature] Support `await/async` for methods on iOS.
+
+## 0.3.13
+
+* [Fix] Memory leaks on Android.
+
+## 0.3.12
+
+* [Feature] Support List/Array for Android.
+
+## 0.3.11
+
+* [Fix] Skip BOM for Utf-16 on iOS. Sad!
+
+## 0.3.10
+
+* [Fix] Skip BOM for Utf-16 on iOS.
+
+## 0.3.9
+
+* [Fix] iOS framework compatibility.
+
+## 0.3.8
+
+* [Feature] Android so file path.
+
+## 0.3.7
+
+* [Feature] Android callback result.
+ 
+## 0.3.6
+
+* [Fix] Issue: https://github.com/dart-native/dart_native/issues/24
+
+## 0.3.5
+
+* [Feature] Object lifecycle management for Android.
+* [Feature] Callback from Android to Flutter.
+
 ## 0.3.4
 
 * Performance optimization for iOS `NSString`.

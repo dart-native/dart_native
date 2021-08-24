@@ -1,8 +1,28 @@
+import 'dart:async';
 import 'dart:ffi';
+import 'dart:isolate';
 
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native_example/dn_unit_test.dart';
 import 'package:dart_native_example/ios/delegatestub.dart';
+import 'package:dart_native_example/ios/runtimeson.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
+
+/// IOS unit test implementation.
+class DNIOSUnitTest with DNUnitTestBase {
+  final stub = RuntimeSon();
+  final delegate = DelegateStub();
+
+  @override
+  String fooString(String str) {
+    return stub.fooNSString(str);
+  }
+
+  @override
+  void runAllUnitTests() {
+    testIOS(stub, delegate);
+  }
+}
 
 testIOS(RuntimeStub stub, DelegateStub delegate) {
   bool resultBool = stub.fooBOOL(false);
@@ -143,12 +163,26 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
       stub.fooWithOptions(TestOptions(TestOptionsOne | TestOptionsTwo));
   print('fooWithOptions result:$options');
 
-  NSObject currentThread = Class('NSThread')
-      .perform(SEL('currentThread'), onQueue: DispatchQueue.global());
-  NSObject description = currentThread.perform(SEL('description'));
-  String threadResult = NSString.fromPointer(description.pointer).raw;
-  print('currentThread: $threadResult');
+  Class('NSThread')
+      .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
+      .then((currentThread) {
+    print('currentThread: ${currentThread.description}');
+  });
 
   NSNotificationCenter.defaultCenter.addObserver(
       delegate, delegate.handleNotification, 'SampleDartNotification', nil);
+
+  Isolate.spawn(_checkTimer, 'isolate0');
+  Isolate.spawn(_checkTimer, 'isolate1');
+}
+
+void _checkTimer(String isolateID) async {
+  RuntimeStub stub = RuntimeStub();
+  DelegateStub delegate = DelegateStub();
+  Timer.periodic(new Duration(seconds: 1), (Timer t) {
+    stub.fooCompletion(() {
+      print('hello completion block on $isolateID!');
+    });
+    stub.fooDelegate(delegate);
+  });
 }
