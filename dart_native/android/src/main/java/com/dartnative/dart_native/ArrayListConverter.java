@@ -4,7 +4,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -143,7 +142,7 @@ public class ArrayListConverter {
 
     /************************set to list***************************************/
 
-    public List setToList(HashSet<Object> set) {
+    public List setToList(Set<Object> set) {
         if (set == null || set.size() == 0) {
             return new ArrayList();
         }
