@@ -50,8 +50,6 @@ class NativeDeprecated {
       {this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
 
-mixin _ToAlias {}
-
 const String API_TO_BE_DEPRECATED = 'API_TO_BE_DEPRECATED';
 
-class NativeDeprecatedReplacement = NativeDeprecated with _ToAlias;
+typedef NativeDeprecatedReplacement = NativeDeprecated;

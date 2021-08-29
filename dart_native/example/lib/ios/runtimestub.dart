@@ -8,16 +8,13 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 // You can uncomment this line when this package is ready.
 // import 'package:uikit/uikit.dart';
 
-class TestOptions extends NSOptions {
-  const TestOptions(dynamic raw) : super(raw);
-  TestOptions.fromPointer(Pointer<Void> ptr) : super(ptr.address);
-}
+typedef TestOptions = NSOptions;
 
-const TestOptions TestOptionsNone = TestOptions(0);
+const TestOptions TestOptionsNone = 0;
 
-const TestOptions TestOptionsOne = TestOptions(1 << 0);
+const TestOptions TestOptionsOne = 1 << 0;
 
-const TestOptions TestOptionsTwo = TestOptions(1 << 1);
+const TestOptions TestOptionsTwo = 1 << 1;
 
 abstract class SampleDelegate {
   registerSampleDelegate() {
@@ -34,7 +31,7 @@ typedef NSObject BarBlock(NSObject a);
 
 typedef CGAffineTransform StretBlock(CGAffineTransform a);
 
-typedef CString CStringRetBlock(CString a);
+typedef CStringRetBlock = CString Function(CString a);
 
 typedef NSDictionary? NSDictionaryRetBlock(NSDictionary? a);
 
@@ -271,6 +268,6 @@ class RuntimeStub extends NSObject {
   TestOptions fooWithOptions(TestOptions options) {
     Pointer<Void> result =
         perform(SEL('fooWithOptions:'), args: [options], decodeRetVal: false);
-    return TestOptions.fromPointer(result);
+    return result.address;
   }
 }

@@ -41,19 +41,19 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     return;
   }
   if (object is byte) {
-    ptr.cast<Int32>().value = object.raw;
+    ptr.cast<Int32>().value = object;
     typePtr?.value = argSignature ?? _pointerForEncode[ValueType.byte]!;
     return;
   }
 
   if (object is short) {
-    ptr.cast<Int16>().value = object.raw;
+    ptr.cast<Int16>().value = object;
     typePtr?.value = argSignature ?? _pointerForEncode[ValueType.short]!;
     return;
   }
 
   if (object is long) {
-    ptr.cast<Int64>().value = object.raw;
+    ptr.cast<Int64>().value = object;
     typePtr?.value = argSignature ?? _pointerForEncode[ValueType.long]!;
     return;
   }
@@ -71,7 +71,7 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   }
 
   if (object is float) {
-    ptr.cast<Float>().value = object.raw;
+    ptr.cast<Float>().value = object;
     typePtr?.value = argSignature ?? _pointerForEncode[ValueType.float]!;
     return;
   }
@@ -83,7 +83,7 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   }
 
   if (object is char) {
-    ptr.cast<Uint16>().value = object.raw;
+    ptr.cast<Uint16>().value = object;
     typePtr?.value = argSignature ?? _pointerForEncode[ValueType.char]!;
     return;
   }

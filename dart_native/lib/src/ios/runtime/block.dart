@@ -210,7 +210,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
-      arg = boxingObjCBasicValue(dartType, arg);
+      arg = handleObjCBoolValue(dartType, arg);
       arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);

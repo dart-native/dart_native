@@ -1,6 +1,5 @@
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
-import 'package:dart_native/dart_native.dart';
 
 import 'delegate_stub.dart';
 
@@ -75,12 +74,12 @@ testAndroid(RuntimeStub stub) {
     print("item $item");
   }
 
-  list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
+  list = stub.getByteList([1, 2, 3, 4]);
   for (int item in list) {
     print("item $item");
   }
 
-  list = stub.getFloatList([float(1.0), float(2.0), float(3.0), float(4.0)]);
+  list = stub.getFloatList([1.0, 2.0, 3.0, 4.0]);
   for (double item in list) {
     print("item $item");
   }
@@ -96,7 +95,7 @@ testAndroid(RuntimeStub stub) {
     }
   }
 
-  List byteArray = stub.getByteArray([byte(1), byte(2), byte(3)]);
+  List byteArray = stub.getByteArray([1, 2, 3]);
   for (int byte in byteArray) {
     print("item $byte");
   }
@@ -106,7 +105,7 @@ testAndroid(RuntimeStub stub) {
     print("intSet $setInt");
   }
 
-  Set fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
+  Set fSet = stub.getFloatSet(Set.from([1.0, 2.0, 4.0]));
   for (double setF in fSet) {
     print("fSet $setF");
   }

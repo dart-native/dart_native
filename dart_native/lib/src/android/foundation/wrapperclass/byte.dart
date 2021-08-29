@@ -17,7 +17,7 @@ class Byte extends JSubclass<int> {
 /// New native 'Byte'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
-    JObject object = JObject.parameterConstructor(clsName, [byte(value)]);
+    JObject object = JObject.parameterConstructor(clsName, [value]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Byte.';

@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
-import 'package:dart_native/src/common/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:ffi/ffi.dart';
@@ -133,11 +132,7 @@ dynamic storeValueToPointer(
   if (object == null && encoding == TypeEncodings.v) {
     return;
   }
-  if (object is num || object is bool || object is NativeBox) {
-    if (object is NativeBox) {
-      // unwrap from box.
-      object = object.raw;
-    }
+  if (object is num || object is bool) {
     if (object is bool) {
       // waiting for ffi bool type support.
       object = object ? 1 : 0;

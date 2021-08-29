@@ -29,23 +29,23 @@ class RuntimeStub extends JObject {
   }
 
   int getByte(int b) {
-    return invoke('getByte', [byte(b)], "B");
+    return invoke('getByte', [b], "B");
   }
 
   double getFloat(double f) {
-    return invoke('getFloat', [float(f)], "F");
+    return invoke('getFloat', [f], "F");
   }
 
   String getChar(String c) {
-    return invoke('getChar', [char(c.codeUnitAt(0))], "C");
+    return invoke('getChar', [c.codeUnitAt(0)], "C");
   }
 
   int getShort(int s) {
-    return invoke('getShort', [short(s)], "S");
+    return invoke('getShort', [s], "S");
   }
 
   int getLong(int l) {
-    return invoke('getLong', [long(l)], "J");
+    return invoke('getLong', [l], "J");
   }
 
   bool getBool(bool b) {
@@ -71,12 +71,12 @@ class RuntimeStub extends JObject {
         [
           s,
           i,
-          char(c.codeUnitAt(0)),
+          c.codeUnitAt(0),
           d,
-          float(f),
-          byte(b),
-          short(sh),
-          long(l),
+          f,
+          b,
+          sh,
+          l,
           boo
         ],
         "Z");

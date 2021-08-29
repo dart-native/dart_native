@@ -2,15 +2,15 @@ import 'package:dart_native/dart_native.dart';
 
 dynamic boxingWrapperClass(dynamic value) {
   if (value is byte) {
-    return Byte(value.raw);
+    return Byte(value);
   } else if (value is short) {
-    return Short(value.raw);
+    return Short(value);
   } else if (value is long) {
-    return Long(value.raw);
+    return Long(value);
   } else if (value is int) {
     return Integer(value);
   } else if (value is float) {
-    return Float(value.raw);
+    return Float(value);
   } else if (value is double) {
     return Double(value);
   } else if (value is List) {
