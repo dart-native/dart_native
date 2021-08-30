@@ -9,6 +9,11 @@ class DNAndroidUnitTest with DNUnitTestBase {
   final stub = RuntimeStub();
 
   @override
+  void setFooString(String str) {
+    stub.setString(str);
+  }
+
+  @override
   String fooString(String str) {
     return stub.getString(str);
   }

@@ -28,6 +28,8 @@
     [channel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
         if ([call.method isEqualToString:@"fooString"]) {
             result([son fooNSString:call.arguments]);
+        } else if ([call.method isEqualToString:@"setFooString"]) {
+            [son fooNSString:call.arguments];
         }
     }];
     [GeneratedPluginRegistrant registerWithRegistry:self];

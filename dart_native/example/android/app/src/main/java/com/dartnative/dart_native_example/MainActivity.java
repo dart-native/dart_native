@@ -30,6 +30,7 @@ public class MainActivity extends FlutterActivity {
           result.success(100);
         } else if ("fooString".equals(call.method)) {
           result.success(call.arguments);
+        } else if ("setFooString".equals(call.method)) {
         } else {
           result.notImplemented();
         }

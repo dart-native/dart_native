@@ -16,6 +16,10 @@ class DNUnitTest {
     _unitTest = Platform.isAndroid ? DNAndroidUnitTest() : DNIOSUnitTest();
   }
 
+  void setFooString(String str) {
+    _unitTest.setFooString(str);
+  }
+
   String fooString(String str) {
     return _unitTest.fooString(str);
   }
@@ -30,6 +34,7 @@ class DNUnitTest {
 /// Base class for all platform.
 ///
 abstract class DNUnitTestBase {
+  void setFooString(String str);
   String fooString(String str);
 
   void runAllUnitTests();

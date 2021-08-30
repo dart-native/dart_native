@@ -30,10 +30,25 @@ class _DartNativeAppState extends State<DartNativeApp> {
   Future<void> initPlatformState() async {
     final unitTest = DNUnitTest();
 
+    String testString = "";
+    int time = 0;
     /// Benchmark
-    String testString =
+    testString =
         'This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖';
-    int time = DateTime.now().millisecondsSinceEpoch;
+    time = DateTime.now().millisecondsSinceEpoch;
+    for (var i = 0; i < 10000; i++) {
+      platform.invokeMethod('setFooString', testString);
+    }
+    print(
+        "Flutter Channel Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
+
+    time = DateTime.now().millisecondsSinceEpoch;
+    for (var i = 0; i < 10000; i++) {
+      unitTest.setFooString(testString);
+    }
+    print("DartNative Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
+
+    time = DateTime.now().millisecondsSinceEpoch;
     for (var i = 0; i < 10000; i++) {
       String _ = await platform.invokeMethod('fooString', testString);
     }

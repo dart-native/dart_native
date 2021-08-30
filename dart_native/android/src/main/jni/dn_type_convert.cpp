@@ -17,6 +17,10 @@ jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index
   jstring nativeString = env->NewString(utf16, length);
   free(value);
 
+//  char *cString = (char *) env->GetStringUTFChars(nativeString, NULL);
+//  DNDebug("convertToJavaUtf16 length=%d, %s", length, cString);
+//  env->ReleaseStringUTFChars(nativeString, cString);
+
   if (argValue != nullptr)
   {
     argValue[index].l = nativeString;
