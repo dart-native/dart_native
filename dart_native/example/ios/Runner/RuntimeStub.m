@@ -261,6 +261,10 @@ API_AVAILABLE(ios(11.0)){
     return @"test nsstring";
 }
 
+- (void)setFooNSString:(NSString *)str {
+//    DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
+}
+
 - (NSMutableString *)fooNSMutableString:(NSMutableString *)str {
     [str appendString:@" mutable!"];
     DDLogInfo(@"%s arg: %@", __FUNCTION__, str);

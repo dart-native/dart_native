@@ -120,9 +120,12 @@ extern "C"
     {
       env->ExceptionClear();
       DNDebug("findClass exception");
-      return static_cast<jclass>(env->CallObjectMethod(gClassLoader->Object(),
-                                                       gFindClassMethod,
-                                                       env->NewStringUTF(name)));
+      jstring newName = env->NewStringUTF(name);
+      jclass findedClass = static_cast<jclass>(env->CallObjectMethod(gClassLoader->Object(),
+                                                                     gFindClassMethod,
+                                                                     newName));
+      env->DeleteLocalRef(newName);
+      return findedClass;
     }
     return nativeClass;
   }
@@ -159,6 +162,31 @@ extern "C"
     }
   }
 
+  void _deleteArgValues(char **argumentTypes, jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask) {
+    JNIEnv *env = _getEnv();
+    /// should delete local ref of jstring
+    for (int index = 0; index < argumentCount; index++)
+    {
+      /// check basic map convert
+      auto it = basicTypeConvertMap.find(*argumentTypes[index]);
+      if (it == basicTypeConvertMap.end())
+      {
+        auto argValue = argValues[index];
+        /// when argument type is string or stringTypeBitmask mark as string
+        if (strcmp(argumentTypes[index], "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
+        {
+          if (argValue.l != nullptr) {
+//            char *cString = (char *) env->GetStringUTFChars((jstring)argValue.l, NULL);
+//            DNDebug("DeleteLocalRef argValue.l=%s", cString);
+//            env->ReleaseStringUTFChars((jstring)argValue.l, cString);
+            env->DeleteLocalRef(argValue.l);
+          }
+        }
+      }
+    }
+    delete[] argValues;
+  }
+
   jobject _newObject(jclass cls, void **arguments, char **argumentTypes, int argumentCount, uint32_t stringTypeBitmask)
   {
     auto *argValues = new jvalue[argumentCount];
@@ -172,7 +200,7 @@ extern "C"
     jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
     jobject newObj = env->NewObjectA(cls, constructor, argValues);
 
-    delete[] argValues;
+    _deleteArgValues(argumentTypes, argValues, argumentCount, stringTypeBitmask);
     free(constructorSignature);
     return newObj;
   }
@@ -194,6 +222,7 @@ extern "C"
   /// invoke native method
   void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments, char **dataTypes, int argumentCount, char *returnType, uint32_t stringTypeBitmask)
   {
+//    DNDebug("invokeNativeMethod methodName=%s, returnType=%s", methodName, returnType);
     auto object = static_cast<jobject>(objPtr);
     jclass cls = _getGlobalClass(object);
     if (cls == nullptr)
@@ -252,7 +281,7 @@ extern "C"
       nativeInvokeResult = it->second(env, object, method, argValues);
     }
 
-    delete[] argValues;
+    _deleteArgValues(dataTypes, argValues, argumentCount, stringTypeBitmask);
     free(methodSignature);
     return nativeInvokeResult;
   }
@@ -268,9 +297,11 @@ extern "C"
 
     auto dartObjectAddress = (jlong)dartObject;
     /// create interface object using java dynamic proxy
+    jstring newClsName = env->NewStringUTF(clsName);
     jobject proxyObject = env->CallStaticObjectMethod(callbackManager,
                                                       registerCallback,
-                                                      dartObjectAddress, env->NewStringUTF(clsName));
+                                                      dartObjectAddress, newClsName);
+    env->DeleteLocalRef(newClsName);
     jobject gProxyObj = env->NewGlobalRef(proxyObject);
 
     /// save object into cache

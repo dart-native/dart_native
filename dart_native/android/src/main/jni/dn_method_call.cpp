@@ -71,5 +71,7 @@ void *callNativeVoidMethod(JNIEnv *env, jobject object, jmethodID methodId, jval
 void *callNativeStringMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
 {
   auto javaString = (jstring)env->CallObjectMethodA(object, methodId, arguments);
-  return convertToDartUtf16(env, javaString);
+  void *ret = convertToDartUtf16(env, javaString);
+  env->DeleteLocalRef(javaString);
+  return ret;
 }

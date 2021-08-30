@@ -52,6 +52,10 @@ public class RuntimeStub {
         return true;
     }
 
+    public void setString(String s) {
+    //    Log.d(TAG, "setString : " + s);
+    }
+
     public String getString(String s) {
     //    Log.d(TAG, "getString : " + s);
        return "This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖";
