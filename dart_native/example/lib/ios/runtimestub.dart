@@ -243,10 +243,6 @@ class RuntimeStub extends NSObject {
     perform(SEL('fooStructDelegate:'), args: [delegate]);
   }
 
-  void setFooNSString(String str) {
-    perform(SEL('setFooNSString:'), args: [str]);
-  }
-
   String fooNSString(String str) {
     return perform(SEL('fooNSString:'), args: [str]);
   }

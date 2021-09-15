@@ -14,11 +14,6 @@ class DNIOSUnitTest with DNUnitTestBase {
   final delegate = DelegateStub();
 
   @override
-  void setFooString(String str) {
-    stub.setFooNSString(str);
-  }
-
-  @override
   String fooString(String str) {
     return stub.fooNSString(str);
   }
