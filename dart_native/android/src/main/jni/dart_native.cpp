@@ -23,25 +23,24 @@ extern "C"
   static JavaGlobalRef<jclass> *gStrCls = nullptr;
 
   /// key is jobject, value is pair which contain jclass and reference count
-  static std::map<jobject, std::pair<jclass, int> > objectGlobalReference;
+  static std::map<jobject, int> objectGlobalReference;
 
   /// protect objectGlobalReference
   std::mutex globalReferenceMtx;
 
-  void _addGlobalObject(jobject globalObject, jclass globalClass)
+  void _addGlobalObject(jobject globalObject)
   {
     std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
-    std::pair<jclass, int> objPair = std::make_pair(globalClass, 0);
-    objectGlobalReference[globalObject] = objPair;
+    objectGlobalReference[globalObject] = 0;
   }
 
-  jclass _getGlobalClass(jobject globalObject)
+  bool _objectInReference(jobject globalObject)
   {
     std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
     auto it = objectGlobalReference.find(globalObject);
-    auto cls = it != objectGlobalReference.end() ? it->second.first : nullptr;
-    return cls;
+    return it != objectGlobalReference.end();
   }
+
 
   void _detachThreadDestructor(void *arg)
   {
@@ -120,20 +119,40 @@ extern "C"
     {
       env->ExceptionClear();
       DNDebug("findClass exception");
-      jstring newName = env->NewStringUTF(name);
-      jclass findedClass = static_cast<jclass>(env->CallObjectMethod(gClassLoader->Object(),
-                                                                     gFindClassMethod,
-                                                                     newName));
-      env->DeleteLocalRef(newName);
+      jstring clsName = env->NewStringUTF(name);
+      auto findedClass = static_cast<jclass>(env->CallObjectMethod(gClassLoader->Object(),
+                                                                   gFindClassMethod,
+                                                                   clsName));
+      env->DeleteLocalRef(clsName);
       return findedClass;
     }
     return nativeClass;
   }
 
+  void _deleteArgs(jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask)
+  {
+    JNIEnv *env = _getEnv();
+    for (jsize index(0); index < argumentCount; ++index)
+    {
+      /// release local reference of jstring
+      if ((stringTypeBitmask >> index & 0x1) == 1)
+      {
+        env->DeleteLocalRef(argValues[index].l);
+      }
+    }
+    delete[] argValues;
+  }
+
   /// fill all arguments to jvalues
   /// when argument is string the stringTypeBitmask's bit is 1
-  void _fillArgs(void **arguments, char **argumentTypes, jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask)
+  void _fillArgs(void **arguments, char **argumentTypes,
+                 jvalue *argValues, int argumentCount,
+                 uint32_t stringTypeBitmask)
   {
+    if (argumentCount == 0) {
+      return;
+    }
+
     JNIEnv *env = _getEnv();
     for (jsize index(0); index < argumentCount; ++arguments, ++index)
     {
@@ -143,9 +162,9 @@ extern "C"
       if (it == basicTypeConvertMap.end())
       {
         /// when argument type is string or stringTypeBitmask mark as string
-        if (strcmp(argumentTypes[index], "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
+        if ((stringTypeBitmask >> index & 0x1) == 1)
         {
-          convertToJavaUtf16(env, *arguments, argValues, index);
+          argValues[index].l = convertToJavaUtf16(env, *arguments);
         }
         else
         {
@@ -162,45 +181,17 @@ extern "C"
     }
   }
 
-  void _deleteArgValues(char **argumentTypes, jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask) {
-    JNIEnv *env = _getEnv();
-    /// should delete local ref of jstring
-    for (int index = 0; index < argumentCount; index++)
-    {
-      /// check basic map convert
-      auto it = basicTypeConvertMap.find(*argumentTypes[index]);
-      if (it == basicTypeConvertMap.end())
-      {
-        auto argValue = argValues[index];
-        /// when argument type is string or stringTypeBitmask mark as string
-        if (strcmp(argumentTypes[index], "Ljava/lang/String;") == 0 || (stringTypeBitmask >> index & 0x1) == 1)
-        {
-          if (argValue.l != nullptr) {
-//            char *cString = (char *) env->GetStringUTFChars((jstring)argValue.l, NULL);
-//            DNDebug("DeleteLocalRef argValue.l=%s", cString);
-//            env->ReleaseStringUTFChars((jstring)argValue.l, cString);
-            env->DeleteLocalRef(argValue.l);
-          }
-        }
-      }
-    }
-    delete[] argValues;
-  }
-
   jobject _newObject(jclass cls, void **arguments, char **argumentTypes, int argumentCount, uint32_t stringTypeBitmask)
   {
     auto *argValues = new jvalue[argumentCount];
     JNIEnv *env = _getEnv();
-    if (argumentCount > 0)
-    {
-      _fillArgs(arguments, argumentTypes, argValues, argumentCount, stringTypeBitmask);
-    }
+    _fillArgs(arguments, argumentTypes, argValues, argumentCount, stringTypeBitmask);
 
     char *constructorSignature = generateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
     jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
     jobject newObj = env->NewObjectA(cls, constructor, argValues);
 
-    _deleteArgValues(argumentTypes, argValues, argumentCount, stringTypeBitmask);
+    _deleteArgs(argValues, argumentCount, stringTypeBitmask);
     free(constructorSignature);
     return newObj;
   }
@@ -212,7 +203,7 @@ extern "C"
     jclass cls = _findClass(env, targetClassName);
     jobject newObj = _newObject(cls, arguments, argumentTypes, argumentCount, stringTypeBitmask);
     jobject gObj = env->NewGlobalRef(newObj);
-    _addGlobalObject(gObj, static_cast<jclass>(env->NewGlobalRef(cls)));
+    _addGlobalObject(gObj);
 
     env->DeleteLocalRef(newObj);
     env->DeleteLocalRef(cls);
@@ -220,12 +211,12 @@ extern "C"
   }
 
   /// invoke native method
-  void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments, char **dataTypes, int argumentCount, char *returnType, uint32_t stringTypeBitmask)
+  void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
+                           char **dataTypes, int argumentCount, char *returnType,
+                           uint32_t stringTypeBitmask)
   {
-//    DNDebug("invokeNativeMethod methodName=%s, returnType=%s", methodName, returnType);
     auto object = static_cast<jobject>(objPtr);
-    jclass cls = _getGlobalClass(object);
-    if (cls == nullptr)
+    if (!_objectInReference(object))
     {
       /// maybe use cache pointer but jobject is release
       DNError("invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
@@ -234,12 +225,10 @@ extern "C"
 
     void *nativeInvokeResult = nullptr;
     JNIEnv *env = _getEnv();
+    auto cls = env->GetObjectClass(object);
 
     auto *argValues = new jvalue[argumentCount];
-    if (argumentCount > 0)
-    {
-      _fillArgs(arguments, dataTypes, argValues, argumentCount, stringTypeBitmask);
-    }
+    _fillArgs(arguments, dataTypes, argValues, argumentCount, stringTypeBitmask);
 
     char *methodSignature = generateSignature(dataTypes, argumentCount, returnType);
     jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
@@ -265,12 +254,10 @@ extern "C"
           }
           else
           {
-            jclass objCls = env->GetObjectClass(obj);
             jobject gObj = env->NewGlobalRef(obj);
-            _addGlobalObject(gObj, static_cast<jclass>(env->NewGlobalRef(objCls)));
+            _addGlobalObject(gObj);
             nativeInvokeResult = gObj;
 
-            env->DeleteLocalRef(objCls);
             env->DeleteLocalRef(obj);
           }
         }
@@ -280,8 +267,7 @@ extern "C"
     {
       nativeInvokeResult = it->second(env, object, method, argValues);
     }
-
-    _deleteArgValues(dataTypes, argValues, argumentCount, stringTypeBitmask);
+    _deleteArgs(argValues, argumentCount, stringTypeBitmask);
     free(methodSignature);
     return nativeInvokeResult;
   }
@@ -332,18 +318,17 @@ extern "C"
     {
       /// dart object retain this dart object
       /// reference++
-      it->second.second += 1;
+      it->second += 1;
       return;
     }
 
     /// release reference--
-    it->second.second -= 1;
+    it->second -= 1;
 
     /// no dart object retained this native object
-    if (it->second.second <= 0)
+    if (it->second <= 0)
     {
       JNIEnv *env = _getEnv();
-      env->DeleteGlobalRef(it->second.first);
       objectGlobalReference.erase(it);
       env->DeleteGlobalRef(globalObject);
     }
@@ -429,12 +414,9 @@ extern "C"
       }
       else
       {
-        jclass objCls = env->GetObjectClass(argument);
         jobject gObj = env->NewGlobalRef(argument);
-        _addGlobalObject(gObj, static_cast<jclass>(env->NewGlobalRef(objCls)));
+        _addGlobalObject(gObj);
         arguments[i] = gObj;
-
-        env->DeleteLocalRef(objCls);
       }
 
       env->DeleteLocalRef(argTypeString);
@@ -478,7 +460,7 @@ extern "C"
         }
         else if (strcmp(returnType, "java.lang.String") == 0)
         {
-          callbackResult = convertToJavaUtf16(env, (char *)arguments[argumentCount], nullptr, 0);
+          callbackResult = convertToJavaUtf16(env, (char *)arguments[argumentCount]);
         }
         else
         {

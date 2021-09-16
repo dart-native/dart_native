@@ -6,7 +6,7 @@
 #include "dn_type_convert.h"
 #include "dn_log.h"
 
-jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index)
+jstring convertToJavaUtf16(JNIEnv *env, void *value)
 {
   uint16_t *utf16 = (uint16_t *)value;
 
@@ -14,17 +14,9 @@ jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index
   length += *utf16++ << 16;
   length += *utf16++;
 
-  jstring nativeString = env->NewString(utf16, length);
+  auto nativeString = env->NewString(utf16, length);
   free(value);
 
-//  char *cString = (char *) env->GetStringUTFChars(nativeString, NULL);
-//  DNDebug("convertToJavaUtf16 length=%d, %s", length, cString);
-//  env->ReleaseStringUTFChars(nativeString, cString);
-
-  if (argValue != nullptr)
-  {
-    argValue[index].l = nativeString;
-  }
   return nativeString;
 }
 

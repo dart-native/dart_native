@@ -20,7 +20,8 @@ enum ValueType {
   bool,
   v,
   string,
-  cls
+  cls,
+  unknown
 }
 
 Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
@@ -32,7 +33,8 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
   ValueType.short: Utf8.toUtf8("S"),
   ValueType.long: Utf8.toUtf8("J"),
   ValueType.bool: Utf8.toUtf8("Z"),
-  ValueType.string: Utf8.toUtf8("Ljava/lang/String;")
+  ValueType.string: Utf8.toUtf8("Ljava/lang/String;"),
+  ValueType.unknown: Utf8.toUtf8("Lunknown;")
 };
 
 dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
@@ -130,7 +132,7 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     ptr.value = object.cast();
     typePtr?.value = argSignature != null
         ? argSignature
-        : Utf8.toUtf8("UNKNOWN_NATIVE_TYPE");
+        : _pointerForEncode[ValueType.unknown];
     return;
   }
 }
