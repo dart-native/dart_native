@@ -71,7 +71,7 @@ void convertToJShort(void *value, jvalue *argValue, int index)
 
 void convertToJLong(void *value, jvalue *argValue, int index)
 {
-  argValue[index].j = (jlong) * (long *)value;
+  argValue[index].j = (jlong) * (long long*)value;
 }
 
 void convertToJBoolean(void *value, jvalue *argValue, int index)
