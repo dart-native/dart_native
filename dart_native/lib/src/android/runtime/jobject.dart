@@ -30,7 +30,7 @@ class JObject extends JClass {
 
     if (pointer == null) {
       Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-      pointer = nativeCreateObject(classNamePtr, nullptr, nullptr, 0, 0);
+      pointer = nativeCreateObject(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
       free(classNamePtr);
     }
 
