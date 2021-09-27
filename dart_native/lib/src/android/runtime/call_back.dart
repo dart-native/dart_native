@@ -41,6 +41,11 @@ _callback(
   for (var i = 0; i < argCount; i++) {
     Pointer<Utf8> argTypePtr = argTypesPtrPtr.elementAt(i).value;
     Pointer<Void> argPtr = argsPtrPtr.elementAt(i).value;
+    if (argPtr == nullptr) {
+      args.add(null);
+      continue;
+    }
+
     final String argType = Utf8.fromUtf8(argTypePtr.cast());
     dynamic arg = argType == "java.lang.String"
         ? fromUtf16(argPtr)

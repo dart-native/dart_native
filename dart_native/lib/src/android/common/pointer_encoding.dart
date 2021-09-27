@@ -139,15 +139,19 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
     {Pointer<Pointer<Utf8>> typePtr}) {
-  dynamic result;
   if (returnType == "V") {
     return;
+  }
+
+  if (ptr == nullptr) {
+    return null;
   }
 
   if (Utf8.fromUtf8(typePtr.value) == "java.lang.String") {
     return fromUtf16(ptr);
   }
 
+  dynamic result;
   ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
   ByteData data = ByteData.view(buffer);
   switch (returnType) {
