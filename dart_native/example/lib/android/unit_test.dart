@@ -21,7 +21,7 @@ class DNAndroidUnitTest with DNUnitTestBase {
 
 testAndroid(RuntimeStub stub) {
   int ms = currentTimeMillis();
-  double resultDouble = stub.getDouble(10.0);
+  double resultDouble = stub.getDouble(3.40282e+038);
   int use = currentTimeMillis() - ms;
   print('getDouble result:$resultDouble , cost:$use');
 
@@ -56,7 +56,7 @@ testAndroid(RuntimeStub stub) {
   print('getShort result:$resultShort , cost:$use');
 
   ms = currentTimeMillis();
-  int resultLong = stub.getLong(100);
+  int resultLong = stub.getLong(4294967296);
   use = currentTimeMillis() - ms;
   print('getLong result:$resultLong , cost:$use');
 

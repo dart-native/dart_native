@@ -137,6 +137,8 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   }
 }
 
+final bool _is64Bit = sizeOf<IntPtr>() == 8;
+
 dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
     {Pointer<Pointer<Utf8>> typePtr}) {
   if (returnType == "V") {
@@ -162,7 +164,12 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
       result = data.getInt16(0, Endian.host);
       break;
     case "J":
-      result = data.getInt64(0, Endian.host);
+      if (_is64Bit) {
+        result = data.getInt64(0, Endian.host);
+      } else {
+        result = ptr.cast<Int64>().value;
+        free(ptr);
+      }
       break;
     case "F":
       result = data.getFloat32(0, Endian.host);
@@ -171,7 +178,12 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
       result = data.getInt32(0, Endian.host);
       break;
     case "D":
-      result = data.getFloat64(0, Endian.host);
+      if (_is64Bit) {
+        result = data.getFloat64(0, Endian.host);
+      } else {
+        result = ptr.cast<Double>().value;
+        free(ptr);
+      }
       break;
     case "Z":
       result = data.getInt8(0) != 0;

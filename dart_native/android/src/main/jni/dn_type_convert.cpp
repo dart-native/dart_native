@@ -25,20 +25,15 @@ uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString)
 {
   const jchar *jc = env->GetStringChars(nativeString, nullptr);
   jsize strLength = env->GetStringLength(nativeString);
-  if (strLength == 0)
-  {
-    env->ReleaseStringChars(nativeString, jc);
-    env->DeleteLocalRef(nativeString);
-    return nullptr;
-  }
 
+  /// check bom
   bool hasBom = jc[0] == 0xFEFF || jc[0] == 0xFFFE; // skip bom
   int indexStart = 0;
   if (hasBom)
   {
     strLength--;
     indexStart = 1;
-    if (strLength == 0)
+    if (strLength <= 0)
     {
       env->ReleaseStringChars(nativeString, jc);
       env->DeleteLocalRef(nativeString);
@@ -46,8 +41,9 @@ uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString)
     }
   }
 
+  /// do convert
   auto *utf16Str =
-      static_cast<uint16_t *>(malloc(sizeof(uint16_t) * strLength + 3));
+      static_cast<uint16_t *>(malloc(sizeof(uint16_t) * (strLength + 3)));
   /// save u16list length
   utf16Str[0] = strLength >> 16 & 0xFFFF;
   utf16Str[1] = strLength & 0xFFFF;

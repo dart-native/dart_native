@@ -233,8 +233,9 @@ extern "C"
     char *methodSignature = generateSignature(dataTypes, argumentCount, returnType);
     jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
 
-    auto it = methodCallerMap.find(*returnType);
-    if (it == methodCallerMap.end())
+    auto map = GetMethodCallerMap();
+    auto it = map.find(*returnType);
+    if (it == map.end())
     {
       if (strcmp(returnType, "Ljava/lang/String;") == 0)
       {

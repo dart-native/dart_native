@@ -3,74 +3,82 @@
 //
 #include "dn_method_call.h"
 #include "dn_type_convert.h"
+#include "dn_log.h"
 
-void *callNativeCharMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  auto nativeChar = env->CallCharMethodA(object, methodId, arguments);
-  return (void *)nativeChar;
-}
+#define IS_32_BITS sizeof(void *) == 4
 
-void *callNativeIntMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  auto nativeInt = env->CallIntMethodA(object, methodId, arguments);
-  return (void *)nativeInt;
-}
+/// Only when system is 32 bits, call long or double native method will save as a pointer.
+/// Pointer will free in Dart side.
+#define CALL_IN_32_NATIVE_METHOD(name, ctype) \
+    void *Call##name##In32Method(JNIEnv *env, jobject object, \
+                            jmethodID methodId, jvalue *arguments) { \
+        auto *ret = (ctype *)malloc(sizeof(ctype)); \
+        auto nativeRet = env->Call##name##MethodA(object, methodId, arguments); \
+        *ret = nativeRet; \
+        return ret; \
+    }
 
-void *callNativeDoubleMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  void *callResult;
+/// Only use in 32 bits system.
+CALL_IN_32_NATIVE_METHOD(Long, int64_t)
+CALL_IN_32_NATIVE_METHOD(Double, double)
 
-  auto nativeDouble = env->CallDoubleMethodA(object, methodId, arguments);
-  auto templeD = (double)nativeDouble;
+/// Save pointer address as value.
+#define CALL_INT_METHOD(name) \
+    void *CallNative##name##Method(JNIEnv *env, jobject object, \
+                            jmethodID methodId, jvalue *arguments) { \
+        auto ret = env->Call##name##MethodA(object, methodId, arguments); \
+        return (void *)ret; \
+    }
 
-  memcpy(&callResult, &templeD, sizeof(double));
-  return callResult;
-}
+CALL_INT_METHOD(Char)
+CALL_INT_METHOD(Int)
+CALL_INT_METHOD(Byte)
+CALL_INT_METHOD(Short)
+CALL_INT_METHOD(Boolean)
+CALL_INT_METHOD(Long)
 
-void *callNativeFloatMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  void *callResult;
+#define CALL_FLOAT_DOUBLE_METHOD(name, ctype) \
+    void *CallNative##name##Method(JNIEnv *env, jobject object, \
+                            jmethodID methodId, jvalue *arguments) { \
+        void *ret; \
+        auto nativeRet = env->Call##name##MethodA(object, methodId, arguments); \
+        auto value = (ctype)nativeRet;        \
+        memcpy(&ret, &value, sizeof(ctype)); \
+        return ret; \
+    }
 
-  auto nativeDouble = env->CallFloatMethodA(object, methodId, arguments);
-  auto templeF = (float)nativeDouble;
+CALL_FLOAT_DOUBLE_METHOD(Float, float)
+CALL_FLOAT_DOUBLE_METHOD(Double, double)
 
-  memcpy(&callResult, &templeF, sizeof(float));
-  return callResult;
-}
-
-void *callNativeByteMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  auto nativeByte = env->CallByteMethodA(object, methodId, arguments);
-  return (void *)nativeByte;
-}
-
-void *callNativeShortMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  auto nativeShort = env->CallShortMethodA(object, methodId, arguments);
-  return (void *)nativeShort;
-}
-
-void *callNativeLongMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  auto nativeLong = env->CallLongMethodA(object, methodId, arguments);
-  return (void *)nativeLong;
-}
-
-void *callNativeBooleanMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  auto nativeBool = env->CallBooleanMethodA(object, methodId, arguments);
-  return (void *)nativeBool;
-}
-
-void *callNativeVoidMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
+void *CallNativeVoidMethod(JNIEnv *env,
+                           jobject object,
+                           jmethodID methodId,
+                           jvalue *arguments) {
   env->CallVoidMethodA(object, methodId, arguments);
   return nullptr;
 }
 
-void *callNativeStringMethod(JNIEnv *env, jobject object, jmethodID methodId, jvalue *arguments)
-{
-  auto javaString = (jstring)env->CallObjectMethodA(object, methodId, arguments);
+static const std::map<char, std::function<CallNativeMethod>> methodCallerMap = {
+    {'C', CallNativeCharMethod},
+    {'I', CallNativeIntMethod},
+    {'D', IS_32_BITS ? CallDoubleIn32Method : CallNativeDoubleMethod},
+    {'F', CallNativeFloatMethod},
+    {'B', CallNativeByteMethod},
+    {'S', CallNativeShortMethod},
+    {'J', IS_32_BITS ? CallLongIn32Method : CallNativeLongMethod},
+    {'Z', CallNativeBooleanMethod},
+    {'V', CallNativeVoidMethod}};
+
+std::map<char, std::function<CallNativeMethod>> GetMethodCallerMap() {
+  return methodCallerMap;
+}
+
+void *callNativeStringMethod(JNIEnv *env,
+                             jobject object,
+                             jmethodID methodId,
+                             jvalue *arguments) {
+  auto javaString =
+      (jstring) env->CallObjectMethodA(object, methodId, arguments);
   if (javaString != nullptr) {
     return convertToDartUtf16(env, javaString);
   }
