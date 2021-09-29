@@ -6,44 +6,56 @@
 #include "dn_type_convert.h"
 #include "dn_log.h"
 
-jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index)
+jstring convertToJavaUtf16(JNIEnv *env, void *value)
 {
-  uint16_t *utf16 = (uint16_t *)value;
+  auto *utf16 = (uint16_t *)value;
 
   uint32_t length = 0;
   length += *utf16++ << 16;
   length += *utf16++;
 
-  jstring nativeString = env->NewString(utf16, length);
+  auto nativeString = env->NewString(utf16, length);
   free(value);
 
-//  char *cString = (char *) env->GetStringUTFChars(nativeString, NULL);
-//  DNDebug("convertToJavaUtf16 length=%d, %s", length, cString);
-//  env->ReleaseStringUTFChars(nativeString, cString);
-
-  if (argValue != nullptr)
-  {
-    argValue[index].l = nativeString;
-  }
   return nativeString;
 }
 
+/// nativeString not null
 uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString)
 {
-  const jchar *jc = env->GetStringChars(nativeString, NULL);
+  const jchar *jc = env->GetStringChars(nativeString, nullptr);
   jsize strLength = env->GetStringLength(nativeString);
 
-  uint16_t *utf16Str = new uint16_t[strLength + 3];
+  /// check bom
+  bool hasBom = jc[0] == 0xFEFF || jc[0] == 0xFFFE; // skip bom
+  int indexStart = 0;
+  if (hasBom)
+  {
+    strLength--;
+    indexStart = 1;
+    if (strLength <= 0)
+    {
+      env->ReleaseStringChars(nativeString, jc);
+      env->DeleteLocalRef(nativeString);
+      return nullptr;
+    }
+  }
+
+  /// do convert
+  auto *utf16Str =
+      static_cast<uint16_t *>(malloc(sizeof(uint16_t) * (strLength + 3)));
+  /// save u16list length
   utf16Str[0] = strLength >> 16 & 0xFFFF;
   utf16Str[1] = strLength & 0xFFFF;
-
-  for (int i = 0; i < strLength; i++)
+  int u16Index = 2;
+  for (int i = indexStart; i < strLength; i++)
   {
-    utf16Str[i + 2] = jc[i];
+    utf16Str[u16Index++] = jc[i];
   }
   utf16Str[strLength + 2] = '\0';
 
   env->ReleaseStringChars(nativeString, jc);
+  env->DeleteLocalRef(nativeString);
   return utf16Str;
 }
 
@@ -79,7 +91,7 @@ void convertToJShort(void *value, jvalue *argValue, int index)
 
 void convertToJLong(void *value, jvalue *argValue, int index)
 {
-  argValue[index].j = (jlong) * (long *)value;
+  argValue[index].j = (jlong) * (long long*)value;
 }
 
 void convertToJBoolean(void *value, jvalue *argValue, int index)

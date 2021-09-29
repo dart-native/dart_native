@@ -15,7 +15,7 @@ extern "C"
 
   typedef void BasicTypeToNative(void *, jvalue *, int);
 
-  jstring convertToJavaUtf16(JNIEnv *env, void *value, jvalue *argValue, int index);
+  jstring convertToJavaUtf16(JNIEnv *env, void *value);
   uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString);
 
   void convertToJChar(void *value, jvalue *argValue, int index);

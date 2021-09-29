@@ -19,7 +19,7 @@ public class RuntimeStub {
 
     public double getDouble(double b) {
         Log.d(TAG, "getDouble : " + b);
-        return 100.23;
+        return 3.40282e+038;
     }
 
     public byte getByte(byte b) {
@@ -44,16 +44,12 @@ public class RuntimeStub {
 
     public long getLong(long l) {
         Log.d(TAG, "getLong : " + l);
-        return 1000L;
+        return 4294967296L;
     }
 
     public boolean getBool(boolean b) {
         Log.d(TAG, "getBool : " + b);
         return true;
-    }
-
-    public void setString(String s) {
-    //    Log.d(TAG, "setString : " + s);
     }
 
     public String getString(String s) {
