@@ -10,10 +10,10 @@
 /**
  * Global reference will auto delete in destructor
  */
-template <typename T>
+template<typename T>
 class JavaGlobalRef {
  public:
-  explicit JavaGlobalRef(T t, JNIEnv *env): env(env) {
+  explicit JavaGlobalRef(T t, JNIEnv *env) : env(env) {
     this->obj = env->NewGlobalRef(t);
   }
 

@@ -9,7 +9,8 @@ extern "C"
 {
 #endif
 
-  char *generateSignature(char **argumentTypes, int argumentCount, char *returnType);
+char *
+generateSignature(char **argumentTypes, int argumentCount, char *returnType);
 
 #ifdef __cplusplus
 }
