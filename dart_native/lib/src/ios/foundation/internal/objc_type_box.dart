@@ -7,10 +7,14 @@ import 'package:dart_native/src/ios/foundation/collection/nsset.dart';
 import 'package:dart_native/src/ios/foundation/nsstring.dart';
 import 'package:dart_native/src/ios/foundation/nsvalue.dart';
 import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
+import 'package:dart_native/src/ios/foundation/objc_basic_type.dart';
 
-dynamic handleObjCBoolValue(String type, dynamic value) {
+dynamic handleObjCBasicValue(String type, dynamic value) {
   if (type == 'BOOL') {
     return value != 0;
+  }
+  if (type == 'NativeBox<String>') {
+    return CString(value);
   }
   return value;
 }

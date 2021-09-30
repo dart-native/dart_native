@@ -9,6 +9,7 @@ import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
+import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:ffi/ffi.dart';
 
 typedef void _AsyncMessageCallback(dynamic result);

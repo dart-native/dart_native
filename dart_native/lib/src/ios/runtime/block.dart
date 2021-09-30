@@ -5,6 +5,7 @@ import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
+import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
@@ -210,7 +211,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
-      arg = handleObjCBoolValue(dartType, arg);
+      arg = handleObjCBasicValue(dartType, arg);
       arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);
