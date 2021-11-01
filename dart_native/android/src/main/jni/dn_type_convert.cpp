@@ -7,9 +7,10 @@
 #include "dn_log.h"
 
 #define SET_JAVA_VALUE(jtype, ctype, indexType) \
-  void Set##jtype##Value(void *value, jvalue *argValue, int index) { \
+  bool Set##jtype##Value(void *value, jvalue *argValue, int index) { \
     argValue[index].indexType = (jtype) * (ctype *)value; \
-  } \
+    return sizeof(void *) == 4 && sizeof(ctype) > 4; \
+  }
 
 SET_JAVA_VALUE(jint, int, i)
 SET_JAVA_VALUE(jchar, char, c)
@@ -19,8 +20,9 @@ SET_JAVA_VALUE(jlong, long long, j)
 SET_JAVA_VALUE(jfloat, float, f)
 SET_JAVA_VALUE(jdouble, double, d)
 
-void convertToJBoolean(void *value, jvalue *argValue, int index) {
+bool convertToJBoolean(void *value, jvalue *argValue, int index) {
   argValue[index].z = static_cast<jboolean>(*((int *) value));
+  return false;
 }
 
 /// key is basic argument signature

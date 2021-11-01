@@ -13,7 +13,7 @@ extern "C"
 {
 #endif
 
-typedef void BasicTypeToNative(void *, jvalue *, int);
+typedef bool BasicTypeToNative(void *, jvalue *, int);
 
 jstring convertToJavaUtf16(JNIEnv *env, void *value);
 
