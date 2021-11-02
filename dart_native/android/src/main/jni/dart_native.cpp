@@ -160,7 +160,11 @@ void _fillArgs(void **arguments, char **argumentTypes,
             object == nullptr ? static_cast<jobject>(*arguments) : object;
       }
     } else {
-      it->second(arguments, argValues, index);
+      auto isTwoPointer = it->second(arguments, argValues, index);
+      /// In Dart use two pointer store value.
+      if (isTwoPointer) {
+        arguments++;
+      }
     }
   }
 }

@@ -37,6 +37,8 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
   ValueType.unknown: Utf8.toUtf8("Lunknown;")
 };
 
+final bool is64Bit = sizeOf<IntPtr>() == 8;
+
 dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     {Pointer<Pointer<Utf8>> typePtr, Pointer<Utf8> argSignature}) {
   if (object == null) {
@@ -137,8 +139,6 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   }
 }
 
-final bool _is64Bit = sizeOf<IntPtr>() == 8;
-
 dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
     {Pointer<Pointer<Utf8>> typePtr}) {
   if (returnType == "V") {
@@ -164,7 +164,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
       result = data.getInt16(0, Endian.host);
       break;
     case "J":
-      if (_is64Bit) {
+      if (is64Bit) {
         result = data.getInt64(0, Endian.host);
       } else {
         result = ptr.cast<Int64>().value;
@@ -178,7 +178,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
       result = data.getInt32(0, Endian.host);
       break;
     case "D":
-      if (_is64Bit) {
+      if (is64Bit) {
         result = data.getFloat64(0, Endian.host);
       } else {
         result = ptr.cast<Double>().value;

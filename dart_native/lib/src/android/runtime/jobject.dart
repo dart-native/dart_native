@@ -4,6 +4,7 @@ import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:ffi/ffi.dart';
+import 'package:dart_native/src/common/native_basic_type.dart';
 
 import 'jclass.dart';
 
@@ -96,10 +97,19 @@ class JObject extends JClass {
     Pointer<Pointer<Utf8>> typePointers =
         allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
     int stringTypeBitmask = 0;
-    if (args != null) {
-      pointers = allocate<Pointer<Void>>(count: args.length);
+    if (args != null && args.length > 0) {
+      int length = args.length;
+      /// for 32 bit system
+      if (!is64Bit) {
+        args.forEach((arg) {
+          if (arg is double || arg is long) {
+            length++;
+          }
+        });
+      }
+      pointers = allocate<Pointer<Void>>(count: length);
 
-      for (var i = 0; i < args.length; i++) {
+      for (var i = 0, pi = 0; i < args.length; i++, pi++) {
         var arg = args[i];
         if (arg == null) {
           throw 'One of args list is null';
@@ -114,8 +124,12 @@ class JObject extends JClass {
           stringTypeBitmask |= (0x1 << i);
         }
 
-        storeValueToPointer(arg, pointers.elementAt(i),
+        storeValueToPointer(arg, pointers.elementAt(pi),
             typePtr: typePointers.elementAt(i), argSignature: argSignature);
+        /// check 32 bit system
+        if (!is64Bit && (arg is double || arg is long)) {
+          pi++;
+        }
       }
     }
     typePointers.elementAt(args?.length ?? 0).value = Utf8.toUtf8("0");
