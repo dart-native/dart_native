@@ -85,4 +85,3 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<NativeFunction<MethodNativeCallback>> function,
                     Int64 dartPort)>>("registerNativeCallback")
         ?.asFunction();
-

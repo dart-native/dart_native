@@ -26,7 +26,7 @@
                                                                        binaryMessenger:controller.binaryMessenger];
     RuntimeSon *son = [RuntimeSon new];
     [channel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
-        if ([call.method isEqualToString:@"fooNSString:"]) {
+        if ([call.method isEqualToString:@"fooString"]) {
             result([son fooNSString:call.arguments]);
         }
     }];

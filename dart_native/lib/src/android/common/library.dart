@@ -11,8 +11,7 @@ DynamicLibrary get nativeDylib {
 
 String _libPath = "libdart_native.so";
 
-final initializeApi = nativeDylib.lookupFunction<
-    IntPtr Function(Pointer<Void>),
+final initializeApi = nativeDylib.lookupFunction<IntPtr Function(Pointer<Void>),
     int Function(Pointer<Void>)>("InitDartApiDL");
 
 final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData);

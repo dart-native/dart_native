@@ -20,7 +20,8 @@ enum ValueType {
   bool,
   v,
   string,
-  cls
+  cls,
+  unknown
 }
 
 Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
@@ -32,8 +33,11 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
   ValueType.short: Utf8.toUtf8("S"),
   ValueType.long: Utf8.toUtf8("J"),
   ValueType.bool: Utf8.toUtf8("Z"),
-  ValueType.string: Utf8.toUtf8("Ljava/lang/String;")
+  ValueType.string: Utf8.toUtf8("Ljava/lang/String;"),
+  ValueType.unknown: Utf8.toUtf8("Lunknown;")
 };
+
+final bool is64Bit = sizeOf<IntPtr>() == 8;
 
 dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     {Pointer<Pointer<Utf8>> typePtr, Pointer<Utf8> argSignature}) {
@@ -130,22 +134,26 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     ptr.value = object.cast();
     typePtr?.value = argSignature != null
         ? argSignature
-        : Utf8.toUtf8("UNKNOWN_NATIVE_TYPE");
+        : _pointerForEncode[ValueType.unknown];
     return;
   }
 }
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
     {Pointer<Pointer<Utf8>> typePtr}) {
-  dynamic result;
   if (returnType == "V") {
     return;
+  }
+
+  if (ptr == nullptr) {
+    return null;
   }
 
   if (Utf8.fromUtf8(typePtr.value) == "java.lang.String") {
     return fromUtf16(ptr);
   }
 
+  dynamic result;
   ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
   ByteData data = ByteData.view(buffer);
   switch (returnType) {
@@ -156,7 +164,12 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
       result = data.getInt16(0, Endian.host);
       break;
     case "J":
-      result = data.getInt64(0, Endian.host);
+      if (is64Bit) {
+        result = data.getInt64(0, Endian.host);
+      } else {
+        result = ptr.cast<Int64>().value;
+        free(ptr);
+      }
       break;
     case "F":
       result = data.getFloat32(0, Endian.host);
@@ -165,7 +178,12 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
       result = data.getInt32(0, Endian.host);
       break;
     case "D":
-      result = data.getFloat64(0, Endian.host);
+      if (is64Bit) {
+        result = data.getFloat64(0, Endian.host);
+      } else {
+        result = ptr.cast<Double>().value;
+        free(ptr);
+      }
       break;
     case "Z":
       result = data.getInt8(0) != 0;
