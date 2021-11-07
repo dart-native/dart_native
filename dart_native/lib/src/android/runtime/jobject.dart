@@ -31,7 +31,8 @@ class JObject extends JClass {
 
     if (pointer == null) {
       Pointer<Utf8> classNamePtr = super.className.toNativeUtf8();
-      pointer = nativeCreateObject!(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
+      pointer = nativeCreateObject!(
+          classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
       calloc.free(classNamePtr);
     }
 
@@ -99,6 +100,7 @@ class JObject extends JClass {
     int stringTypeBitmask = 0;
     if (args != null && args.length > 0) {
       int length = args.length;
+
       /// for 32 bit system
       if (!is64Bit) {
         args.forEach((arg) {
@@ -126,6 +128,7 @@ class JObject extends JClass {
 
         storeValueToPointer(arg, pointers.elementAt(pi),
             typePtr: typePointers.elementAt(i), argSignature: argSignature);
+
         /// check 32 bit system
         if (!is64Bit && (arg is double || arg is long)) {
           pi++;

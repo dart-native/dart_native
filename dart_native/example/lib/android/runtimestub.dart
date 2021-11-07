@@ -67,19 +67,7 @@ class RuntimeStub extends JObject {
   bool complexCall(String s, int i, String c, double d, double f, int b, int sh,
       int l, bool boo) {
     return invoke(
-        'complexCall',
-        [
-          s,
-          i,
-          c.codeUnitAt(0),
-          d,
-          f,
-          b,
-          sh,
-          l,
-          boo
-        ],
-        "Z");
+        'complexCall', [s, i, c.codeUnitAt(0), d, f, b, sh, l, boo], "Z");
   }
 
   Entity createEntity() {

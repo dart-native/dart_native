@@ -8,13 +8,13 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 // You can uncomment this line when this package is ready.
 // import 'package:uikit/uikit.dart';
 
-typedef TestOptions = NSOptions;
+typedef ItemIndex = NSOptions;
 
-const TestOptions TestOptionsNone = 0;
+const ItemIndex ItemIndexNone = 0;
 
-const TestOptions TestOptionsOne = 1 << 0;
+const ItemIndex ItemIndexOne = 1 << 0;
 
-const TestOptions TestOptionsTwo = 1 << 1;
+const ItemIndex ItemIndexTwo = 1 << 1;
 
 abstract class SampleDelegate {
   registerSampleDelegate() {
@@ -27,20 +27,19 @@ abstract class SampleDelegate {
   CGRect callbackStruct(CGRect rect);
 }
 
-typedef BarBlock = NSObject Function(NSObject a);
+typedef BarBlock = NSObject? Function(NSObject? a);
 
-typedef StretBlock = CGAffineTransform Function(CGAffineTransform a);
+typedef StretBlock = CGAffineTransform? Function(CGAffineTransform? a);
 
-typedef CStringRetBlock = CString Function(CString a);
+typedef CStringRetBlock = CString? Function(CString? a);
 
 typedef NSDictionaryRetBlock = NSDictionary? Function(NSDictionary? a);
 
-typedef CGFloatRetBlock = CGFloat Function(CGFloat a);
+typedef CGFloatRetBlock = CGFloat? Function(CGFloat? a);
 
 @native
 class RuntimeStub extends NSObject {
   RuntimeStub([Class? isa]) : super(isa ?? Class('RuntimeStub'));
-
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   bool fooBOOL(bool b) {
@@ -91,7 +90,7 @@ class RuntimeStub extends NSObject {
     return perform(SEL('fooCharPtr:'), args: [charPtr]);
   }
 
-  Class fooClass(Class? cls) {
+  Class fooClass(Class cls) {
     Pointer<Void> result =
         perform(SEL('fooClass:'), args: [cls], decodeRetVal: false);
     return Class.fromPointer(result);
@@ -250,22 +249,20 @@ class RuntimeStub extends NSObject {
     return perform(SEL('fooNSString:'), args: [str]);
   }
 
-  Future<dynamic> fooNSStringAsync(String str) async {
-    return performAsync(SEL('fooNSString:'), args: [str]).then((value) {
-      return NSString.fromPointer(value.pointer).raw;
-    });
-  }
-
   String fooNSMutableString(String str) {
     NSMutableString _str = NSMutableString(str);
-    return perform(SEL('fooNSMutableString:'), args: [_str]);
+    Pointer<Void> result =
+        perform(SEL('fooNSMutableString:'), args: [_str], decodeRetVal: false);
+    return NSMutableString.fromPointer(result).raw;
   }
 
   bool fooWithError(NSObjectRef<NSError> error) {
     return perform(SEL('fooWithError:'), args: [error]);
   }
 
-  TestOptions fooWithOptions(TestOptions options) {
-    return perform(SEL('fooWithOptions:'), args: [options]);
+  ItemIndex fooWithOptions(ItemIndex options) {
+    Pointer<Void> result =
+        perform(SEL('fooWithOptions:'), args: [options], decodeRetVal: false);
+    return result.address;
   }
 }

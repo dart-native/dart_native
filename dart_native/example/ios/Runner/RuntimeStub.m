@@ -285,7 +285,7 @@ API_AVAILABLE(ios(11.0)){
     return YES;
 }
 
-- (TestOptions)fooWithOptions:(TestOptions)options {
+- (ItemIndex)fooWithOptions:(ItemIndex)options {
     return options;
 }
 
