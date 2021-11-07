@@ -14,7 +14,7 @@ import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
   public static final String TAG = "dart_java";
-  private final String CHANNEL_NAME = "dart_native.example";
+  private final String CHANNEL_NAME = "sample.dartnative.com";
 
   static {
     DartNativePlugin.setSoPath("");
@@ -28,8 +28,8 @@ public class MainActivity extends FlutterActivity {
       public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         if ("channelInt".equals(call.method)) {
           result.success(100);
-        } else if ("channelString".equals(call.method)) {
-          result.success("test success");
+        } else if ("fooString".equals(call.method)) {
+          result.success(call.arguments);
         } else {
           result.notImplemented();
         }

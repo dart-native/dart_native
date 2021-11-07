@@ -14,17 +14,26 @@ extern "C"
 {
 #endif
 
-  typedef void (*NativeMethodCallback)(void *targetPtr, char *funNamePtr, void **args, char **argTypes, int argCount);
+typedef void(*NativeMethodCallback)(void *targetPtr,
+                                    char *funNamePtr,
+                                    void **args,
+                                    char **argTypes,
+                                    int argCount);
 
-  typedef std::function<void()> Work;
+typedef std::function<void()> Work;
 
-  void doRegisterNativeCallback(void *dartObject, jobject nativeProxyObject, char *funName, void *callback, Dart_Port dartPort);
+void doRegisterNativeCallback(void *dartObject,
+                              jobject nativeProxyObject,
+                              char *funName,
+                              void *callback,
+                              Dart_Port dartPort);
 
-  jobject getNativeCallbackProxyObject(void *dartObject);
+jobject getNativeCallbackProxyObject(void *dartObject);
 
-  Dart_Port getCallbackDartPort(jlong dartObjectAddress);
+Dart_Port getCallbackDartPort(jlong dartObjectAddress);
 
-  NativeMethodCallback getCallbackMethod(jlong dartObjectAddress, char *functionName);
+NativeMethodCallback
+getCallbackMethod(jlong dartObjectAddress, char *functionName);
 
 #ifdef __cplusplus
 }

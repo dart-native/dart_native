@@ -1,10 +1,14 @@
+## 0.3.23
+
+* [Fix] Some issues on 32-bit Android.
+
 ## 0.3.22
 
 * [Fix] Callbacks from multi-isolates on iOS.
 
 ## 0.3.21
 
-* [Fix] Some crash on Android.
+* [Fix] Some crashes on Android.
 
 ## 0.3.20
 
@@ -12,7 +16,7 @@
 
 ## 0.3.19
 
-* [Fix] Some crash on Android.
+* [Fix] Some crashes on Android.
 
 ## 0.3.18
 
