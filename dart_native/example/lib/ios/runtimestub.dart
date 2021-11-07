@@ -27,15 +27,15 @@ abstract class SampleDelegate {
   CGRect callbackStruct(CGRect rect);
 }
 
-typedef NSObject BarBlock(NSObject a);
+typedef BarBlock = NSObject Function(NSObject a);
 
-typedef CGAffineTransform StretBlock(CGAffineTransform a);
+typedef StretBlock = CGAffineTransform Function(CGAffineTransform a);
 
 typedef CStringRetBlock = CString Function(CString a);
 
-typedef NSDictionary? NSDictionaryRetBlock(NSDictionary? a);
+typedef NSDictionaryRetBlock = NSDictionary? Function(NSDictionary? a);
 
-typedef CGFloat CGFloatRetBlock(CGFloat a);
+typedef CGFloatRetBlock = CGFloat Function(CGFloat a);
 
 @native
 class RuntimeStub extends NSObject {
@@ -266,8 +266,6 @@ class RuntimeStub extends NSObject {
   }
 
   TestOptions fooWithOptions(TestOptions options) {
-    Pointer<Void> result =
-        perform(SEL('fooWithOptions:'), args: [options], decodeRetVal: false);
-    return result.address;
+    return perform(SEL('fooWithOptions:'), args: [options]);
   }
 }
