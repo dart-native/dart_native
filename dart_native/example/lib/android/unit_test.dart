@@ -112,20 +112,20 @@ testAndroid(RuntimeStub stub) {
     }
   }
 
-  List byteArray = stub.getByteArray([1, 2, 3]);
-  for (int byte in byteArray) {
-    print("item $byte");
-  }
+  // List byteArray = stub.getByteArray([1]);
+  // for (int byte in byteArray) {
+  //   print("item $byte");
+  // }
+  //
+  // Set intSet = stub.getIntSet(Set.from([1, 2, 3]));
+  // for (int setInt in intSet) {
+  //   print("intSet $setInt");
+  // }
 
-  Set intSet = stub.getIntSet(Set.from([1, 2, 3]));
-  for (int setInt in intSet) {
-    print("intSet $setInt");
-  }
-
-  Set fSet = stub.getFloatSet(Set.from([1.0, 2.0, 4.0]));
-  for (double setF in fSet) {
-    print("fSet $setF");
-  }
+  // Set fSet = stub.getFloatSet(Set.from([1.0, 2.0, 4.0]));
+  // for (double setF in fSet) {
+  //   print("fSet $setF");
+  // }
 
   Map map = stub.getMap({"1": 10, "2": 20, "3": 30});
   map.forEach((key, value) {

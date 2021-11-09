@@ -14,14 +14,6 @@ extension utf8String on char {
 // ignore: camel_case_types
 typedef unsigned_char = char;
 
-/// Stands for `byte` in Java.
-// ignore: camel_case_types
-typedef byte = int;
-
-/// Stands for `short` in C.
-// ignore: camel_case_types
-typedef short = int;
-
 /// Stands for `unsigned short` in C.
 // ignore: camel_case_types
 typedef unsigned_short = int;
@@ -29,10 +21,6 @@ typedef unsigned_short = int;
 /// Stands for `unsigned int` in C.
 // ignore: camel_case_types
 typedef unsigned_int = int;
-
-/// Stands for `long` in C.
-// ignore: camel_case_types
-typedef long = int;
 
 /// Stands for `unsigned long` in C.
 // ignore: camel_case_types
@@ -82,6 +70,3 @@ typedef uint32_t = int;
 // ignore: camel_case_types
 typedef uint64_t = int;
 
-/// Stands for `float` in C.
-// ignore: camel_case_types
-typedef float = double;

@@ -6,10 +6,10 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 /// Stands for `Double` in Android.
 const String CLS_DOUBLE = "java/lang/Double";
 
-class Double extends JSubclass<double> {
-  Double(double value) : super(value, _new, CLS_DOUBLE);
+class JDouble extends JSubclass<double> {
+  JDouble(double value) : super(value, _new, CLS_DOUBLE);
 
-  Double.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_DOUBLE) {
+  JDouble.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_DOUBLE) {
     raw = invoke("doubleValue", [], "D");
   }
 }

@@ -44,11 +44,6 @@ Pointer<Void> _new(dynamic value, String clsName) {
 
     JObject nativeList = JObject(clsName);
 
-    /* Deprecated due to null safety
-    if (value == null) {
-      return nativeList.pointer.cast<Void>();
-    }
-    */
     for (var i = 0; i < value.length; i++) {
       nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z",
           argsSignature: [_argSignature]);

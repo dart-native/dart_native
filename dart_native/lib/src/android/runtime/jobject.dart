@@ -4,7 +4,7 @@ import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:ffi/ffi.dart';
-import 'package:dart_native/src/common/native_basic_type.dart';
+import 'package:dart_native/src/android/foundation/native_type.dart';
 
 import 'jclass.dart';
 
@@ -75,7 +75,7 @@ class JObject extends JClass {
         nativeArguments.stringTypeBitmask);
 
     dynamic result = loadValueFromPointer(invokeMethodRet, returnType,
-        typePtr: nativeArguments.typePointers.elementAt(args?.length ?? 0));
+        nativeArguments.typePointers.elementAt(args?.length ?? 0));
 
     nativeArguments.freePointers();
     calloc.free(methodNamePtr);
@@ -93,10 +93,10 @@ class JObject extends JClass {
 
   NativeArguments _parseNativeArguments(List? args, {List? argsSignature}) {
     Pointer<Pointer<Void>> pointers = nullptr.cast();
-
-    /// extend a bit for string
-    Pointer<Pointer<Utf8>>? typePointers =
+    Pointer<Pointer<Utf8>> typePointers =
         calloc<Pointer<Utf8>>((args?.length ?? 0) + 1);
+
+    /// extend for string
     int stringTypeBitmask = 0;
     if (args != null && args.length > 0) {
       int length = args.length;
@@ -117,17 +117,23 @@ class JObject extends JClass {
           throw 'One of args list is null';
         }
 
-        Pointer<Utf8> argSignature =
-            argsSignature == null || !(argsSignature[i] is Pointer<Utf8>)
-                ? null
-                : argsSignature[i];
+        /// check extension signature
+        Pointer<Utf8>? signature;
+        if (argsSignature != null) {
+          if (argsSignature[i] is String) {
+            signature = argsSignature[i].toNativeUtf8();
+          } else if (argsSignature[i] is Pointer<Utf8>) {
+            signature = argsSignature[i];
+          }
+        }
 
+        /// check string
         if (arg is String) {
           stringTypeBitmask |= (0x1 << i);
         }
 
         storeValueToPointer(arg, pointers.elementAt(pi),
-            typePtr: typePointers.elementAt(i), argSignature: argSignature);
+            typePointers.elementAt(i), signature);
 
         /// check 32 bit system
         if (!is64Bit && (arg is double || arg is long)) {
@@ -148,11 +154,7 @@ class NativeArguments {
   NativeArguments(this.pointers, this.typePointers, this.stringTypeBitmask);
 
   void freePointers() {
-    //if (pointers != null) {
     calloc.free(pointers);
-    //}
-    //  if (typePointers != null) {
     calloc.free(typePointers);
-    //}
   }
 }

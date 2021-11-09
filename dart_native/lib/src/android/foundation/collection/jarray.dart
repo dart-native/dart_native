@@ -38,7 +38,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
       type = _getValueType(value[0]);
     }
     return converter.invoke(
-        "${type.arrayType}ListToArray", [list], "${type.arraySignature}");
+        "${type.arrayType}ListToArray", [list], type.arraySignature);
   } else {
     throw 'Invalid param when initializing JArray.';
   }
