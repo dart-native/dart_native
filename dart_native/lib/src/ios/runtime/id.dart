@@ -5,15 +5,14 @@ import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/nsobject_protocol.dart';
-import 'package:flutter/foundation.dart';
 import 'package:dart_native/src/ios/runtime/message.dart';
 
 /// Stands for `id` in iOS.
 // ignore: camel_case_types
 class id implements NSObjectProtocol {
   /// Stands for `isa` in iOS.
-  Class get isa {
-    if (_ptr == null || _ptr == nullptr) {
+  Class? get isa {
+    if (_ptr == nullptr) {
       return null;
     }
     Pointer<Void> isaPtr = object_getClass(_ptr);
@@ -56,25 +55,25 @@ class id implements NSObjectProtocol {
 
   /// Returns a Boolean value that indicates whether the receiver is an instance
   /// of given class or an instance of any class that inherits from that class.
-  bool isKind({@required Class of}) {
+  bool isKind({required Class of}) {
     return perform(SEL('isKindOfClass:'), args: [of]);
   }
 
   /// Returns a Boolean value that indicates whether the receiver is an instance
   /// of a given class.
-  bool isMember({@required Class of}) {
+  bool isMember({required Class of}) {
     return perform(SEL('isMemberOfClass:'), args: [of]);
   }
 
   /// Returns a Boolean value that indicates whether the receiver implements or
   /// inherits a method that can respond to a specified message.
-  bool responds({@required SEL to}) {
+  bool responds({required SEL to}) {
     return perform(SEL('respondsToSelector:'), args: [to]);
   }
 
   /// Returns a Boolean value that indicates whether the receiver conforms to a
   /// given protocol.
-  bool conforms({@required Protocol to}) {
+  bool conforms({required Protocol to}) {
     return perform(SEL('conformsToProtocol:'), args: [to]);
   }
 
@@ -96,7 +95,7 @@ class id implements NSObjectProtocol {
   /// The message will consist of a [selector] and zero or more [args].
   /// Return value will be converted to Dart types when [decodeRetVal] is
   /// `true`.
-  dynamic perform(SEL selector, {List args, bool decodeRetVal = true}) {
+  dynamic perform(SEL selector, {List? args, bool decodeRetVal = true}) {
     return msgSend(this.pointer, selector,
         args: args, decodeRetVal: decodeRetVal);
   }
@@ -109,7 +108,7 @@ class id implements NSObjectProtocol {
   /// Returns a [Future] which completes to the received response, which may
   /// be null or nil. Return value will be converted to Dart types.
   Future<dynamic> performAsync(SEL selector,
-      {List args, DispatchQueue onQueue}) async {
+      {List? args, DispatchQueue? onQueue}) async {
     return msgSendAsync(this.pointer, selector, args: args, onQueue: onQueue);
   }
 
@@ -125,7 +124,8 @@ class id implements NSObjectProtocol {
   }
 
   bool operator ==(other) {
-    return pointer == other.pointer;
+    if (other is id) return pointer == other.pointer;
+    return false;
   }
 
   int get hashCode {

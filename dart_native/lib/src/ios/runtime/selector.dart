@@ -13,22 +13,19 @@ class SEL {
   static final Map<String, SEL> _cache = <String, SEL>{};
 
   factory SEL(String selectorName) {
-    if (selectorName == null) {
-      return null;
-    }
     if (_cache.containsKey(selectorName)) {
-      return _cache[selectorName];
+      return _cache[selectorName]!;
     }
-    final selectorNamePtr = Utf8.toUtf8(selectorName);
+    final selectorNamePtr = selectorName.toNativeUtf8();
     Pointer<Void> ptr = sel_registerName(selectorNamePtr);
-    free(selectorNamePtr);
+    calloc.free(selectorNamePtr);
     return SEL._internal(selectorName, ptr);
   }
 
   factory SEL.fromPointer(Pointer<Void> ptr) {
-    String selName = Utf8.fromUtf8(sel_getName(ptr));
+    String selName = sel_getName(ptr).toDartString();
     if (_cache.containsKey(selName)) {
-      return _cache[selName];
+      return _cache[selName]!;
     } else {
       return SEL._internal(selName, ptr);
     }
@@ -43,7 +40,8 @@ class SEL {
   }
 
   bool operator ==(other) {
-    return _selPtr == other._selPtr;
+    if (other is SEL) return _selPtr == other._selPtr;
+    return false;
   }
 
   int get hashCode {

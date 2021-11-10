@@ -735,7 +735,6 @@ static os_unfair_lock _refCountUnfairLock = OS_UNFAIR_LOCK_INIT;
 static NSLock *_refCountLock = [[NSLock alloc] init];
 
 static void _RunFinalizer(void *isolate_callback_data,
-                         Dart_WeakPersistentHandle handle,
                          void *peer) {
     NSNumber *address = @((intptr_t)peer);
     NSUInteger refCount = objectRefCount[address].unsignedIntegerValue;
@@ -748,15 +747,14 @@ static void _RunFinalizer(void *isolate_callback_data,
 }
 
 static void RunFinalizer(void *isolate_callback_data,
-                         Dart_WeakPersistentHandle handle,
                          void *peer) {
     if (@available(iOS 10.0, *)) {
         os_unfair_lock_lock(&_refCountUnfairLock);
-        _RunFinalizer(isolate_callback_data, handle, peer);
+        _RunFinalizer(isolate_callback_data, peer);
         os_unfair_lock_unlock(&_refCountUnfairLock);
     } else {
         [_refCountLock lock];
-        _RunFinalizer(isolate_callback_data, handle, peer);
+        _RunFinalizer(isolate_callback_data, peer);
         [_refCountLock unlock];
     }
 }

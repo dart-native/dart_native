@@ -61,7 +61,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   String resultCharPtr = stub.fooCharPtr('test CString');
   print('fooCharPtr result:$resultCharPtr');
 
-  Class resultClass = stub.fooClass(stub.isa);
+  Class resultClass = stub.fooClass(stub.isa ?? Class('RuntimeStub'));
   print('fooClass result:$resultClass');
 
   SEL resultSEL = stub.fooSEL(SEL('fooSEL'));
@@ -126,19 +126,24 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   set = stub.fooNSMutableSet(Set.from([1, 2.345, 'I\'m String', rect]));
   print('fooNSMutableSet to Set: $set');
 
-  stub.fooBlock((NSObject a) {
-    print('hello block! ${a.description}');
+  stub.fooBlock((NSObject? a) {
+    print('hello block! ${a?.description}');
     return a;
   });
 
-  stub.fooStretBlock((CGAffineTransform a) {
+  stub.fooStretBlock((CGAffineTransform? a) {
     print('hello block stret! ${a.toString()}');
     return CGAffineTransform(12, 0, 12, 0, 12, 0);
   });
 
-  stub.fooCStringBlock((CString a) {
+  stub.fooCStringBlock((CString? a) {
     print('hello block cstring! $a');
     return CString('test return cstring');
+  });
+
+  stub.fooNSDictionaryBlock((NSDictionary? dict) {
+    print('hello block nsdictionary! $dict');
+    return dict;
   });
 
   stub.fooCompletion(() {
@@ -159,8 +164,7 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   stub.fooWithError(ref);
   print('fooWithError result:${ref.value.description}');
 
-  TestOptions options =
-      stub.fooWithOptions(TestOptions(TestOptionsOne | TestOptionsTwo));
+  ItemIndex options = stub.fooWithOptions(ItemIndexOne | ItemIndexTwo);
   print('fooWithOptions result:$options');
 
   Class('NSThread')

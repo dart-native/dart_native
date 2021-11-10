@@ -55,10 +55,10 @@ class Writer {
     return result;
   }
 
-  String generateFunctionName(String packageName) {
+  String generateFunctionName(String? packageName) {
     String result = 'run';
     print('packageName: $packageName');
-    result += packageName.split('_').map((String s) {
+    result += packageName!.split('_').map((String s) {
       if (s.length == 1) {
         return s.toUpperCase();
       }

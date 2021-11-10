@@ -3,87 +3,13 @@ import 'dart:typed_data';
 
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
+import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
+import 'package:dart_native/src/ios/foundation/internal/native_box.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
-import 'package:dart_native/src/common/native_type_box.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
-import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:ffi/ffi.dart';
 
 // TODO: change encoding hard code string to const var.
-extension TypeEncodings on Pointer<Utf8> {
-  static Pointer<Pointer<Utf8>> _typeEncodings = nativeAllTypeEncodings();
-  static final Pointer<Utf8> sint8 = _typeEncodings.elementAt(0).value;
-  static final Pointer<Utf8> sint16 = _typeEncodings.elementAt(1).value;
-  static final Pointer<Utf8> sint32 = _typeEncodings.elementAt(2).value;
-  static final Pointer<Utf8> sint64 = _typeEncodings.elementAt(3).value;
-  static final Pointer<Utf8> uint8 = _typeEncodings.elementAt(4).value;
-  static final Pointer<Utf8> uint16 = _typeEncodings.elementAt(5).value;
-  static final Pointer<Utf8> uint32 = _typeEncodings.elementAt(6).value;
-  static final Pointer<Utf8> uint64 = _typeEncodings.elementAt(7).value;
-  static final Pointer<Utf8> float32 = _typeEncodings.elementAt(8).value;
-  static final Pointer<Utf8> float64 = _typeEncodings.elementAt(9).value;
-  static final Pointer<Utf8> object = _typeEncodings.elementAt(10).value;
-  static final Pointer<Utf8> cls = _typeEncodings.elementAt(11).value;
-  static final Pointer<Utf8> selector = _typeEncodings.elementAt(12).value;
-  static final Pointer<Utf8> block = _typeEncodings.elementAt(13).value;
-  static final Pointer<Utf8> cstring = _typeEncodings.elementAt(14).value;
-  static final Pointer<Utf8> v = _typeEncodings.elementAt(15).value;
-  static final Pointer<Utf8> pointer = _typeEncodings.elementAt(16).value;
-  static final Pointer<Utf8> b = _typeEncodings.elementAt(17).value;
-  static final Pointer<Utf8> string = _typeEncodings.elementAt(18).value;
-
-  // Return encoding only if type is struct.
-  String get encodingForStruct {
-    if (isStruct) {
-      return Utf8.fromUtf8(this);
-    }
-    return null;
-  }
-
-  bool get isStruct {
-    // ascii for '{' is 123.
-    return cast<Uint8>().value == 123;
-  }
-
-  bool get isString {
-    return this == TypeEncodings.string;
-  }
-
-  bool get isNum {
-    bool result = this == TypeEncodings.sint8 ||
-        this == TypeEncodings.sint16 ||
-        this == TypeEncodings.sint32 ||
-        this == TypeEncodings.sint64 ||
-        this == TypeEncodings.uint8 ||
-        this == TypeEncodings.uint16 ||
-        this == TypeEncodings.uint32 ||
-        this == TypeEncodings.uint64 ||
-        this == TypeEncodings.float32 ||
-        this == TypeEncodings.float64;
-    return result;
-  }
-
-  bool get maybeObject {
-    return this == TypeEncodings.pointer || this == TypeEncodings.object;
-  }
-
-  bool get maybeBlock {
-    return this == TypeEncodings.block || maybeObject;
-  }
-
-  bool get maybeId {
-    return this == TypeEncodings.cls || maybeBlock;
-  }
-
-  bool get maybeSEL {
-    return this == TypeEncodings.selector || this == TypeEncodings.pointer;
-  }
-
-  bool get maybeCString {
-    return this == TypeEncodings.cstring || this == TypeEncodings.pointer;
-  }
-}
-
 Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
   TypeEncodings.b: (Pointer ptr, dynamic object) {
     ptr.cast<Int8>().value = object;
@@ -122,7 +48,7 @@ Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
     ptr.cast<Double>().value = object;
   },
   TypeEncodings.cstring: (Pointer ptr, dynamic object) {
-    return storeCStringToPointer(object, ptr);
+    return storeCStringToPointer(object, ptr.cast<Pointer<Void>>());
   },
 };
 
@@ -142,7 +68,7 @@ dynamic storeValueToPointer(
       // waiting for ffi bool type support.
       object = object ? 1 : 0;
     }
-    Function strategy = _storeValueStrategyMap[encoding];
+    Function? strategy = _storeValueStrategyMap[encoding];
     if (strategy == null) {
       throw '$object not match type $encoding!';
     } else {
@@ -186,7 +112,7 @@ dynamic storeValueToPointer(
   }
 }
 
-PointerWrapper storeStructToPointer(
+PointerWrapper? storeStructToPointer(
     Pointer<Pointer<Void>> ptr, dynamic object) {
   if (object is NativeStruct) {
     Pointer<Void> result = object.addressOf.cast<Void>();
@@ -214,7 +140,7 @@ void storeStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
 }
 
 dynamic storeCStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
-  Pointer<Utf8> charPtr = Utf8.toUtf8(object);
+  Pointer<Utf8> charPtr = object.toNativeUtf8();
   PointerWrapper wrapper = PointerWrapper();
   wrapper.value = charPtr.cast<Void>();
   ptr.cast<Pointer<Utf8>>().value = charPtr;
@@ -269,7 +195,7 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   },
   TypeEncodings.cstring: (Pointer<Void> ptr) {
     Pointer<Utf8> temp = ptr.cast();
-    return Utf8.fromUtf8(temp);
+    return temp.toDartString();
   },
   // TypeEncodings.pointer: (Pointer<Void> ptr) {
   //   return ptr;
@@ -285,13 +211,13 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
   if (encoding.isNum || encoding == TypeEncodings.b) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
-    result = Function.apply(_loadValueStrategyMap[encoding], [data]);
+    result = Function.apply(_loadValueStrategyMap[encoding]!, [data]);
     if (encoding == TypeEncodings.b) {
       result = result != 0;
     }
   } else {
     // object
-    Function strategy = _loadValueStrategyMap[encoding];
+    Function? strategy = _loadValueStrategyMap[encoding];
     if (strategy != null) {
       // built-in class.
       if (ptr == nullptr) {
@@ -314,7 +240,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
   return result;
 }
 
-String structNameForEncoding(String encoding) {
+String? structNameForEncoding(String encoding) {
   int index = encoding.indexOf('=');
   if (index != -1) {
     String result = encoding.substring(1, index);
@@ -338,18 +264,18 @@ String loadStringFromPointer(Pointer<Void> ptr) {
   // get utf16 data
   Int16List data = dataPtr.elementAt(lengthDataSize).asTypedList(length);
   String result = String.fromCharCodes(data);
-  // malloc dataPtr on native side, shoule free the memory.
-  free(dataPtr);
+  // malloc dataPtr on native side, should free the memory.
+  calloc.free(dataPtr);
   return result;
 }
 
-NativeStruct loadStructFromPointer(Pointer<Void> ptr, String encoding) {
+NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
   if (encoding == null) {
     return null;
   }
-  String structName = structNameForEncoding(encoding);
+  String? structName = structNameForEncoding(encoding);
   if (structName != null) {
-    NativeStruct result;
+    NativeStruct? result;
     // struct
     switch (structName) {
       case 'CGSize':
@@ -442,17 +368,25 @@ List<String> _nativeTypeNames = [
 List<String> dartTypeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
+  List<String> result = [];
   if (argsAndRet.length == 2) {
     String args = argsAndRet.first;
     String ret = argsAndRet.last.replaceAll('Null', 'void');
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      return '$ret, $args'.split(', ');
+      result = '$ret, $args'.split(', ');
     } else {
-      return [ret];
+      result = [ret];
     }
   }
-  return [];
+  // handle nullsafety, such as [NSString?]
+  result = result.map((e) {
+    if (e.endsWith("?")) {
+      e = e.substring(0, e.length - 1);
+    }
+    return e;
+  }).toList();
+  return result;
 }
 
 List<String> nativeTypeStringForDartTypes(List<String> types) {
@@ -460,7 +394,7 @@ List<String> nativeTypeStringForDartTypes(List<String> types) {
     s = _nativeTypeNameMap[s] ?? s;
     if (s.contains('Pointer')) {
       return 'ptr';
-    } else if (s.contains('CString')) {
+    } else if (s.contains('NativeBox<String>')) {
       return 'CString';
     } else if (s.contains('Function')) {
       return 'block';

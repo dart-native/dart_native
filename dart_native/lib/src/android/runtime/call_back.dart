@@ -11,14 +11,14 @@ void registerCallback(dynamic target, Function function, String functionName) {
     print("register error not JObject");
     return;
   }
-  Pointer<Void> targetPtr = target.pointer;
-  Pointer<Utf8> targetName = Utf8.toUtf8(target.className);
-  Pointer<Utf8> funNamePtr = Utf8.toUtf8(functionName);
+  Pointer<Void> targetPtr = target.pointer.cast<Void>();
+  Pointer<Utf8> targetName = target.className.toNativeUtf8();
+  Pointer<Utf8> funNamePtr = functionName.toNativeUtf8();
   CallBackManager.instance.registerCallBack(targetPtr, functionName, function);
-  registerNativeCallback(
+  registerNativeCallback!(
       targetPtr, targetName, funNamePtr, _callbackPtr, nativePort);
-  free(targetName);
-  free(funNamePtr);
+  calloc.free(targetName);
+  calloc.free(funNamePtr);
 }
 
 Pointer<NativeFunction<MethodNativeCallback>> _callbackPtr =
@@ -30,11 +30,11 @@ _callback(
     Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
     int argCount) {
-  String functionName = Utf8.fromUtf8(funNamePtr.cast());
-  Function function = CallBackManager.instance
+  String functionName = funNamePtr.cast<Utf8>().toDartString();
+  Function? function = CallBackManager.instance
       .getCallbackFunctionOnTarget(targetPtr, functionName);
   if (function == null) {
-    print("function $functionName not register!!!");
+    print("function $functionName not registered!!!");
     return null;
   }
   List args = [];
@@ -46,7 +46,7 @@ _callback(
       continue;
     }
 
-    final String argType = Utf8.fromUtf8(argTypePtr.cast());
+    final String argType = argTypePtr.toDartString();
     dynamic arg = argType == "java.lang.String"
         ? fromUtf16(argPtr)
         : unBoxingWrapperClass(argPtr, argType);
@@ -54,7 +54,6 @@ _callback(
   }
 
   dynamic result = Function.apply(function, args);
-
   if (result != null) {
     if (result is String) {
       argsPtrPtr.elementAt(argCount).value = toUtf16(result).cast();

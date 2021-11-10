@@ -6,10 +6,10 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 /// Stands for `Byte` in Android.
 const String CLS_BYTE = "java/lang/Byte";
 
-class Byte extends JSubclass<int> {
-  Byte(int value) : super(value, _new, CLS_BYTE);
+class JByte extends JSubclass<int> {
+  JByte(int value) : super(value, _new, CLS_BYTE);
 
-  Byte.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_BYTE) {
+  JByte.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_BYTE) {
     raw = invoke("byteValue", [], "B");
   }
 }
@@ -18,7 +18,7 @@ class Byte extends JSubclass<int> {
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
     JObject object = JObject.parameterConstructor(clsName, [byte(value)]);
-    return object.pointer;
+    return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Byte.';
   }

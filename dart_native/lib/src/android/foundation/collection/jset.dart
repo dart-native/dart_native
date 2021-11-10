@@ -24,21 +24,18 @@ class JSet extends JSubclass<Set> {
   }
 }
 
-Pointer<Utf8> _argSignature = Utf8.toUtf8("Ljava/lang/Object;");
+Pointer<Utf8> _argSignature = "Ljava/lang/Object;".toNativeUtf8();
 
 /// New native 'Set'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is Set) {
     JObject nativeSet = JObject(clsName);
-    if (value == null) {
-      return nativeSet.pointer;
-    }
 
     for (var element in value) {
       nativeSet.invoke("add", [boxingWrapperClass(element)], "Z",
           argsSignature: [_argSignature]);
     }
-    return nativeSet.pointer;
+    return nativeSet.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing JSet.';
   }

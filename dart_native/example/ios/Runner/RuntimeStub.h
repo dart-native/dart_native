@@ -9,10 +9,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_OPTIONS(NSUInteger, TestOptions) {
-    TestOptionsNone = 0,
-    TestOptionsOne = 1 << 0,
-    TestOptionsTwo = 1 << 1,
+typedef NS_OPTIONS(NSUInteger, ItemIndex) {
+    ItemIndexNone = 0,
+    ItemIndexOne = 1 << 0,
+    ItemIndexTwo = 1 << 1,
 };
 
 @protocol SampleDelegate
@@ -25,6 +25,7 @@ typedef NS_OPTIONS(NSUInteger, TestOptions) {
 typedef NSObject * _Nonnull (^BarBlock)(NSObject *a);
 typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
 typedef char * _Nonnull (^CStringRetBlock)(char *a);
+typedef NSDictionary *_Nonnull (^NSDictionaryRetBlock)(NSDictionary *a);
 typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 
 @interface RuntimeStub : NSObject
@@ -67,12 +68,13 @@ typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 - (void)fooStretBlock:(StretBlock)block;
 - (void)fooCompletion:(void(^)(void))block;
 - (void)fooCStringBlock:(CStringRetBlock)block;
+- (void)fooNSDictionaryBlock:(NSDictionaryRetBlock)block;
 - (void)fooDelegate:(id<SampleDelegate>)delegate;
 - (void)fooStructDelegate:(id<SampleDelegate>)delegate;
 - (NSString *)fooNSString:(NSString *)str;
 - (NSMutableString *)fooNSMutableString:(NSMutableString *)str;
 - (BOOL)fooWithError:(out NSError **)error;
-- (TestOptions)fooWithOptions:(TestOptions)options;
+- (ItemIndex)fooWithOptions:(ItemIndex)options;
 
 @end
 

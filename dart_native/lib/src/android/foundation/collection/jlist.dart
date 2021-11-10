@@ -17,7 +17,7 @@ class JList extends JSubclass<List> {
   JList.fromPointer(Pointer<Void> ptr, {String clsName: CLS_LIST})
       : super.fromPointer(ptr, clsName) {
     int count = invoke("size", [], "I");
-    List temp = List(count);
+    List temp = List.filled(count, nullptr, growable: false);
     String itemType = "";
     for (var i = 0; i < count; i++) {
       dynamic item = invoke("get", [i], "Ljava/lang/Object;");
@@ -34,7 +34,7 @@ class JList extends JSubclass<List> {
   }
 }
 
-Pointer<Utf8> _argSignature = Utf8.toUtf8("Ljava/lang/Object;");
+Pointer<Utf8> _argSignature = "Ljava/lang/Object;".toNativeUtf8();
 
 /// New native 'ArrayList'.
 Pointer<Void> _new(dynamic value, String clsName) {
@@ -44,14 +44,11 @@ Pointer<Void> _new(dynamic value, String clsName) {
 
     JObject nativeList = JObject(clsName);
 
-    if (value == null) {
-      return nativeList.pointer;
-    }
     for (var i = 0; i < value.length; i++) {
       nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z",
           argsSignature: [_argSignature]);
     }
-    return nativeList.pointer;
+    return nativeList.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing JList.';
   }

@@ -9,7 +9,7 @@ import 'package:dart_native_example/ios/unit_test.dart';
 /// Dart use this dispatch to all platform.
 ///
 class DNUnitTest {
-  DNUnitTestBase _unitTest;
+  late DNUnitTestBase _unitTest;
 
   DNUnitTest() {
     /// Dispatch to platform.

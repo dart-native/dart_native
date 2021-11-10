@@ -56,11 +56,11 @@ class NSError extends NSObject {
 
   NSError.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
-  NSError(String domain, int code, {Map userInfo})
+  NSError(String domain, int code, {Map? userInfo})
       : super.fromPointer(_initWithDomainCodeUserInfo(domain, code, userInfo));
 
   static NSError errorWithDomainCodeUserInfo(String domain, int code,
-      {Map userInfo}) {
+      {Map? userInfo}) {
     Pointer<Void> result = Class('NSError').perform(
         'errorWithDomain:code:userInfo:'.toSEL(),
         args: [domain, code, userInfo],
@@ -82,7 +82,7 @@ class NSError extends NSObject {
   }
 
   static Pointer<Void> _initWithDomainCodeUserInfo(
-      String domain, int code, Map userInfo) {
+      String domain, int code, Map? userInfo) {
     Pointer<Void> target = alloc(Class('NSError'));
     SEL sel = 'initWithDomain:code:userInfo:'.toSEL();
     return msgSend(target, sel,

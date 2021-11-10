@@ -332,8 +332,7 @@ void _updateObjectReference(jobject globalObject, bool isRetain) {
 
 /// release native object from cache
 static void RunFinalizer(void *isolate_callback_data,
-                         Dart_WeakPersistentHandle handle,
-                         void *peer) {
+                          void *peer) {
   _updateObjectReference(static_cast<jobject>(peer), false);
 }
 

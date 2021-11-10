@@ -8,7 +8,7 @@ import 'package:dart_native/src/ios/runtime/nsobject.dart';
 
 void bindLifecycleOnNative(NSObject obj) {
   // Ignore null and nil
-  if (obj == null || obj == nil || obj.pointer == nullptr) {
+  if (obj == nil || obj.pointer == nullptr) {
     return;
   }
 
@@ -39,19 +39,20 @@ void _dealloc(Pointer<Void> ptr) {
 Map<Pointer<Void>, List<Finalizer>> _finalizerMap = {};
 
 addFinalizerForObject(NSObject obj) {
-  if (obj.finalizer != null) {
-    List<Finalizer> finalizers = _finalizerMap[obj.pointer];
-    if (finalizers == null) {
-      finalizers = [obj.finalizer];
-    } else {
-      finalizers.add(obj.finalizer);
-    }
-    _finalizerMap[obj.pointer] = finalizers;
+  if (obj.finalizer == null) {
+    return;
   }
+  List<Finalizer>? finalizers = _finalizerMap[obj.pointer];
+  if (finalizers == null) {
+    finalizers = [obj.finalizer!];
+  } else {
+    finalizers.add(obj.finalizer!);
+  }
+  _finalizerMap[obj.pointer] = finalizers;
 }
 
 removeFinalizerForObject(NSObject obj) {
-  List<Finalizer> finalizers = _finalizerMap[obj.pointer];
+  List<Finalizer?>? finalizers = _finalizerMap[obj.pointer];
   finalizers?.remove(obj.finalizer);
 }
 

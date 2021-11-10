@@ -37,7 +37,7 @@ class RuntimeStub extends JObject {
   }
 
   String getChar(String c) {
-    return invoke('getChar', [char(c.codeUnitAt(0))], "C");
+    return invoke('getChar', [jchar(c.codeUnitAt(0))], "C");
   }
 
   int getShort(int s) {
@@ -67,19 +67,7 @@ class RuntimeStub extends JObject {
   bool complexCall(String s, int i, String c, double d, double f, int b, int sh,
       int l, bool boo) {
     return invoke(
-        'complexCall',
-        [
-          s,
-          i,
-          char(c.codeUnitAt(0)),
-          d,
-          float(f),
-          byte(b),
-          short(sh),
-          long(l),
-          boo
-        ],
-        "Z");
+        'complexCall', [s, i, jchar(c.codeUnitAt(0)), d, float(f), byte(b), short(sh), long(l), boo], "Z");
   }
 
   Entity createEntity() {
@@ -96,7 +84,7 @@ class RuntimeStub extends JObject {
   }
 
   int getInteger() {
-    return Integer.fromPointer(
+    return JInteger.fromPointer(
             invoke("getInteger", null, "Ljava/lang/Integer;"))
         .raw;
   }

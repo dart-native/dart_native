@@ -10,7 +10,7 @@ export 'package:dart_native/src/android/dart_java.dart';
 export 'package:dart_native/src/dart_native_root.dn.dart';
 
 class DartNative {
-  static void init([String soPath]) {
+  static void init([String? soPath]) {
     WidgetsFlutterBinding.ensureInitialized();
     if (Platform.isAndroid) {
       DartJava.loadLibrary(soPath);
