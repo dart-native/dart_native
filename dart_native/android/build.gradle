@@ -28,10 +28,11 @@ android {
     externalNativeBuild {
 
         // Encapsulates your CMake build configurations.
-        cmake {
-            // Provides a relative path to your CMake build script.
-            path "CMakeLists.txt"
-        }
+        // open this to debug
+//        cmake {
+//            // Provides a relative path to your CMake build script.
+//            path "CMakeLists.txt"
+//        }
     }
 
     defaultConfig {
@@ -40,5 +41,10 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage'
+    }
+    sourceSets{
+        main {
+            jniLibs.srcDirs=['src/libs']
+        }
     }
 }
