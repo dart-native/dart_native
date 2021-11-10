@@ -17,7 +17,7 @@ class JFloat extends JSubclass<double> {
 /// New native 'Float'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is double) {
-    JObject object = JObject.parameterConstructor(clsName, [value]);
+    JObject object = JObject.parameterConstructor(clsName, [float(value)]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Float.';
