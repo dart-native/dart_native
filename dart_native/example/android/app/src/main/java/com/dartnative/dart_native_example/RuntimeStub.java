@@ -180,7 +180,7 @@ public class RuntimeStub {
         return backSet;
     }
 
-    public Map getMap(HashMap<String, Integer> map) {
+    public HashMap<String, Float> getMap(HashMap<String, Integer> map) {
         for (Map.Entry<String, Integer> entry : map.entrySet()) {
             Log.d(TAG, "Key = " + entry.getKey() + ", Value = " + entry.getValue());
         }

@@ -67,7 +67,19 @@ class RuntimeStub extends JObject {
   bool complexCall(String s, int i, String c, double d, double f, int b, int sh,
       int l, bool boo) {
     return invoke(
-        'complexCall', [s, i, jchar(c.codeUnitAt(0)), d, float(f), byte(b), short(sh), long(l), boo], "Z");
+        'complexCall',
+        [
+          s,
+          i,
+          jchar(c.codeUnitAt(0)),
+          d,
+          float(f),
+          byte(b),
+          short(sh),
+          long(l),
+          boo
+        ],
+        "Z");
   }
 
   Entity createEntity() {
@@ -123,18 +135,20 @@ class RuntimeStub extends JObject {
   }
 
   Set getIntSet(Set set) {
-    return JSet.fromPointer(invoke("getIntSet", [JSet(set)], "Ljava/util/Set;"))
+    return JSet.fromPointer(
+            invoke("getIntSet", [JHashSet(set)], "Ljava/util/Set;"))
         .raw;
   }
 
   Set getFloatSet(Set set) {
     return JSet.fromPointer(
-            invoke("getFloatSet", [JSet(set)], "Ljava/util/Set;"))
+            invoke("getFloatSet", [JHashSet(set)], "Ljava/util/Set;"))
         .raw;
   }
 
   Map getMap(Map map) {
-    return JMap.fromPointer(invoke("getMap", [JMap(map)], "Ljava/util/Map;"))
+    return JHashMap.fromPointer(
+            invoke("getMap", [JHashMap(map)], "Ljava/util/HashMap;"))
         .raw;
   }
 }
