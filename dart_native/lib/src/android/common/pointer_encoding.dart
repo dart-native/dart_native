@@ -125,10 +125,6 @@ dynamic loadValueFromPointer(
     return;
   }
 
-  if (ptr == nullptr) {
-    return null;
-  }
-
   if (typePtr.value.toDartString() == "java.lang.String") {
     return fromUtf16(ptr);
   }
