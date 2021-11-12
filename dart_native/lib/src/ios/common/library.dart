@@ -8,11 +8,18 @@ DynamicLibrary get runtimeLib {
   if (_runtimeLib != null) {
     return _runtimeLib!;
   }
+
   try {
-    _runtimeLib = DynamicLibrary.open('dart_native.framework/dart_native');
+    // Release mode
+    _runtimeLib = DynamicLibrary.open('DartNative.framework/DartNative');
   } catch (e) {
-    // static linking
-    _runtimeLib = nativeDylib;
+    try {
+      // Debug mode and use_frameworks!
+      _runtimeLib = DynamicLibrary.open('dart_native.framework/dart_native');
+    } catch (e) {
+      // Debug mode
+      _runtimeLib = nativeDylib;  
+    }
   }
   registerDeallocCallback(nativeObjectDeallocPtr.cast());
   return _runtimeLib!;

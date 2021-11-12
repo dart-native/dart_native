@@ -1,20 +1,25 @@
 #import "AppDelegate.h"
 #import "GeneratedPluginRegistrant.h"
-#import <CocoaLumberjack/CocoaLumberjack.h>
 
-#if __has_include(<dart_native/dart_native.h>)
-#import <dart_native/dart_native.h>
+#if __has_include(<CocoaLumberjack/CocoaLumberjack.h>)
+#import <CocoaLumberjack/CocoaLumberjack.h>
+#else
+@import CocoaLumberjack;
+#endif
+
+#if __has_include(<dart_native/native_runtime.h>)
+#import <dart_native/native_runtime.h>
 #else
 @import dart_native;
 #endif
 
 #import "RuntimeSon.h"
 
-
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    void DartNativeSetThrowException(bool canThrow);
 #if DEBUG
     DartNativeSetThrowException(true);
 #else
