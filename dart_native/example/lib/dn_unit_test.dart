@@ -21,8 +21,8 @@ class DNUnitTest {
   }
 
   /// Run all test case.
-  void runAllUnitTests() {
-    _unitTest.runAllUnitTests();
+  Future<void> runAllUnitTests() async {
+    return _unitTest.runAllUnitTests();
   }
 }
 
@@ -31,6 +31,5 @@ class DNUnitTest {
 ///
 abstract class DNUnitTestBase {
   String fooString(String str);
-
   void runAllUnitTests();
 }

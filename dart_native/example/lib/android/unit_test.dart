@@ -16,12 +16,12 @@ class DNAndroidUnitTest with DNUnitTestBase {
   }
 
   @override
-  void runAllUnitTests() {
-    testAndroid(stub);
+  Future<void> runAllUnitTests() async {
+    await testAndroid(stub);
   }
 }
 
-testAndroid(RuntimeStub stub) {
+testAndroid(RuntimeStub stub) async {
   int ms = currentTimeMillis();
   double resultDouble = stub.getDouble(3.40282e+038);
   int use = currentTimeMillis() - ms;

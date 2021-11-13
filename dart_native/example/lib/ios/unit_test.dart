@@ -6,6 +6,7 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/dn_unit_test.dart';
 import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_example/ios/runtimeson.dart';
+import 'package:dart_native_example/ios/runtimestub_async.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
 
 /// IOS unit test implementation.
@@ -19,12 +20,12 @@ class DNIOSUnitTest with DNUnitTestBase {
   }
 
   @override
-  void runAllUnitTests() {
-    testIOS(stub, delegate);
+  Future<void> runAllUnitTests() async {
+    await testIOS(stub, delegate);
   }
 }
 
-testIOS(RuntimeStub stub, DelegateStub delegate) {
+Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
   bool? resultBool = stub.fooBOOL(false);
   print('fooBool result:$resultBool');
 
@@ -157,7 +158,9 @@ testIOS(RuntimeStub stub, DelegateStub delegate) {
   String? resultNSString = stub.fooNSString('This is NSString');
   print('fooNSString result:$resultNSString');
 
-  resultNSString = stub.fooNSMutableString('This is NSString');
+  resultNSString = await stub.fooNSStringAsync('This is NSString(Async)');
+
+  resultNSString = stub.fooNSMutableString('This is NSMutableString');
   print('fooNSMutableString result:$resultNSString');
 
   NSObjectRef<NSError> ref = NSObjectRef<NSError>();
