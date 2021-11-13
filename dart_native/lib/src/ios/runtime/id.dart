@@ -124,7 +124,9 @@ class id implements NSObjectProtocol {
   }
 
   bool operator ==(other) {
-    if (other is id) return pointer == other.pointer;
+    if (other is id) {
+      return pointer == other.pointer;
+    }
     return false;
   }
 

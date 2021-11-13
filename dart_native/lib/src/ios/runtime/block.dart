@@ -47,6 +47,7 @@ class Block extends id {
     Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
     Pointer<Void> blockWrapperPtr =
         blockCreate(typeStringPtr, _callbackPtr, nativePort);
+    assert(blockWrapperPtr != nullptr);
     if (blockWrapperPtr == nullptr) {
       return nilBlock;
     }

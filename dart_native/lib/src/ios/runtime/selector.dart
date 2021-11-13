@@ -19,10 +19,16 @@ class SEL {
     final selectorNamePtr = selectorName.toNativeUtf8();
     Pointer<Void> ptr = sel_registerName(selectorNamePtr);
     calloc.free(selectorNamePtr);
+    if (ptr == nullptr) {
+      throw 'Failed to register a Selector!';
+    }
     return SEL._internal(selectorName, ptr);
   }
 
   factory SEL.fromPointer(Pointer<Void> ptr) {
+    if (ptr == nullptr) {
+      throw 'Can\'t initialize a Selector with nullptr';
+    }
     String selName = sel_getName(ptr).toDartString();
     if (_cache.containsKey(selName)) {
       return _cache[selName]!;
