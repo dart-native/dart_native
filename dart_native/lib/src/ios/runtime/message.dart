@@ -183,7 +183,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
 Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
     {List? args, DispatchQueue? onQueue}) async {
   if (onQueue == null) {
-    onQueue = DispatchQueue.main;
+    onQueue = DispatchQueue.global();
   }
   final completer = Completer<dynamic>();
   _msgSend(target, selector, args: args, onQueue: onQueue,

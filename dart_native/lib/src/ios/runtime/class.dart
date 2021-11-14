@@ -32,7 +32,7 @@ class Class extends id {
 
   factory Class.fromPointer(Pointer<Void> ptr) {
     if (ptr == nullptr) {
-      throw 'Pointer does not exist';
+      throw 'Can\'t initialize a Class with nullptr';
     }
     int key = ptr.address;
     if (_cache.containsKey(key)) {

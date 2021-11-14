@@ -197,9 +197,6 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
     Pointer<Utf8> temp = ptr.cast();
     return temp.toDartString();
   },
-  // TypeEncodings.pointer: (Pointer<Void> ptr) {
-  //   return ptr;
-  // },
   TypeEncodings.v: (Pointer<Void> ptr) {
     return;
   },
