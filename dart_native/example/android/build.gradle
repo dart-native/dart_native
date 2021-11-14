@@ -28,3 +28,8 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+android {
+    // Fix CI error: https://stackoverflow.com/questions/61146248/github-actions-flutter-ci-error-no-version-of-ndk-matched
+    ndkVersion "18.1.5063045"
+}
