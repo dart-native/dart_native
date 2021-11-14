@@ -17,6 +17,8 @@ dynamic boxingWrapperClass(dynamic value) {
     return JList(value);
   } else if (value is Set) {
     return JSet(value);
+  } else if (value is Map) {
+    return JMap(value);
   } else if (value is bool) {
     return JBoolean(value);
   } else {
@@ -43,11 +45,17 @@ dynamic unBoxingWrapperClass(dynamic value, String valueType) {
     case "java.lang.Short":
       return JShort.fromPointer(value).raw;
     case "java.util.List":
-    case "java.util.ArrayList":
       return JList.fromPointer(value).raw;
+    case "java.util.ArrayList":
+      return JArrayList.fromPointer(value).raw;
     case "java.util.Set":
-    case "java.util.HashSet":
       return JSet.fromPointer(value).raw;
+    case "java.util.HashSet":
+      return JHashSet.fromPointer(value).raw;
+    case "java.util.Map":
+      return JMap.fromPointer(value).raw;
+    case "java.util.HashMap":
+      return JHashMap.fromPointer(value).raw;
     case "java.lang.String":
       return value;
     default:

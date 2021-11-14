@@ -8,28 +8,32 @@ import 'package:ffi/ffi.dart';
 const String cls_set = "java/util/Set";
 const String cls_hash_set = "java/util/HashSet";
 
-class JSet extends JSubclass<Set> {
+class JSet<E> extends JSubclass<Set> {
   JSet(Set value, {String clsName: cls_set, InitSubclass init: _new})
       : super(value, _new, clsName) {
     value = Set.of(value);
   }
 
-  JSet.fromPointer(Pointer<Void> ptr, {String clsName: cls_set})
+  JSet.fromPointer(Pointer<Void> ptr,
+      {String clsName: cls_set, E Function(Pointer pointer)? creator})
       : super.fromPointer(ptr, clsName) {
     JObject converter =
         JObject("com/dartnative/dart_native/ArrayListConverter");
-    List list = JList.fromPointer(converter.invoke("setToList",
-            [JObject("java/util/Set", pointer: ptr)], "Ljava/util/List;"))
+    List list = JList<E>.fromPointer(
+            converter.invoke("setToList",
+                [JObject("java/util/Set", pointer: ptr)], "Ljava/util/List;"),
+            creator: creator)
         .raw;
     raw = list.toSet();
   }
 }
 
-class JHashSet extends JSet {
+class JHashSet<E> extends JSet {
   JHashSet(Set value) : super(value, clsName: cls_hash_set);
 
-  JHashSet.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: cls_hash_set);
+  JHashSet.fromPointer(Pointer<Void> ptr,
+      {E Function(Pointer pointer)? creator})
+      : super.fromPointer(ptr, clsName: cls_hash_set, creator: creator);
 }
 
 /// New native 'Set'.

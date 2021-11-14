@@ -6,7 +6,7 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 /// Array in Android.
 const String cls_array_object = "java/lang/Object";
 
-class JArray extends JSubclass<List> {
+class JArray<E> extends JSubclass<List> {
   String get arraySignature => _arraySignature;
   String _arraySignature = "[Ljava/lang/Object;";
 
@@ -18,12 +18,16 @@ class JArray extends JSubclass<List> {
     }
   }
 
-  JArray.fromPointer(Pointer<Void> ptr)
+  JArray.fromPointer(Pointer<Void> ptr, {E Function(Pointer pointer)? creator})
       : super.fromPointer(ptr, cls_array_object) {
     JObject converter =
         JObject("com/dartnative/dart_native/ArrayListConverter");
-    raw = JList.fromPointer(converter.invoke("arrayToList",
-            [JObject("java/lang/Object", pointer: ptr)], "Ljava/util/List;"))
+    raw = JList.fromPointer(
+            converter.invoke(
+                "arrayToList",
+                [JObject("java/lang/Object", pointer: ptr)],
+                "Ljava/util/List;"),
+            creator: creator)
         .raw;
   }
 }
