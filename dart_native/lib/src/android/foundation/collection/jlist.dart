@@ -8,16 +8,18 @@ import 'package:ffi/ffi.dart';
 const String cls_list = "java/util/List";
 const String cls_array_list = "java/util/ArrayList";
 
-class JList extends JSubclass<List> {
+class JList<E> extends JSubclass<List> {
   JList(List value, {String clsName: cls_list, InitSubclass init: _new})
       : super(value, _new, clsName) {
     value = List.of(value, growable: false);
   }
 
-  JList.fromPointer(Pointer<Void> ptr, {String clsName: cls_list})
+  JList.fromPointer(Pointer<Void> ptr,
+      {String clsName: cls_list,
+      E Function(Pointer pointer)? creator})
       : super.fromPointer(ptr, clsName) {
     int count = invoke("size", [], "I");
-    List temp = List.filled(count, nullptr, growable: false);
+    List temp = List.filled(count, [], growable: false);
     String itemType = "";
     for (var i = 0; i < count; i++) {
       dynamic item = invoke("get", [i], "Ljava/lang/Object;");
@@ -28,17 +30,21 @@ class JList extends JSubclass<List> {
           itemType = _getItemClass(item);
         }
       }
-      temp[i] = unBoxingWrapperClass(item, itemType);
+      if (creator != null) {
+        temp[i] = creator(item);
+      } else {
+        temp[i] = unBoxingWrapperClass(item, itemType);
+      }
     }
     raw = temp;
   }
 }
 
-class JArrayList extends JList {
+class JArrayList<E> extends JList {
   JArrayList(List value) : super(value, clsName: cls_array_list);
 
-  JArrayList.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: cls_array_list);
+  JArrayList.fromPointer(Pointer<Void> ptr, {E Function(Pointer pointer)? creator})
+      : super.fromPointer(ptr, clsName: cls_array_list, creator: creator);
 }
 
 /// New native 'ArrayList'.

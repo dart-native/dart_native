@@ -8,15 +8,20 @@ import 'package:ffi/ffi.dart';
 const String cls_map = "java/util/Map";
 const String cls_hash_map = "java/util/HashMap";
 
-class JMap extends JSubclass<Map> {
+class JMap<K, V> extends JSubclass<Map> {
   JMap(Map value, {String clsName: cls_map, InitSubclass init: _new})
       : super(value, _new, clsName) {
     value = Map.of(value);
   }
 
-  JMap.fromPointer(Pointer<Void> ptr, {String clsName: cls_map})
+  JMap.fromPointer(Pointer<Void> ptr,
+      {String clsName: cls_map,
+      K Function(Pointer pointer)? keyCreator,
+      V Function(Pointer pointer)? valueCreator})
       : super.fromPointer(ptr, clsName) {
-    Set keySet = JSet.fromPointer(invoke("keySet", [], "Ljava/util/Set;")).raw;
+    Set keySet = JSet.fromPointer(invoke("keySet", [], "Ljava/util/Set;"),
+            creator: keyCreator)
+        .raw;
     Map temp = {};
     String itemType = "";
     Pointer<Utf8> argSignature = "Ljava/lang/Object;".toNativeUtf8();
@@ -31,18 +36,27 @@ class JMap extends JSubclass<Map> {
           itemType = _getItemClass(item);
         }
       }
-      temp[key] = unBoxingWrapperClass(item, itemType);
+      if (valueCreator != null) {
+        valueCreator(item);
+      } else {
+        temp[key] = unBoxingWrapperClass(item, itemType);
+      }
     }
     calloc.free(argSignature);
     raw = temp;
   }
 }
 
-class JHashMap extends JMap {
+class JHashMap<K, V> extends JMap {
   JHashMap(Map value) : super(value, clsName: cls_hash_map);
 
-  JHashMap.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: cls_hash_map);
+  JHashMap.fromPointer(Pointer<Void> ptr,
+      {K Function(Pointer pointer)? keyCreator,
+      V Function(Pointer pointer)? valueCreator})
+      : super.fromPointer(ptr,
+            clsName: cls_hash_map,
+            keyCreator: keyCreator,
+            valueCreator: valueCreator);
 }
 
 /// New native 'HashMap'.
