@@ -172,12 +172,10 @@ packages:
   dart_native_gen:
     dependency: transitive
     description:
-      path: dart_native_gen
-      ref: "feature/flutter2"
-      resolved-ref: ec85ac4c876d2712d20928da24139e2071a9c025
-      url: "https://github.com/dart-native/dart_native.git"
-    source: git
-    version: "0.2.2"
+      name: dart_native_gen
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   dart_style:
     dependency: transitive
     description:

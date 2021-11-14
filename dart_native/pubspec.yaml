@@ -11,11 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   ffi: ^1.0.0
-  dart_native_gen: 
-    git: 
-      url: https://github.com/dart-native/dart_native.git
-      ref: feature/flutter2
-      path: dart_native_gen
+  dart_native_gen: ^0.2.0
 
 dev_dependencies:
   flutter_test:
