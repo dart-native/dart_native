@@ -23,6 +23,10 @@ class JList<E> extends JSubclass<List> {
     String itemType = "";
     for (var i = 0; i < count; i++) {
       dynamic item = invoke("get", [i], "Ljava/lang/Object;");
+      if (creator != null) {
+        temp[i] = creator(item);
+        continue;
+      }
       if (itemType == "") {
         if (item is String) {
           itemType = "java.lang.String";
@@ -30,11 +34,7 @@ class JList<E> extends JSubclass<List> {
           itemType = _getItemClass(item);
         }
       }
-      if (creator != null) {
-        temp[i] = creator(item);
-      } else {
-        temp[i] = unBoxingWrapperClass(item, itemType);
-      }
+      temp[i] = unBoxingWrapperClass(item, itemType);
     }
     raw = temp;
   }

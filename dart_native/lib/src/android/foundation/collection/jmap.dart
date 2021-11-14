@@ -19,7 +19,7 @@ class JMap<K, V> extends JSubclass<Map> {
       K Function(Pointer pointer)? keyCreator,
       V Function(Pointer pointer)? valueCreator})
       : super.fromPointer(ptr, clsName) {
-    Set keySet = JSet.fromPointer(invoke("keySet", [], "Ljava/util/Set;"),
+    Set keySet = JSet<K>.fromPointer(invoke("keySet", [], "Ljava/util/Set;"),
             creator: keyCreator)
         .raw;
     Map temp = {};
@@ -29,6 +29,10 @@ class JMap<K, V> extends JSubclass<Map> {
       dynamic item = invoke(
           "get", [boxingWrapperClass(key)], "Ljava/lang/Object;",
           argsSignature: [argSignature]);
+      if (valueCreator != null) {
+        temp[key] = valueCreator(item);
+        continue;
+      }
       if (itemType == "") {
         if (item is String) {
           itemType = "java.lang.String";
@@ -36,11 +40,7 @@ class JMap<K, V> extends JSubclass<Map> {
           itemType = _getItemClass(item);
         }
       }
-      if (valueCreator != null) {
-        valueCreator(item);
-      } else {
-        temp[key] = unBoxingWrapperClass(item, itemType);
-      }
+      temp[key] = unBoxingWrapperClass(item, itemType);
     }
     calloc.free(argSignature);
     raw = temp;
