@@ -24,7 +24,7 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 28
     // Fix CI error: https://stackoverflow.com/questions/61146248/github-actions-flutter-ci-error-no-version-of-ndk-matched
-    ndkVersion "21.1.6352462"
+    ndkVersion "21.4.7075529"
     // Encapsulates your external native build configurations.
     externalNativeBuild {
 
