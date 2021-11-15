@@ -43,6 +43,9 @@ std::map<char, std::function<BasicTypeToNative>> GetTypeConvertMap() {
 }
 
 jstring convertToJavaUtf16(JNIEnv *env, void *value) {
+  if (value == nullptr) {
+    return env->NewString(reinterpret_cast<uint16_t *>((char *) ""), 0);
+  }
   auto *utf16 = (uint16_t *) value;
 
   uint32_t length = 0;

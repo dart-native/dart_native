@@ -428,6 +428,8 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
         void *target = (void *) dartObjectAddress;
         if (methodCallback != nullptr && target != nullptr) {
           methodCallback(target, funName, arguments, dataTypes, argumentCount);
+        } else {
+          arguments[argumentCount] = nullptr;
         }
         if (isSemInitSuccess) {
           sem_post(&sem);
