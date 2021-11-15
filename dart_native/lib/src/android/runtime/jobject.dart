@@ -3,7 +3,6 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/message.dart';
-import 'package:ffi/ffi.dart';
 
 import 'jclass.dart';
 
@@ -21,12 +20,13 @@ class JObject extends JClass {
   //init target class
   JObject(String className, {Pointer<Void>? pointer, bool isInterface = false})
       : super(className) {
-    _ptr = _new(className, pointer: pointer, isInterface: isInterface);
+    _ptr =
+        newObject(className, this, pointer: pointer, isInterface: isInterface);
     bindLifeCycleWithNative(this);
   }
 
   JObject.parameterConstructor(String className, List args) : super(className) {
-    _ptr = newObject(className, args: args);
+    _ptr = newObject(className, this, args: args);
     bindLifeCycleWithNative(this);
   }
 
@@ -52,19 +52,5 @@ class JObject extends JClass {
       return 0;
     }
     return 1;
-  }
-
-  Pointer<Void> _new(String className,
-      {Pointer<Void>? pointer, bool isInterface = false}) {
-    if (isInterface) {
-      Pointer<Int64> hashPointer = calloc<Int64>();
-      hashPointer.value = identityHashCode(this);
-      return hashPointer.cast<Void>();
-    }
-
-    if (pointer == null) {
-      return newObject(className);
-    }
-    return pointer;
   }
 }

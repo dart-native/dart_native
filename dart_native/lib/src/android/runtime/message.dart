@@ -6,6 +6,40 @@ import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/dart_java.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 
+Pointer<Void> _newNativeObject(String className, {List? args}) {
+  final objectPtr;
+  Pointer<Utf8> classNamePtr = className.toNativeUtf8();
+  if (args == null || args.length == 0) {
+    objectPtr =
+        nativeCreateObject!(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
+  } else {
+    NativeArguments nativeArguments = _parseNativeArguments(args);
+    objectPtr = nativeCreateObject!(
+        classNamePtr,
+        nativeArguments.pointers,
+        nativeArguments.typePointers,
+        args.length,
+        nativeArguments.stringTypeBitmask);
+    nativeArguments.freePointers();
+  }
+  calloc.free(classNamePtr);
+  return objectPtr;
+}
+
+Pointer<Void> newObject(String className, JObject object,
+    {Pointer<Void>? pointer, List? args, bool isInterface = false}) {
+  if (isInterface) {
+    Pointer<Int64> hashPointer = calloc<Int64>();
+    hashPointer.value = identityHashCode(object);
+    return hashPointer.cast<Void>();
+  }
+
+  if (pointer == null) {
+    return _newNativeObject(className);
+  }
+  return pointer;
+}
+
 typedef void _AsyncMessageCallback(dynamic result);
 
 dynamic _invokeMethod(
@@ -45,31 +79,11 @@ Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List? argsSignature}) async {
   final completer = Completer<dynamic>();
-  _invokeMethod(objPtr, methodName, args, returnType, argsSignature: argsSignature,
-      callback: (dynamic result) {
+  _invokeMethod(objPtr, methodName, args, returnType,
+      argsSignature: argsSignature, callback: (dynamic result) {
     completer.complete(result);
   });
   return completer.future;
-}
-
-Pointer<Void> newObject(String className, {List? args}) {
-  final objectPtr;
-  Pointer<Utf8> classNamePtr = className.toNativeUtf8();
-  if (args == null || args.length == 0) {
-    objectPtr = nativeCreateObject!(
-        classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
-  } else {
-    NativeArguments nativeArguments = _parseNativeArguments(args);
-    objectPtr = nativeCreateObject!(
-        classNamePtr,
-        nativeArguments.pointers,
-        nativeArguments.typePointers,
-        args.length,
-        nativeArguments.stringTypeBitmask);
-    nativeArguments.freePointers();
-  }
-  calloc.free(classNamePtr);
-  return objectPtr;
 }
 
 NativeArguments _parseNativeArguments(List? args, {List? argsSignature}) {
