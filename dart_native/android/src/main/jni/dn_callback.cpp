@@ -13,6 +13,8 @@ static std::map<void *, jobject> nativeProxyObjectCache;
 /// key is dart object pointer address, value is method
 static std::map<jlong, std::map<std::string, NativeMethodCallback>>
     callbackFunctionCache;
+/// key is dart object pointer address, value is thread id
+static std::map<jlong, std::__thread_id> threadIdCache;
 
 void registerCallbackManager(jlong dartObjectAddress,
                              char *functionName,
@@ -42,6 +44,7 @@ void doRegisterNativeCallback(void *dartObject,
   auto dartObjectAddress = (jlong) dartObject;
   nativeProxyObjectCache[dartObject] = nativeProxyObject;
   dartPortCache[dartObjectAddress] = dartPort;
+  threadIdCache[dartObjectAddress] = std::this_thread::get_id();
 
   registerCallbackManager(dartObjectAddress, funName, callback);
 }
@@ -76,5 +79,15 @@ getCallbackMethod(jlong dartObjectAddress, char *functionName) {
   std::map<std::string, NativeMethodCallback>
       methodsMap = callbackFunctionCache[dartObjectAddress];
   return methodsMap[functionName];
+}
+
+bool IsCurrentThread(jlong dartObjectAddress, std::__thread_id currentThread) {
+  if (!threadIdCache.count(dartObjectAddress)) {
+    DNInfo(
+        "IsCurrentThread: threadIdCache not contain this dart object %d",
+        dartObjectAddress);
+    return false;
+  }
+  return threadIdCache[dartObjectAddress] == currentThread;
 }
 

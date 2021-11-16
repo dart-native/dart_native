@@ -182,7 +182,7 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
     return data.getFloat64(0, Endian.host);
   },
   TypeEncodings.object: (Pointer<Void> ptr) {
-    return NSObject.fromPointer(ptr);
+    return objcInstanceFromPointer(null, ptr);
   },
   TypeEncodings.cls: (Pointer<Void> ptr) {
     return Class.fromPointer(ptr);

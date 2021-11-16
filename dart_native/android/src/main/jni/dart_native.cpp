@@ -418,39 +418,52 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
   /// the last pointer is return type
   dataTypes[argumentCount] = returnType;
 
-  sem_t sem;
-  bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
-
-  const Work work =
-      [dartObjectAddress, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess]() {
-        NativeMethodCallback
-            methodCallback = getCallbackMethod(dartObjectAddress, funName);
-        void *target = (void *) dartObjectAddress;
-        if (methodCallback != nullptr && target != nullptr) {
-          methodCallback(target, funName, arguments, dataTypes, argumentCount);
-        }
-        if (isSemInitSuccess) {
-          sem_post(&sem);
-        }
-      };
-
-  const Work *work_ptr = new Work(work);
-  /// check run result
-  bool notifyResult = NotifyDart(port, work_ptr);
+  NativeMethodCallback
+      methodCallback = getCallbackMethod(dartObjectAddress, funName);
+  void *target = (void *) dartObjectAddress;
   jobject callbackResult = nullptr;
-  if (isSemInitSuccess) {
+
+  if (IsCurrentThread(dartObjectAddress, std::this_thread::get_id())) {
+    DNDebug("callback with same thread");
+    if (methodCallback != nullptr && target != nullptr) {
+      methodCallback(target, funName, arguments, dataTypes, argumentCount);
+    } else {
+      arguments[argumentCount] = nullptr;
+    }
+  } else {
+    DNDebug("callback with different thread");
+    sem_t sem;
+    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+    const Work work =
+        [target, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess, methodCallback]() {
+          if (methodCallback != nullptr && target != nullptr) {
+            methodCallback(target, funName, arguments, dataTypes, argumentCount);
+          } else {
+            arguments[argumentCount] = nullptr;
+          }
+          if (isSemInitSuccess) {
+            sem_post(&sem);
+          }
+        };
+
+    const Work *work_ptr = new Work(work);
+    /// check run result
+    bool notifyResult = NotifyDart(port, work_ptr);
     if (notifyResult) {
-      sem_wait(&sem);
-      if (returnType == nullptr || strcmp(returnType, "void") == 0) {
-        DNDebug("Native callback to Dart return type is void");
-      } else if (strcmp(returnType, "java.lang.String") == 0) {
-        callbackResult =
-            convertToJavaUtf16(env, (char *) arguments[argumentCount]);
-      } else {
-        callbackResult = (jobject) arguments[argumentCount];
+      if (isSemInitSuccess) {
+        sem_wait(&sem);
+        sem_destroy(&sem);
       }
     }
-    sem_destroy(&sem);
+  }
+
+  if (returnType == nullptr || strcmp(returnType, "void") == 0) {
+    DNDebug("Native callback to Dart return type is void");
+  } else if (strcmp(returnType, "java.lang.String") == 0) {
+    callbackResult =
+        convertToJavaUtf16(env, (char *) arguments[argumentCount]);
+  } else {
+    callbackResult = (jobject) arguments[argumentCount];
   }
 
   if (returnTypeStr != nullptr) {

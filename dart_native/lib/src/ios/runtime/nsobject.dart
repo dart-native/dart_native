@@ -86,7 +86,7 @@ void registerTypeConvertor(String type, ConvertorFromPointer convertor) {
   }
 }
 
-dynamic objcInstanceFromPointer(String type, dynamic arg) {
+dynamic objcInstanceFromPointer(String? type, dynamic arg) {
   Pointer<Void> ptr;
   if (arg is NSObject) {
     ptr = arg.pointer;
@@ -99,14 +99,16 @@ dynamic objcInstanceFromPointer(String type, dynamic arg) {
   if (ptr == nullptr) {
     return arg;
   }
-
+  if (type == null) {
+    /// Retrive class name from native.
+    var object = NSObject.fromPointer(ptr);
+    type = object.isa?.name;
+  }
   ConvertorFromPointer? convertor = _convertorCache[type];
   if (convertor != null) {
     return convertor(ptr);
-  } else if (arg is Pointer) {
-    return NSObject.fromPointer(arg.cast<Void>());
   }
-  return arg;
+  return NSObject.fromPointer(ptr);
 }
 
 Map<String, ConvertorFromPointer> _convertorCache = {};

@@ -35,7 +35,7 @@ _callback(
       .getCallbackFunctionOnTarget(targetPtr, functionName);
   if (function == null) {
     print("function $functionName not registered!!!");
-    return null;
+    return nullptr;
   }
   List args = [];
   for (var i = 0; i < argCount; i++) {

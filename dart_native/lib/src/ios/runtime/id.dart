@@ -15,7 +15,9 @@ class id implements NSObjectProtocol {
     if (_ptr == nullptr) {
       return null;
     }
+    /// There is no cache because the isa pointer can be changed through objc-runtime.
     Pointer<Void> isaPtr = object_getClass(_ptr);
+    /// There is a cache inside Class.
     return Class.fromPointer(isaPtr);
   }
 
@@ -29,7 +31,7 @@ class id implements NSObjectProtocol {
 
   id(this._ptr);
 
-  // NSObjectProtocol
+  /// NSObjectProtocol
 
   /// Returns the class object for the receiver’s superclass.
   Class get superclass {
