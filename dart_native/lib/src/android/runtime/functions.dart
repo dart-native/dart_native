@@ -10,6 +10,9 @@ typedef MethodNativeCallback = Void Function(
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
     Int32 argCount);
 
+typedef InvokeCallback = Void Function(
+    Pointer<Void> result, Pointer<Utf8> method, Pointer<Utf8> returnType);
+
 ///==============================================
 /// 创建native class
 /// input : className
@@ -48,7 +51,8 @@ final Pointer<Void> Function(
         Pointer<Pointer<Utf8>> typePtrs,
         int argCount,
         Pointer<Utf8> returnType,
-        int stringTypeBitmask)? nativeInvoke =
+        int stringTypeBitmask,
+        Pointer<NativeFunction<InvokeCallback>>)? nativeInvoke =
     nativeDylib
         .lookup<
             NativeFunction<
@@ -59,7 +63,8 @@ final Pointer<Void> Function(
                     Pointer<Pointer<Utf8>> typePtrs,
                     Int32 argCount,
                     Pointer<Utf8> returnType,
-                    Uint32 stringTypeBitmask)>>("invokeNativeMethod")
+                    Uint32 stringTypeBitmask,
+                    Pointer<NativeFunction<InvokeCallback>>)>>("invokeNativeMethod")
         .asFunction();
 
 ///

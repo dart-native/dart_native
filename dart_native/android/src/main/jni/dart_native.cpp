@@ -213,10 +213,18 @@ void *createTargetObject(char *targetClassName,
   return gObj;
 }
 
+typedef void(*InvokeCallback)(void *result,
+                              char *method,
+                              char *returnType);
 /// invoke native method
-void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
-                         char **dataTypes, int argumentCount, char *returnType,
-                         uint32_t stringTypeBitmask) {
+void *invokeNativeMethod(void *objPtr,
+                         char *methodName,
+                         void **arguments,
+                         char **dataTypes,
+                         int argumentCount,
+                         char *returnType,
+                         uint32_t stringTypeBitmask,
+                         InvokeCallback callback) {
   auto object = static_cast<jobject>(objPtr);
   if (!_objectInReference(object)) {
     /// maybe use cache pointer but jobject is release
@@ -240,6 +248,7 @@ void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
   auto it = map.find(*returnType);
   if (it == map.end()) {
     if (strcmp(returnType, "Ljava/lang/String;") == 0) {
+      dataTypes[argumentCount] = (char *) "java.lang.String";
       nativeInvokeResult =
           callNativeStringMethod(env, object, method, argValues);
     } else {
@@ -251,6 +260,7 @@ void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
           dataTypes[argumentCount] = (char *) "java.lang.String";
           nativeInvokeResult = convertToDartUtf16(env, (jstring) obj);
         } else {
+          dataTypes[argumentCount] = (char *) "java.lang.Object";
           jobject gObj = env->NewGlobalRef(obj);
           _addGlobalObject(gObj);
           nativeInvokeResult = gObj;
@@ -260,7 +270,13 @@ void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
       }
     }
   } else {
+    *dataTypes[argumentCount] = it->first;
     nativeInvokeResult = it->second(env, object, method, argValues);
+  }
+  if (callback != nullptr) {
+    callback(nativeInvokeResult, methodName, dataTypes[argumentCount]);
+    free(methodName);
+    free(dataTypes);
   }
   _deleteArgs(argValues, argumentCount, stringTypeBitmask);
   free(methodSignature);

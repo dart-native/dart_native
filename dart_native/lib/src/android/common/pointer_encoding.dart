@@ -120,12 +120,12 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
 }
 
 dynamic loadValueFromPointer(
-    Pointer<Void> ptr, String returnType, Pointer<Pointer<Utf8>> typePtr) {
+    Pointer<Void> ptr, String returnType) {
   if (returnType == "V") {
     return;
   }
 
-  if (typePtr.value.toDartString() == "java.lang.String") {
+  if (returnType == "java.lang.String") {
     return fromUtf16(ptr);
   }
 

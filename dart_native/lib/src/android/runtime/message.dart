@@ -41,6 +41,21 @@ Pointer<Void> newObject(String className, JObject object,
 }
 
 typedef void _AsyncMessageCallback(dynamic result);
+Map<Pointer<Utf8>, _AsyncMessageCallback> _invokeCallbackMap = Map();
+Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
+    Pointer.fromFunction(_invokeCallback);
+
+void _invokeCallback(
+    Pointer<Void> result, Pointer<Utf8> method, Pointer<Utf8> returnType) {
+  final callback = _invokeCallbackMap[method];
+  if (callback != null) {
+    dynamic value = loadValueFromPointer(result, returnType.toDartString());
+    callback(value);
+    _invokeCallbackMap.remove(method);
+  }
+  calloc.free(method);
+  calloc.free(returnType);
+}
 
 dynamic _invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
@@ -48,8 +63,15 @@ dynamic _invokeMethod(
   Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
   Pointer<Utf8> returnTypePtr = returnType.toNativeUtf8();
 
+  Pointer<NativeFunction<InvokeCallback>> callbackPtr = nullptr.cast();
+  if (callback != null) {
+    _invokeCallbackMap[methodNamePtr] = callback;
+    callbackPtr = _invokeCallbackPtr;
+  }
+
   NativeArguments nativeArguments =
       _parseNativeArguments(args, argsSignature: argsSignature);
+
   Pointer<Void> invokeMethodRet = nativeInvoke!(
       objPtr,
       methodNamePtr,
@@ -57,14 +79,22 @@ dynamic _invokeMethod(
       nativeArguments.typePointers,
       args?.length ?? 0,
       returnTypePtr,
-      nativeArguments.stringTypeBitmask);
+      nativeArguments.stringTypeBitmask,
+      callbackPtr);
 
-  dynamic result = loadValueFromPointer(invokeMethodRet, returnType,
-      nativeArguments.typePointers.elementAt(args?.length ?? 0));
+  dynamic result;
+  if (callback == null) {
+    result = loadValueFromPointer(
+        invokeMethodRet,
+        nativeArguments.typePointers
+            .elementAt(args?.length ?? 0)
+            .value
+            .toDartString());
 
-  nativeArguments.freePointers();
-  calloc.free(methodNamePtr);
-  calloc.free(returnTypePtr);
+    nativeArguments.freePointers();
+    calloc.free(methodNamePtr);
+    calloc.free(returnTypePtr);
+  }
   return result;
 }
 
