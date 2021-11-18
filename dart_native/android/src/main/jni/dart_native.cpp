@@ -10,6 +10,7 @@
 #include "dn_signature_helper.h"
 #include "dn_callback.h"
 #include "jni_object_ref.h"
+#include "dn_thread.h"
 
 extern "C" {
 
@@ -98,6 +99,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   env->DeleteLocalRef(pluginClass);
   env->DeleteLocalRef(classLoaderClass);
   env->DeleteLocalRef(strCls);
+
+  dartNative::TaskRunner::GetInstance();
   DNDebug("JNI_OnLoad finish");
   return JNI_VERSION_1_6;
 }
@@ -213,26 +216,41 @@ void *createTargetObject(char *targetClassName,
   return gObj;
 }
 
+/// dart notify run callback function
+void ExecuteCallback(Work *work_ptr) {
+  const Work work = *work_ptr;
+  work();
+  delete work_ptr;
+}
+
+/// notify dart run callback function
+bool NotifyDart(Dart_Port send_port, const Work *work) {
+  const auto work_addr = reinterpret_cast<intptr_t>(work);
+
+  Dart_CObject dart_object;
+  dart_object.type = Dart_CObject_kInt64;
+  dart_object.value.as_int64 = work_addr;
+
+  const bool result = Dart_PostCObject_DL(send_port, &dart_object);
+  if (!result) {
+    DNDebug("Native callback to Dart failed! Invalid port or isolate died");
+  }
+  return result;
+}
+
 typedef void(*InvokeCallback)(void *result,
                               char *method,
                               char *returnType);
-/// invoke native method
-void *invokeNativeMethod(void *objPtr,
-                         char *methodName,
-                         void **arguments,
-                         char **dataTypes,
-                         int argumentCount,
-                         char *returnType,
-                         uint32_t stringTypeBitmask,
-                         InvokeCallback callback) {
-  auto object = static_cast<jobject>(objPtr);
-  if (!_objectInReference(object)) {
-    /// maybe use cache pointer but jobject is release
-    DNError(
-        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
-    return nullptr;
-  }
 
+void *_doInvokeMethod(jobject object,
+                      char *methodName,
+                      void **arguments,
+                      char **dataTypes,
+                      int argumentCount,
+                      char *returnType,
+                      uint32_t stringTypeBitmask,
+                      void *callback,
+                      Dart_Port dartPort) {
   void *nativeInvokeResult = nullptr;
   JNIEnv *env = _getEnv();
   auto cls = env->GetObjectClass(object);
@@ -274,13 +292,87 @@ void *invokeNativeMethod(void *objPtr,
     nativeInvokeResult = it->second(env, object, method, argValues);
   }
   if (callback != nullptr) {
-    callback(nativeInvokeResult, methodName, dataTypes[argumentCount]);
-    free(methodName);
-    free(dataTypes);
+    sem_t sem;
+    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+    const Work work =
+        [callback, nativeInvokeResult, methodName, dataTypes, argumentCount, isSemInitSuccess, &sem] {
+          ((InvokeCallback) callback)(nativeInvokeResult,
+                                      methodName,
+                                      dataTypes[argumentCount]);
+          if (isSemInitSuccess) {
+            sem_post(&sem);
+          }
+        };
+    const Work *work_ptr = new Work(work);
+    /// check run result
+    bool notifyResult = NotifyDart(dartPort, work_ptr);
+    if (notifyResult) {
+      if (isSemInitSuccess) {
+        sem_wait(&sem);
+        sem_destroy(&sem);
+      }
+    }
   }
+
   _deleteArgs(argValues, argumentCount, stringTypeBitmask);
   free(methodSignature);
   return nativeInvokeResult;
+}
+
+/// invoke native method
+void *invokeNativeMethod(void *objPtr,
+                         char *methodName,
+                         void **arguments,
+                         char **dataTypes,
+                         int argumentCount,
+                         char *returnType,
+                         uint32_t stringTypeBitmask,
+                         void *callback,
+                         Dart_Port dartPort) {
+  auto object = static_cast<jobject>(objPtr);
+  if (!_objectInReference(object)) {
+    /// maybe use cache pointer but jobject is release
+    DNError(
+        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
+    return nullptr;
+  }
+
+  if (callback == nullptr) {
+    auto result = _doInvokeMethod(object,
+                                  methodName,
+                                  arguments,
+                                  dataTypes,
+                                  argumentCount,
+                                  returnType,
+                                  stringTypeBitmask,
+                                  nullptr,
+                                  dartPort);
+    return result;
+  }
+
+  dartNative::TaskRunner::GetInstance()->ScheduleInvokeTask(dartNative::TaskRunnerType::kNativeMain, [=] {
+    _doInvokeMethod(object,
+                    methodName,
+                    arguments,
+                    dataTypes,
+                    argumentCount,
+                    returnType,
+                    stringTypeBitmask,
+                    nullptr,
+                    dartPort);
+  });
+//  std::thread t(_doInvokeMethod,
+//                object,
+//                methodName,
+//                arguments,
+//                dataTypes,
+//                argumentCount,
+//                returnType,
+//                stringTypeBitmask,
+//                callback,
+//                dartPort);
+//  t.detach();
+  return nullptr;
 }
 
 /// register listener object by using java dynamic proxy
@@ -361,28 +453,6 @@ void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr) {
   _updateObjectReference(static_cast<jobject>(objPtr), true);
   intptr_t size = 8;
   Dart_NewWeakPersistentHandle_DL(h, objPtr, size, RunFinalizer);
-}
-
-/// dart notify run callback function
-void ExecuteCallback(Work *work_ptr) {
-  const Work work = *work_ptr;
-  work();
-  delete work_ptr;
-}
-
-/// notify dart run callback function
-bool NotifyDart(Dart_Port send_port, const Work *work) {
-  const auto work_addr = reinterpret_cast<intptr_t>(work);
-
-  Dart_CObject dart_object;
-  dart_object.type = Dart_CObject_kInt64;
-  dart_object.value.as_int64 = work_addr;
-
-  const bool result = Dart_PostCObject_DL(send_port, &dart_object);
-  if (!result) {
-    DNDebug("Native callback to Dart failed! Invalid port or isolate died");
-  }
-  return result;
 }
 
 JNIEXPORT jobject JNICALL

@@ -52,7 +52,8 @@ final Pointer<Void> Function(
         int argCount,
         Pointer<Utf8> returnType,
         int stringTypeBitmask,
-        Pointer<NativeFunction<InvokeCallback>>)? nativeInvoke =
+        Pointer<NativeFunction<InvokeCallback>>,
+        int)? nativeInvoke =
     nativeDylib
         .lookup<
             NativeFunction<
@@ -64,7 +65,8 @@ final Pointer<Void> Function(
                     Int32 argCount,
                     Pointer<Utf8> returnType,
                     Uint32 stringTypeBitmask,
-                    Pointer<NativeFunction<InvokeCallback>>)>>("invokeNativeMethod")
+                    Pointer<NativeFunction<InvokeCallback>>,
+                    Int64)>>("invokeNativeMethod")
         .asFunction();
 
 ///

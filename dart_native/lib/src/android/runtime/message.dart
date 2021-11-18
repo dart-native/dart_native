@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'package:dart_native/src/android/common/callback_manager.dart';
 import 'package:ffi/ffi.dart';
 
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
@@ -47,14 +48,13 @@ Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
 
 void _invokeCallback(
     Pointer<Void> result, Pointer<Utf8> method, Pointer<Utf8> returnType) {
+  print("flutter call");
   final callback = _invokeCallbackMap[method];
   if (callback != null) {
     dynamic value = loadValueFromPointer(result, returnType.toDartString());
     callback(value);
     _invokeCallbackMap.remove(method);
   }
-  calloc.free(method);
-  calloc.free(returnType);
 }
 
 dynamic _invokeMethod(
@@ -80,7 +80,8 @@ dynamic _invokeMethod(
       args?.length ?? 0,
       returnTypePtr,
       nativeArguments.stringTypeBitmask,
-      callbackPtr);
+      callbackPtr,
+      nativePort);
 
   dynamic result;
   if (callback == null) {
