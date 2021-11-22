@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
-import 'package:ffi/ffi.dart';
 
 /// Stands for `List` in Android.
 const String cls_list = "java/util/List";
@@ -55,12 +54,10 @@ Pointer<Void> _new(dynamic value, String clsName) {
 
     JObject nativeList = JObject(clsName);
 
-    Pointer<Utf8> argSignature = "Ljava/lang/Object;".toNativeUtf8();
     for (var i = 0; i < value.length; i++) {
       nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z",
-          argsSignature: [argSignature]);
+          assignedSignature: ["Ljava/lang/Object;"]);
     }
-    calloc.free(argSignature);
     return nativeList.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing JList.';

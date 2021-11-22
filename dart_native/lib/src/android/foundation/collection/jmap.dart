@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
-import 'package:ffi/ffi.dart';
 
 /// Stands for `Map` in Android.
 const String cls_map = "java/util/Map";
@@ -24,11 +23,10 @@ class JMap<K, V> extends JSubclass<Map> {
         .raw;
     Map temp = {};
     String itemType = "";
-    Pointer<Utf8> argSignature = "Ljava/lang/Object;".toNativeUtf8();
     for (var key in keySet) {
       dynamic item = invoke(
           "get", [boxingWrapperClass(key)], "Ljava/lang/Object;",
-          argsSignature: [argSignature]);
+          assignedSignature: ["Ljava/lang/Object;"]);
       if (valueCreator != null) {
         temp[key] = valueCreator(item);
         continue;
@@ -42,7 +40,6 @@ class JMap<K, V> extends JSubclass<Map> {
       }
       temp[key] = unBoxingWrapperClass(item, itemType);
     }
-    calloc.free(argSignature);
     raw = temp;
   }
 }
@@ -66,15 +63,13 @@ Pointer<Void> _new(dynamic value, String clsName) {
     if (clsName == cls_map) clsName = cls_hash_map;
 
     JObject nativeMap = JObject(clsName);
-    Pointer<Utf8> argSignature = "Ljava/lang/Object;".toNativeUtf8();
     value.forEach((key, value) {
       nativeMap.invoke(
           "put",
           [boxingWrapperClass(key), boxingWrapperClass(value)],
           "Ljava/lang/Object;",
-          argsSignature: [argSignature, argSignature]);
+          assignedSignature: ["Ljava/lang/Object;", "Ljava/lang/Object;"]);
     });
-    calloc.free(argSignature);
     return nativeMap.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing JList.';

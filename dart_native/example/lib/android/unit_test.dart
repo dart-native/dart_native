@@ -2,6 +2,7 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
+import 'package:dart_native_example/android/runtimestub_async.dart';
 
 import 'delegate_stub.dart';
 import 'package:dart_native_example/dn_unit_test.dart';
@@ -139,6 +140,9 @@ testAndroid(RuntimeStub stub) async {
   }
 
   stub.setDelegateListener(DelegateStub());
+
+  print(
+      "getStringAsync ${await stub.getStringAsync('This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖')}");
 }
 
 int currentTimeMillis() {
