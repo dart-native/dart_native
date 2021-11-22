@@ -252,7 +252,8 @@ void *_doInvokeMethod(jobject object,
                       char *returnType,
                       uint32_t stringTypeBitmask,
                       void *callback,
-                      Dart_Port dartPort) {
+                      Dart_Port dartPort,
+                      TaskRunnerType runnerType) {
   void *nativeInvokeResult = nullptr;
   JNIEnv *env = _getEnv();
   auto cls = env->GetObjectClass(object);
@@ -294,24 +295,30 @@ void *_doInvokeMethod(jobject object,
     nativeInvokeResult = it->second(env, object, method, argValues);
   }
   if (callback != nullptr) {
-    sem_t sem;
-    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
-    const Work work =
-        [callback, nativeInvokeResult, methodName, dataTypes, argumentCount, isSemInitSuccess, &sem] {
-          ((InvokeCallback) callback)(nativeInvokeResult,
-                                      methodName,
-                                      dataTypes[argumentCount]);
-          if (isSemInitSuccess) {
-            sem_post(&sem);
-          }
-        };
-    const Work *work_ptr = new Work(work);
-    /// check run result
-    bool notifyResult = NotifyDart(dartPort, work_ptr);
-    if (notifyResult) {
-      if (isSemInitSuccess) {
-        sem_wait(&sem);
-        sem_destroy(&sem);
+    if (runnerType == TaskRunnerType::kFlutterUI) {
+      ((InvokeCallback) callback)(nativeInvokeResult,
+                                  methodName,
+                                  dataTypes[argumentCount]);
+    } else {
+      sem_t sem;
+      bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+      const Work work =
+          [callback, nativeInvokeResult, methodName, dataTypes, argumentCount, isSemInitSuccess, &sem] {
+            ((InvokeCallback) callback)(nativeInvokeResult,
+                                        methodName,
+                                        dataTypes[argumentCount]);
+            if (isSemInitSuccess) {
+              sem_post(&sem);
+            }
+          };
+      const Work *work_ptr = new Work(work);
+      /// check run result
+      bool notifyResult = NotifyDart(dartPort, work_ptr);
+      if (notifyResult) {
+        if (isSemInitSuccess) {
+          sem_wait(&sem);
+          sem_destroy(&sem);
+        }
       }
     }
   }
@@ -353,7 +360,8 @@ void *invokeNativeMethod(void *objPtr,
                            returnType,
                            stringTypeBitmask,
                            callback,
-                           dartPort);
+                           dartPort,
+                           type);
   }
 
   gTaskRunner->ScheduleInvokeTask(type, [=] {
@@ -365,7 +373,8 @@ void *invokeNativeMethod(void *objPtr,
                     returnType,
                     stringTypeBitmask,
                     callback,
-                    dartPort);
+                    dartPort,
+                    type);
   });
   return nullptr;
 }
