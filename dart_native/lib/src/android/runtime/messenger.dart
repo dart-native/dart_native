@@ -36,7 +36,7 @@ Pointer<Void> newObject(String className, JObject object,
   }
 
   if (pointer == null) {
-    return _newNativeObject(className);
+    return _newNativeObject(className, args: args);
   }
   return pointer;
 }
