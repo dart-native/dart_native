@@ -5,13 +5,18 @@
 #include <android/looper.h>
 #include <array>
 
-namespace dartNative {
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+typedef std::function<void()> InvokeTask;
 
 /**
  * @brief When invoke with async method, dart can set run thread.
  *        [kFlutterUI] is default
  * */
-enum class TaskRunnerType {
+enum TaskRunnerType {
   /// invoke method run on flutter UI thread
   kFlutterUI,
 
@@ -28,6 +33,8 @@ class TaskRunner {
 
   TaskRunner();
 
+  ~TaskRunner();
+
   void ScheduleInvokeTask(TaskRunnerType type, std::function<void()> invoke);
 
  private:
@@ -37,7 +44,8 @@ class TaskRunner {
 
   ALooper* main_looper_ = nullptr;
   std::array<int, 2> fd_;
-  int messagePipe[2];
 };
-
+#ifdef __cplusplus
 }
+#endif
+

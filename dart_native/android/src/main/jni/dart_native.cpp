@@ -28,6 +28,8 @@ static std::map<jobject, int> objectGlobalReference;
 /// protect objectGlobalReference
 std::mutex globalReferenceMtx;
 
+static std::unique_ptr<TaskRunner> gTaskRunner;
+
 void _addGlobalObject(jobject globalObject) {
   std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
   objectGlobalReference[globalObject] = 0;
@@ -100,7 +102,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   env->DeleteLocalRef(classLoaderClass);
   env->DeleteLocalRef(strCls);
 
-  dartNative::TaskRunner::GetInstance();
+  gTaskRunner = std::make_unique<TaskRunner>();
   DNDebug("JNI_OnLoad finish");
   return JNI_VERSION_1_6;
 }
@@ -328,7 +330,8 @@ void *invokeNativeMethod(void *objPtr,
                          char *returnType,
                          uint32_t stringTypeBitmask,
                          void *callback,
-                         Dart_Port dartPort) {
+                         Dart_Port dartPort,
+                         int thread) {
   auto object = static_cast<jobject>(objPtr);
   if (!_objectInReference(object)) {
     /// maybe use cache pointer but jobject is release
@@ -336,21 +339,20 @@ void *invokeNativeMethod(void *objPtr,
         "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
     return nullptr;
   }
-
-  if (callback == nullptr) {
-    auto result = _doInvokeMethod(object,
-                                  methodName,
-                                  arguments,
-                                  dataTypes,
-                                  argumentCount,
-                                  returnType,
-                                  stringTypeBitmask,
-                                  nullptr,
-                                  dartPort);
-    return result;
+  auto type = TaskRunnerType(thread);
+  if (type == TaskRunnerType::kFlutterUI) {
+    return _doInvokeMethod(object,
+                           methodName,
+                           arguments,
+                           dataTypes,
+                           argumentCount,
+                           returnType,
+                           stringTypeBitmask,
+                           callback,
+                           dartPort);
   }
 
-  dartNative::TaskRunner::GetInstance()->ScheduleInvokeTask(dartNative::TaskRunnerType::kNativeMain, [=] {
+  gTaskRunner->ScheduleInvokeTask(type, [=] {
     _doInvokeMethod(object,
                     methodName,
                     arguments,
@@ -358,20 +360,9 @@ void *invokeNativeMethod(void *objPtr,
                     argumentCount,
                     returnType,
                     stringTypeBitmask,
-                    nullptr,
+                    callback,
                     dartPort);
   });
-//  std::thread t(_doInvokeMethod,
-//                object,
-//                methodName,
-//                arguments,
-//                dataTypes,
-//                argumentCount,
-//                returnType,
-//                stringTypeBitmask,
-//                callback,
-//                dartPort);
-//  t.detach();
   return nullptr;
 }
 

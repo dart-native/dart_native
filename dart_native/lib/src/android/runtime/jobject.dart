@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
-import 'package:dart_native/src/android/runtime/message.dart';
+import 'package:dart_native/src/android/runtime/messenger.dart';
 
 import 'jclass.dart';
 
@@ -12,6 +12,19 @@ void bindLifeCycleWithNative(JObject? obj) {
   } else {
     print('pass object to native failed! address=${obj?.pointer}');
   }
+}
+
+/// When invoke with async method, dart can set run thread.
+/// [FlutterUI] is default.
+enum Thread {
+  /// Flutter UI thread.
+  FlutterUI,
+
+  /// Native main thread.
+  MainThread,
+
+  /// Native sub thread.
+  SubThread
 }
 
 class JObject extends JClass {
@@ -41,9 +54,9 @@ class JObject extends JClass {
   }
 
   Future<dynamic> invokeAsync(String methodName, List? args, String returnType,
-      {List? argsSignature}) async {
+      {List? argsSignature, Thread thread = Thread.FlutterUI}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
-        argsSignature: argsSignature);
+        argsSignature: argsSignature, thread: thread);
   }
 
   @override

@@ -2,16 +2,14 @@
 // Created by Hui on 16/11/21.
 //
 #include <unistd.h>
+#include <thread>
 #import "dn_thread.h"
 #import "dn_log.h"
 
-namespace dartNative {
-
-TaskRunner *runner = nullptr;
+const static TaskRunner *runner = nullptr;
 
 /// this will be called on main thread
 static int LooperCallback(int fd, int events, void* data) {
-  DNDebug("LooperCallback");
   std::function<void()> *invoke = nullptr;
   if (read(fd, &invoke, sizeof(invoke)) != -1) {
     std::unique_ptr<std::function<void()>> pl{invoke};
@@ -44,6 +42,15 @@ TaskRunner::TaskRunner() {
   }
 }
 
+TaskRunner::~TaskRunner() {
+  if (main_looper_) {
+    ALooper_removeFd(main_looper_, fd_[0]);
+    ALooper_release(main_looper_);
+    close(fd_[0]);
+    close(fd_[1]);
+  }
+}
+
 void TaskRunner::ScheduleInvokeTask(TaskRunnerType type, std::function<void()> invoke) {
   switch (type) {
     case TaskRunnerType::kNativeMain:
@@ -52,45 +59,33 @@ void TaskRunner::ScheduleInvokeTask(TaskRunnerType type, std::function<void()> i
     case TaskRunnerType::kSub:
       ScheduleTaskOnSubThread(std::move(invoke));
       break;
+    case TaskRunnerType::kFlutterUI:
     default:
-      invoke();
       break;
   }
-
 }
 
 void TaskRunner::ScheduleTaskOnMainThread(std::function<void()> invoke) {
-  DNDebug("ScheduleTaskOnMainThread start %d", main_looper_ == nullptr);
-//  DNDebug("%d", fd_.size());
-//  DNDebug("%d", fd_[0]);
-//  DNDebug("%d", fd_[1]);
-//  if (IsMainThread()) {
-//    DNDebug("ScheduleTaskOnMainThread true %d");
-//    invoke();
-//  } else {
-//    DNDebug("ScheduleTaskOnMainThread faslse %d", invoke == nullptr);
-//    auto cb_ptr = std::make_unique<std::function<void()>>(std::move(invoke));
-//  DNDebug("ScheduleTaskOnMainThread cb_ptr %d", invoke == nullptr);
-//    auto raw_cb_ptr = cb_ptr.release();
-//  DNDebug("ScheduleTaskOnMainThread release %d", invoke == nullptr);
-    if (write(fd_[1], &invoke, sizeof(invoke)) == -1) {
+  if (IsMainThread()) {
+    invoke();
+  } else {
+    auto cb_ptr = std::make_unique<std::function<void()>>(std::move(invoke));
+    auto raw_cb_ptr = cb_ptr.release();
+    if (write(fd_[1], &raw_cb_ptr, sizeof(raw_cb_ptr)) == -1) {
       DNError("ScheduleMainThreadTasks invoke error");
     }
-//  }
-
+  }
 }
+
 void TaskRunner::ScheduleTaskOnSubThread(std::function<void()> invoke) {
-
+  std::thread subThread(invoke);
+  subThread.detach();
 }
+
 bool TaskRunner::IsMainThread() const {
-  DNDebug("IsMainThread %d", main_looper_ == nullptr);
   auto current_looper = ALooper_forThread();
   if (current_looper == nullptr) {
-    DNDebug("current_looper is null");
     return false;
   }
-  DNDebug("current_looper is %d", main_looper_ == nullptr);
   return current_looper == main_looper_;
-}
-
 }

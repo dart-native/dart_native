@@ -48,7 +48,6 @@ Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
 
 void _invokeCallback(
     Pointer<Void> result, Pointer<Utf8> method, Pointer<Utf8> returnType) {
-  print("flutter call");
   final callback = _invokeCallbackMap[method];
   if (callback != null) {
     dynamic value = loadValueFromPointer(result, returnType.toDartString());
@@ -59,7 +58,9 @@ void _invokeCallback(
 
 dynamic _invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List? argsSignature, _AsyncMessageCallback? callback}) {
+    {List? argsSignature,
+    Thread thread = Thread.FlutterUI,
+    _AsyncMessageCallback? callback}) {
   Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
   Pointer<Utf8> returnTypePtr = returnType.toNativeUtf8();
 
@@ -81,7 +82,8 @@ dynamic _invokeMethod(
       returnTypePtr,
       nativeArguments.stringTypeBitmask,
       callbackPtr,
-      nativePort);
+      nativePort,
+      thread.index);
 
   dynamic result;
   if (callback == null) {
@@ -108,10 +110,10 @@ dynamic invokeMethod(
 
 Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List? argsSignature}) async {
+    {List? argsSignature, Thread thread = Thread.FlutterUI}) async {
   final completer = Completer<dynamic>();
   _invokeMethod(objPtr, methodName, args, returnType,
-      argsSignature: argsSignature, callback: (dynamic result) {
+      argsSignature: argsSignature, thread: thread, callback: (dynamic result) {
     completer.complete(result);
   });
   return completer.future;
