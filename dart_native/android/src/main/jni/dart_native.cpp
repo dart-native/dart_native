@@ -253,7 +253,7 @@ void *_doInvokeMethod(jobject object,
                       uint32_t stringTypeBitmask,
                       void *callback,
                       Dart_Port dartPort,
-                      TaskRunnerType runnerType) {
+                      TaskThread thread) {
   void *nativeInvokeResult = nullptr;
   JNIEnv *env = _getEnv();
   auto cls = env->GetObjectClass(object);
@@ -295,7 +295,7 @@ void *_doInvokeMethod(jobject object,
     nativeInvokeResult = it->second(env, object, method, argValues);
   }
   if (callback != nullptr) {
-    if (runnerType == TaskRunnerType::kFlutterUI) {
+    if (thread == TaskThread::kFlutterUI) {
       ((InvokeCallback) callback)(nativeInvokeResult,
                                   methodName,
                                   dataTypes[argumentCount]);
@@ -350,8 +350,8 @@ void *invokeNativeMethod(void *objPtr,
         "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
     return nullptr;
   }
-  auto type = TaskRunnerType(thread);
-  if (type == TaskRunnerType::kFlutterUI) {
+  auto type = TaskThread(thread);
+  if (type == TaskThread::kFlutterUI) {
     return _doInvokeMethod(object,
                            methodName,
                            arguments,

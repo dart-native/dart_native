@@ -146,7 +146,7 @@ NativeArguments _parseNativeArguments(List? args,
       /// check extension signature
       Pointer<Utf8>? signature;
       if (argsSignature != null) {
-        signature = argsSignature[i] is Pointer<Utf8> ? null : argsSignature[i];
+        signature = argsSignature[i];
       }
 
       /// check string

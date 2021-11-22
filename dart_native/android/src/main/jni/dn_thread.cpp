@@ -6,8 +6,6 @@
 #import "dn_thread.h"
 #import "dn_log.h"
 
-const static TaskRunner *runner = nullptr;
-
 /// this will be called on main thread
 static int LooperCallback(int fd, int events, void* data) {
   std::function<void()> *invoke = nullptr;
@@ -16,13 +14,6 @@ static int LooperCallback(int fd, int events, void* data) {
     (*pl)();
   }
   return 1;
-}
-
-TaskRunner *TaskRunner::GetInstance() {
-  if (runner == nullptr) {
-    runner = new TaskRunner();
-  }
-  return nullptr;
 }
 
 TaskRunner::TaskRunner() {
@@ -51,15 +42,15 @@ TaskRunner::~TaskRunner() {
   }
 }
 
-void TaskRunner::ScheduleInvokeTask(TaskRunnerType type, std::function<void()> invoke) {
+void TaskRunner::ScheduleInvokeTask(TaskThread type, std::function<void()> invoke) {
   switch (type) {
-    case TaskRunnerType::kNativeMain:
+    case TaskThread::kNativeMain:
       ScheduleTaskOnMainThread(std::move(invoke));
       break;
-    case TaskRunnerType::kSub:
+    case TaskThread::kSub:
       ScheduleTaskOnSubThread(std::move(invoke));
       break;
-    case TaskRunnerType::kFlutterUI:
+    case TaskThread::kFlutterUI:
     default:
       break;
   }
