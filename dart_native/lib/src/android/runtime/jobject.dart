@@ -49,16 +49,16 @@ class JObject extends JClass {
   }
 
   dynamic invoke(String methodName, List? args, String returnType,
-      {List<Pointer<Utf8>>? argsSignature}) {
+      {List<String>? assignedSignature}) {
     return invokeMethod(_ptr.cast<Void>(), methodName, args, returnType,
-        argsSignature: argsSignature);
+        assignedSignature: assignedSignature);
   }
 
   Future<dynamic> invokeAsync(String methodName, List? args, String returnType,
-      {List<Pointer<Utf8>>? argsSignature,
+      {List<String>? assignedSignature,
       Thread thread = Thread.FlutterUI}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
-        argsSignature: argsSignature, thread: thread);
+        assignedSignature: assignedSignature, thread: thread);
   }
 
   @override

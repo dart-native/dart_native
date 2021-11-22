@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
-import 'package:ffi/ffi.dart';
 
 /// Stands for `Set` in Android.
 const String cls_set = "java/util/Set";
@@ -43,12 +42,10 @@ Pointer<Void> _new(dynamic value, String clsName) {
 
     JObject nativeSet = JObject(clsName);
 
-    Pointer<Utf8> argSignature = "Ljava/lang/Object;".toNativeUtf8();
     for (var element in value) {
       nativeSet.invoke("add", [boxingWrapperClass(element)], "Z",
-          argsSignature: [argSignature]);
+          assignedSignature: ["Ljava/lang/Object;"]);
     }
-    calloc.free(argSignature);
     return nativeSet.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing JSet.';

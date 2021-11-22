@@ -43,6 +43,7 @@ Pointer<Void> newObject(String className, JObject object,
 
 typedef void _AsyncMessageCallback(dynamic result);
 Map<Pointer<Utf8>, _AsyncMessageCallback> _invokeCallbackMap = Map();
+Map<Pointer<Utf8>, List<Pointer<Utf8>>> _assignedSignatureMap = Map();
 Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
     Pointer.fromFunction(_invokeCallback);
 
@@ -54,11 +55,17 @@ void _invokeCallback(
     callback(value);
     _invokeCallbackMap.remove(method);
   }
+
+  /// remove assigned signature
+  _assignedSignatureMap[method]?.forEach((ptr) {
+    calloc.free(ptr);
+  });
+  _assignedSignatureMap.remove(method);
 }
 
 dynamic _invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<Pointer<Utf8>>? argsSignature,
+    {List<String>? assignedSignature,
     Thread thread = Thread.FlutterUI,
     _AsyncMessageCallback? callback}) {
   Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
@@ -70,8 +77,21 @@ dynamic _invokeMethod(
     callbackPtr = _invokeCallbackPtr;
   }
 
+  /// convert assigned signature as pointer<Utf8>
+  List<Pointer<Utf8>>? assignedSignaturePtr;
+  if ((assignedSignature?.length ?? 0) > 0) {
+    assignedSignaturePtr = [];
+    assignedSignature!.forEach((signature) {
+      assignedSignaturePtr!.add(signature.toNativeUtf8());
+    });
+
+    if (callback != null) {
+      _assignedSignatureMap[methodNamePtr] = assignedSignaturePtr;
+    }
+  }
+
   NativeArguments nativeArguments =
-      _parseNativeArguments(args, argsSignature: argsSignature);
+      _parseNativeArguments(args, argsSignature: assignedSignaturePtr);
 
   Pointer<Void> invokeMethodRet = nativeInvoke!(
       objPtr,
@@ -93,24 +113,27 @@ dynamic _invokeMethod(
             .elementAt(args?.length ?? 0)
             .value
             .toDartString());
+    assignedSignaturePtr?.forEach((ptr) {
+      calloc.free(ptr);
+    });
   }
   return result;
 }
 
 dynamic invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<Pointer<Utf8>>? argsSignature}) {
+    {List<String>? assignedSignature}) {
   return _invokeMethod(objPtr, methodName, args, returnType,
-      argsSignature: argsSignature);
+      assignedSignature: assignedSignature);
 }
 
 Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<Pointer<Utf8>>? argsSignature,
+    {List<String>? assignedSignature,
     Thread thread = Thread.FlutterUI}) async {
   final completer = Completer<dynamic>();
   _invokeMethod(objPtr, methodName, args, returnType,
-      argsSignature: argsSignature, thread: thread, callback: (dynamic result) {
+      assignedSignature: assignedSignature, thread: thread, callback: (dynamic result) {
     completer.complete(result);
   });
   return completer.future;

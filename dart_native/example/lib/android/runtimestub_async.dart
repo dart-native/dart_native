@@ -4,7 +4,7 @@ import 'package:dart_native_example/android/runtimestub.dart';
 extension RuntimeStubAsync on RuntimeStub {
   Future<String> getStringAsync(String s) async {
     return invokeAsync('getString', [s], "Ljava/lang/String;",
-            thread: Thread.SubThread)
+            thread: Thread.MainThread)
         .then((value) => value);
   }
 }
