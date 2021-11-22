@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
+import 'package:ffi/ffi.dart';
 
 import 'jclass.dart';
 
@@ -48,13 +49,14 @@ class JObject extends JClass {
   }
 
   dynamic invoke(String methodName, List? args, String returnType,
-      {List? argsSignature}) {
+      {List<Pointer<Utf8>>? argsSignature}) {
     return invokeMethod(_ptr.cast<Void>(), methodName, args, returnType,
         argsSignature: argsSignature);
   }
 
   Future<dynamic> invokeAsync(String methodName, List? args, String returnType,
-      {List? argsSignature, Thread thread = Thread.FlutterUI}) async {
+      {List<Pointer<Utf8>>? argsSignature,
+      Thread thread = Thread.FlutterUI}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
         argsSignature: argsSignature, thread: thread);
   }

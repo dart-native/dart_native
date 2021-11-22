@@ -58,7 +58,7 @@ void _invokeCallback(
 
 dynamic _invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List? argsSignature,
+    {List<Pointer<Utf8>>? argsSignature,
     Thread thread = Thread.FlutterUI,
     _AsyncMessageCallback? callback}) {
   Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
@@ -93,24 +93,21 @@ dynamic _invokeMethod(
             .elementAt(args?.length ?? 0)
             .value
             .toDartString());
-
-    nativeArguments.freePointers();
-    calloc.free(methodNamePtr);
-    calloc.free(returnTypePtr);
   }
   return result;
 }
 
 dynamic invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List? argsSignature}) {
+    {List<Pointer<Utf8>>? argsSignature}) {
   return _invokeMethod(objPtr, methodName, args, returnType,
       argsSignature: argsSignature);
 }
 
 Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List? argsSignature, Thread thread = Thread.FlutterUI}) async {
+    {List<Pointer<Utf8>>? argsSignature,
+    Thread thread = Thread.FlutterUI}) async {
   final completer = Completer<dynamic>();
   _invokeMethod(objPtr, methodName, args, returnType,
       argsSignature: argsSignature, thread: thread, callback: (dynamic result) {
@@ -119,7 +116,8 @@ Future<dynamic> invokeMethodAsync(
   return completer.future;
 }
 
-NativeArguments _parseNativeArguments(List? args, {List? argsSignature}) {
+NativeArguments _parseNativeArguments(List? args,
+    {List<Pointer<Utf8>>? argsSignature}) {
   Pointer<Pointer<Void>> pointers = nullptr.cast();
   Pointer<Pointer<Utf8>> typePointers =
       calloc<Pointer<Utf8>>((args?.length ?? 0) + 1);
@@ -148,11 +146,7 @@ NativeArguments _parseNativeArguments(List? args, {List? argsSignature}) {
       /// check extension signature
       Pointer<Utf8>? signature;
       if (argsSignature != null) {
-        if (argsSignature[i] is String) {
-          signature = argsSignature[i].toNativeUtf8();
-        } else if (argsSignature[i] is Pointer<Utf8>) {
-          signature = argsSignature[i];
-        }
+        signature = argsSignature[i] is Pointer<Utf8> ? null : argsSignature[i];
       }
 
       /// check string

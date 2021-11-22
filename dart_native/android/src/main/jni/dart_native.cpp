@@ -317,6 +317,10 @@ void *_doInvokeMethod(jobject object,
   }
 
   _deleteArgs(argValues, argumentCount, stringTypeBitmask);
+  free(methodName);
+  free(returnType);
+  free(arguments);
+  free(dataTypes);
   free(methodSignature);
   return nativeInvokeResult;
 }
