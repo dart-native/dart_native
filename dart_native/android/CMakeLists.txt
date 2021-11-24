@@ -22,7 +22,8 @@ add_library( # Specifies the name of the library.
         src/main/jni/dn_type_convert.cpp
         src/main/jni/dn_method_call.cpp
         src/main/jni/dn_signature_helper.cpp
-        src/main/jni/dn_callback.cpp)
+        src/main/jni/dn_callback.cpp
+        src/main/jni/dn_thread.cpp)
 
 find_library( # Sets the name of the path variable.
         log-lib
@@ -33,7 +34,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         dart_native
-
+        -landroid
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})

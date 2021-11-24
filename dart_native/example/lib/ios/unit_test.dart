@@ -8,6 +8,7 @@ import 'package:dart_native_example/ios/delegatestub.dart';
 import 'package:dart_native_example/ios/runtimeson.dart';
 import 'package:dart_native_example/ios/runtimestub_async.dart';
 import 'package:dart_native_example/ios/runtimestub.dart';
+import 'package:dart_native_example/ios/swiftstub.dart';
 
 /// IOS unit test implementation.
 class DNIOSUnitTest with DNUnitTestBase {
@@ -174,6 +175,14 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
       .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
       .then((currentThread) {
     print('currentThread: ${currentThread.description}');
+  });
+
+  String swiftResult = SwiftStub.instance.fooString('Hello');
+  print('Swift fooString result:$swiftResult');
+
+  SwiftStub.instance.fooClosure((NSString hello) {
+    print('Swift fooBlock arg:$hello');
+    return NSString('DartNative');
   });
 
   NSNotificationCenter.defaultCenter.addObserver(

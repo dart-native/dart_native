@@ -10,6 +10,7 @@
 #include "dn_signature_helper.h"
 #include "dn_callback.h"
 #include "jni_object_ref.h"
+#include "dn_thread.h"
 
 extern "C" {
 
@@ -26,6 +27,8 @@ static std::map<jobject, int> objectGlobalReference;
 
 /// protect objectGlobalReference
 std::mutex globalReferenceMtx;
+
+static std::unique_ptr<TaskRunner> gTaskRunner;
 
 void _addGlobalObject(jobject globalObject) {
   std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
@@ -98,6 +101,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   env->DeleteLocalRef(pluginClass);
   env->DeleteLocalRef(classLoaderClass);
   env->DeleteLocalRef(strCls);
+
+  gTaskRunner = std::make_unique<TaskRunner>();
   DNDebug("JNI_OnLoad finish");
   return JNI_VERSION_1_6;
 }
@@ -213,18 +218,42 @@ void *createTargetObject(char *targetClassName,
   return gObj;
 }
 
-/// invoke native method
-void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
-                         char **dataTypes, int argumentCount, char *returnType,
-                         uint32_t stringTypeBitmask) {
-  auto object = static_cast<jobject>(objPtr);
-  if (!_objectInReference(object)) {
-    /// maybe use cache pointer but jobject is release
-    DNError(
-        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
-    return nullptr;
-  }
+/// dart notify run callback function
+void ExecuteCallback(Work *work_ptr) {
+  const Work work = *work_ptr;
+  work();
+  delete work_ptr;
+}
 
+/// notify dart run callback function
+bool NotifyDart(Dart_Port send_port, const Work *work) {
+  const auto work_addr = reinterpret_cast<intptr_t>(work);
+
+  Dart_CObject dart_object;
+  dart_object.type = Dart_CObject_kInt64;
+  dart_object.value.as_int64 = work_addr;
+
+  const bool result = Dart_PostCObject_DL(send_port, &dart_object);
+  if (!result) {
+    DNDebug("Native callback to Dart failed! Invalid port or isolate died");
+  }
+  return result;
+}
+
+typedef void(*InvokeCallback)(void *result,
+                              char *method,
+                              char *returnType);
+
+void *_doInvokeMethod(jobject object,
+                      char *methodName,
+                      void **arguments,
+                      char **dataTypes,
+                      int argumentCount,
+                      char *returnType,
+                      uint32_t stringTypeBitmask,
+                      void *callback,
+                      Dart_Port dartPort,
+                      TaskThread thread) {
   void *nativeInvokeResult = nullptr;
   JNIEnv *env = _getEnv();
   auto cls = env->GetObjectClass(object);
@@ -240,6 +269,7 @@ void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
   auto it = map.find(*returnType);
   if (it == map.end()) {
     if (strcmp(returnType, "Ljava/lang/String;") == 0) {
+      dataTypes[argumentCount] = (char *) "java.lang.String";
       nativeInvokeResult =
           callNativeStringMethod(env, object, method, argValues);
     } else {
@@ -251,6 +281,7 @@ void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
           dataTypes[argumentCount] = (char *) "java.lang.String";
           nativeInvokeResult = convertToDartUtf16(env, (jstring) obj);
         } else {
+          dataTypes[argumentCount] = (char *) "java.lang.Object";
           jobject gObj = env->NewGlobalRef(obj);
           _addGlobalObject(gObj);
           nativeInvokeResult = gObj;
@@ -260,11 +291,92 @@ void *invokeNativeMethod(void *objPtr, char *methodName, void **arguments,
       }
     }
   } else {
+    *dataTypes[argumentCount] = it->first;
     nativeInvokeResult = it->second(env, object, method, argValues);
   }
+  if (callback != nullptr) {
+    if (thread == TaskThread::kFlutterUI) {
+      ((InvokeCallback) callback)(nativeInvokeResult,
+                                  methodName,
+                                  dataTypes[argumentCount]);
+    } else {
+      sem_t sem;
+      bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+      const Work work =
+          [callback, nativeInvokeResult, methodName, dataTypes, argumentCount, isSemInitSuccess, &sem] {
+            ((InvokeCallback) callback)(nativeInvokeResult,
+                                        methodName,
+                                        dataTypes[argumentCount]);
+            if (isSemInitSuccess) {
+              sem_post(&sem);
+            }
+          };
+      const Work *work_ptr = new Work(work);
+      /// check run result
+      bool notifyResult = NotifyDart(dartPort, work_ptr);
+      if (notifyResult) {
+        if (isSemInitSuccess) {
+          sem_wait(&sem);
+          sem_destroy(&sem);
+        }
+      }
+    }
+  }
+
   _deleteArgs(argValues, argumentCount, stringTypeBitmask);
+  free(methodName);
+  free(returnType);
+  free(arguments);
+  free(dataTypes);
   free(methodSignature);
   return nativeInvokeResult;
+}
+
+/// invoke native method
+void *invokeNativeMethod(void *objPtr,
+                         char *methodName,
+                         void **arguments,
+                         char **dataTypes,
+                         int argumentCount,
+                         char *returnType,
+                         uint32_t stringTypeBitmask,
+                         void *callback,
+                         Dart_Port dartPort,
+                         int thread) {
+  auto object = static_cast<jobject>(objPtr);
+  if (!_objectInReference(object)) {
+    /// maybe use cache pointer but jobject is release
+    DNError(
+        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
+    return nullptr;
+  }
+  auto type = TaskThread(thread);
+  if (type == TaskThread::kFlutterUI) {
+    return _doInvokeMethod(object,
+                           methodName,
+                           arguments,
+                           dataTypes,
+                           argumentCount,
+                           returnType,
+                           stringTypeBitmask,
+                           callback,
+                           dartPort,
+                           type);
+  }
+
+  gTaskRunner->ScheduleInvokeTask(type, [=] {
+    _doInvokeMethod(object,
+                    methodName,
+                    arguments,
+                    dataTypes,
+                    argumentCount,
+                    returnType,
+                    stringTypeBitmask,
+                    callback,
+                    dartPort,
+                    type);
+  });
+  return nullptr;
 }
 
 /// register listener object by using java dynamic proxy
@@ -345,28 +457,6 @@ void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr) {
   _updateObjectReference(static_cast<jobject>(objPtr), true);
   intptr_t size = 8;
   Dart_NewWeakPersistentHandle_DL(h, objPtr, size, RunFinalizer);
-}
-
-/// dart notify run callback function
-void ExecuteCallback(Work *work_ptr) {
-  const Work work = *work_ptr;
-  work();
-  delete work_ptr;
-}
-
-/// notify dart run callback function
-bool NotifyDart(Dart_Port send_port, const Work *work) {
-  const auto work_addr = reinterpret_cast<intptr_t>(work);
-
-  Dart_CObject dart_object;
-  dart_object.type = Dart_CObject_kInt64;
-  dart_object.value.as_int64 = work_addr;
-
-  const bool result = Dart_PostCObject_DL(send_port, &dart_object);
-  if (!result) {
-    DNDebug("Native callback to Dart failed! Invalid port or isolate died");
-  }
-  return result;
 }
 
 JNIEXPORT jobject JNICALL
