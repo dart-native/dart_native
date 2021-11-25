@@ -17,7 +17,7 @@ class JShort extends JSubclass<int> {
 /// New native 'Short'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
-    JObject object = JObject.parameterConstructor(clsName, [short(value)]);
+    JObject object = JObject(clsName, args: [short(value)]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Short.';

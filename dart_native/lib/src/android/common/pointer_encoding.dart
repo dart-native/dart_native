@@ -104,11 +104,9 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     return;
   }
 
-  if (object is JClass) {
-    if (object is JObject) {
-      ptr.value = object.pointer.cast<Void>();
-      typePtr.value = argSignature ?? 'L${object.className};'.toNativeUtf8();
-    }
+  if (object is JObject) {
+    ptr.value = object.pointer;
+    typePtr.value = argSignature ?? 'L${object.clsName};'.toNativeUtf8();
     return;
   }
 

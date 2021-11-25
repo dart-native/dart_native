@@ -28,23 +28,29 @@ enum Thread {
   SubThread
 }
 
-class JObject extends JClass {
+class JObject {
   late Pointer<Void> _ptr;
+  late String _cls;
 
   Pointer<Void> get pointer {
     return _ptr;
   }
+
+  String get clsName {
+    return _cls;
+  }
   
   //init target class
-  JObject(String className, {Pointer<Void>? pointer, bool isInterface = false})
-      : super(className) {
+  JObject(String className, {List? args, bool isInterface = false}) {
     _ptr =
-        newObject(className, this, pointer: pointer, isInterface: isInterface);
+        newObject(className, this, args: args, isInterface: isInterface);
+    _cls = className;
     bindLifeCycleWithNative(this);
   }
 
-  JObject.parameterConstructor(String className, List args) : super(className) {
-    _ptr = newObject(className, this, args: args);
+  JObject.fromPointer(String className, Pointer<Void> pointer) {
+    _ptr = pointer;
+    _cls = className;
     bindLifeCycleWithNative(this);
   }
 
@@ -61,11 +67,4 @@ class JObject extends JClass {
         assignedSignature: assignedSignature, thread: thread);
   }
 
-  @override
-  int compareTo(other) {
-    if (other is JObject && other._ptr == _ptr) {
-      return 0;
-    }
-    return 1;
-  }
 }

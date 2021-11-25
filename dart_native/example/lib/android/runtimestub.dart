@@ -83,7 +83,7 @@ class RuntimeStub extends JObject {
   }
 
   Entity createEntity() {
-    return new Entity(invoke(
+    return Entity.fromPointer(invoke(
         'createEntity', [], "Lcom/dartnative/dart_native_example/Entity;"));
   }
 

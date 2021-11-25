@@ -17,7 +17,7 @@ class JInteger extends JSubclass<int> {
 /// New native 'Integer'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
-    JObject object = JObject.parameterConstructor(clsName, [value]);
+    JObject object = JObject(clsName, args: [value]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Integer.';

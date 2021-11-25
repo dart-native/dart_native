@@ -77,9 +77,9 @@ Pointer<Void> _new(dynamic value, String clsName) {
 }
 
 String _getItemClass(Pointer<Void> itemPtr) {
-  JObject templeObject = JObject("java/lang/Object", pointer: itemPtr);
-  templeObject = JObject("java/lang/Class",
-      pointer: templeObject.invoke("getClass", null, "Ljava/lang/Class;"));
+  JObject templeObject = JObject.fromPointer("java/lang/Object", itemPtr);
+  templeObject = JObject.fromPointer("java/lang/Class",
+      templeObject.invoke("getClass", null, "Ljava/lang/Class;"));
 
   return templeObject.invoke("getName", null, "Ljava/lang/String;");
 }

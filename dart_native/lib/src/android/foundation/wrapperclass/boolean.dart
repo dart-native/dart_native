@@ -17,7 +17,7 @@ class JBoolean extends JSubclass<bool> {
 /// New native 'Boolean'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is bool) {
-    JObject object = JObject.parameterConstructor(clsName, [value]);
+    JObject object = JObject(clsName, args: [value]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Boolean.';

@@ -9,9 +9,9 @@ class JSubclass<T> extends JObject {
   late T raw;
 
   JSubclass(this.raw, InitSubclass init, String clsName)
-      : super(clsName, pointer: init(raw, clsName));
+      : super.fromPointer(clsName, init(raw, clsName));
   JSubclass.fromPointer(Pointer<Void> ptr, String clsName)
-      : super(clsName, pointer: ptr);
+      : super.fromPointer(clsName, ptr);
 
   bool operator ==(other) {
     if (other == nil) {

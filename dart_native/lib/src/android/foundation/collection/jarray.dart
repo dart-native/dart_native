@@ -25,7 +25,7 @@ class JArray<E> extends JSubclass<List> {
     raw = JList.fromPointer(
             converter.invoke(
                 "arrayToList",
-                [JObject("java/lang/Object", pointer: ptr)],
+                [JObject.fromPointer("java/lang/Object", ptr)],
                 "Ljava/util/List;"),
             creator: creator)
         .raw;
@@ -66,7 +66,7 @@ ArrayType _getValueType(dynamic value) {
   } else if (value is bool) {
     return ArrayType("bool", "[Z");
   } else if (value is JObject) {
-    return ArrayType("object", "[L" + value.className + ";");
+    return ArrayType("object", "[L" + value.clsName + ";");
   } else {
     throw 'Invalid type in JArray.';
   }

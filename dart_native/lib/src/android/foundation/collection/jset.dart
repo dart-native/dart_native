@@ -20,7 +20,7 @@ class JSet<E> extends JSubclass<Set> {
         JObject("com/dartnative/dart_native/ArrayListConverter");
     List list = JList<E>.fromPointer(
             converter.invoke("setToList",
-                [JObject("java/util/Set", pointer: ptr)], "Ljava/util/List;"),
+                [JObject.fromPointer("java/util/Set", ptr)], "Ljava/util/List;"),
             creator: creator)
         .raw;
     raw = list.toSet();
