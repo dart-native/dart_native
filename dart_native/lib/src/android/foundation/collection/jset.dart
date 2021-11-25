@@ -14,7 +14,7 @@ class JSet<E> extends JSubclass<Set> {
   }
 
   JSet.fromPointer(Pointer<Void> ptr,
-      {String clsName: cls_set, E Function(Pointer pointer)? creator})
+      {String clsName: cls_set, E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName) {
     JObject converter =
         JObject("com/dartnative/dart_native/ArrayListConverter");
@@ -31,7 +31,7 @@ class JHashSet<E> extends JSet {
   JHashSet(Set value) : super(value, clsName: cls_hash_set);
 
   JHashSet.fromPointer(Pointer<Void> ptr,
-      {E Function(Pointer pointer)? creator})
+      {E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName: cls_hash_set, creator: creator);
 }
 

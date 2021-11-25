@@ -15,8 +15,8 @@ class JMap<K, V> extends JSubclass<Map> {
 
   JMap.fromPointer(Pointer<Void> ptr,
       {String clsName: cls_map,
-      K Function(Pointer pointer)? keyCreator,
-      V Function(Pointer pointer)? valueCreator})
+      K Function(Pointer<Void> pointer)? keyCreator,
+      V Function(Pointer<Void> pointer)? valueCreator})
       : super.fromPointer(ptr, clsName) {
     Set keySet = JSet<K>.fromPointer(invoke("keySet", [], "Ljava/util/Set;"),
             creator: keyCreator)
@@ -48,8 +48,8 @@ class JHashMap<K, V> extends JMap {
   JHashMap(Map value) : super(value, clsName: cls_hash_map);
 
   JHashMap.fromPointer(Pointer<Void> ptr,
-      {K Function(Pointer pointer)? keyCreator,
-      V Function(Pointer pointer)? valueCreator})
+      {K Function(Pointer<Void> pointer)? keyCreator,
+      V Function(Pointer<Void> pointer)? valueCreator})
       : super.fromPointer(ptr,
             clsName: cls_hash_map,
             keyCreator: keyCreator,

@@ -15,7 +15,7 @@ class JList<E> extends JSubclass<List> {
 
   JList.fromPointer(Pointer<Void> ptr,
       {String clsName: cls_list,
-      E Function(Pointer pointer)? creator})
+      E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName) {
     int count = invoke("size", [], "I");
     List temp = List.filled(count, [], growable: false);
@@ -42,7 +42,7 @@ class JList<E> extends JSubclass<List> {
 class JArrayList<E> extends JList {
   JArrayList(List value) : super(value, clsName: cls_array_list);
 
-  JArrayList.fromPointer(Pointer<Void> ptr, {E Function(Pointer pointer)? creator})
+  JArrayList.fromPointer(Pointer<Void> ptr, {E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName: cls_array_list, creator: creator);
 }
 

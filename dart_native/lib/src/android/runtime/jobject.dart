@@ -31,6 +31,10 @@ enum Thread {
 class JObject extends JClass {
   late Pointer<Void> _ptr;
 
+  Pointer<Void> get pointer {
+    return _ptr;
+  }
+  
   //init target class
   JObject(String className, {Pointer<Void>? pointer, bool isInterface = false})
       : super(className) {
@@ -42,10 +46,6 @@ class JObject extends JClass {
   JObject.parameterConstructor(String className, List args) : super(className) {
     _ptr = newObject(className, this, args: args);
     bindLifeCycleWithNative(this);
-  }
-
-  Pointer<Void> get pointer {
-    return _ptr;
   }
 
   dynamic invoke(String methodName, List? args, String returnType,

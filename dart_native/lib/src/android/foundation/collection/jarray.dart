@@ -18,7 +18,7 @@ class JArray<E> extends JSubclass<List> {
     }
   }
 
-  JArray.fromPointer(Pointer<Void> ptr, {E Function(Pointer pointer)? creator})
+  JArray.fromPointer(Pointer<Void> ptr, {E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, cls_array_object) {
     JObject converter =
         JObject("com/dartnative/dart_native/ArrayListConverter");
