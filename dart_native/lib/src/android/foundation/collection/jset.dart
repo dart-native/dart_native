@@ -20,7 +20,8 @@ class JSet<E> extends JSubclass<Set> {
         JObject("com/dartnative/dart_native/ArrayListConverter");
     List list = JList<E>.fromPointer(
             converter.invoke("setToList",
-                [JObject.fromPointer("java/util/Set", ptr)], "Ljava/util/List;"),
+              "Ljava/util/List;",
+              args: [JObject.fromPointer("java/util/Set", ptr)], ),
             creator: creator)
         .raw;
     raw = list.toSet();
@@ -43,7 +44,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
     JObject nativeSet = JObject(clsName);
 
     for (var element in value) {
-      nativeSet.invoke("add", [boxingWrapperClass(element)], "Z",
+      nativeSet.invokeBool("add", args: [boxingWrapperClass(element)],
           assignedSignature: ["Ljava/lang/Object;"]);
     }
     return nativeSet.pointer.cast<Void>();

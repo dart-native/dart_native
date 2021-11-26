@@ -11,7 +11,7 @@ class JCharacter extends JSubclass<int> {
 
   JCharacter.fromPointer(Pointer<Void> ptr)
       : super.fromPointer(ptr, CLS_CHARACTER) {
-    raw = invoke("charValue", [], "C");
+    raw = invokeChar("charValue");
   }
 }
 

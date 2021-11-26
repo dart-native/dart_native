@@ -10,7 +10,7 @@ class JFloat extends JSubclass<double> {
   JFloat(double value) : super(value, _new, CLS_FLOAT);
 
   JFloat.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_FLOAT) {
-    raw = invoke("floatValue", [], "F");
+    raw = invokeFloat("floatValue");
   }
 }
 

@@ -10,7 +10,7 @@ class JBoolean extends JSubclass<bool> {
   JBoolean(bool value) : super(value, _new, CLS_BOOLEAN);
 
   JBoolean.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_BOOLEAN) {
-    raw = invoke("booleanValue", [], "Z");
+    raw = invokeBool("booleanValue");
   }
 }
 

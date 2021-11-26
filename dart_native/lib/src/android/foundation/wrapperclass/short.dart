@@ -10,7 +10,7 @@ class JShort extends JSubclass<int> {
   JShort(int value) : super(value, _new, CLS_SHORT);
 
   JShort.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_SHORT) {
-    raw = invoke("shortValue", [], "S");
+    raw = invokeShort("shortValue");
   }
 }
 

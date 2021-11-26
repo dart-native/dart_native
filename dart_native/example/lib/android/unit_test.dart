@@ -29,7 +29,7 @@ testAndroid(RuntimeStub stub) async {
   print('getDouble result:$resultDouble , cost:$use');
 
   ms = currentTimeMillis();
-  String resultChar = stub.getChar('a');
+  int resultChar = stub.getChar('a');
   use = currentTimeMillis() - ms;
   print('getChar result:$resultChar , cost:$use');
 

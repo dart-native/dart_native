@@ -9,6 +9,6 @@ class Entity extends JObject {
       : super.fromPointer("com/dartnative/dart_native_example/Entity", ptr);
 
   int getCurrentTime() {
-    return invoke('getCurrentTime', [], "I");
+    return invoke('getCurrentTime', "I", args: []);
   }
 }

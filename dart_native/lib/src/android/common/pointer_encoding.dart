@@ -163,7 +163,7 @@ dynamic loadValueFromPointer(
       result = data.getInt8(0) != 0;
       break;
     case "C":
-      result = utf8.decode([data.getInt8(0)]);
+      result = data.getInt8(0);
       break;
     case "Ljava/lang/String;":
       result = fromUtf16(ptr);

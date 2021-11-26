@@ -10,7 +10,7 @@ class JInteger extends JSubclass<int> {
   JInteger(int value) : super(value, _new, CLS_INTEGER);
 
   JInteger.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_INTEGER) {
-    raw = invoke("intValue", [], "I");
+    raw = invokeInt("intValue");
   }
 }
 

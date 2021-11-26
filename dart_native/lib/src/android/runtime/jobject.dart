@@ -54,14 +54,14 @@ class JObject {
     bindLifeCycleWithNative(this);
   }
 
-  dynamic invoke(String methodName, List? args, String returnType,
-      {List<String>? assignedSignature}) {
+  dynamic invoke(String methodName, String returnType,
+      {List? args, List<String>? assignedSignature}) {
     return invokeMethod(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature);
   }
 
-  Future<dynamic> invokeAsync(String methodName, List? args, String returnType,
-      {List<String>? assignedSignature,
+  Future<dynamic> invokeAsync(String methodName, String returnType,
+      {List? args, List<String>? assignedSignature,
       Thread thread = Thread.FlutterUI}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature, thread: thread);

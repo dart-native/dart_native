@@ -25,8 +25,8 @@ class JArray<E> extends JSubclass<List> {
     raw = JList.fromPointer(
             converter.invoke(
                 "arrayToList",
-                [JObject.fromPointer("java/lang/Object", ptr)],
-                "Ljava/util/List;"),
+                "Ljava/util/List;",
+                args: [JObject.fromPointer("java/lang/Object", ptr)]),
             creator: creator)
         .raw;
   }
@@ -42,7 +42,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
       type = _getValueType(value[0]);
     }
     return converter.invoke(
-        "${type.arrayType}ListToArray", [list], type.arraySignature);
+        "${type.arrayType}ListToArray", type.arraySignature, args: [list]);
   } else {
     throw 'Invalid param when initializing JArray.';
   }

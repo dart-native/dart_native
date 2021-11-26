@@ -10,7 +10,7 @@ class JDouble extends JSubclass<double> {
   JDouble(double value) : super(value, _new, CLS_DOUBLE);
 
   JDouble.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_DOUBLE) {
-    raw = invoke("doubleValue", [], "D");
+    raw = invokeDouble("doubleValue");
   }
 }
 
