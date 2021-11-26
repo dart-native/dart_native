@@ -10,14 +10,14 @@ class JInteger extends JSubclass<int> {
   JInteger(int value) : super(value, _new, CLS_INTEGER);
 
   JInteger.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_INTEGER) {
-    raw = invoke("intValue", [], "I");
+    raw = invokeInt("intValue");
   }
 }
 
 /// New native 'Integer'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
-    JObject object = JObject.parameterConstructor(clsName, [value]);
+    JObject object = JObject(clsName, args: [value]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Integer.';

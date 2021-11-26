@@ -10,14 +10,14 @@ class JBoolean extends JSubclass<bool> {
   JBoolean(bool value) : super(value, _new, CLS_BOOLEAN);
 
   JBoolean.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_BOOLEAN) {
-    raw = invoke("booleanValue", [], "Z");
+    raw = invokeBool("booleanValue");
   }
 }
 
 /// New native 'Boolean'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is bool) {
-    JObject object = JObject.parameterConstructor(clsName, [value]);
+    JObject object = JObject(clsName, args: [value]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Boolean.';

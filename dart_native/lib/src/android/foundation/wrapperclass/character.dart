@@ -11,14 +11,14 @@ class JCharacter extends JSubclass<int> {
 
   JCharacter.fromPointer(Pointer<Void> ptr)
       : super.fromPointer(ptr, CLS_CHARACTER) {
-    raw = invoke("charValue", [], "C");
+    raw = invokeChar("charValue");
   }
 }
 
 /// New native 'Character'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
-    JObject object = JObject.parameterConstructor(clsName, [jchar(value)]);
+    JObject object = JObject(clsName, args: [jchar(value)]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Character.';

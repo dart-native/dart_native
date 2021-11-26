@@ -14,13 +14,14 @@ class JSet<E> extends JSubclass<Set> {
   }
 
   JSet.fromPointer(Pointer<Void> ptr,
-      {String clsName: cls_set, E Function(Pointer pointer)? creator})
+      {String clsName: cls_set, E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName) {
     JObject converter =
         JObject("com/dartnative/dart_native/ArrayListConverter");
     List list = JList<E>.fromPointer(
             converter.invoke("setToList",
-                [JObject("java/util/Set", pointer: ptr)], "Ljava/util/List;"),
+              "Ljava/util/List;",
+              args: [JObject.fromPointer("java/util/Set", ptr)], ),
             creator: creator)
         .raw;
     raw = list.toSet();
@@ -31,7 +32,7 @@ class JHashSet<E> extends JSet {
   JHashSet(Set value) : super(value, clsName: cls_hash_set);
 
   JHashSet.fromPointer(Pointer<Void> ptr,
-      {E Function(Pointer pointer)? creator})
+      {E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName: cls_hash_set, creator: creator);
 }
 
@@ -43,7 +44,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
     JObject nativeSet = JObject(clsName);
 
     for (var element in value) {
-      nativeSet.invoke("add", [boxingWrapperClass(element)], "Z",
+      nativeSet.invokeBool("add", args: [boxingWrapperClass(element)],
           assignedSignature: ["Ljava/lang/Object;"]);
     }
     return nativeSet.pointer.cast<Void>();

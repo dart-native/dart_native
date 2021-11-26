@@ -41,9 +41,6 @@ final bool is64Bit = sizeOf<IntPtr>() == 8;
 
 dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     Pointer<Pointer<Utf8>> typePtr, Pointer<Utf8>? argSignature) {
-  if (object == null) {
-    return;
-  }
   if (object is byte) {
     ptr.cast<Int32>().value = object.raw;
     typePtr.value = argSignature ?? _pointerForEncode[ValueType.byte]!;
@@ -104,11 +101,9 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     return;
   }
 
-  if (object is JClass) {
-    if (object is JObject) {
-      ptr.value = object.pointer.cast<Void>();
-      typePtr.value = argSignature ?? 'L${object.className};'.toNativeUtf8();
-    }
+  if (object is JObject) {
+    ptr.value = object.pointer;
+    typePtr.value = argSignature ?? 'L${object.clsName};'.toNativeUtf8();
     return;
   }
 
@@ -165,7 +160,7 @@ dynamic loadValueFromPointer(
       result = data.getInt8(0) != 0;
       break;
     case "C":
-      result = utf8.decode([data.getInt8(0)]);
+      result = data.getInt8(0);
       break;
     case "Ljava/lang/String;":
       result = fromUtf16(ptr);
@@ -177,7 +172,11 @@ dynamic loadValueFromPointer(
   return result;
 }
 
-Pointer<Uint16> toUtf16(String value) {
+Pointer<Uint16> toUtf16(String? value) {
+  if(value == null) {
+    return nullptr.cast();
+  }
+
   final units = value.codeUnits;
   final Pointer<Uint16> charPtr = calloc<Uint16>(units.length + 4);
   final Uint16List uintList = charPtr.asTypedList(units.length + 4);
@@ -194,7 +193,10 @@ Pointer<Uint16> toUtf16(String value) {
   return charPtr;
 }
 
-String fromUtf16(Pointer<Void> uint16Ptr) {
+String? fromUtf16(Pointer<Void> uint16Ptr) {
+  if (uint16Ptr == nullptr) {
+    return null;
+  }
   int length = 0;
   for (int i = 0; i < 2; i++) {
     length += uint16Ptr.cast<Uint16>().elementAt(i).value;

@@ -15,13 +15,13 @@ class JList<E> extends JSubclass<List> {
 
   JList.fromPointer(Pointer<Void> ptr,
       {String clsName: cls_list,
-      E Function(Pointer pointer)? creator})
+      E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName) {
-    int count = invoke("size", [], "I");
+    int count = invokeInt("size");
     List temp = List.filled(count, [], growable: false);
     String itemType = "";
     for (var i = 0; i < count; i++) {
-      dynamic item = invoke("get", [i], "Ljava/lang/Object;");
+      dynamic item = invoke("get", "Ljava/lang/Object;", args: [i]);
       if (creator != null) {
         temp[i] = creator(item);
         continue;
@@ -42,7 +42,7 @@ class JList<E> extends JSubclass<List> {
 class JArrayList<E> extends JList {
   JArrayList(List value) : super(value, clsName: cls_array_list);
 
-  JArrayList.fromPointer(Pointer<Void> ptr, {E Function(Pointer pointer)? creator})
+  JArrayList.fromPointer(Pointer<Void> ptr, {E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, clsName: cls_array_list, creator: creator);
 }
 
@@ -55,7 +55,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
     JObject nativeList = JObject(clsName);
 
     for (var i = 0; i < value.length; i++) {
-      nativeList.invoke("add", [boxingWrapperClass(value[i])], "Z",
+      nativeList.invokeBool("add", args: [boxingWrapperClass(value[i])],
           assignedSignature: ["Ljava/lang/Object;"]);
     }
     return nativeList.pointer.cast<Void>();
@@ -65,9 +65,9 @@ Pointer<Void> _new(dynamic value, String clsName) {
 }
 
 String _getItemClass(Pointer<Void> itemPtr) {
-  JObject templeObject = JObject("java/lang/Object", pointer: itemPtr);
-  templeObject = JObject("java/lang/Class",
-      pointer: templeObject.invoke("getClass", null, "Ljava/lang/Class;"));
+  JObject templeObject = JObject.fromPointer("java/lang/Object", itemPtr);
+  templeObject = JObject.fromPointer("java/lang/Class",
+      templeObject.invoke("getClass", "Ljava/lang/Class;"));
 
-  return templeObject.invoke("getName", null, "Ljava/lang/String;");
+  return templeObject.invoke("getName", "Ljava/lang/String;");
 }

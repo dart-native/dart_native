@@ -3,12 +3,13 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
-import 'package:ffi/ffi.dart';
 
-import 'jclass.dart';
+JObject createNullJObj(String clsName) {
+  return JObject.fromPointer(clsName, nullptr.cast());
+}
 
 void bindLifeCycleWithNative(JObject? obj) {
-  if (initDartAPISuccess && obj != null) {
+  if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
     passJObjectToC!(obj, obj.pointer.cast<Void>());
   } else {
     print('pass object to native failed! address=${obj?.pointer}');
@@ -28,44 +29,43 @@ enum Thread {
   SubThread
 }
 
-class JObject extends JClass {
+class JObject {
   late Pointer<Void> _ptr;
-
-  //init target class
-  JObject(String className, {Pointer<Void>? pointer, bool isInterface = false})
-      : super(className) {
-    _ptr =
-        newObject(className, this, pointer: pointer, isInterface: isInterface);
-    bindLifeCycleWithNative(this);
-  }
-
-  JObject.parameterConstructor(String className, List args) : super(className) {
-    _ptr = newObject(className, this, args: args);
-    bindLifeCycleWithNative(this);
-  }
+  late String _cls;
 
   Pointer<Void> get pointer {
     return _ptr;
   }
 
-  dynamic invoke(String methodName, List? args, String returnType,
-      {List<String>? assignedSignature}) {
+  String get clsName {
+    return _cls;
+  }
+  
+  //init target class
+  JObject(String className, {List? args, bool isInterface = false}) {
+    _ptr =
+        newObject(className, this, args: args, isInterface: isInterface);
+    _cls = className;
+    bindLifeCycleWithNative(this);
+  }
+
+  JObject.fromPointer(String className, Pointer<Void> pointer) {
+    _ptr = pointer;
+    _cls = className;
+    bindLifeCycleWithNative(this);
+  }
+
+  dynamic invoke(String methodName, String returnType,
+      {List? args, List<String>? assignedSignature}) {
     return invokeMethod(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature);
   }
 
-  Future<dynamic> invokeAsync(String methodName, List? args, String returnType,
-      {List<String>? assignedSignature,
-      Thread thread = Thread.FlutterUI}) async {
+  Future<dynamic> invokeAsync(String methodName, String returnType,
+      {List? args, List<String>? assignedSignature,
+      Thread thread = Thread.MainThread}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature, thread: thread);
   }
 
-  @override
-  int compareTo(other) {
-    if (other is JObject && other._ptr == _ptr) {
-      return 0;
-    }
-    return 1;
-  }
 }

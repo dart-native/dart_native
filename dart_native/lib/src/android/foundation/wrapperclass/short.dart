@@ -10,14 +10,14 @@ class JShort extends JSubclass<int> {
   JShort(int value) : super(value, _new, CLS_SHORT);
 
   JShort.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_SHORT) {
-    raw = invoke("shortValue", [], "S");
+    raw = invokeShort("shortValue");
   }
 }
 
 /// New native 'Short'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
-    JObject object = JObject.parameterConstructor(clsName, [short(value)]);
+    JObject object = JObject(clsName, args: [short(value)]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Short.';

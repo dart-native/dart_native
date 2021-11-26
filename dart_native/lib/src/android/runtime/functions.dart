@@ -10,8 +10,8 @@ typedef MethodNativeCallback = Void Function(
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
     Int32 argCount);
 
-typedef InvokeCallback = Void Function(
-    Pointer<Void> result, Pointer<Utf8> method, Pointer<Utf8> returnType);
+typedef InvokeCallback = Void Function(Pointer<Void> result,
+    Pointer<Utf8> method, Pointer<Pointer<Utf8>> typePointers, Int32 argCount);
 
 ///==============================================
 /// 创建native class

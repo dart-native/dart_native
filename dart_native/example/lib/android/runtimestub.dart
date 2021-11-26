@@ -21,54 +21,54 @@ class RuntimeStub extends JObject {
   RuntimeStub() : super("com/dartnative/dart_native_example/RuntimeStub");
 
   int getInt(int i) {
-    return invoke('getInt', [i], "I");
+    return invokeInt('getInt', args: [i]);
   }
 
   double getDouble(double b) {
-    return invoke('getDouble', [b], "D");
+    return invokeDouble('getDouble', args: [b]);
   }
 
   int getByte(int b) {
-    return invoke('getByte', [byte(b)], "B");
+    return invokeByte('getByte', args: [byte(b)]);
   }
 
   double getFloat(double f) {
-    return invoke('getFloat', [float(f)], "F");
+    return invokeFloat('getFloat', args: [float(f)]);
   }
 
-  String getChar(String c) {
-    return invoke('getChar', [jchar(c.codeUnitAt(0))], "C");
+  int getChar(String c) {
+    return invokeChar('getChar', args: [jchar(c.codeUnitAt(0))]);
   }
 
   int getShort(int s) {
-    return invoke('getShort', [short(s)], "S");
+    return invokeShort('getShort', args: [short(s)]);
   }
 
   int getLong(int l) {
-    return invoke('getLong', [long(l)], "J");
+    return invokeLong('getLong', args: [long(l)]);
   }
 
   bool getBool(bool b) {
-    return invoke('getBool', [b], "Z");
+    return invokeBool('getBool', args: [b]);
   }
 
-  String getString(String s) {
-    return invoke('getString', [s], "Ljava/lang/String;");
+  String? getString(String s) {
+    return invokeString('getString', args: [s]);
   }
 
   int add(int a, int b) {
-    return invoke('add', [a, b], "I");
+    return invokeInt('add', args: [a, b]);
   }
 
   void log(String a, String b) {
-    return invoke('log', [a, b], "V");
+    return invokeVoid('log', args: [a, b]);
   }
 
   bool complexCall(String s, int i, String c, double d, double f, int b, int sh,
       int l, bool boo) {
-    return invoke(
+    return invokeBool(
         'complexCall',
-        [
+        args: [
           s,
           i,
           jchar(c.codeUnitAt(0)),
@@ -78,77 +78,61 @@ class RuntimeStub extends JObject {
           short(sh),
           long(l),
           boo
-        ],
-        "Z");
+        ]);
   }
 
   Entity createEntity() {
-    return new Entity(invoke(
-        'createEntity', [], "Lcom/dartnative/dart_native_example/Entity;"));
+    return Entity.fromPointer(invoke(
+        'createEntity', "Lcom/dartnative/dart_native_example/Entity;"));
   }
 
   int getTime(Entity entity) {
-    return invoke('getTime', [entity], "I");
+    return invokeInt('getTime', args: [entity]);
   }
 
   void setDelegateListener(SampleDelegate delegate) {
-    invoke('setDelegateListener', [delegate], "V");
+    invokeVoid('setDelegateListener', args: [delegate]);
   }
 
   int getInteger() {
     return JInteger.fromPointer(
-            invoke("getInteger", null, "Ljava/lang/Integer;"))
+            invoke("getInteger", "Ljava/lang/Integer;"))
         .raw;
   }
 
-  List getList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getList", [jl], "Ljava/util/List;")).raw;
+  List? getList(List list) {
+    return invokeList("getList", args: [JList(list)]);
   }
 
-  List getByteList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getByteList", [jl], "Ljava/util/List;"))
-        .raw;
+  List? getByteList(List list) {
+    return invokeList("getByteList", args: [JList(list)]);
   }
 
-  List getFloatList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getFloatList", [jl], "Ljava/util/List;"))
-        .raw;
+  List? getFloatList(List list) {
+    return invokeList("getFloatList", args: [JList(list)]);
   }
 
-  List getStringList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getStringList", [jl], "Ljava/util/List;"))
-        .raw;
+  List? getStringList(List list) {
+    return invokeList("getStringList", args: [JList(list)]);
   }
 
-  List getCycleList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getCycleList", [jl], "Ljava/util/List;"))
-        .raw;
+  List? getCycleList(List list) {
+    return invokeList("getCycleList", args: [JList(list)]);
   }
 
   List getByteArray(List list) {
-    return JArray.fromPointer(invoke("getByteArray", [JArray(list)], "[B")).raw;
+    return JArray.fromPointer(invoke("getByteArray", "[B", args: [JArray(list)])).raw;
   }
 
-  Set getIntSet(Set set) {
-    return JSet.fromPointer(
-            invoke("getIntSet", [JHashSet(set)], "Ljava/util/Set;"))
-        .raw;
+  Set? getIntSet(Set set) {
+    return invokeSet("getIntSet", args: [JHashSet(set)]);
   }
 
-  Set getFloatSet(Set set) {
-    return JSet.fromPointer(
-            invoke("getFloatSet", [JHashSet(set)], "Ljava/util/Set;"))
-        .raw;
+  Set? getFloatSet(Set set) {
+    return invokeSet("getFloatSet", args: [JHashSet(set)]);
   }
 
-  Map getMap(Map map) {
-    return JHashMap.fromPointer(
-            invoke("getMap", [JHashMap(map)], "Ljava/util/HashMap;"))
-        .raw;
+  Map? getMap(Map map) {
+    return invokeHashMap("getMap", args: [JHashMap(map)]);
   }
 }

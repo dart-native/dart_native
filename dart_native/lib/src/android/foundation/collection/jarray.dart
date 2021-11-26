@@ -18,15 +18,15 @@ class JArray<E> extends JSubclass<List> {
     }
   }
 
-  JArray.fromPointer(Pointer<Void> ptr, {E Function(Pointer pointer)? creator})
+  JArray.fromPointer(Pointer<Void> ptr, {E Function(Pointer<Void> pointer)? creator})
       : super.fromPointer(ptr, cls_array_object) {
     JObject converter =
         JObject("com/dartnative/dart_native/ArrayListConverter");
     raw = JList.fromPointer(
             converter.invoke(
                 "arrayToList",
-                [JObject("java/lang/Object", pointer: ptr)],
-                "Ljava/util/List;"),
+                "Ljava/util/List;",
+                args: [JObject.fromPointer("java/lang/Object", ptr)]),
             creator: creator)
         .raw;
   }
@@ -42,7 +42,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
       type = _getValueType(value[0]);
     }
     return converter.invoke(
-        "${type.arrayType}ListToArray", [list], type.arraySignature);
+        "${type.arrayType}ListToArray", type.arraySignature, args: [list]);
   } else {
     throw 'Invalid param when initializing JArray.';
   }
@@ -66,7 +66,7 @@ ArrayType _getValueType(dynamic value) {
   } else if (value is bool) {
     return ArrayType("bool", "[Z");
   } else if (value is JObject) {
-    return ArrayType("object", "[L" + value.className + ";");
+    return ArrayType("object", "[L" + value.clsName + ";");
   } else {
     throw 'Invalid type in JArray.';
   }

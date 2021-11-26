@@ -60,6 +60,9 @@ jstring convertToJavaUtf16(JNIEnv *env, void *value) {
 
 /// nativeString not null
 uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString) {
+  if (nativeString == nullptr) {
+    return nullptr;
+  }
   const jchar *jc = env->GetStringChars(nativeString, nullptr);
   jsize strLength = env->GetStringLength(nativeString);
 

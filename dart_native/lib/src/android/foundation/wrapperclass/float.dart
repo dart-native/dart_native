@@ -10,14 +10,14 @@ class JFloat extends JSubclass<double> {
   JFloat(double value) : super(value, _new, CLS_FLOAT);
 
   JFloat.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_FLOAT) {
-    raw = invoke("floatValue", [], "F");
+    raw = invokeFloat("floatValue");
   }
 }
 
 /// New native 'Float'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is double) {
-    JObject object = JObject.parameterConstructor(clsName, [float(value)]);
+    JObject object = JObject(clsName, args: [float(value)]);
     return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Float.';
