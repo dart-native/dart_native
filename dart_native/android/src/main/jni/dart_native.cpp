@@ -242,12 +242,13 @@ bool NotifyDart(Dart_Port send_port, const Work *work) {
 
 typedef void(*InvokeCallback)(void *result,
                               char *method,
-                              char *returnType);
+                              char **typePointers,
+                              int argumentCount);
 
 void *_doInvokeMethod(jobject object,
                       char *methodName,
                       void **arguments,
-                      char **dataTypes,
+                      char **typePointers,
                       int argumentCount,
                       char *returnType,
                       uint32_t stringTypeBitmask,
@@ -259,17 +260,17 @@ void *_doInvokeMethod(jobject object,
   auto cls = env->GetObjectClass(object);
 
   auto *argValues = new jvalue[argumentCount];
-  _fillArgs(arguments, dataTypes, argValues, argumentCount, stringTypeBitmask);
+  _fillArgs(arguments, typePointers, argValues, argumentCount, stringTypeBitmask);
 
   char *methodSignature =
-      generateSignature(dataTypes, argumentCount, returnType);
+      generateSignature(typePointers, argumentCount, returnType);
   jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
 
   auto map = GetMethodCallerMap();
   auto it = map.find(*returnType);
   if (it == map.end()) {
     if (strcmp(returnType, "Ljava/lang/String;") == 0) {
-      dataTypes[argumentCount] = (char *) "java.lang.String";
+      typePointers[argumentCount] = (char *) "java.lang.String";
       nativeInvokeResult =
           callNativeStringMethod(env, object, method, argValues);
     } else {
@@ -278,10 +279,10 @@ void *_doInvokeMethod(jobject object,
         if (env->IsInstanceOf(obj, gStrCls->Object())) {
           /// mark the last pointer as string
           /// dart will check this pointer
-          dataTypes[argumentCount] = (char *) "java.lang.String";
+          typePointers[argumentCount] = (char *) "java.lang.String";
           nativeInvokeResult = convertToDartUtf16(env, (jstring) obj);
         } else {
-          dataTypes[argumentCount] = (char *) "java.lang.Object";
+          typePointers[argumentCount] = (char *) "java.lang.Object";
           jobject gObj = env->NewGlobalRef(obj);
           _addGlobalObject(gObj);
           nativeInvokeResult = gObj;
@@ -291,22 +292,24 @@ void *_doInvokeMethod(jobject object,
       }
     }
   } else {
-    *dataTypes[argumentCount] = it->first;
+    *typePointers[argumentCount] = it->first;
     nativeInvokeResult = it->second(env, object, method, argValues);
   }
   if (callback != nullptr) {
     if (thread == TaskThread::kFlutterUI) {
       ((InvokeCallback) callback)(nativeInvokeResult,
                                   methodName,
-                                  dataTypes[argumentCount]);
+                                  typePointers,
+                                  argumentCount);
     } else {
       sem_t sem;
       bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
       const Work work =
-          [callback, nativeInvokeResult, methodName, dataTypes, argumentCount, isSemInitSuccess, &sem] {
+          [callback, nativeInvokeResult, methodName, typePointers, argumentCount, isSemInitSuccess, &sem] {
             ((InvokeCallback) callback)(nativeInvokeResult,
                                         methodName,
-                                        dataTypes[argumentCount]);
+                                        typePointers,
+                                        argumentCount);
             if (isSemInitSuccess) {
               sem_post(&sem);
             }
@@ -327,7 +330,6 @@ void *_doInvokeMethod(jobject object,
   free(methodName);
   free(returnType);
   free(arguments);
-  free(dataTypes);
   free(methodSignature);
   return nativeInvokeResult;
 }
