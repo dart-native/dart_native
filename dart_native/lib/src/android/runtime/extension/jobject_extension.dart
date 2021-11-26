@@ -3,19 +3,8 @@ import 'dart:ffi';
 import 'package:dart_native/dart_native.dart';
 
 /// invoke extension simplify invoke function
-/// don't need basic type's return signature when calling invoke
+/// don't need return type's signature when calling invoke
 extension JObjectInvoke on JObject {
-  /// invoke native method which return object
-  /// todo(huizz): object signature can use @native
-  T invokeObject<T extends JObject>(
-      String methodName, T Function(Pointer<Void>) creator,
-      {List? args, String? returnType, List<String>? assignedSignature}) {
-    Pointer<Void> ptr = invoke(
-        methodName, returnType == null ? (T as JObject).clsName : returnType,
-        args: args, assignedSignature: assignedSignature);
-    return creator(ptr);
-  }
-
   /// invoke native method which return int
   int invokeInt(String methodName,
       {List? args, List<String>? assignedSignature}) {
@@ -79,7 +68,7 @@ extension JObjectInvoke on JObject {
   }
 
   /// invoke native method which return string
-  String invokeString(String methodName,
+  String? invokeString(String methodName,
       {List? args, List<String>? assignedSignature}) {
     return invoke(methodName, 'Ljava/lang/String;',
         args: args, assignedSignature: assignedSignature);
@@ -87,7 +76,7 @@ extension JObjectInvoke on JObject {
 
   /// invoke native method which return list
   /// todo(huizz): creator can use @native
-  List? invokeList<E>(String methodName,
+  List<E>? invokeList<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
       E Function(Pointer<Void> pointer)? creator}) {
@@ -96,12 +85,12 @@ extension JObjectInvoke on JObject {
     if (ptr == nullptr) {
       return null;
     }
-    return JList.fromPointer(ptr, creator: creator).raw;
+    return JList<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
   }
 
   /// invoke native method which return array list
   /// todo(huizz): creator can use @native
-  List? invokeArrayList<E>(String methodName,
+  List<E>? invokeArrayList<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
       E Function(Pointer<Void> pointer)? creator}) {
@@ -110,12 +99,12 @@ extension JObjectInvoke on JObject {
     if (ptr == nullptr) {
       return null;
     }
-    return JArrayList.fromPointer(ptr, creator: creator).raw;
+    return JArrayList<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
   }
 
   /// invoke native method which return set
   /// todo(huizz): creator can use @native
-  Set? invokeSet<E>(String methodName,
+  Set<E>? invokeSet<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
       E Function(Pointer<Void> pointer)? creator}) {
@@ -124,12 +113,12 @@ extension JObjectInvoke on JObject {
     if (ptr == nullptr) {
       return null;
     }
-    return JSet.fromPointer(ptr, creator: creator).raw;
+    return JSet<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
   }
 
   /// invoke native method which return hash set
   /// todo(huizz): creator can use @native
-  Set? invokeHashSet<E>(String methodName,
+  Set<E>? invokeHashSet<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
       E Function(Pointer<Void> pointer)? creator}) {
@@ -138,12 +127,12 @@ extension JObjectInvoke on JObject {
     if (ptr == nullptr) {
       return null;
     }
-    return JHashSet.fromPointer(ptr, creator: creator).raw;
+    return JHashSet<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
   }
 
   /// invoke native method which return map
   /// todo(huizz): creator can use @native
-  Map? invokeMap<K, V>(String methodName,
+  Map<K, V>? invokeMap<K, V>(String methodName,
       {List? args,
       List<String>? assignedSignature,
       K Function(Pointer<Void> pointer)? keyCreator,
@@ -153,14 +142,15 @@ extension JObjectInvoke on JObject {
     if (ptr == nullptr) {
       return null;
     }
-    return JMap.fromPointer(ptr,
+    return JMap<K, V>.fromPointer(ptr,
             keyCreator: keyCreator, valueCreator: valueCreator)
-        .raw;
+        .raw
+        .cast<K, V>();
   }
 
   /// invoke native method which return hash map
   /// todo(huizz): creator can use @native
-  Map? invokeHashMap<K, V>(String methodName,
+  Map<K, V>? invokeHashMap<K, V>(String methodName,
       {List? args,
       List<String>? assignedSignature,
       K Function(Pointer<Void> pointer)? keyCreator,
@@ -170,8 +160,9 @@ extension JObjectInvoke on JObject {
     if (ptr == nullptr) {
       return null;
     }
-    return JHashMap.fromPointer(ptr,
+    return JHashMap<K, V>.fromPointer(ptr,
             keyCreator: keyCreator, valueCreator: valueCreator)
-        .raw;
+        .raw
+        .cast<K, V>();
   }
 }

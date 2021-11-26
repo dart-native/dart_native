@@ -13,7 +13,7 @@ class DNAndroidUnitTest with DNUnitTestBase {
 
   @override
   String fooString(String str) {
-    return stub.getString(str);
+    return stub.getString(str) ?? "";
   }
 
   @override
@@ -64,7 +64,7 @@ testAndroid(RuntimeStub stub) async {
   print('getLong result:$resultLong , cost:$use');
 
   ms = currentTimeMillis();
-  String resultString = stub.getString("test is success?");
+  String? resultString = stub.getString("test is success?");
   use = currentTimeMillis() - ms;
   print('getString result:$resultString, cost:$use');
 

@@ -52,7 +52,7 @@ class RuntimeStub extends JObject {
     return invokeBool('getBool', args: [b]);
   }
 
-  String getString(String s) {
+  String? getString(String s) {
     return invokeString('getString', args: [s]);
   }
 

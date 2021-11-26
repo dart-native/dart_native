@@ -3,12 +3,13 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
-import 'package:ffi/ffi.dart';
 
-import 'jclass.dart';
+JObject createNullJObj(String clsName) {
+  return JObject.fromPointer(clsName, nullptr.cast());
+}
 
 void bindLifeCycleWithNative(JObject? obj) {
-  if (initDartAPISuccess && obj != null) {
+  if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
     passJObjectToC!(obj, obj.pointer.cast<Void>());
   } else {
     print('pass object to native failed! address=${obj?.pointer}');
@@ -62,7 +63,7 @@ class JObject {
 
   Future<dynamic> invokeAsync(String methodName, String returnType,
       {List? args, List<String>? assignedSignature,
-      Thread thread = Thread.FlutterUI}) async {
+      Thread thread = Thread.MainThread}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature, thread: thread);
   }

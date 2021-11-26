@@ -489,9 +489,7 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     auto argument = env->GetObjectArrayElement(argumentsArray, i);
     dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString, 0);
     if (strcmp(dataTypes[i], "java.lang.String") == 0) {
-      arguments[i] = (jstring) argument == nullptr
-                     ? reinterpret_cast<uint16_t *>((char *) "")
-                     : convertToDartUtf16(env, (jstring) argument);
+      arguments[i] = convertToDartUtf16(env, (jstring) argument);
     } else {
       jobject gObj = env->NewGlobalRef(argument);
       _addGlobalObject(gObj);

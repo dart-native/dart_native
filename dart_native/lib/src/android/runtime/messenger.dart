@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:ffi';
-import 'package:dart_native/src/android/common/callback_manager.dart';
-import 'package:ffi/ffi.dart';
 
+import 'package:dart_native/src/android/common/callback_manager.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/dart_java.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
+import 'package:ffi/ffi.dart';
 
 Pointer<Void> _newNativeObject(String className, {List? args}) {
   final objectPtr;
@@ -133,7 +133,8 @@ dynamic invokeMethod(
 
 Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<String>? assignedSignature, Thread thread = Thread.FlutterUI}) async {
+    {List<String>? assignedSignature,
+    Thread thread = Thread.MainThread}) async {
   final completer = Completer<dynamic>();
   _invokeMethod(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature,
@@ -167,7 +168,8 @@ NativeArguments _parseNativeArguments(List? args,
     for (var i = 0, pi = 0; i < args.length; i++, pi++) {
       var arg = args[i];
       if (arg == null) {
-        throw 'One of args list is null';
+        throw 'One of args list is null, not allowed null argument.' +
+            ' You can use [createNullJObj] to wrapper a null object.';
       }
 
       /// check extension signature
