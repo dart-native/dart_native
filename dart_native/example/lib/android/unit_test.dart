@@ -88,19 +88,25 @@ testAndroid(RuntimeStub stub) async {
 
   print('new entity get time : ${stub.getTime(new Entity())}');
 
-  List list = stub.getList([1, 2, 3, 4]);
-  for (int item in list) {
-    print("item $item");
+  List? list = stub.getList([1, 2, 3, 4]);
+  if (list != null) {
+    for (int item in list) {
+      print("item $item");
+    }
   }
 
   list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
-  for (int item in list) {
-    print("item $item");
+  if (list != null) {
+    for (int item in list) {
+      print("item $item");
+    }
   }
 
   list = stub.getFloatList([float(1.0), float(2.0), float(3.0), float(4.0)]);
-  for (double item in list) {
-    print("item $item");
+  if (list != null) {
+    for (double item in list) {
+      print("item $item");
+    }
   }
 
   list = stub.getCycleList([
@@ -108,9 +114,11 @@ testAndroid(RuntimeStub stub) async {
     [4, 5, 6],
     [7, 8, 9]
   ]);
-  for (List items in list) {
-    for (int item in items) {
-      print("item $item");
+  if (list != null) {
+    for (List items in list) {
+      for (int item in items) {
+        print("item $item");
+      }
     }
   }
 
@@ -119,24 +127,32 @@ testAndroid(RuntimeStub stub) async {
     print("item $byte");
   }
 
-  Set intSet = stub.getIntSet(Set.from([1, 2, 3]));
-  for (int setInt in intSet) {
-    print("intSet $setInt");
+  Set? intSet = stub.getIntSet(Set.from([1, 2, 3]));
+  if (intSet != null) {
+    for (int setInt in intSet) {
+      print("intSet $setInt");
+    }
   }
 
-  Set fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
-  for (double setF in fSet) {
-    print("fSet $setF");
+  Set? fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
+  if (fSet != null) {
+    for (double setF in fSet) {
+      print("fSet $setF");
+    }
   }
 
-  Map map = stub.getMap({"1": 10, "2": 20, "3": 30});
-  map.forEach((key, value) {
-    print("map from native $key : $value");
-  });
+  Map? map = stub.getMap({"1": 10, "2": 20, "3": 30});
+  if (map != null) {
+    map.forEach((key, value) {
+      print("map from native $key : $value");
+    });
+  }
 
-  List strList = stub.getStringList(["test啊 emoji🤣", "emoji🤣"]);
-  for (var item in strList) {
-    print("item $item");
+  List? strList = stub.getStringList(["test啊 emoji🤣", "emoji🤣"]);
+  if (strList != null) {
+    for (var item in strList) {
+      print("item $item");
+    }
   }
 
   stub.setDelegateListener(DelegateStub());

@@ -100,54 +100,39 @@ class RuntimeStub extends JObject {
         .raw;
   }
 
-  List getList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getList", "Ljava/util/List;", args: [jl])).raw;
+  List? getList(List list) {
+    return invokeList("getList", args: [JList(list)]);
   }
 
-  List getByteList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getByteList", "Ljava/util/List;", args: [jl]))
-        .raw;
+  List? getByteList(List list) {
+    return invokeList("getByteList", args: [JList(list)]);
   }
 
-  List getFloatList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getFloatList", "Ljava/util/List;", args: [jl]))
-        .raw;
+  List? getFloatList(List list) {
+    return invokeList("getFloatList", args: [JList(list)]);
   }
 
-  List getStringList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getStringList", "Ljava/util/List;", args: [jl]))
-        .raw;
+  List? getStringList(List list) {
+    return invokeList("getStringList", args: [JList(list)]);
   }
 
-  List getCycleList(List list) {
-    JList jl = JList(list);
-    return JList.fromPointer(invoke("getCycleList", "Ljava/util/List;", args: [jl]))
-        .raw;
+  List? getCycleList(List list) {
+    return invokeList("getCycleList", args: [JList(list)]);
   }
 
   List getByteArray(List list) {
     return JArray.fromPointer(invoke("getByteArray", "[B", args: [JArray(list)])).raw;
   }
 
-  Set getIntSet(Set set) {
-    return JSet.fromPointer(
-            invoke("getIntSet", "Ljava/util/Set;", args: [JHashSet(set)]))
-        .raw;
+  Set? getIntSet(Set set) {
+    return invokeSet("getIntSet", args: [JHashSet(set)]);
   }
 
-  Set getFloatSet(Set set) {
-    return JSet.fromPointer(
-            invoke("getFloatSet", "Ljava/util/Set;", args: [JHashSet(set)]))
-        .raw;
+  Set? getFloatSet(Set set) {
+    return invokeSet("getFloatSet", args: [JHashSet(set)]);
   }
 
-  Map getMap(Map map) {
-    return JHashMap.fromPointer(
-            invoke("getMap", "Ljava/util/HashMap;", args: [JHashMap(map)]))
-        .raw;
+  Map? getMap(Map map) {
+    return invokeHashMap("getMap", args: [JHashMap(map)]);
   }
 }
