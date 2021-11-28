@@ -9,13 +9,22 @@ import UIKit
 
 @objcMembers
 class SwiftStub: NSObject {
-    public static let instance = SwiftStub()
+    static let instance = SwiftStub()
+    var sideLength: Double = 1.0
+    var perimeter: Double {
+        get {
+             return 3.0 * sideLength
+        }
+        set {
+            sideLength = newValue / 3.0
+        }
+    }
     
-    public func fooString(_ str: String) -> String {
+    func fooString(_ str: String) -> String {
         return "\(str) DartNative!"
     }
     
-    public func fooClosure(_ block:@escaping (String) -> String) {
+    func fooClosure(_ block:@escaping (String) -> String) {
         DispatchQueue.global(qos: .default).async {
             let result = block("Hello")
             print(result)

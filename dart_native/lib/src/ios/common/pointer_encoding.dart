@@ -15,37 +15,34 @@ Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
     ptr.cast<Int8>().value = object;
   },
   TypeEncodings.sint8: (Pointer ptr, dynamic object) {
-    ptr.cast<Int8>().value = object;
+    ptr.cast<Int8>().value = object.toInt();
   },
   TypeEncodings.sint16: (Pointer ptr, dynamic object) {
-    ptr.cast<Int16>().value = object;
+    ptr.cast<Int16>().value = object.toInt();
   },
   TypeEncodings.sint32: (Pointer ptr, dynamic object) {
-    ptr.cast<Int32>().value = object;
+    ptr.cast<Int32>().value = object.toInt();
   },
   TypeEncodings.sint64: (Pointer ptr, dynamic object) {
-    ptr.cast<Int64>().value = object;
+    ptr.cast<Int64>().value = object.toInt();
   },
   TypeEncodings.uint8: (Pointer ptr, dynamic object) {
-    ptr.cast<Uint8>().value = object;
+    ptr.cast<Uint8>().value = object.toInt();
   },
   TypeEncodings.uint16: (Pointer ptr, dynamic object) {
-    ptr.cast<Uint16>().value = object;
+    ptr.cast<Uint16>().value = object.toInt();
   },
   TypeEncodings.uint32: (Pointer ptr, dynamic object) {
-    ptr.cast<Uint32>().value = object;
+    ptr.cast<Uint32>().value = object.toInt();
   },
   TypeEncodings.uint64: (Pointer ptr, dynamic object) {
-    ptr.cast<Uint64>().value = object;
+    ptr.cast<Uint64>().value = object.toInt();
   },
   TypeEncodings.float32: (Pointer ptr, dynamic object) {
-    ptr.cast<Float>().value = object;
+    ptr.cast<Float>().value = object.toDouble();
   },
   TypeEncodings.float64: (Pointer ptr, dynamic object) {
-    ptr.cast<Double>().value = object;
-  },
-  TypeEncodings.float64: (Pointer ptr, dynamic object) {
-    ptr.cast<Double>().value = object;
+    ptr.cast<Double>().value = object.toDouble();
   },
   TypeEncodings.cstring: (Pointer ptr, dynamic object) {
     return storeCStringToPointer(object, ptr.cast<Pointer<Void>>());

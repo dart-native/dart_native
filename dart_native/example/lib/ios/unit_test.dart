@@ -180,6 +180,9 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
   String swiftResult = SwiftStub.instance.fooString('Hello');
   print('Swift fooString result:$swiftResult');
 
+  final perimeter = SwiftStub.instance.perimeter;
+  SwiftStub.instance.perimeter = perimeter * 2;
+
   SwiftStub.instance.fooClosure((NSString hello) {
     print('Swift fooBlock arg:$hello');
     return NSString('DartNative');
