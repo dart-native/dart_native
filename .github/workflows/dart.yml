@@ -17,11 +17,11 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           # same with pubspec.yaml
-          flutter-version: "2.2"
+          flutter-version: "2.5.3"
       - run: flutter pub get
-        working-directory: dart_native
+        working-directory: dart_native/example
       - run: flutter test --no-pub test/
-        working-directory: dart_native
+        working-directory: dart_native/example
       - run: flutter build apk
         working-directory: dart_native/example
       - run: flutter build ios --release --no-codesign

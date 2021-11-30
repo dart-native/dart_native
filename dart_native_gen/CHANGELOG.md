@@ -1,3 +1,5 @@
+## [0.2.0] - Upgrade to Flutter 2.
+
 ## [0.1.2] - Upgrade dependencies.
 
 ## [0.1.1] - Upgrade dependencies.
