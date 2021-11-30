@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:dart_native/src/android/foundation/collection/jarray.dart';
-import 'package:dart_native/src/android/runtime/jclass.dart';
 import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:dart_native/src/android/foundation/native_type.dart';
 

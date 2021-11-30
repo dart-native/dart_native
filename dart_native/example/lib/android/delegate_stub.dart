@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 
