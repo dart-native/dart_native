@@ -1,6 +1,9 @@
 ## 0.4.0
 
-* [Feature] Adapted to Flutter 2.
+* [Feature] Adapted to Flutter 2.2 and nullsafety.
+* [Feature] Add example for Swift 5.
+* [Feature] Enhanced type conversion.
+* [Feature] Refactoring the interface and implementation.
 
 ## 0.3.23
 
