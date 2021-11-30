@@ -6,12 +6,12 @@ typedef Pointer<Void> InitSubclass(dynamic value, String clsName);
 
 /// Dart Wrapper for subclass of JObject. For example: JString, JArray, Integer, etc.
 class JSubclass<T> extends JObject {
-  T raw;
+  late T raw;
 
   JSubclass(this.raw, InitSubclass init, String clsName)
-      : super(clsName, pointer: init(raw, clsName));
+      : super.fromPointer(clsName, init(raw, clsName));
   JSubclass.fromPointer(Pointer<Void> ptr, String clsName)
-      : super(clsName, pointer: ptr);
+      : super.fromPointer(clsName, ptr);
 
   bool operator ==(other) {
     if (other == nil) {
@@ -20,7 +20,11 @@ class JSubclass<T> extends JObject {
     if (other is T) {
       return raw == other;
     }
-    return raw == other.raw;
+    if (other is JSubclass) {
+      return raw == other.raw;
+    }
+    // Default?
+    return false;
   }
 
   @override

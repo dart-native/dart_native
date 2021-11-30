@@ -15,7 +15,7 @@ class NSArray extends NSSubclass<List> {
 
   NSArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     int count = perform(SEL('count'));
-    List temp = List(count);
+    List temp = List.filled(count, nil, growable: false);
     for (var i = 0; i < count; i++) {
       var e = objectAtIndex(i);
       temp[i] = unboxingObjCType(e);
@@ -51,13 +51,13 @@ Pointer<Void> _new(dynamic value) {
     List boxValues = value.map((e) {
       return boxingObjCType(e);
     }).toList();
-    Pointer<Pointer<Void>> listPtr = allocate(count: boxValues.length);
+    Pointer<Pointer<Void>> listPtr = calloc(boxValues.length);
     for (var i = 0; i < boxValues.length; i++) {
       listPtr.elementAt(i).value = boxValues[i].pointer;
     }
     NSObject result = Class('NSArray').perform(SEL('arrayWithObjects:count:'),
         args: [listPtr, boxValues.length]);
-    free(listPtr);
+    calloc.free(listPtr);
     return result.pointer;
   } else {
     throw 'Invalid param when initializing NSArray.';

@@ -47,7 +47,7 @@ class _DartNativeAppState extends State<DartNativeApp> {
     print("DartNative Cost: ${DateTime.now().millisecondsSinceEpoch - time}");
 
     /// run all test case
-    unitTest.runAllUnitTests();
+    await unitTest.runAllUnitTests();
   }
 
   @override

@@ -1,4 +1,6 @@
 export 'runtime/jobject.dart';
+export 'runtime/extension/jobject_extension.dart';
+export 'runtime/extension/jobject_async_extension.dart';
 export 'runtime/call_back.dart';
 export 'foundation/collection/jlist.dart';
 export 'foundation/collection/jset.dart';
@@ -13,12 +15,13 @@ export 'foundation/wrapperclass/float.dart';
 export 'foundation/wrapperclass/long.dart';
 export 'foundation/wrapperclass/short.dart';
 export 'foundation/wrapperclass/boxing_unboxing.dart';
+export 'foundation/native_type.dart';
 
 import 'common/library.dart';
 
 class DartJava {
   /// set so path
-  static void loadLibrary(String soPath) {
+  static void loadLibrary(String? soPath) {
     if (soPath != null && soPath.isNotEmpty) {
       Library.setLibPath(soPath);
     }

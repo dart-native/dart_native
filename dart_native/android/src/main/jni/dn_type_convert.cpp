@@ -43,6 +43,9 @@ std::map<char, std::function<BasicTypeToNative>> GetTypeConvertMap() {
 }
 
 jstring convertToJavaUtf16(JNIEnv *env, void *value) {
+  if (value == nullptr) {
+    return nullptr;
+  }
   auto *utf16 = (uint16_t *) value;
 
   uint32_t length = 0;
@@ -57,6 +60,9 @@ jstring convertToJavaUtf16(JNIEnv *env, void *value) {
 
 /// nativeString not null
 uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString) {
+  if (nativeString == nullptr) {
+    return nullptr;
+  }
   const jchar *jc = env->GetStringChars(nativeString, nullptr);
   jsize strLength = env->GetStringLength(nativeString);
 

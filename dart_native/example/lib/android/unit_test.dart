@@ -1,7 +1,10 @@
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/delegate_stub.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
-import 'package:dart_native/dart_native.dart';
+import 'package:dart_native_example/android/runtimestub_async.dart';
+
+import 'delegate_stub.dart';
 import 'package:dart_native_example/dn_unit_test.dart';
 
 /// Android unit test implementation.
@@ -10,23 +13,23 @@ class DNAndroidUnitTest with DNUnitTestBase {
 
   @override
   String fooString(String str) {
-    return stub.getString(str);
+    return stub.getString(str) ?? "";
   }
 
   @override
-  void runAllUnitTests() {
-    testAndroid(stub);
+  Future<void> runAllUnitTests() async {
+    await testAndroid(stub);
   }
 }
 
-testAndroid(RuntimeStub stub) {
+testAndroid(RuntimeStub stub) async {
   int ms = currentTimeMillis();
   double resultDouble = stub.getDouble(3.40282e+038);
   int use = currentTimeMillis() - ms;
   print('getDouble result:$resultDouble , cost:$use');
 
   ms = currentTimeMillis();
-  String resultChar = stub.getChar('a');
+  int resultChar = stub.getChar('a');
   use = currentTimeMillis() - ms;
   print('getChar result:$resultChar , cost:$use');
 
@@ -61,7 +64,7 @@ testAndroid(RuntimeStub stub) {
   print('getLong result:$resultLong , cost:$use');
 
   ms = currentTimeMillis();
-  String resultString = stub.getString("test is success?");
+  String? resultString = stub.getString("test is success?");
   use = currentTimeMillis() - ms;
   print('getString result:$resultString, cost:$use');
 
@@ -85,19 +88,25 @@ testAndroid(RuntimeStub stub) {
 
   print('new entity get time : ${stub.getTime(new Entity())}');
 
-  List list = stub.getList([1, 2, 3, 4]);
-  for (int item in list) {
-    print("item $item");
+  List? list = stub.getList([1, 2, 3, 4]);
+  if (list != null) {
+    for (int item in list) {
+      print("item $item");
+    }
   }
 
   list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
-  for (int item in list) {
-    print("item $item");
+  if (list != null) {
+    for (int item in list) {
+      print("item $item");
+    }
   }
 
   list = stub.getFloatList([float(1.0), float(2.0), float(3.0), float(4.0)]);
-  for (double item in list) {
-    print("item $item");
+  if (list != null) {
+    for (double item in list) {
+      print("item $item");
+    }
   }
 
   list = stub.getCycleList([
@@ -105,9 +114,11 @@ testAndroid(RuntimeStub stub) {
     [4, 5, 6],
     [7, 8, 9]
   ]);
-  for (List items in list) {
-    for (int item in items) {
-      print("item $item");
+  if (list != null) {
+    for (List items in list) {
+      for (int item in items) {
+        print("item $item");
+      }
     }
   }
 
@@ -116,27 +127,38 @@ testAndroid(RuntimeStub stub) {
     print("item $byte");
   }
 
-  Set intSet = stub.getIntSet(Set.from([1, 2, 3]));
-  for (int setInt in intSet) {
-    print("intSet $setInt");
+  Set? intSet = stub.getIntSet(Set.from([1, 2, 3]));
+  if (intSet != null) {
+    for (int setInt in intSet) {
+      print("intSet $setInt");
+    }
   }
 
-  Set fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
-  for (double setF in fSet) {
-    print("fSet $setF");
+  Set? fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
+  if (fSet != null) {
+    for (double setF in fSet) {
+      print("fSet $setF");
+    }
   }
 
-  Map map = stub.getMap({"1": 10, "2": 20, "3": 30});
-  map.forEach((key, value) {
-    print("map from native $key : $value");
-  });
-  //
-  List strList = stub.getStringList(["test啊 emoji🤣", "emoji🤣"]);
-  for (var item in strList) {
-    print("item $item");
+  Map? map = stub.getMap({"1": 10, "2": 20, "3": 30});
+  if (map != null) {
+    map.forEach((key, value) {
+      print("map from native $key : $value");
+    });
+  }
+
+  List? strList = stub.getStringList(["test啊 emoji🤣", "emoji🤣"]);
+  if (strList != null) {
+    for (var item in strList) {
+      print("item $item");
+    }
   }
 
   stub.setDelegateListener(DelegateStub());
+
+  print(
+      "getStringAsync ${await stub.getStringAsync('This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖')}");
 }
 
 int currentTimeMillis() {

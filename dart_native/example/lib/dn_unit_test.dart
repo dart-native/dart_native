@@ -9,7 +9,7 @@ import 'package:dart_native_example/ios/unit_test.dart';
 /// Dart use this dispatch to all platform.
 ///
 class DNUnitTest {
-  DNUnitTestBase _unitTest;
+  late DNUnitTestBase _unitTest;
 
   DNUnitTest() {
     /// Dispatch to platform.
@@ -21,8 +21,8 @@ class DNUnitTest {
   }
 
   /// Run all test case.
-  void runAllUnitTests() {
-    _unitTest.runAllUnitTests();
+  Future<void> runAllUnitTests() async {
+    return _unitTest.runAllUnitTests();
   }
 }
 
@@ -31,6 +31,5 @@ class DNUnitTest {
 ///
 abstract class DNUnitTestBase {
   String fooString(String str);
-
   void runAllUnitTests();
 }

@@ -19,14 +19,14 @@ Write native code using Dart. This package liberates you from native code and lo
   # s.vendored_libraries = 'libffi/libffi.a'
 
   # Release
-  s.source_files = 'Classes/DartNativePlugin.*', 'Classes/native_runtime.h', 'Classes/DNMacro.h', 'common/include/dart_api_dl.h', 'common/include/dart_api.h', 'common/include/dart_native_api.h'
+  s.source_files = 'Classes/DartNativePlugin.*'
   s.vendored_frameworks = 'DartNative.xcframework'
   
-  s.public_header_files = 'Classes/DartNativePlugin.h', 'Classes/native_runtime.h', 'Classes/DNMacro.h', 'common/include/dart_api_dl.h', 'common/include/dart_api.h', 'common/include/dart_native_api.h'
+  s.public_header_files = 'Classes/DartNativePlugin.h'
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
   s.libraries = 'c++'
   
-  # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
+  # Flutter.framework does not contain a i386 slice.
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386 arm64' }
 end

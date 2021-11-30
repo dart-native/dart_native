@@ -18,26 +18,29 @@ class Protocol {
   static final Map<int, Protocol> _cache = <int, Protocol>{};
 
   factory Protocol(String protocolName) {
-    if (protocolName == null) {
-      return null;
-    }
-    final protocolNamePtr = Utf8.toUtf8(protocolName);
+    final protocolNamePtr = protocolName.toNativeUtf8();
     Pointer<Void> ptr = objc_getProtocol(protocolNamePtr);
-    free(protocolNamePtr);
+    calloc.free(protocolNamePtr);
+    if (ptr == nullptr) {
+      throw 'Protocol($protocolName) doesn\'t exist or never used in native code! Cannot get Protocol by its name!';
+    }
     if (_cache.containsKey(ptr.address)) {
-      return _cache[ptr.address];
+      return _cache[ptr.address]!;
     } else {
       return Protocol._internal(protocolName, ptr);
     }
   }
 
   factory Protocol.fromPointer(Pointer<Void> ptr) {
+    if (ptr == nullptr) {
+      throw 'Can\'t initialize a Protocol with nullptr';
+    }
     int key = ptr.address;
     if (_cache.containsKey(key)) {
-      return _cache[key];
+      return _cache[key]!; // Use cache
     } else {
-      String selName = Utf8.fromUtf8(protocol_getName(ptr));
-      return Protocol._internal(selName, ptr);
+      String selName = protocol_getName(ptr).toDartString();
+      return Protocol._internal(selName, ptr); // Save to cache
     }
   }
 
@@ -67,10 +70,7 @@ bool registerProtocolCallback(
   String protoName = protocolType.toString();
   SEL selector = SEL(selName);
   Protocol protocol = Protocol(protoName);
-  if (protocol == null) {
-    // FIXME: Use Dart Function signature to create a native method.
-    throw 'Protocol($protoName) never used in native code! Can not get Protocol by its name!';
-  }
+  // Use Dart Function signature to create a native method.
   Pointer<Utf8> types =
       nativeProtocolMethodTypes(protocol.toPointer(), selector.toPointer());
   return registerMethodCallback(target, selector, callback, types);

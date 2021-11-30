@@ -1,26 +1,26 @@
-import 'dart:ffi';
-
 import 'package:dart_native/dart_native.dart';
 
 dynamic boxingWrapperClass(dynamic value) {
   if (value is byte) {
-    return Byte(value.raw);
+    return JByte(value.raw);
   } else if (value is short) {
-    return Short(value.raw);
+    return JShort(value.raw);
   } else if (value is long) {
-    return Long(value.raw);
+    return JLong(value.raw);
   } else if (value is int) {
-    return Integer(value);
+    return JInteger(value);
   } else if (value is float) {
-    return Float(value.raw);
+    return JFloat(value.raw);
   } else if (value is double) {
-    return Double(value);
+    return JDouble(value);
   } else if (value is List) {
     return JList(value);
   } else if (value is Set) {
     return JSet(value);
+  } else if (value is Map) {
+    return JMap(value);
   } else if (value is bool) {
-    return Boolean(value);
+    return JBoolean(value);
   } else {
     return value;
   }
@@ -29,31 +29,36 @@ dynamic boxingWrapperClass(dynamic value) {
 dynamic unBoxingWrapperClass(dynamic value, String valueType) {
   switch (valueType) {
     case "java.lang.Integer":
-      return Integer.fromPointer(value).raw;
+      return JInteger.fromPointer(value).raw;
     case "java.lang.Boolean":
-      return Boolean.fromPointer(value).raw;
+      return JBoolean.fromPointer(value).raw;
     case "java.lang.Byte":
-      return Byte.fromPointer(value).raw;
+      return JByte.fromPointer(value).raw;
     case "java.lang.Character":
-      return Character.fromPointer(value).raw;
+      return JCharacter.fromPointer(value).raw;
     case "java.lang.Double":
-      return Double.fromPointer(value).raw;
+      return JDouble.fromPointer(value).raw;
     case "java.lang.Float":
-      return Float.fromPointer(value).raw;
+      return JFloat.fromPointer(value).raw;
     case "java.lang.Long":
-      return Long.fromPointer(value).raw;
+      return JLong.fromPointer(value).raw;
     case "java.lang.Short":
-      return Short.fromPointer(value).raw;
+      return JShort.fromPointer(value).raw;
     case "java.util.List":
-    case "java.util.ArrayList":
       return JList.fromPointer(value).raw;
+    case "java.util.ArrayList":
+      return JArrayList.fromPointer(value).raw;
     case "java.util.Set":
-    case "java.util.HashSet":
       return JSet.fromPointer(value).raw;
+    case "java.util.HashSet":
+      return JHashSet.fromPointer(value).raw;
+    case "java.util.Map":
+      return JMap.fromPointer(value).raw;
+    case "java.util.HashMap":
+      return JHashMap.fromPointer(value).raw;
     case "java.lang.String":
       return value;
     default:
-      return JObject(valueType?.replaceAll(".", "/") ?? "java.lang.Object",
-          pointer: value);
+      return JObject.fromPointer(valueType.replaceAll(".", "/"), value);
   }
 }

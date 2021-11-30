@@ -177,6 +177,7 @@ API_AVAILABLE(ios(11.0)){
 - (NSMutableArray *)fooNSMutableArray:(NSMutableArray *)array {
     DDLogInfo(@"%s %@", __FUNCTION__, array.description);
     [array addObject:@"mutable!"];
+    [array addObject:self];
     return array;
 }
 
@@ -240,6 +241,16 @@ API_AVAILABLE(ios(11.0)){
     });
 }
 
+- (void)fooNSDictionaryBlock:(NSDictionary *(^)(NSDictionary *dict))block {
+    NSDictionary *arg = @{@1: @2};
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (block) {
+            NSDictionary *result = block(arg);
+            DDLogInfo(@"%s result: %@", __FUNCTION__, result);
+        }
+    });
+}
+
 - (void)fooDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
@@ -275,7 +286,7 @@ API_AVAILABLE(ios(11.0)){
     return YES;
 }
 
-- (TestOptions)fooWithOptions:(TestOptions)options {
+- (ItemIndex)fooWithOptions:(ItemIndex)options {
     return options;
 }
 

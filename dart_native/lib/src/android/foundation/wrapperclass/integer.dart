@@ -6,19 +6,19 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 /// Stands for `Integer` in Android.
 const String CLS_INTEGER = "java/lang/Integer";
 
-class Integer extends JSubclass<int> {
-  Integer(int value) : super(value, _new, CLS_INTEGER);
+class JInteger extends JSubclass<int> {
+  JInteger(int value) : super(value, _new, CLS_INTEGER);
 
-  Integer.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_INTEGER) {
-    raw = invoke("intValue", [], "I");
+  JInteger.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, CLS_INTEGER) {
+    raw = invokeInt("intValue");
   }
 }
 
 /// New native 'Integer'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is int) {
-    JObject object = JObject.parameterConstructor(clsName, [value]);
-    return object.pointer;
+    JObject object = JObject(clsName, args: [value]);
+    return object.pointer.cast<Void>();
   } else {
     throw 'Invalid param when initializing Integer.';
   }

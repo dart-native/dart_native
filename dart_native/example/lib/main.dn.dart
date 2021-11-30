@@ -11,11 +11,11 @@ import 'package:dart_native_example/ios/runtimeson.dart';
 void runDartNativeExample() {
   runDartNative();
 
-  registerTypeConvertor('RuntimeSon', (ptr) {
-    return RuntimeSon.fromPointer(ptr);
-  });
-
   registerTypeConvertor('RuntimeStub', (ptr) {
     return RuntimeStub.fromPointer(ptr);
+  });
+
+  registerTypeConvertor('RuntimeSon', (ptr) {
+    return RuntimeSon.fromPointer(ptr);
   });
 }

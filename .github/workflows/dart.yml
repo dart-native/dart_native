@@ -8,17 +8,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [macos-latest]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
           java-version: "12.x"
       - uses: subosito/flutter-action@v1
         with:
           # same with pubspec.yaml
-          flutter-version: "1.22.3"
+          flutter-version: "2.5.3"
       - run: flutter pub get
-        working-directory: dart_native
+        working-directory: dart_native/example
       - run: flutter test --no-pub test/
-        working-directory: dart_native
+        working-directory: dart_native/example
+      - run: flutter build apk
+        working-directory: dart_native/example
+      - run: flutter build ios --release --no-codesign
+        working-directory: dart_native/example

@@ -1,151 +1,71 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/android/common/library.dart';
-import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
-import 'package:ffi/ffi.dart';
-import 'package:dart_native/src/common/native_basic_type.dart';
+import 'package:dart_native/src/android/runtime/messenger.dart';
 
-import 'jclass.dart';
+JObject createNullJObj(String clsName) {
+  return JObject.fromPointer(clsName, nullptr.cast());
+}
 
-void passJObjectToNative(JObject obj) {
-  if (initDartAPISuccess && obj != null) {
-    passJObjectToC(obj, obj.pointer);
+void bindLifeCycleWithNative(JObject? obj) {
+  if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
+    passJObjectToC!(obj, obj.pointer.cast<Void>());
   } else {
     print('pass object to native failed! address=${obj?.pointer}');
   }
 }
 
-class JObject extends JClass {
-  Pointer _ptr;
+/// When invoke with async method, dart can set run thread.
+/// [FlutterUI] is default.
+enum Thread {
+  /// Flutter UI thread.
+  FlutterUI,
 
-  //init target class
-  JObject(String className, {Pointer pointer, bool isInterface = false})
-      : super(className) {
-    if (isInterface) {
-      Pointer<Int64> hashPointer = allocate();
-      hashPointer.value = identityHashCode(this);
-      _ptr = hashPointer.cast<Void>();
-      return;
-    }
+  /// Native main thread.
+  MainThread,
 
-    if (pointer == null) {
-      Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-      pointer = nativeCreateObject(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
-      free(classNamePtr);
-    }
+  /// Native sub thread.
+  SubThread
+}
 
-    _ptr = pointer;
-    passJObjectToNative(this);
-  }
+class JObject {
+  late Pointer<Void> _ptr;
+  late String _cls;
 
-  JObject.parameterConstructor(String clsName, List args) : super(clsName) {
-    NativeArguments nativeArguments = _parseNativeArguments(args);
-    Pointer<Utf8> classNamePtr = Utf8.toUtf8(super.className);
-    _ptr = nativeCreateObject(
-        classNamePtr,
-        nativeArguments.pointers,
-        nativeArguments.typePointers,
-        args?.length ?? 0,
-        nativeArguments.stringTypeBitmask);
-    free(classNamePtr);
-    passJObjectToNative(this);
-    nativeArguments.freePointers();
-  }
-
-  Pointer get pointer {
+  Pointer<Void> get pointer {
     return _ptr;
   }
 
-  dynamic invoke(String methodName, List args, String returnType,
-      {List argsSignature}) {
-    Pointer<Utf8> methodNamePtr = Utf8.toUtf8(methodName);
-    Pointer<Utf8> returnTypePtr = Utf8.toUtf8(returnType);
-
-    NativeArguments nativeArguments =
-        _parseNativeArguments(args, argsSignature: argsSignature);
-    Pointer<Void> invokeMethodRet = nativeInvoke(
-        _ptr,
-        methodNamePtr,
-        nativeArguments.pointers,
-        nativeArguments.typePointers,
-        args?.length ?? 0,
-        returnTypePtr,
-        nativeArguments.stringTypeBitmask);
-
-    dynamic result = loadValueFromPointer(invokeMethodRet, returnType,
-        typePtr: nativeArguments.typePointers.elementAt(args?.length ?? 0));
-
-    nativeArguments.freePointers();
-    free(methodNamePtr);
-    free(returnTypePtr);
-    return result;
+  String get clsName {
+    return _cls;
+  }
+  
+  //init target class
+  JObject(String className, {List? args, bool isInterface = false}) {
+    _ptr =
+        newObject(className, this, args: args, isInterface: isInterface);
+    _cls = className;
+    bindLifeCycleWithNative(this);
   }
 
-  @override
-  int compareTo(other) {
-    if (other is JObject && other._ptr == _ptr) {
-      return 0;
-    }
-    return 1;
+  JObject.fromPointer(String className, Pointer<Void> pointer) {
+    _ptr = pointer;
+    _cls = className;
+    bindLifeCycleWithNative(this);
   }
 
-  NativeArguments _parseNativeArguments(List args, {List argsSignature}) {
-    Pointer<Pointer<Void>> pointers = nullptr.cast();
-
-    /// extend a bit for string
-    Pointer<Pointer<Utf8>> typePointers =
-        allocate<Pointer<Utf8>>(count: (args?.length ?? 0) + 1);
-    int stringTypeBitmask = 0;
-    if (args != null && args.length > 0) {
-      int length = args.length;
-      /// for 32 bit system
-      if (!is64Bit) {
-        args.forEach((arg) {
-          if (arg is double || arg is long) {
-            length++;
-          }
-        });
-      }
-      pointers = allocate<Pointer<Void>>(count: length);
-
-      for (var i = 0, pi = 0; i < args.length; i++, pi++) {
-        var arg = args[i];
-        if (arg == null) {
-          throw 'One of args list is null';
-        }
-
-        Pointer<Utf8> argSignature =
-            argsSignature == null || !(argsSignature[i] is Pointer<Utf8>)
-                ? null
-                : argsSignature[i];
-
-        if (arg is String) {
-          stringTypeBitmask |= (0x1 << i);
-        }
-
-        storeValueToPointer(arg, pointers.elementAt(pi),
-            typePtr: typePointers.elementAt(i), argSignature: argSignature);
-        /// check 32 bit system
-        if (!is64Bit && (arg is double || arg is long)) {
-          pi++;
-        }
-      }
-    }
-    typePointers.elementAt(args?.length ?? 0).value = Utf8.toUtf8("0");
-    return NativeArguments(pointers, typePointers, stringTypeBitmask);
+  dynamic invoke(String methodName, String returnType,
+      {List? args, List<String>? assignedSignature}) {
+    return invokeMethod(_ptr.cast<Void>(), methodName, args, returnType,
+        assignedSignature: assignedSignature);
   }
-}
 
-class NativeArguments {
-  final Pointer<Pointer<Void>> pointers;
-  final Pointer<Pointer<Utf8>> typePointers;
-  int stringTypeBitmask;
-
-  NativeArguments(this.pointers, this.typePointers, this.stringTypeBitmask);
-
-  void freePointers() {
-    free(pointers);
-    free(typePointers);
+  Future<dynamic> invokeAsync(String methodName, String returnType,
+      {List? args, List<String>? assignedSignature,
+      Thread thread = Thread.MainThread}) async {
+    return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
+        assignedSignature: assignedSignature, thread: thread);
   }
+
 }

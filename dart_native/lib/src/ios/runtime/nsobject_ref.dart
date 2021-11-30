@@ -10,12 +10,12 @@ import 'package:ffi/ffi.dart';
 /// This Class is an experimental implementation.
 /// Broken changes are likely in the future.
 class NSObjectRef<T extends id> {
-  T value;
-  Pointer<Pointer<Void>> _ptr;
+  late T value;
+  late Pointer<Pointer<Void>> _ptr;
   Pointer<Pointer<Void>> get pointer => _ptr;
 
   NSObjectRef() {
-    _ptr = allocate<Pointer<Void>>();
+    _ptr = calloc<Pointer<Void>>();
     _ptr.value = nullptr;
     PointerWrapper wrapper = PointerWrapper();
     wrapper.value = _ptr.cast<Void>();
@@ -24,7 +24,7 @@ class NSObjectRef<T extends id> {
   NSObjectRef.fromPointer(this._ptr);
 
   syncValue() {
-    if (_ptr != null && _ptr.value != nullptr) {
+    if (_ptr.value != nullptr) {
       value = objcInstanceFromPointer(T.toString(), _ptr.value);
     }
   }

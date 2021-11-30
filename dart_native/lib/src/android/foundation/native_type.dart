@@ -1,14 +1,36 @@
-import 'package:dart_native/src/common/native_basic_type.dart';
+mixin _ToAlias {}
 
-class NativeBox<T> {
+/// Stands for `float` in Java.
+// ignore: camel_case_types
+class float = _NativeNum<double> with _ToAlias;
+
+/// Stands for `short` in Java.
+// ignore: camel_case_types
+class short = _NativeInt with _ToAlias;
+
+/// Stands for `long` in Java.
+// ignore: camel_case_types
+class long = _NativeInt with _ToAlias;
+
+/// Stands for `byte` in Java.
+// ignore: camel_case_types
+class byte = _NativeInt with _ToAlias;
+
+/// Stands for `char` in Java.
+// ignore: camel_case_types
+class jchar = _NativeInt with _ToAlias;
+
+
+class _NativeType<T> {
   final T raw;
-  const NativeBox(this.raw);
+  const _NativeType(this.raw);
 
   bool operator ==(other) {
     if (other is T) {
       return raw == other;
     }
-    return raw == other.raw;
+    if (other is _NativeType) return raw == other.raw;
+    return false;
   }
 
   @override
@@ -20,11 +42,11 @@ class NativeBox<T> {
   }
 }
 
-class NativeNumBox<T extends num> extends NativeBox<T> {
-  const NativeNumBox(num raw) : super(raw);
+class _NativeNum<T extends num> extends _NativeType<T> {
+  const _NativeNum(T raw) : super(raw);
 
   /// Addition operator.
-  T operator +(other) {
+  num operator +(other) {
     if (other == null) {
       return raw;
     }
@@ -35,7 +57,7 @@ class NativeNumBox<T extends num> extends NativeBox<T> {
   }
 
   /// Subtraction operator.
-  T operator -(other) {
+  num operator -(other) {
     if (other == null) {
       return raw;
     }
@@ -46,7 +68,7 @@ class NativeNumBox<T extends num> extends NativeBox<T> {
   }
 
   /// Multiplication operator.
-  T operator *(other) {
+  num operator *(other) {
     if (other == null) {
       return raw;
     }
@@ -68,8 +90,8 @@ class NativeNumBox<T extends num> extends NativeBox<T> {
   }
 }
 
-class NativeIntBox extends NativeNumBox<int> {
-  const NativeIntBox(num raw) : super(raw);
+class _NativeInt extends _NativeNum<int> {
+  const _NativeInt(int raw) : super(raw);
 
   int operator &(dynamic other) {
     if (other == null) {
@@ -105,46 +127,17 @@ class NativeIntBox extends NativeNumBox<int> {
     return ~raw;
   }
 
-  int operator <<(int shiftAmount) {
+  int operator <<(int? shiftAmount) {
     if (shiftAmount == null) {
       return raw;
     }
     return raw << shiftAmount;
   }
 
-  int operator >>(int shiftAmount) {
+  int operator >>(int? shiftAmount) {
     if (shiftAmount == null) {
       return raw;
     }
     return raw >> shiftAmount;
-  }
-}
-
-dynamic boxingBasicValue(String type, dynamic value) {
-  switch (type) {
-    case 'char':
-      return char(value);
-    case 'unsigned_char':
-      return unsigned_char(value);
-    case 'short':
-      return short(value);
-    case 'unsigned_short':
-      return unsigned_short(value);
-    case 'unsigned_int':
-      return unsigned_int(value);
-    case 'long':
-      return long(value);
-    case 'unsigned_long':
-      return unsigned_long(value);
-    case 'long_long':
-      return long_long(value);
-    case 'unsigned_long_long':
-      return unsigned_long_long(value);
-    case 'size_t':
-      return size_t(value);
-    case 'float':
-      return float(value);
-    default:
-      return value;
   }
 }

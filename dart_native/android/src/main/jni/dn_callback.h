@@ -1,13 +1,14 @@
 //
 // Created by Hui on 6/1/21.
 //
-
+/// todo(huizz): use wrapper callback
 #ifndef DART_NATIVE_DN_CALLBACK_H
 #define DART_NATIVE_DN_CALLBACK_H
 
 #include <jni.h>
 #include <dart_api.h>
 #include <map>
+#include <thread>
 
 #ifdef __cplusplus
 extern "C"
@@ -34,6 +35,8 @@ Dart_Port getCallbackDartPort(jlong dartObjectAddress);
 
 NativeMethodCallback
 getCallbackMethod(jlong dartObjectAddress, char *functionName);
+
+bool IsCurrentThread(jlong dartObjectAddress, std::__thread_id currentThread);
 
 #ifdef __cplusplus
 }

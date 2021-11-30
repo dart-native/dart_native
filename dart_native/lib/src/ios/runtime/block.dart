@@ -5,6 +5,7 @@ import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
+import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
@@ -26,9 +27,12 @@ final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
 ///
 /// You can create [Block] from Dart [Function], or just obtain [Block] from
 /// native pointer address.
+
+final Block nilBlock = Block.fromPointer(nullptr);
+
 class Block extends id {
-  Function function;
-  NSObject _wrapper; // Block hold wrapper
+  Function? function;
+  NSObject? _wrapper; // Block hold wrapper
   List<String> types = [];
   int sequence = -1;
 
@@ -40,17 +44,18 @@ class Block extends id {
   factory Block(Function function) {
     List<String> dartTypes = dartTypeStringForFunction(function);
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
-    Pointer<Utf8> typeStringPtr = Utf8.toUtf8(nativeTypes.join(', '));
+    Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
     Pointer<Void> blockWrapperPtr =
         blockCreate(typeStringPtr, _callbackPtr, nativePort);
+    assert(blockWrapperPtr != nullptr);
     if (blockWrapperPtr == nullptr) {
-      return nil;
+      return nilBlock;
     }
     NSObject blockWrapper = NSObject.fromPointer(blockWrapperPtr);
     int blockAddr = blockWrapper.perform(SEL('blockAddress'));
     int sequence = blockWrapper.perform(SEL('sequence'));
     Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
-    free(typeStringPtr);
+    calloc.free(typeStringPtr);
     result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
@@ -69,20 +74,21 @@ class Block extends id {
 
   /// This [isa] block in iOS, but it's meaningless for a block created
   /// by Dart function.
-  Class get isa {
+  Class? get isa {
     if (function != null) {
-      return null;
+      throw 'Block created by Dart';
     }
     return super.isa;
   }
 
-  /// Superclass for block in iOS, but it's meaningless for a block
+  /// Superclass for block in iOS, meaningless for a block
   /// created by Dart function.
   Class get superclass {
     if (function != null) {
-      return null;
+      throw 'Block created by Dart';
+      //return null;
     }
-    return isa.perform(SEL('superclass'));
+    return isa!.perform(SEL('superclass'));
   }
 
   String get description {
@@ -99,9 +105,9 @@ class Block extends id {
 
   /// Copy a new [Block] by calling `Block_copy` function.
   ///
-  /// Copy a block created by Dart function is invalid, because it's used for
+  /// Copying a block created by Dart function is invalid, because it's used for
   /// callback from native to Dart.
-  Block copy() {
+  Block? copy() {
     if (pointer == nullptr || function != null) {
       return null;
     }
@@ -123,16 +129,16 @@ class Block extends id {
   ///
   /// Invoking a block created by Dart function is invalid, because it's used
   /// for callback from native to Dart.
-  dynamic invoke([List args]) {
+  dynamic invoke([List? args]) {
     if (pointer == nullptr || function != null) {
       return null;
     }
     Pointer<Utf8> typesEncodingsPtr = _blockTypeEncodeString(pointer);
-    Pointer<Int32> countPtr = allocate<Int32>();
+    Pointer<Int32> countPtr = calloc<Int32>();
     Pointer<Pointer<Utf8>> typesPtrPtr =
         nativeTypesEncoding(typesEncodingsPtr, countPtr, 0);
     int count = countPtr.value;
-    free(countPtr);
+    calloc.free(countPtr);
     // typesPtrPtr contains return type and block itself.
     if (count != (args?.length ?? 0) + 2) {
       throw 'Args Count NOT match';
@@ -141,7 +147,7 @@ class Block extends id {
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
     List<Pointer<Utf8>> structTypes = [];
     if (args != null) {
-      argsPtrPtr = allocate<Pointer<Void>>(count: args.length);
+      argsPtrPtr = calloc<Pointer<Void>>(args.length);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (arg == null) {
@@ -161,7 +167,7 @@ class Block extends id {
     Pointer<Void> resultPtr = blockInvoke(
         pointer, argsPtrPtr, nativePort, stringTypeBitmask, typesPtrPtr);
     if (argsPtrPtr != nullptr.cast()) {
-      free(argsPtrPtr);
+      calloc.free(argsPtrPtr);
     }
 
     var retTypePtr = typesPtrPtr.value;
@@ -176,7 +182,7 @@ class Block extends id {
       result = loadValueFromPointer(resultPtr, retTypePtr);
     }
     // free struct type memory (malloc on native side)
-    structTypes.forEach(free);
+    structTypes.forEach(calloc.free);
     return result;
   }
 }
@@ -189,12 +195,12 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   // If stret, the first arg contains address of a pointer of returned struct. Other args move backwards.
   // This is the index for first argument of block in argsPtrPtrPtr list.
   int argStartIndex = stret ? 2 : 1;
-  Block block = blockForSequence[seq];
+  Block? block = blockForSequence[seq];
   if (block == null) {
     throw 'Can\'t find block by sequence $seq';
   }
   List args = [];
-  Pointer pointer = block._wrapper.perform(SEL('typeEncodings'));
+  Pointer pointer = block._wrapper!.perform(SEL('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
@@ -206,13 +212,13 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     dynamic arg = loadValueFromPointer(ptr, argTypePtr);
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
-      arg = boxingObjCBasicValue(dartType, arg);
+      arg = handleObjCBasicValue(dartType, arg);
       arg = objcInstanceFromPointer(dartType, arg);
     }
     args.add(arg);
   }
 
-  dynamic result = Function.apply(block.function, args);
+  dynamic result = Function.apply(block.function!, args);
 
   if (result != null) {
     Pointer<Utf8> resultTypePtr = typesPtrPtr.elementAt(0).value;
@@ -221,7 +227,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
-      PointerWrapper wrapper =
+      PointerWrapper? wrapper =
           storeValueToPointer(result, realRetPtrPtr, resultTypePtr);
       if (wrapper != null) {
         storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);

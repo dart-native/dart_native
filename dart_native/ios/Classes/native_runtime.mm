@@ -279,8 +279,10 @@ void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signatu
                     BOOL isNSString = [(__bridge id)result isKindOfClass:NSString.class];
                     // highest bit is a flag for decode.
                     BOOL decodeRetVal = (stringTypeBitmask & (1LL << 63)) != 0;
+                    // return value will be passed into callback block.
+                    BOOL returnUsingCallback = queue && callback;
                     // return value is a NSString and needs decode.
-                    if (isNSString && decodeRetVal) {
+                    if (isNSString && decodeRetVal && !returnUsingCallback) {
                         result = _dataForNSStringReturnValue((__bridge NSString *)result, retType);
                     } else {
                         [DNObjectDealloc attachHost:(__bridge id)result
@@ -292,7 +294,7 @@ void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signatu
         return result;
     };
     
-    if (queue != NULL) {
+    if (queue) {
         // Retain arguments and return nil immediately.
         [invocation retainArguments];
         dispatch_async(queue, ^{
@@ -735,7 +737,6 @@ static os_unfair_lock _refCountUnfairLock = OS_UNFAIR_LOCK_INIT;
 static NSLock *_refCountLock = [[NSLock alloc] init];
 
 static void _RunFinalizer(void *isolate_callback_data,
-                         Dart_WeakPersistentHandle handle,
                          void *peer) {
     NSNumber *address = @((intptr_t)peer);
     NSUInteger refCount = objectRefCount[address].unsignedIntegerValue;
@@ -748,15 +749,14 @@ static void _RunFinalizer(void *isolate_callback_data,
 }
 
 static void RunFinalizer(void *isolate_callback_data,
-                         Dart_WeakPersistentHandle handle,
                          void *peer) {
     if (@available(iOS 10.0, *)) {
         os_unfair_lock_lock(&_refCountUnfairLock);
-        _RunFinalizer(isolate_callback_data, handle, peer);
+        _RunFinalizer(isolate_callback_data, peer);
         os_unfair_lock_unlock(&_refCountUnfairLock);
     } else {
         [_refCountLock lock];
-        _RunFinalizer(isolate_callback_data, handle, peer);
+        _RunFinalizer(isolate_callback_data, peer);
         [_refCountLock unlock];
     }
 }
