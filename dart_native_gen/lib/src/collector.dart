@@ -6,13 +6,21 @@ class Collector {
   Collector();
 
   static String? packageName;
-  Set<String> classes = Set();
+  Set<String> ocClasses = Set();
+
+  /// key is dart class, value is java class
+  Map<String, String> javaClasses = Map();
   Set<String> importFiles = Set();
 
   void collect(
       Element element, ConstantReader annotation, BuildStep buildStep) {
     final String className = element.name!;
-    classes.add(className);
+    String? javaClass = annotation.peek('javaClass')?.stringValue;
+    if (javaClass != null) {
+      javaClasses[className] = javaClass;
+    } else {
+      ocClasses.add(className);
+    }
 
     Collector.packageName = buildStep.inputId.package;
 

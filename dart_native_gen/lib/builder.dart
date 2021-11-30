@@ -7,3 +7,9 @@ Builder typeBuilder(BuilderOptions options) => LibraryBuilder(TypeGenerator(),
 
 Builder typeWriteBuilder(BuilderOptions options) =>
     LibraryBuilder(DartNativeGenerator(), generatedExtension: '.dn.dart');
+
+Builder typeWriteOCBuilder(BuilderOptions options) =>
+    LibraryBuilder(DartNativeOCGenerator(), generatedExtension: '.oc.dn.dart');
+
+Builder typeWriteJavaBuilder(BuilderOptions options) =>
+    LibraryBuilder(DartNativeJavaGenerator(), generatedExtension: '.java.dn.dart');
