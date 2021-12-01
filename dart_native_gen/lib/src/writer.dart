@@ -24,7 +24,10 @@ class Writer {
     }
 
     String result = "import 'package:dart_native/dart_native.dart';";
-    result += collector.importFiles.map((String importFile) {
+    Set<String> importFiles = type == ClassType.Java
+        ? collector.javaImportFiles
+        : collector.ocImportFiles;
+    result += importFiles.map((String importFile) {
       return "import '$importFile';";
     }).join('\n');
 
@@ -44,7 +47,7 @@ class Writer {
 
     if (Collector.packageName != 'dart_native') {
       result += """
-        run${type == ClassType.Java ? 'Java' : ''}DartNative();
+        runDartNative();
 
         """;
     } else {
@@ -81,7 +84,7 @@ class Writer {
     return result;
   }
 
-  String writeEntry() {
+  String writeEntry(String fileName) {
     if (Collector.packageName == null) {
       return '';
     }
@@ -92,10 +95,10 @@ class Writer {
       result += "import 'dart:io';\n";
     }
     if (hasOCClasses) {
-      result += "import 'main.oc.dn.dart';\n";
+      result += "import '$fileName.oc.dn.dart';\n";
     }
     if (hasJavaClasses) {
-      result += "import 'main.java.dn.dart';\n";
+      result += "import '$fileName.java.dn.dart';\n";
     }
 
     String functionName = generateFunctionName(Collector.packageName);

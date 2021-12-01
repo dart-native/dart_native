@@ -66,7 +66,7 @@ class JObject {
   ///   Test(int i, byte b, short s);
   /// }
   /// dart class:
-  /// @nativeJavaClass(className: "com/test/Test")
+  /// @nativeJavaClass(className: 'com/test/Test')
   /// class Test extend JObject {
   ///   Test(int i, int b, int s): super(args: [i, byte[b], short[s]);
   /// }
@@ -78,8 +78,8 @@ class JObject {
         ? className
         : getRegisterJavaClass(runtimeType.toString());
     if (_cls == null) {
-      throw "Java class name is null, you can set java class name in constructor" +
-          " or use @nativeJavaClass annotation";
+      throw 'Java class name is null, you can set java class name in constructor' +
+          ' or use @nativeJavaClass annotation';
     }
     _ptr = newObject(_cls!, this, args: args, isInterface: isInterface);
     bindLifeCycleWithNative(this);
@@ -93,8 +93,8 @@ class JObject {
         ? className
         : getRegisterJavaClass(runtimeType.toString());
     if (_cls == null) {
-      throw "Java class name is null, you can set java class name in constructor" +
-          " or use @nativeJavaClass annotation";
+      throw 'Java class name is null, you can set java class name in constructor' +
+          ' or use @nativeJavaClass annotation';
     }
     _ptr = pointer;
     bindLifeCycleWithNative(this);

@@ -10,7 +10,9 @@ class Collector {
 
   /// key is dart class, value is java class
   Map<String, String> javaClasses = Map();
-  Set<String> importFiles = Set();
+
+  Set<String> ocImportFiles = Set();
+  Set<String> javaImportFiles = Set();
 
   void collect(
       Element element, ConstantReader annotation, BuildStep buildStep) {
@@ -35,6 +37,10 @@ class Collector {
     } else {
       path = "${buildStep.inputId.path}";
     }
-    importFiles.add(path);
+    if (javaClass != null) {
+      javaImportFiles.add(path);
+    } else {
+      ocImportFiles.add(path);
+    }
   }
 }

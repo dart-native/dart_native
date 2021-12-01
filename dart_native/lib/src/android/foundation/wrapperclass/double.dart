@@ -2,15 +2,17 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Double` in Android.
-const String cls_double = "java/lang/Double";
+const String cls_double = 'java/lang/Double';
 
+@nativeJavaClass(cls_double)
 class JDouble extends JSubclass<double> {
   JDouble(double value) : super(value, _new, cls_double);
 
   JDouble.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, cls_double) {
-    raw = invokeDouble("doubleValue");
+    raw = invokeDouble('doubleValue');
   }
 }
 

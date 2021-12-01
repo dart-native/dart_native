@@ -72,7 +72,7 @@ dynamic _invokeMethod(
     Thread thread = Thread.FlutterUI,
     _AsyncMessageCallback? callback}) {
   if (objPtr == nullptr) {
-    throw "InvokeMethod error native object pointer is nullptr.";
+    throw 'InvokeMethod error native object pointer is nullptr.';
   }
 
   Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
@@ -196,7 +196,7 @@ NativeArguments _parseNativeArguments(List? args,
       }
     }
   }
-  typePointers.elementAt(args?.length ?? 0).value = "0".toNativeUtf8();
+  typePointers.elementAt(args?.length ?? 0).value = '0'.toNativeUtf8();
   return NativeArguments(pointers, typePointers, stringTypeBitmask);
 }
 

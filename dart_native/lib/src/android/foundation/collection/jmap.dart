@@ -46,6 +46,7 @@ class JMap<K, V> extends JSubclass<Map> {
   }
 }
 
+@nativeJavaClass(cls_hash_map)
 class JHashMap<K, V> extends JMap {
   JHashMap(Map value) : super(value, clsName: cls_hash_map);
 

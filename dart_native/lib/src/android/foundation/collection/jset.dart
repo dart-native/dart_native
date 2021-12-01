@@ -30,6 +30,7 @@ class JSet<E> extends JSubclass<Set> {
   }
 }
 
+@nativeJavaClass(cls_hash_set)
 class JHashSet<E> extends JSet {
   JHashSet(Set value) : super(value, clsName: cls_hash_set);
 

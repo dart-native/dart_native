@@ -8,7 +8,7 @@ import 'package:ffi/ffi.dart';
 
 void registerCallback(dynamic target, Function function, String functionName) {
   if (target is! JObject) {
-    print("register error not JObject");
+    print('register error not JObject');
     return;
   }
   Pointer<Void> targetPtr = target.pointer.cast<Void>();
@@ -34,7 +34,7 @@ _callback(
   Function? function = CallBackManager.instance
       .getCallbackFunctionOnTarget(targetPtr, functionName);
   if (function == null) {
-    print("function $functionName not registered!!!");
+    print('function $functionName not registered!!!');
     return nullptr;
   }
   List args = [];
@@ -47,7 +47,7 @@ _callback(
     }
 
     final String argType = argTypePtr.toDartString();
-    dynamic arg = argType == "java.lang.String"
+    dynamic arg = argType == 'java.lang.String'
         ? fromUtf16(argPtr)
         : unBoxingWrapperClass(argPtr, argType);
     args.add(arg);
