@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
+import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Map` in Android.
@@ -26,15 +27,16 @@ class JMap<K, V> extends JSubclass<Map> {
       dynamic item = invoke(
           'get', 'Ljava/lang/Object;', args: [boxingWrapperClass(key)],
           assignedSignature: ['Ljava/lang/Object;']);
-      // if (valueConvertor != null) {
-      //   temp[key] = valueConvertor(item);
-      //   continue;
-      // }
+      final valueConvertor = getRegisterPointerConvertor(V.toString());
+      if (valueConvertor != null) {
+        temp[key] = valueConvertor(item);
+        continue;
+      }
       if (itemType == '') {
         if (item is String) {
-          itemType = 'java.lang.String';
+          itemType = 'java/lang/String';
         } else {
-          itemType = _getItemClass(item);
+          itemType = getJClassName(item);
         }
       }
       temp[key] = unBoxingWrapperClass(item, itemType);
@@ -70,12 +72,4 @@ Pointer<Void> _new(dynamic value, String clsName) {
   } else {
     throw 'Invalid param when initializing JList.';
   }
-}
-
-String _getItemClass(Pointer<Void> itemPtr) {
-  JObject templeObject = JObject.fromPointer(itemPtr, className: 'java/lang/Object');
-  templeObject = JObject.fromPointer(
-      templeObject.invoke('getClass', 'Ljava/lang/Class;'), className: 'java/lang/Class');
-
-  return templeObject.invoke('getName', 'Ljava/lang/String;');
 }

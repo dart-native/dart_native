@@ -5,8 +5,8 @@ import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
 
-/// Convert java object from pointer.
-typedef dynamic ConvertorJavaFromPointer(Pointer<Void> ptr);
+/// Convert java object pointer to dart object which extends [JObject].
+typedef dynamic ConvertorToDartFromPointer(Pointer<Void> ptr);
 
 /// Use classname create a null pointer.
 JObject createNullJObj(String clsName) {

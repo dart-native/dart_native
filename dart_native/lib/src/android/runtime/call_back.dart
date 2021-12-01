@@ -49,7 +49,7 @@ _callback(
     final String argType = argTypePtr.toDartString();
     dynamic arg = argType == 'java.lang.String'
         ? fromUtf16(argPtr)
-        : unBoxingWrapperClass(argPtr, argType);
+        : unBoxingWrapperClass(argPtr, argType.replaceAll('.', '/'));
     args.add(arg);
   }
 

@@ -24,13 +24,14 @@ class JList<E> extends JSubclass<List> {
     String itemType = '';
     for (var i = 0; i < count; i++) {
       dynamic item = invoke('get', 'Ljava/lang/Object;', args: [i]);
-      // if (convertor != null) {
-      //   temp[i] = convertor(item);
-      //   continue;
-      // }
+      final convertor = getRegisterPointerConvertor(E.toString());
+      if (convertor != null) {
+        temp[i] = convertor(item);
+        continue;
+      }
       if (itemType == '') {
         if (item is String) {
-          itemType = 'java.lang.String';
+          itemType = 'java/lang/String';
         } else {
           itemType = getJClassName(item);
         }
@@ -67,10 +68,3 @@ Pointer<Void> _new(dynamic value, String clsName) {
   }
 }
 
-String _getItemClass(Pointer<Void> itemPtr) {
-  JObject templeObject = JObject.fromPointer(itemPtr, className: 'java/lang/Object');
-  templeObject = JObject.fromPointer(
-      templeObject.invoke('getClass', 'Ljava/lang/Class;'), className: 'java/lang/Class');
-
-  return templeObject.invoke('getName', 'Ljava/lang/String;');
-}

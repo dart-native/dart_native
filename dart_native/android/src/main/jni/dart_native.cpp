@@ -367,7 +367,7 @@ void *invokeNativeMethod(void *objPtr,
     return nullptr;
   }
   auto type = TaskThread(thread);
-  if (type == TaskThread::kFlutterUI) {
+  auto invokeFunction = [=] {
     return _doInvokeMethod(object,
                            methodName,
                            arguments,
@@ -378,20 +378,12 @@ void *invokeNativeMethod(void *objPtr,
                            callback,
                            dartPort,
                            type);
+  };
+  if (type == TaskThread::kFlutterUI) {
+    return invokeFunction();
   }
 
-  gTaskRunner->ScheduleInvokeTask(type, [=] {
-    _doInvokeMethod(object,
-                    methodName,
-                    arguments,
-                    dataTypes,
-                    argumentCount,
-                    returnType,
-                    stringTypeBitmask,
-                    callback,
-                    dartPort,
-                    type);
-  });
+  gTaskRunner->ScheduleInvokeTask(type, invokeFunction);
   return nullptr;
 }
 
