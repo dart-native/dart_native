@@ -94,3 +94,9 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<NativeFunction<MethodNativeCallback>> function,
                     Int64 dartPort)>>('registerNativeCallback')
         .asFunction();
+
+/// Get java class name from native.
+final Pointer<Void> Function(Pointer<Void>)? getJavaClassName = nativeDylib
+    .lookup<NativeFunction<Pointer<Void> Function(Pointer<Void>)>>(
+        'getClassName')
+    .asFunction();

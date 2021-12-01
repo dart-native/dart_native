@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
+import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `List` in Android.
@@ -16,23 +17,22 @@ class JList<E> extends JSubclass<List> {
   }
 
   JList.fromPointer(Pointer<Void> ptr,
-      {String clsName = cls_list,
-      E Function(Pointer<Void> pointer)? creator})
+      {String clsName = cls_list})
       : super.fromPointer(ptr, clsName) {
     int count = invokeInt('size');
     List temp = List.filled(count, [], growable: false);
     String itemType = '';
     for (var i = 0; i < count; i++) {
       dynamic item = invoke('get', 'Ljava/lang/Object;', args: [i]);
-      if (creator != null) {
-        temp[i] = creator(item);
-        continue;
-      }
+      // if (convertor != null) {
+      //   temp[i] = convertor(item);
+      //   continue;
+      // }
       if (itemType == '') {
         if (item is String) {
           itemType = 'java.lang.String';
         } else {
-          itemType = _getItemClass(item);
+          itemType = getJClassName(item);
         }
       }
       temp[i] = unBoxingWrapperClass(item, itemType);
@@ -45,8 +45,8 @@ class JList<E> extends JSubclass<List> {
 class JArrayList<E> extends JList {
   JArrayList(List value) : super(value, clsName: cls_array_list);
 
-  JArrayList.fromPointer(Pointer<Void> ptr, {E Function(Pointer<Void> pointer)? creator})
-      : super.fromPointer(ptr, clsName: cls_array_list, creator: creator);
+  JArrayList.fromPointer(Pointer<Void> ptr)
+      : super.fromPointer(ptr, clsName: cls_array_list);
 }
 
 /// New native 'ArrayList'.

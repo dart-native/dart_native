@@ -16,15 +16,14 @@ class JSet<E> extends JSubclass<Set> {
   }
 
   JSet.fromPointer(Pointer<Void> ptr,
-      {String clsName = cls_set, E Function(Pointer<Void> pointer)? creator})
+      {String clsName = cls_set})
       : super.fromPointer(ptr, clsName) {
     JObject converter =
         JObject(className: 'com/dartnative/dart_native/ArrayListConverter');
     List list = JList<E>.fromPointer(
             converter.invoke('setToList',
               'Ljava/util/List;',
-              args: [JObject.fromPointer(ptr, className: 'java/util/Set')], ),
-            creator: creator)
+              args: [JObject.fromPointer(ptr, className: 'java/util/Set')]))
         .raw;
     raw = list.toSet();
   }
@@ -34,9 +33,8 @@ class JSet<E> extends JSubclass<Set> {
 class JHashSet<E> extends JSet {
   JHashSet(Set value) : super(value, clsName: cls_hash_set);
 
-  JHashSet.fromPointer(Pointer<Void> ptr,
-      {E Function(Pointer<Void> pointer)? creator})
-      : super.fromPointer(ptr, clsName: cls_hash_set, creator: creator);
+  JHashSet.fromPointer(Pointer<Void> ptr)
+      : super.fromPointer(ptr, clsName: cls_hash_set);
 }
 
 /// New native 'Set'.

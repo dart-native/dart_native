@@ -174,6 +174,20 @@ void _fillArgs(void **arguments, char **argumentTypes,
   }
 }
 
+void *getClassName(void *objectPtr) {
+  if (objectPtr == nullptr) {
+    return nullptr;
+  }
+  auto env = _getEnv();
+  auto cls = _findClass(env, "java/lang/Class");
+  jmethodID getName = env->GetMethodID(cls, "getName", "()Ljava/lang/String;");
+  auto object = static_cast<jobject>(objectPtr);
+  auto objCls = env->GetObjectClass(object);
+  auto jstr = (jstring) env->CallObjectMethod(objCls, getName);
+  uint16_t* clsName = ConvertToDartUtf16(env, jstr);
+  return clsName;
+}
+
 jobject _newObject(jclass cls,
                    void **arguments,
                    char **argumentTypes,
@@ -280,7 +294,7 @@ void *_doInvokeMethod(jobject object,
           /// mark the last pointer as string
           /// dart will check this pointer
           typePointers[argumentCount] = (char *) "java.lang.String";
-          nativeInvokeResult = convertToDartUtf16(env, (jstring) obj);
+          nativeInvokeResult = ConvertToDartUtf16(env, (jstring) obj);
         } else {
           typePointers[argumentCount] = (char *) "java.lang.Object";
           jobject gObj = env->NewGlobalRef(obj);
@@ -489,7 +503,7 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     auto argument = env->GetObjectArrayElement(argumentsArray, i);
     dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString, 0);
     if (strcmp(dataTypes[i], "java.lang.String") == 0) {
-      arguments[i] = convertToDartUtf16(env, (jstring) argument);
+      arguments[i] = ConvertToDartUtf16(env, (jstring) argument);
     } else {
       jobject gObj = env->NewGlobalRef(argument);
       _addGlobalObject(gObj);

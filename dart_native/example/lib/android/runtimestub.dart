@@ -88,8 +88,7 @@ class RuntimeStub extends JObject {
   }
 
   Entity createEntity() {
-    return Entity.fromPointer(invoke(
-        'createEntity', "Lcom/dartnative/dart_native_example/Entity;"));
+    return invokeObject<Entity>('createEntity');
   }
 
   int getTime(Entity entity) {

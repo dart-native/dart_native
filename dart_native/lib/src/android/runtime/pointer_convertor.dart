@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
-typedef dynamic ConvertorJavaFromPointer(Pointer<Void> ptr);
+import 'package:dart_native/dart_native.dart';
+
 Map<String, Convertor> _convertorCache = {};
 
 /// Register native class name
@@ -34,8 +35,45 @@ String? getRegisterJavaClass(String dartClass) {
   return _convertorCache[dartClass]?.javaClass;
 }
 
+String? getRegisterJavaClassSignature(String dartClass) {
+  String? cls = _convertorCache[dartClass]?.javaClass;
+  if (cls != null) {
+    cls = 'L$cls;';
+  }
+  return cls;
+}
+
 class Convertor {
   final String? javaClass;
-  final ConvertorJavaFromPointer? convertor;
+  final ConvertorJavaFromPointer convertor;
   Convertor(this.javaClass, this.convertor);
+}
+
+/// Convert pointer to dart wrapper object.
+dynamic javaInstanceFromPointer(String? type, dynamic arg) {
+  Pointer<Void> ptr;
+  if (arg is JObject) {
+    ptr = arg.pointer;
+  } else if (arg is Pointer) {
+    ptr = arg.cast<Void>();
+  } else {
+    return arg;
+  }
+
+  if (ptr == nullptr) {
+    return arg;
+  }
+  JObject? templeObj;
+  if (type == null) {
+    templeObj = JObject.fromPointer(ptr);
+    type = templeObj.className;
+  }
+  Convertor? convertor = _convertorCache[type];
+  if (convertor != null) {
+    return convertor.convertor(ptr);
+  }
+  if (templeObj != null) {
+    return templeObj;
+  }
+  return JObject.fromPointer(ptr);
 }

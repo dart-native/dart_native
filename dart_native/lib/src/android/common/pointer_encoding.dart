@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/foundation/collection/jarray.dart';
 import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:dart_native/src/android/foundation/native_type.dart';
@@ -101,7 +102,7 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
 
   if (object is JObject) {
     ptr.value = object.pointer;
-    typePtr.value = argSignature ?? 'L${object.clsName};'.toNativeUtf8();
+    typePtr.value = argSignature ?? 'L${object.className};'.toNativeUtf8();
     return;
   }
 
@@ -118,7 +119,8 @@ dynamic loadValueFromPointer(
     return;
   }
 
-  if (returnType == 'java.lang.String') {
+  if (returnType == 'java.lang.String'
+      || returnType == 'Ljava/lang/String;') {
     return fromUtf16(ptr);
   }
 
@@ -159,9 +161,6 @@ dynamic loadValueFromPointer(
       break;
     case 'C':
       result = data.getInt8(0);
-      break;
-    case 'Ljava/lang/String;':
-      result = fromUtf16(ptr);
       break;
     default:
       result = ptr;

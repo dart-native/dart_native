@@ -4,10 +4,9 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
-import 'package:dart_native/src/android/runtime/register.dart';
-import 'package:dart_native/src/android/runtime/extension/jobject_extension.dart';
-import 'package:dart_native/src/android/runtime/extension/jobject_async_extension.dart';
-import 'package:dart_native/src/android/foundation/native_type.dart';
+
+/// Convert java object from pointer.
+typedef dynamic ConvertorJavaFromPointer(Pointer<Void> ptr);
 
 /// Use classname create a null pointer.
 JObject createNullJObj(String clsName) {
@@ -49,7 +48,7 @@ class JObject {
   /// Java class name.
   late String? _cls;
 
-  String? get clsName {
+  String? get className {
     return _cls;
   }
 
@@ -72,14 +71,18 @@ class JObject {
   /// }
   ///
   /// [isInterface] java class if is a interface class.
-  /// [className] use @nativeJavaClass first in your dart class.
+  ///
+  /// If java class is specified by [className], we will use it first.
+  /// Otherwise we will get className from [@nativeJavaClass] annotation's register.
+  ///
+  /// When use native class, please use [@nativeJavaClass] annotation first.
   JObject({List? args, bool isInterface = false, String? className}) {
     _cls = className != null
         ? className
         : getRegisterJavaClass(runtimeType.toString());
     if (_cls == null) {
-      throw 'Java class name is null, you can set java class name in constructor' +
-          ' or use @nativeJavaClass annotation';
+      throw 'Java class name is null, you can specify the java class name in constructor' +
+          ' or use @nativeJavaClass annotation to specify the java class';
     }
     _ptr = newObject(_cls!, this, args: args, isInterface: isInterface);
     bindLifeCycleWithNative(this);
@@ -87,16 +90,17 @@ class JObject {
 
   /// Wrapper java object pointer as dart object.
   ///
-  /// [className] use @nativeJavaClass first.
+  /// When java object pointer is nullptr, must specify the java class name [className].
+  ///
+  /// When java object pointer is not nullptr, we will get java class name from jni.
+  /// If java class is specified by [className], we will use it first.
   JObject.fromPointer(Pointer<Void> pointer, {String? className}) {
-    _cls = className != null
-        ? className
-        : getRegisterJavaClass(runtimeType.toString());
-    if (_cls == null) {
-      throw 'Java class name is null, you can set java class name in constructor' +
-          ' or use @nativeJavaClass annotation';
+    if (pointer == nullptr && className == null) {
+      throw 'Java object pointer and classname are null.' +
+          ' When java object pointer is nullptr, you must specify the java class name.';
     }
     _ptr = pointer;
+    _cls = className == null ? getJClassName(pointer) : className;
     bindLifeCycleWithNative(this);
   }
 
@@ -115,10 +119,10 @@ class JObject {
   ///   double    |       D
   ///   void      |       V
   ///   class     |  L + classname + ;
-  ///   String    | Ljava/lang/String;       (class example)
-  ///   array     |       [type
-  ///   int[]     |       [I                  (int example)
-  ///   String[]  |       [Ljava/lang/String; (class example)
+  ///   String    | Ljava/lang/String;        (class example)
+  ///   array     |     [type
+  ///   int[]     |     [I                    (int example)
+  ///   String[]  |  [Ljava/lang/String;      (class example)
   ///
   /// Dart basic type not equal as java basic type, such as dart not contain byte, short, long, float.
   /// But the parameter list need same as java method parameter list.

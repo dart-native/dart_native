@@ -16,12 +16,9 @@ class JMap<K, V> extends JSubclass<Map> {
   }
 
   JMap.fromPointer(Pointer<Void> ptr,
-      {String clsName = cls_map,
-      K Function(Pointer<Void> pointer)? keyCreator,
-      V Function(Pointer<Void> pointer)? valueCreator})
+      {String clsName = cls_map})
       : super.fromPointer(ptr, clsName) {
-    Set keySet = JSet<K>.fromPointer(invoke('keySet', 'Ljava/util/Set;'),
-            creator: keyCreator)
+    Set keySet = JSet<K>.fromPointer(invoke('keySet', 'Ljava/util/Set;'))
         .raw;
     Map temp = {};
     String itemType = '';
@@ -29,10 +26,10 @@ class JMap<K, V> extends JSubclass<Map> {
       dynamic item = invoke(
           'get', 'Ljava/lang/Object;', args: [boxingWrapperClass(key)],
           assignedSignature: ['Ljava/lang/Object;']);
-      if (valueCreator != null) {
-        temp[key] = valueCreator(item);
-        continue;
-      }
+      // if (valueConvertor != null) {
+      //   temp[key] = valueConvertor(item);
+      //   continue;
+      // }
       if (itemType == '') {
         if (item is String) {
           itemType = 'java.lang.String';
@@ -50,13 +47,9 @@ class JMap<K, V> extends JSubclass<Map> {
 class JHashMap<K, V> extends JMap {
   JHashMap(Map value) : super(value, clsName: cls_hash_map);
 
-  JHashMap.fromPointer(Pointer<Void> ptr,
-      {K Function(Pointer<Void> pointer)? keyCreator,
-      V Function(Pointer<Void> pointer)? valueCreator})
+  JHashMap.fromPointer(Pointer<Void> ptr)
       : super.fromPointer(ptr,
-            clsName: cls_hash_map,
-            keyCreator: keyCreator,
-            valueCreator: valueCreator);
+            clsName: cls_hash_map);
 }
 
 /// New native 'HashMap'.

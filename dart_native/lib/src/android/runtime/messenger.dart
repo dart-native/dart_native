@@ -41,7 +41,17 @@ Pointer<Void> newObject(String className, JObject object,
   return pointer;
 }
 
+String getJClassName(Pointer<Void> pointer) {
+  final namePtr = getJavaClassName!(pointer);
+  final name = fromUtf16(namePtr);
+  if (name == null) {
+    throw 'getJClassName error, namePtr is nullptr';
+  }
+  return name.replaceAll('.', '/');
+}
+
 typedef void _AsyncMessageCallback(dynamic result);
+
 Map<Pointer<Utf8>, _AsyncMessageCallback> _invokeCallbackMap = Map();
 Map<Pointer<Utf8>, List<Pointer<Utf8>>> _assignedSignatureMap = Map();
 Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
