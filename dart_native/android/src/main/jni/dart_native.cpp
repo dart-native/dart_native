@@ -185,6 +185,9 @@ void *getClassName(void *objectPtr) {
   auto objCls = env->GetObjectClass(object);
   auto jstr = (jstring) env->CallObjectMethod(objCls, getName);
   uint16_t* clsName = ConvertToDartUtf16(env, jstr);
+
+  env->DeleteLocalRef(cls);
+  env->DeleteLocalRef(objCls);
   return clsName;
 }
 
@@ -345,6 +348,7 @@ void *_doInvokeMethod(jobject object,
   free(returnType);
   free(arguments);
   free(methodSignature);
+  env->DeleteLocalRef(cls);
   return nativeInvokeResult;
 }
 
