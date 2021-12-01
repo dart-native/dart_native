@@ -1,5 +1,6 @@
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/entity.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 abstract class SampleDelegate {
   registerSampleDelegate() {
@@ -17,9 +18,8 @@ abstract class SampleDelegate {
   callbackComplex(int i, double d, String s);
 }
 
+@nativeJavaClass('com/dartnative/dart_native_example/RuntimeStub')
 class RuntimeStub extends JObject {
-  RuntimeStub() : super("com/dartnative/dart_native_example/RuntimeStub");
-
   int getInt(int i) {
     return invokeInt('getInt', args: [i]);
   }

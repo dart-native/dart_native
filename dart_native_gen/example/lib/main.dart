@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:dart_native_gen_example/main.dn.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';

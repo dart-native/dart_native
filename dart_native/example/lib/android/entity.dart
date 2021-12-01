@@ -1,12 +1,14 @@
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
+@nativeJavaClass('com/dartnative/dart_native_example/Entity')
 class Entity extends JObject {
-  Entity(): super("com/dartnative/dart_native_example/Entity");
+  Entity(): super();
 
   Entity.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer("com/dartnative/dart_native_example/Entity", ptr);
+      : super.fromPointer(ptr);
 
   int getCurrentTime() {
     return invoke('getCurrentTime', "I", args: []);

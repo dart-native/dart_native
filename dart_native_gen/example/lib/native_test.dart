@@ -8,7 +8,7 @@ class NativeTestClass extends NSObject {
   NativeTestClass.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
 
-@nativeWithClass(javaClass: 'com/dartnative/test')
+@nativeJavaClass('com/dartnative/test')
 class JavaCls extends JObject {
   JavaCls.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }

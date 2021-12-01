@@ -2,6 +2,7 @@ export 'runtime/jobject.dart';
 export 'runtime/extension/jobject_extension.dart';
 export 'runtime/extension/jobject_async_extension.dart';
 export 'runtime/call_back.dart';
+export 'runtime/register.dart';
 export 'foundation/collection/jlist.dart';
 export 'foundation/collection/jset.dart';
 export 'foundation/collection/jarray.dart';

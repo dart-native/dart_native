@@ -1,6 +1,10 @@
 class NativeClass {
-  final String? javaClass;
-  const NativeClass({this.javaClass});
+  const NativeClass();
+}
+
+class JavaClass extends NativeClass {
+  final String javaClass;
+  const JavaClass(this.javaClass);
 }
 
 class NativeClassRoot {
@@ -12,4 +16,4 @@ const Object native = NativeClass();
 const Object nativeRoot = NativeClassRoot();
 
 // ignore: camel_case_types
-typedef nativeWithClass = NativeClass;
+typedef nativeJavaClass = JavaClass;

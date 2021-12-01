@@ -71,6 +71,10 @@ dynamic _invokeMethod(
     {List<String>? assignedSignature,
     Thread thread = Thread.FlutterUI,
     _AsyncMessageCallback? callback}) {
+  if (objPtr == nullptr) {
+    throw "InvokeMethod error native object pointer is nullptr.";
+  }
+
   Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
   Pointer<Utf8> returnTypePtr = returnType.toNativeUtf8();
 

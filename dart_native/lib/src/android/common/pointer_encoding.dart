@@ -114,11 +114,11 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
 
 dynamic loadValueFromPointer(
     Pointer<Void> ptr, String returnType) {
-  if (returnType == "V") {
+  if (returnType == 'V') {
     return;
   }
 
-  if (returnType == "java.lang.String") {
+  if (returnType == 'java.lang.String') {
     return fromUtf16(ptr);
   }
 
@@ -126,13 +126,13 @@ dynamic loadValueFromPointer(
   ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
   ByteData data = ByteData.view(buffer);
   switch (returnType) {
-    case "B":
+    case 'B':
       result = data.getInt8(0);
       break;
-    case "S":
+    case 'S':
       result = data.getInt16(0, Endian.host);
       break;
-    case "J":
+    case 'J':
       if (is64Bit) {
         result = data.getInt64(0, Endian.host);
       } else {
@@ -140,13 +140,13 @@ dynamic loadValueFromPointer(
         calloc.free(ptr);
       }
       break;
-    case "F":
+    case 'F':
       result = data.getFloat32(0, Endian.host);
       break;
-    case "I":
+    case 'I':
       result = data.getInt32(0, Endian.host);
       break;
-    case "D":
+    case 'D':
       if (is64Bit) {
         result = data.getFloat64(0, Endian.host);
       } else {
@@ -154,13 +154,13 @@ dynamic loadValueFromPointer(
         calloc.free(ptr);
       }
       break;
-    case "Z":
+    case 'Z':
       result = data.getInt8(0) != 0;
       break;
-    case "C":
+    case 'C':
       result = data.getInt8(0);
       break;
-    case "Ljava/lang/String;":
+    case 'Ljava/lang/String;':
       result = fromUtf16(ptr);
       break;
     default:
