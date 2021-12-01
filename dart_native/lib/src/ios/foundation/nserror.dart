@@ -9,7 +9,7 @@ import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `NSError` in iOS.
-@native
+@native()
 class NSError extends NSObject {
   String get domain {
     Pointer<Void> result = perform('domain'.toSEL(), decodeRetVal: false);

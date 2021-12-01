@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `Integer` in Android.
 const String cls_integer = 'java/lang/Integer';
 
-@nativeJavaClass(cls_integer)
+@native(javaClass: cls_integer)
 class JInteger extends JSubclass<int> {
   JInteger(int value) : super(value, _new, cls_integer);
 

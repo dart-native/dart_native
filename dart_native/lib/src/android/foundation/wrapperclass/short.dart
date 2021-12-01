@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `Short` in Android.
 const String cls_short = 'java/lang/Short';
 
-@nativeJavaClass(cls_short)
+@native(javaClass: cls_short)
 class JShort extends JSubclass<int> {
   JShort(int value) : super(value, _new, cls_short);
 

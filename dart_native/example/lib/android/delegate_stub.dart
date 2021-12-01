@@ -4,7 +4,7 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@nativeJavaClass('com/dartnative/dart_native_example/SampleDelegate')
+@native(javaClass: 'com/dartnative/dart_native_example/SampleDelegate')
 class DelegateStub extends JObject with SampleDelegate {
   DelegateStub() : super(isInterface: true) {
     super.registerSampleDelegate();

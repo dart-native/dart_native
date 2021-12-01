@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `Long` in Android.
 const String cls_long = 'java/lang/Long';
 
-@nativeJavaClass(cls_long)
+@native(javaClass: cls_long)
 class JLong extends JSubclass<int> {
   JLong(int value) : super(value, _new, cls_long);
 

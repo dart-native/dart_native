@@ -9,7 +9,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 const String cls_map = 'java/util/Map';
 const String cls_hash_map = 'java/util/HashMap';
 
-@nativeJavaClass(cls_map)
+@native(javaClass: cls_map)
 class JMap<K, V> extends JSubclass<Map> {
   JMap(Map value, {String clsName = cls_map, InitSubclass init = _new})
       : super(value, _new, clsName) {
@@ -43,7 +43,7 @@ class JMap<K, V> extends JSubclass<Map> {
   }
 }
 
-@nativeJavaClass(cls_hash_map)
+@native(javaClass: cls_hash_map)
 class JHashMap<K, V> extends JMap {
   JHashMap(Map value) : super(value, clsName: cls_hash_map);
 

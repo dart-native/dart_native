@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Array in Android.
 const String cls_array_object = 'java/lang/Object';
 
-@nativeJavaClass(cls_array_object)
+@native(javaClass: cls_array_object)
 class JArray<E> extends JSubclass<List> {
   String get arraySignature => _arraySignature;
   String _arraySignature = '[Ljava/lang/Object;';

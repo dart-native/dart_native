@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `Byte` in Android.
 const String cls_byte = 'java/lang/Byte';
 
-@nativeJavaClass(cls_byte)
+@native(javaClass: cls_byte)
 class JByte extends JSubclass<int> {
   JByte(int value) : super(value, _new, cls_byte);
 

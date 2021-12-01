@@ -20,7 +20,7 @@ abstract class SampleDelegate {
   callbackComplex(int i, double d, String s);
 }
 
-@nativeJavaClass('com/dartnative/dart_native_example/RuntimeStub')
+@native(javaClass: 'com/dartnative/dart_native_example/RuntimeStub')
 class RuntimeStub extends JObject {
   RuntimeStub() : super();
 

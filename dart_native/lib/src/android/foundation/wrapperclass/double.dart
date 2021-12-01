@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `Double` in Android.
 const String cls_double = 'java/lang/Double';
 
-@nativeJavaClass(cls_double)
+@native(javaClass: cls_double)
 class JDouble extends JSubclass<double> {
   JDouble(double value) : super(value, _new, cls_double);
 

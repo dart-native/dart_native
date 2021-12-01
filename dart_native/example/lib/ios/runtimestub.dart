@@ -37,7 +37,7 @@ typedef NSDictionaryRetBlock = NSDictionary? Function(NSDictionary? a);
 
 typedef CGFloatRetBlock = CGFloat? Function(CGFloat? a);
 
-@native
+@native()
 class RuntimeStub extends NSObject {
   RuntimeStub([Class? isa]) : super(isa ?? Class('RuntimeStub'));
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);

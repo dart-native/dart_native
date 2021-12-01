@@ -9,7 +9,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 const String cls_list = 'java/util/List';
 const String cls_array_list = 'java/util/ArrayList';
 
-@nativeJavaClass(cls_list)
+@native(javaClass: cls_list)
 class JList<E> extends JSubclass<List> {
   JList(List value, {String clsName = cls_list, InitSubclass init = _new})
       : super(value, _new, clsName) {
@@ -41,7 +41,7 @@ class JList<E> extends JSubclass<List> {
   }
 }
 
-@nativeJavaClass(cls_array_list)
+@native(javaClass: cls_array_list)
 class JArrayList<E> extends JList {
   JArrayList(List value) : super(value, clsName: cls_array_list);
 

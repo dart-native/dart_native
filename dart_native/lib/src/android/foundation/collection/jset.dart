@@ -8,7 +8,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 const String cls_set = 'java/util/Set';
 const String cls_hash_set = 'java/util/HashSet';
 
-@nativeJavaClass(cls_set)
+@native(javaClass: cls_set)
 class JSet<E> extends JSubclass<Set> {
   JSet(Set value, {String clsName = cls_set, InitSubclass init = _new})
       : super(value, _new, clsName) {
@@ -26,7 +26,7 @@ class JSet<E> extends JSubclass<Set> {
   }
 }
 
-@nativeJavaClass(cls_hash_set)
+@native(javaClass: cls_hash_set)
 class JHashSet<E> extends JSet {
   JHashSet(Set value) : super(value, clsName: cls_hash_set);
 

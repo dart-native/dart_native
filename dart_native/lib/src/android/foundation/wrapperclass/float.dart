@@ -7,7 +7,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `Float` in Android.
 const String cls_float = 'java/lang/Float';
 
-@nativeJavaClass(cls_float)
+@native(javaClass: cls_float)
 class JFloat extends JSubclass<double> {
   JFloat(double value) : super(value, _new, cls_float);
 
