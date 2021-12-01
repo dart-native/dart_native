@@ -113,14 +113,12 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   }
 }
 
-dynamic loadValueFromPointer(
-    Pointer<Void> ptr, String returnType) {
+dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
   if (returnType == 'V') {
     return;
   }
 
-  if (returnType == 'java.lang.String'
-      || returnType == 'Ljava/lang/String;') {
+  if (returnType == 'java.lang.String' || returnType == 'Ljava/lang/String;') {
     return fromUtf16(ptr);
   }
 
@@ -170,7 +168,7 @@ dynamic loadValueFromPointer(
 }
 
 Pointer<Uint16> toUtf16(String? value) {
-  if(value == null) {
+  if (value == null) {
     return nullptr.cast();
   }
 

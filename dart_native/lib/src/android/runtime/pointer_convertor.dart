@@ -4,6 +4,7 @@ import 'package:dart_native/dart_native.dart';
 
 /// The mappings of dart class name and [Convertor].
 Map<String, Convertor> _dataConvertorCache = {};
+
 /// The mappings of java class name and [ConvertorToDartFromPointer].
 Map<String, ConvertorToDartFromPointer> _javaConvertorCache = {};
 
@@ -39,7 +40,8 @@ void registerDartConvertor(
 }
 
 /// See [_javaConvertorCache] definition.
-void registerJavaConvertor(String javaClass, ConvertorToDartFromPointer convertor) {
+void registerJavaConvertor(
+    String javaClass, ConvertorToDartFromPointer convertor) {
   if (_javaConvertorCache[javaClass] == null) {
     _javaConvertorCache[javaClass] = convertor;
   } else {

@@ -16,8 +16,7 @@ class JList<E> extends JSubclass<List> {
     value = List.of(value, growable: false);
   }
 
-  JList.fromPointer(Pointer<Void> ptr,
-      {String clsName = cls_list})
+  JList.fromPointer(Pointer<Void> ptr, {String clsName = cls_list})
       : super.fromPointer(ptr, clsName) {
     int count = invokeInt('size');
     List temp = List.filled(count, [], growable: false);
@@ -59,7 +58,8 @@ Pointer<Void> _new(dynamic value, String clsName) {
     JObject nativeList = JObject(className: clsName);
 
     for (var i = 0; i < value.length; i++) {
-      nativeList.invokeBool('add', args: [boxingWrapperClass(value[i])],
+      nativeList.invokeBool('add',
+          args: [boxingWrapperClass(value[i])],
           assignedSignature: ['Ljava/lang/Object;']);
     }
     return nativeList.pointer.cast<Void>();
@@ -67,4 +67,3 @@ Pointer<Void> _new(dynamic value, String clsName) {
     throw 'Invalid param when initializing JList.';
   }
 }
-

@@ -3,5 +3,4 @@ class JClass {
 
   JClass(this._className);
   String get className => _className;
-
 }

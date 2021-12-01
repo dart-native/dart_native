@@ -11,7 +11,8 @@ const String cls_integer = 'java/lang/Integer';
 class JInteger extends JSubclass<int> {
   JInteger(int value) : super(value, _new, cls_integer);
 
-  JInteger.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, cls_integer) {
+  JInteger.fromPointer(Pointer<Void> ptr)
+      : super.fromPointer(ptr, cls_integer) {
     raw = invokeInt('intValue');
   }
 }

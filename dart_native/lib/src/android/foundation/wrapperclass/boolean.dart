@@ -11,7 +11,8 @@ const String cls_boolean = 'java/lang/Boolean';
 class JBoolean extends JSubclass<bool> {
   JBoolean(bool value) : super(value, _new, cls_boolean);
 
-  JBoolean.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, cls_boolean) {
+  JBoolean.fromPointer(Pointer<Void> ptr)
+      : super.fromPointer(ptr, cls_boolean) {
     raw = invokeBool('booleanValue');
   }
 }

@@ -22,9 +22,9 @@ abstract class SampleDelegate {
 
 @nativeJavaClass('com/dartnative/dart_native_example/RuntimeStub')
 class RuntimeStub extends JObject {
-  RuntimeStub(): super();
+  RuntimeStub() : super();
 
-  RuntimeStub.fromPointer(Pointer<Void> ptr): super.fromPointer(ptr);
+  RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   int getInt(int i) {
     return invokeInt('getInt', args: [i]);
@@ -72,19 +72,17 @@ class RuntimeStub extends JObject {
 
   bool complexCall(String s, int i, String c, double d, double f, int b, int sh,
       int l, bool boo) {
-    return invokeBool(
-        'complexCall',
-        args: [
-          s,
-          i,
-          jchar(c.codeUnitAt(0)),
-          d,
-          float(f),
-          byte(b),
-          short(sh),
-          long(l),
-          boo
-        ]);
+    return invokeBool('complexCall', args: [
+      s,
+      i,
+      jchar(c.codeUnitAt(0)),
+      d,
+      float(f),
+      byte(b),
+      short(sh),
+      long(l),
+      boo
+    ]);
   }
 
   Entity createEntity() {
@@ -100,8 +98,7 @@ class RuntimeStub extends JObject {
   }
 
   int getInteger() {
-    return JInteger.fromPointer(
-            invoke("getInteger", "Ljava/lang/Integer;"))
+    return JInteger.fromPointer(invoke("getInteger", "Ljava/lang/Integer;"))
         .raw;
   }
 
@@ -126,7 +123,8 @@ class RuntimeStub extends JObject {
   }
 
   List getByteArray(List list) {
-    return JArray.fromPointer(invoke("getByteArray", "[B", args: [JArray(list)])).raw;
+    return JArray.fromPointer(
+        invoke("getByteArray", "[B", args: [JArray(list)])).raw;
   }
 
   Set? getIntSet(Set set) {
