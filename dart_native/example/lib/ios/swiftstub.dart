@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-@native
+@native()
 class SwiftStub extends NSObject {
   static final _objcClassName = 'Runner.SwiftStub';
   SwiftStub([Class? isa]) : super(isa ?? Class(_objcClassName));

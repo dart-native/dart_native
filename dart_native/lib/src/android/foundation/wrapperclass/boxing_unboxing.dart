@@ -28,37 +28,37 @@ dynamic boxingWrapperClass(dynamic value) {
 
 dynamic unBoxingWrapperClass(dynamic value, String valueType) {
   switch (valueType) {
-    case "java.lang.Integer":
+    case 'java/lang/Integer':
       return JInteger.fromPointer(value).raw;
-    case "java.lang.Boolean":
+    case 'java/lang/Boolean':
       return JBoolean.fromPointer(value).raw;
-    case "java.lang.Byte":
+    case 'java/lang/Byte':
       return JByte.fromPointer(value).raw;
-    case "java.lang.Character":
+    case 'java/lang/Character':
       return JCharacter.fromPointer(value).raw;
-    case "java.lang.Double":
+    case 'java/lang/Double':
       return JDouble.fromPointer(value).raw;
-    case "java.lang.Float":
+    case 'java/lang/Float':
       return JFloat.fromPointer(value).raw;
-    case "java.lang.Long":
+    case 'java/lang/Long':
       return JLong.fromPointer(value).raw;
-    case "java.lang.Short":
+    case 'java/lang/Short':
       return JShort.fromPointer(value).raw;
-    case "java.util.List":
+    case 'java/util/List':
       return JList.fromPointer(value).raw;
-    case "java.util.ArrayList":
+    case 'java/util/ArrayList':
       return JArrayList.fromPointer(value).raw;
-    case "java.util.Set":
+    case 'java/util/Set':
       return JSet.fromPointer(value).raw;
-    case "java.util.HashSet":
+    case 'java/util/HashSet':
       return JHashSet.fromPointer(value).raw;
-    case "java.util.Map":
+    case 'java/util/Map':
       return JMap.fromPointer(value).raw;
-    case "java.util.HashMap":
+    case 'java/util/HashMap':
       return JHashMap.fromPointer(value).raw;
-    case "java.lang.String":
+    case 'java/lang/String':
       return value;
     default:
-      return JObject.fromPointer(valueType.replaceAll(".", "/"), value);
+      return jobjectInstanceFromPointer(valueType.replaceAll('.', '/'), value);
   }
 }

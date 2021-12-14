@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/foundation/collection/jarray.dart';
 import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:dart_native/src/android/foundation/native_type.dart';
@@ -101,7 +102,7 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
 
   if (object is JObject) {
     ptr.value = object.pointer;
-    typePtr.value = argSignature ?? 'L${object.clsName};'.toNativeUtf8();
+    typePtr.value = argSignature ?? 'L${object.className};'.toNativeUtf8();
     return;
   }
 
@@ -112,13 +113,12 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   }
 }
 
-dynamic loadValueFromPointer(
-    Pointer<Void> ptr, String returnType) {
-  if (returnType == "V") {
+dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
+  if (returnType == 'V') {
     return;
   }
 
-  if (returnType == "java.lang.String") {
+  if (returnType == 'java.lang.String' || returnType == 'Ljava/lang/String;') {
     return fromUtf16(ptr);
   }
 
@@ -126,13 +126,13 @@ dynamic loadValueFromPointer(
   ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
   ByteData data = ByteData.view(buffer);
   switch (returnType) {
-    case "B":
+    case 'B':
       result = data.getInt8(0);
       break;
-    case "S":
+    case 'S':
       result = data.getInt16(0, Endian.host);
       break;
-    case "J":
+    case 'J':
       if (is64Bit) {
         result = data.getInt64(0, Endian.host);
       } else {
@@ -140,13 +140,13 @@ dynamic loadValueFromPointer(
         calloc.free(ptr);
       }
       break;
-    case "F":
+    case 'F':
       result = data.getFloat32(0, Endian.host);
       break;
-    case "I":
+    case 'I':
       result = data.getInt32(0, Endian.host);
       break;
-    case "D":
+    case 'D':
       if (is64Bit) {
         result = data.getFloat64(0, Endian.host);
       } else {
@@ -154,14 +154,11 @@ dynamic loadValueFromPointer(
         calloc.free(ptr);
       }
       break;
-    case "Z":
+    case 'Z':
       result = data.getInt8(0) != 0;
       break;
-    case "C":
+    case 'C':
       result = data.getInt8(0);
-      break;
-    case "Ljava/lang/String;":
-      result = fromUtf16(ptr);
       break;
     default:
       result = ptr;
@@ -171,7 +168,7 @@ dynamic loadValueFromPointer(
 }
 
 Pointer<Uint16> toUtf16(String? value) {
-  if(value == null) {
+  if (value == null) {
     return nullptr.cast();
   }
 

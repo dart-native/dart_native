@@ -4,13 +4,12 @@
 // DartNativeGenerator
 // **************************************************************************
 
-import 'package:dart_native/dart_native.dart';
-import 'package:dart_native_gen_example/native_test.dart';
+import 'dart:io';
+import 'main.oc.dn.dart';
+import 'main.java.dn.dart';
 
 void runDartNativeGenExample() {
-  runDartNative();
-
-  registerTypeConvertor('NativeTestClass', (ptr) {
-    return NativeTestClass.fromPointer(ptr);
-  });
+  Platform.isAndroid
+      ? runJavaDartNativeGenExample()
+      : runOCDartNativeGenExample();
 }

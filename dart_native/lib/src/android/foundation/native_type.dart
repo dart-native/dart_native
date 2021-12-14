@@ -20,7 +20,6 @@ class byte = _NativeInt with _ToAlias;
 // ignore: camel_case_types
 class jchar = _NativeInt with _ToAlias;
 
-
 class _NativeType<T> {
   final T raw;
   const _NativeType(this.raw);

@@ -21,8 +21,8 @@ builders:
     build_to: source
   type_write_builder:
     import: 'package:dart_native_gen/builder.dart'
-    builder_factories: ['typeWriteBuilder']
-    build_extensions: { '.dart': ['.dn.dart'] }
+    builder_factories: ['typeWriteBuilder', 'typeWriteOCBuilder', 'typeWriteJavaBuilder']
+    build_extensions: { '.dart': ['.dn.dart', '.oc.dn.dart', '.java.dn.dart'] }
     auto_apply: root_package
     build_to: source
   
