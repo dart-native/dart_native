@@ -158,9 +158,9 @@ packages:
   dart_native_gen:
     dependency: "direct main"
     description:
-      path: "../dart_native_gen"
-      relative: true
-    source: path
+      name: dart_native_gen
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.3.0"
   dart_style:
     dependency: transitive
