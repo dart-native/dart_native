@@ -172,9 +172,9 @@ packages:
   dart_native_gen:
     dependency: transitive
     description:
-      path: ".."
-      relative: true
-    source: path
+      name: dart_native_gen
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.3.0"
   dart_style:
     dependency: transitive

@@ -1,3 +1,9 @@
+## 0.5.0
+
+* [Feature] Add annotation for Android: `@native(javaClass:)`
+* [Feature] Update annotation for iOS: `@native` -> `@native()`
+* [Fix] Crash on Android simulator.
+
 ## 0.4.0
 
 * [Feature] Adapted to Flutter 2.2 and nullsafety.
