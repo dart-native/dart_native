@@ -104,101 +104,108 @@ extension JObjectAsyncInvoke on JObject {
         .then((value) => value);
   }
 
+  /// async invoke native method which return object
+  Future<dynamic> invokeAsyncObject<T extends JObject>(String methodName,
+      {List? args,
+      List<String>? assignedSignature,
+      Thread thread = Thread.MainThread}) async {
+    String type = T.toString();
+    if (type == 'dynamic') {
+      throw 'invokeObject error. \n' +
+          'Using invokeObject need specify the dart type.\n' +
+          'And this dart class need extend jobject. \n' +
+          'For example: invokeObject<JInteger>("getTest");';
+    }
+    final sig = getRegisterJavaClassSignature(type);
+    if (sig == null) {
+      throw 'invokeObject error. \n' +
+          'Can not find signature in register map.\n' +
+          'You should use @nativeJavaClass specify the java class.' +
+          'See more in https://github.com/dart-native/dart_native/tree/master#usage.\n' +
+          'Or you can just use invoke method to specify the return type,' +
+          'like invoke("getString", "Ljava/lang/String;")';
+    }
+    final convertor = getRegisterPointerConvertor(type);
+    return invokeAsync(methodName, sig,
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) => convertor!(value));
+  }
+
   /// async invoke native method which return list
-  /// todo(huizz): creator can use @native
   Future<List<E>?> invokeAsyncList<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      E Function(Pointer<Void> pointer)? creator,
       Thread thread = Thread.MainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/List;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
       return null;
     }
-    return JList<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
+    return JList<E>.fromPointer(ptr).raw.cast<E>();
   }
 
   /// async invoke native method which return array list
-  /// todo(huizz): creator can use @native
   Future<List<E>?> invokeAsyncArrayList<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      E Function(Pointer<Void> pointer)? creator,
       Thread thread = Thread.MainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/ArrayList;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
       return null;
     }
-    return JArrayList<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
+    return JArrayList<E>.fromPointer(ptr).raw.cast<E>();
   }
 
   /// async invoke native method which return set
-  /// todo(huizz): creator can use @native
   Future<Set<E>?> invokeAsyncSet<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      E Function(Pointer<Void> pointer)? creator,
       Thread thread = Thread.MainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/Set;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
       return null;
     }
-    return JSet<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
+    return JSet<E>.fromPointer(ptr).raw.cast<E>();
   }
 
   /// async invoke native method which return hash set
-  /// todo(huizz): creator can use @native
   Future<Set<E>?> invokeAsyncHashSet<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      E Function(Pointer<Void> pointer)? creator,
       Thread thread = Thread.MainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/HashSet;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
       return null;
     }
-    return JHashSet<E>.fromPointer(ptr, creator: creator).raw.cast<E>();
+    return JHashSet<E>.fromPointer(ptr).raw.cast<E>();
   }
 
   /// async invoke native method which return map
-  /// todo(huizz): creator can use @native
   Future<Map<K, V>?> invokeAsyncMap<K, V>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      K Function(Pointer<Void> pointer)? keyCreator,
-      V Function(Pointer<Void> pointer)? valueCreator,
       Thread thread = Thread.MainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/Map;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
       return null;
     }
-    return JMap<K, V>.fromPointer(ptr,
-            keyCreator: keyCreator, valueCreator: valueCreator)
-        .raw
-        .cast<K, V>();
+    return JMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
   }
 
   /// async invoke native method which return hash map
-  /// todo(huizz): creator can use @native
   Future<Map<K, V>?> invokeAsyncHashMap<K, V>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      K Function(Pointer<Void> pointer)? keyCreator,
-      V Function(Pointer<Void> pointer)? valueCreator,
       Thread thread = Thread.MainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/HashMap;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
       return null;
     }
-    return JHashMap<K, V>.fromPointer(ptr,
-            keyCreator: keyCreator, valueCreator: valueCreator)
-        .raw
-        .cast<K, V>();
+    return JHashMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
   }
 }

@@ -86,7 +86,7 @@ testAndroid(RuntimeStub stub) async {
   print('entity get time : ${entity.getCurrentTime()}');
   print('stub get time : ${stub.getTime(entity)}');
 
-  print('new entity get time : ${stub.getTime(new Entity())}');
+  print('new entity get time : ${stub.getTime(Entity())}');
 
   List? list = stub.getList([1, 2, 3, 4]);
   if (list != null) {

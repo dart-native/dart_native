@@ -7,7 +7,7 @@ import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `NSDictionary` in iOS.
-@native
+@native()
 class NSDictionary extends NSSubclass<Map> {
   NSDictionary(Map value, {InitSubclass init: _new}) : super(value, init) {
     value = Map.of(value);
@@ -46,7 +46,7 @@ class NSDictionary extends NSSubclass<Map> {
 /// Stands for `NSMutableDictionary` in iOS.
 ///
 /// Only for type casting. It's unmodifiable.
-@native
+@native()
 class NSMutableDictionary extends NSDictionary {
   NSMutableDictionary(Map value) : super(value, init: _mutableCopy);
 

@@ -59,7 +59,7 @@ jstring convertToJavaUtf16(JNIEnv *env, void *value) {
 }
 
 /// nativeString not null
-uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString) {
+uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString) {
   if (nativeString == nullptr) {
     return nullptr;
   }

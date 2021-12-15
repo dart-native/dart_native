@@ -20,6 +20,24 @@ class DartNativeGenerator extends GeneratorForAnnotation<NativeClassRoot> {
   @override
   generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) {
-    return Writer(TypeGenerator.collector).write();
+    final pathSegments = buildStep.inputId.pathSegments;
+    return Writer(TypeGenerator.collector, ClassType.Null)
+        .writeEntry(pathSegments.last.replaceAll('.dart', ''));
+  }
+}
+
+class DartNativeOCGenerator extends GeneratorForAnnotation<NativeClassRoot> {
+  @override
+  generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) {
+    return Writer(TypeGenerator.collector, ClassType.OC).write();
+  }
+}
+
+class DartNativeJavaGenerator extends GeneratorForAnnotation<NativeClassRoot> {
+  @override
+  generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) {
+    return Writer(TypeGenerator.collector, ClassType.Java).write();
   }
 }

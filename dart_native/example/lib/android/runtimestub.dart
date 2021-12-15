@@ -1,5 +1,8 @@
+import 'dart:ffi';
+
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/entity.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 abstract class SampleDelegate {
   registerSampleDelegate() {
@@ -17,8 +20,11 @@ abstract class SampleDelegate {
   callbackComplex(int i, double d, String s);
 }
 
+@native(javaClass: 'com/dartnative/dart_native_example/RuntimeStub')
 class RuntimeStub extends JObject {
-  RuntimeStub() : super("com/dartnative/dart_native_example/RuntimeStub");
+  RuntimeStub() : super();
+
+  RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   int getInt(int i) {
     return invokeInt('getInt', args: [i]);
@@ -66,24 +72,21 @@ class RuntimeStub extends JObject {
 
   bool complexCall(String s, int i, String c, double d, double f, int b, int sh,
       int l, bool boo) {
-    return invokeBool(
-        'complexCall',
-        args: [
-          s,
-          i,
-          jchar(c.codeUnitAt(0)),
-          d,
-          float(f),
-          byte(b),
-          short(sh),
-          long(l),
-          boo
-        ]);
+    return invokeBool('complexCall', args: [
+      s,
+      i,
+      jchar(c.codeUnitAt(0)),
+      d,
+      float(f),
+      byte(b),
+      short(sh),
+      long(l),
+      boo
+    ]);
   }
 
   Entity createEntity() {
-    return Entity.fromPointer(invoke(
-        'createEntity', "Lcom/dartnative/dart_native_example/Entity;"));
+    return invokeObject<Entity>('createEntity');
   }
 
   int getTime(Entity entity) {
@@ -95,8 +98,7 @@ class RuntimeStub extends JObject {
   }
 
   int getInteger() {
-    return JInteger.fromPointer(
-            invoke("getInteger", "Ljava/lang/Integer;"))
+    return JInteger.fromPointer(invoke("getInteger", "Ljava/lang/Integer;"))
         .raw;
   }
 
@@ -121,7 +123,8 @@ class RuntimeStub extends JObject {
   }
 
   List getByteArray(List list) {
-    return JArray.fromPointer(invoke("getByteArray", "[B", args: [JArray(list)])).raw;
+    return JArray.fromPointer(
+        invoke("getByteArray", "[B", args: [JArray(list)])).raw;
   }
 
   Set? getIntSet(Set set) {

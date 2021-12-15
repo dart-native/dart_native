@@ -17,7 +17,7 @@ typedef bool BasicTypeToNative(void *, jvalue *, int);
 
 jstring convertToJavaUtf16(JNIEnv *env, void *value);
 
-uint16_t *convertToDartUtf16(JNIEnv *env, jstring nativeString);
+uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString);
 
 std::map<char, std::function<BasicTypeToNative>> GetTypeConvertMap();
 

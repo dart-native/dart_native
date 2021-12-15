@@ -174,6 +174,23 @@ void _fillArgs(void **arguments, char **argumentTypes,
   }
 }
 
+void *getClassName(void *objectPtr) {
+  if (objectPtr == nullptr) {
+    return nullptr;
+  }
+  auto env = _getEnv();
+  auto cls = _findClass(env, "java/lang/Class");
+  jmethodID getName = env->GetMethodID(cls, "getName", "()Ljava/lang/String;");
+  auto object = static_cast<jobject>(objectPtr);
+  auto objCls = env->GetObjectClass(object);
+  auto jstr = (jstring) env->CallObjectMethod(objCls, getName);
+  uint16_t* clsName = ConvertToDartUtf16(env, jstr);
+
+  env->DeleteLocalRef(cls);
+  env->DeleteLocalRef(objCls);
+  return clsName;
+}
+
 jobject _newObject(jclass cls,
                    void **arguments,
                    char **argumentTypes,
@@ -280,7 +297,7 @@ void *_doInvokeMethod(jobject object,
           /// mark the last pointer as string
           /// dart will check this pointer
           typePointers[argumentCount] = (char *) "java.lang.String";
-          nativeInvokeResult = convertToDartUtf16(env, (jstring) obj);
+          nativeInvokeResult = ConvertToDartUtf16(env, (jstring) obj);
         } else {
           typePointers[argumentCount] = (char *) "java.lang.Object";
           jobject gObj = env->NewGlobalRef(obj);
@@ -331,6 +348,7 @@ void *_doInvokeMethod(jobject object,
   free(returnType);
   free(arguments);
   free(methodSignature);
+  env->DeleteLocalRef(cls);
   return nativeInvokeResult;
 }
 
@@ -353,7 +371,7 @@ void *invokeNativeMethod(void *objPtr,
     return nullptr;
   }
   auto type = TaskThread(thread);
-  if (type == TaskThread::kFlutterUI) {
+  auto invokeFunction = [=] {
     return _doInvokeMethod(object,
                            methodName,
                            arguments,
@@ -364,20 +382,12 @@ void *invokeNativeMethod(void *objPtr,
                            callback,
                            dartPort,
                            type);
+  };
+  if (type == TaskThread::kFlutterUI) {
+    return invokeFunction();
   }
 
-  gTaskRunner->ScheduleInvokeTask(type, [=] {
-    _doInvokeMethod(object,
-                    methodName,
-                    arguments,
-                    dataTypes,
-                    argumentCount,
-                    returnType,
-                    stringTypeBitmask,
-                    callback,
-                    dartPort,
-                    type);
-  });
+  gTaskRunner->ScheduleInvokeTask(type, invokeFunction);
   return nullptr;
 }
 
@@ -489,15 +499,16 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     auto argument = env->GetObjectArrayElement(argumentsArray, i);
     dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString, 0);
     if (strcmp(dataTypes[i], "java.lang.String") == 0) {
-      arguments[i] = convertToDartUtf16(env, (jstring) argument);
+      /// argument will delete in ConvertToDartUtf16
+      arguments[i] = ConvertToDartUtf16(env, (jstring) argument);
     } else {
       jobject gObj = env->NewGlobalRef(argument);
       _addGlobalObject(gObj);
       arguments[i] = gObj;
+      env->DeleteLocalRef(argument);
     }
 
     env->DeleteLocalRef(argTypeString);
-    env->DeleteLocalRef(argument);
   }
 
   /// when return void, jstring which from native is null.

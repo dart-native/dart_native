@@ -7,7 +7,8 @@ Replaces the low-performing Flutter channel with faster and more concise code.
 * Under development
 
 [![pub package](https://img.shields.io/pub/v/dart_native.svg)](https://pub.dev/packages/dart_native)
-[![Build Status](https://travis-ci.org/dart-native/dart_native.svg?branch=master)](https://travis-ci.org/dart-native/dart_native)
+[![Build Status](https://app.travis-ci.com/dart-native/dart_native.svg?branch=master)](https://app.travis-ci.com/dart-native/dart_native)
+[![Dart CI](https://github.com/dart-native/dart_native/actions/workflows/dart.yml/badge.svg)](https://github.com/dart-native/dart_native/actions/workflows/dart.yml)
 
 This package is the blue part(DartNative Bridge):
 

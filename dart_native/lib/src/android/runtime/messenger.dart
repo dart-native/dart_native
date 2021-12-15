@@ -41,7 +41,17 @@ Pointer<Void> newObject(String className, JObject object,
   return pointer;
 }
 
+String getJClassName(Pointer<Void> pointer) {
+  final namePtr = getJavaClassName!(pointer);
+  final name = fromUtf16(namePtr);
+  if (name == null) {
+    throw 'getJClassName error, namePtr is nullptr';
+  }
+  return name.replaceAll('.', '/');
+}
+
 typedef void _AsyncMessageCallback(dynamic result);
+
 Map<Pointer<Utf8>, _AsyncMessageCallback> _invokeCallbackMap = Map();
 Map<Pointer<Utf8>, List<Pointer<Utf8>>> _assignedSignatureMap = Map();
 Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
@@ -71,6 +81,10 @@ dynamic _invokeMethod(
     {List<String>? assignedSignature,
     Thread thread = Thread.FlutterUI,
     _AsyncMessageCallback? callback}) {
+  if (objPtr == nullptr) {
+    throw 'InvokeMethod error native object pointer is nullptr.';
+  }
+
   Pointer<Utf8> methodNamePtr = methodName.toNativeUtf8();
   Pointer<Utf8> returnTypePtr = returnType.toNativeUtf8();
 
@@ -192,7 +206,7 @@ NativeArguments _parseNativeArguments(List? args,
       }
     }
   }
-  typePointers.elementAt(args?.length ?? 0).value = "0".toNativeUtf8();
+  typePointers.elementAt(args?.length ?? 0).value = '0'.toNativeUtf8();
   return NativeArguments(pointers, typePointers, stringTypeBitmask);
 }
 

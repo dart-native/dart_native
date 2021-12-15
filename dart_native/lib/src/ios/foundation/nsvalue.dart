@@ -17,7 +17,7 @@ import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `NSValue` in iOS.
-@native
+@native()
 class NSValue extends NSSubclass {
   NSValue(dynamic value) : super(value, _new);
 
