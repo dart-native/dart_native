@@ -9,7 +9,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `NSArray` in iOS.
 @native()
 class NSArray extends NSSubclass<List> {
-  NSArray(List value, {InitSubclass init: _new}) : super(value, init) {
+  NSArray(List value, {InitSubclass init = _new}) : super(value, init) {
     value = List.of(value, growable: false);
   }
 

@@ -70,6 +70,7 @@ class Block extends id {
 
   /// This [isa] block in iOS, but it's meaningless for a block created
   /// by Dart function.
+  @override
   Class? get isa {
     if (function != null) {
       throw 'Block created by Dart';
@@ -79,6 +80,7 @@ class Block extends id {
 
   /// Superclass for block in iOS, meaningless for a block
   /// created by Dart function.
+  @override
   Class get superclass {
     if (function != null) {
       throw 'Block created by Dart';
@@ -87,14 +89,17 @@ class Block extends id {
     return isa!.perform(SEL('superclass'));
   }
 
+  @override
   String get description {
     return toString();
   }
 
+  @override
   String get debugDescription {
     return toString();
   }
 
+  @override
   int get hash {
     return hashCode;
   }
@@ -146,9 +151,7 @@ class Block extends id {
       argsPtrPtr = calloc<Pointer<Void>>(args.length);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
-        if (arg == null) {
-          arg = nil;
-        }
+        arg ??= nil;
         if (arg is String) {
           stringTypeBitmask |= (0x1 << i);
         }

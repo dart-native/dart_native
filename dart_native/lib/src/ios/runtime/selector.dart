@@ -38,18 +38,20 @@ class SEL {
   }
 
   SEL._internal(this.name, this._selPtr) {
-    _cache[this.name] = this;
+    _cache[name] = this;
   }
 
   Pointer<Void> toPointer() {
     return _selPtr;
   }
 
+  @override
   bool operator ==(other) {
     if (other is SEL) return _selPtr == other._selPtr;
     return false;
   }
 
+  @override
   int get hashCode {
     return _selPtr.hashCode;
   }

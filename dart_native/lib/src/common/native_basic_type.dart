@@ -4,7 +4,7 @@ import 'dart:convert';
 // ignore: camel_case_types
 typedef char = int;
 
-extension utf8String on char {
+extension Utf8String on char {
   String toUTF8String() {
     return utf8.decode([this]);
   }

@@ -11,7 +11,7 @@ import 'package:ffi/ffi.dart';
 /// Stands for `NSString` in iOS.
 @native()
 class NSString extends NSSubclass<String> {
-  NSString(String value, {InitSubclass init: _newNSString})
+  NSString(String value, {InitSubclass init = _newNSString})
       : super(value, init);
 
   NSString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
@@ -28,7 +28,7 @@ class NSString extends NSSubclass<String> {
 /// Only for type casting. It's unmodifiable.
 @native()
 class NSMutableString extends NSString {
-  NSMutableString(String value, {InitSubclass init: _newNSMutableString})
+  NSMutableString(String value, {InitSubclass init = _newNSMutableString})
       : super(value, init: init);
 
   NSMutableString.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
@@ -61,7 +61,7 @@ extension Utf16Buffer on List<int> {
     final Pointer<Uint16> result = calloc<Uint16>(count);
     final Uint16List typedList = result.asTypedList(count);
     typedList.setAll(0, this);
-    typedList[this.length] = 0;
+    typedList[length] = 0;
     return result;
   }
 }

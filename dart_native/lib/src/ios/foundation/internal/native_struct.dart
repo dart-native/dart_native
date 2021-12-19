@@ -9,9 +9,7 @@ abstract class NativeStruct {
 
   PointerWrapper? _wrapper;
   PointerWrapper get wrapper {
-    if (_wrapper == null) {
-      _wrapper = PointerWrapper();
-    }
+    _wrapper ??= PointerWrapper();
     Pointer<Void> result = addressOf.cast<Void>();
     _wrapper!.value = result;
     return _wrapper!;
@@ -82,6 +80,7 @@ class NSUIntegerx2Wrapper extends NativeStruct {
     }
   }
 
+  @override
   bool operator ==(other) {
     if (other is NSUIntegerx2Wrapper) return i1 == other.i1 && i2 == other.i2;
     return false;
@@ -158,6 +157,7 @@ class CGFloatx2Wrapper extends NativeStruct {
     }
   }
 
+  @override
   bool operator ==(other) {
     if (other is CGFloatx2Wrapper) return d1 == other.d1 && d2 == other.d2;
     return false;
@@ -258,12 +258,14 @@ class CGFloatx4Wrapper extends NativeStruct {
     }
   }
 
+  @override
   bool operator ==(other) {
-    if (other is CGFloatx4Wrapper)
+    if (other is CGFloatx4Wrapper) {
       return d1 == other.d1 &&
           d2 == other.d2 &&
           d3 == other.d3 &&
           d4 == other.d4;
+    }
     return false;
   }
 
@@ -385,14 +387,16 @@ class CGFloatx6Wrapper extends NativeStruct {
     }
   }
 
+  @override
   bool operator ==(other) {
-    if (other is CGFloatx6Wrapper)
+    if (other is CGFloatx6Wrapper) {
       return d1 == other.d1 &&
           d2 == other.d2 &&
           d3 == other.d3 &&
           d4 == other.d4 &&
           d5 == other.d5 &&
           d6 == other.d6;
+    }
     return false;
   }
 
@@ -707,8 +711,9 @@ class CGFloatx16Wrapper extends NativeStruct {
     }
   }
 
+  @override
   bool operator ==(other) {
-    if (other is CGFloatx16Wrapper)
+    if (other is CGFloatx16Wrapper) {
       return d1 == other.d1 &&
           d2 == other.d2 &&
           d3 == other.d3 &&
@@ -725,6 +730,7 @@ class CGFloatx16Wrapper extends NativeStruct {
           d14 == other.d14 &&
           d15 == other.d15 &&
           d16 == other.d16;
+    }
     return false;
   }
 

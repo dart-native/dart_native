@@ -58,9 +58,7 @@ class Class extends id {
 }
 
 Pointer<Void> _getClass(String? className, [Class? superclass]) {
-  if (className == null) {
-    className = 'NSObject';
-  }
+  className ??= 'NSObject';
   final classNamePtr = className.toNativeUtf8();
   Pointer<Void>? basePtr = superclass?.pointer;
   Pointer<Void> result;

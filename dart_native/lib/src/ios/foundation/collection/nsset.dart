@@ -8,7 +8,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `NSSet` in iOS.
 @native()
 class NSSet extends NSSubclass<Set> {
-  NSSet(Set value, {InitSubclass init: _new}) : super(value, init) {
+  NSSet(Set value, {InitSubclass init = _new}) : super(value, init) {
     value = Set.of(value);
   }
 

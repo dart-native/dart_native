@@ -5,7 +5,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 
 @native()
 class SwiftStub extends NSObject {
-  static final _objcClassName = 'Runner.SwiftStub';
+  static const _objcClassName = 'Runner.SwiftStub';
   SwiftStub([Class? isa]) : super(isa ?? Class(_objcClassName));
   SwiftStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 

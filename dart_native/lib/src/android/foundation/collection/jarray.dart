@@ -14,7 +14,7 @@ class JArray<E> extends JSubclass<List> {
 
   JArray(List value) : super(value, _new, cls_array_object) {
     value = List.of(value, growable: false);
-    if (value.length > 0) {
+    if (value.isNotEmpty) {
       ArrayType type = _getValueType(value[0]);
       _arraySignature = type.arraySignature;
     }
@@ -36,7 +36,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
         JObject(className: 'com/dartnative/dart_native/ArrayListConverter');
     JList list = JList(value);
     ArrayType type = ArrayType('object', '[Ljava/lang/Object;');
-    if (value.length > 0) {
+    if (value.isNotEmpty) {
       type = _getValueType(value[0]);
     }
     return converter.invoke('${type.arrayType}ListToArray', type.arraySignature,

@@ -5,7 +5,7 @@ import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
 
 final id nil = id(nullptr);
 
-typedef void Finalizer();
+typedef Finalizer = void Function();
 
 /// Stands for `NSObject` in iOS.
 ///
@@ -48,23 +48,19 @@ class NSObject extends id {
   }
 
   static Pointer<Void> _new(Class? isa) {
-    if (isa == null) {
-      isa = Class('NSObject');
-    }
+    isa ??= Class('NSObject');
     Pointer<Void> resultPtr = isa.perform(SEL('new'), decodeRetVal: false);
     return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
   }
 }
 
 Pointer<Void> alloc(Class? isa) {
-  if (isa == null) {
-    isa = Class('NSObject');
-  }
+  isa ??= Class('NSObject');
   NSObject result = isa.perform(SEL('alloc'));
   return result.autorelease().pointer;
 }
 
-typedef dynamic ConvertorFromPointer(Pointer<Void> ptr);
+typedef ConvertorFromPointer = dynamic Function(Pointer<Void> ptr);
 
 /// Register a function for converting a Dart object from a [Pointer].
 ///

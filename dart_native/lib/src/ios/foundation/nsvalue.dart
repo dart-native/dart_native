@@ -27,7 +27,7 @@ class NSValue extends NSSubclass {
     if (selName == null) {
       throw 'Invalid encoding type for NSValue: $encoding';
     } else {
-      raw = msgSend(this.pointer, SEL(selName));
+      raw = msgSend(pointer, SEL(selName));
     }
   }
 

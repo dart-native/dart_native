@@ -122,10 +122,10 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
   map = stub.fooNSMutableDictionary({'foo': 'bar'});
   print('NSMutableDictionary to Map: $map');
 
-  Set? set = stub.fooNSSet(Set.from([1, 2.345, 'I\'m String', rect]));
+  Set? set = stub.fooNSSet({1, 2.345, 'I\'m String', rect});
   print('NSSet to Set: $set');
 
-  set = stub.fooNSMutableSet(Set.from([1, 2.345, 'I\'m String', rect]));
+  set = stub.fooNSMutableSet({1, 2.345, 'I\'m String', rect});
   print('fooNSMutableSet to Set: $set');
 
   stub.fooBlock((NSObject? a) {
@@ -140,7 +140,7 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
 
   stub.fooCStringBlock((CString? a) {
     print('hello block cstring! $a');
-    return CString('test return cstring');
+    return const CString('test return cstring');
   });
 
   stub.fooNSDictionaryBlock((NSDictionary? dict) {
@@ -198,7 +198,7 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
 void _checkTimer(String isolateID) async {
   RuntimeStub stub = RuntimeStub();
   DelegateStub delegate = DelegateStub();
-  Timer.periodic(new Duration(seconds: 1), (Timer t) {
+  Timer.periodic(const Duration(seconds: 1), (Timer t) {
     stub.fooCompletion(() {
       print('hello completion block on $isolateID!');
     });

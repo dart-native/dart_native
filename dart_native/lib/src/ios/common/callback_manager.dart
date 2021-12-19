@@ -6,7 +6,7 @@ import 'package:dart_native/src/ios/common/library.dart';
 
 class CallbackManager {
   // target->selector->function
-  Map<Pointer<Void>, Map<Pointer<Void>, Function>> _callbackManager = {};
+  final Map<Pointer<Void>, Map<Pointer<Void>, Function>> _callbackManager = {};
 
   static final CallbackManager _instance = CallbackManager._internal();
   CallbackManager._internal();

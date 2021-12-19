@@ -9,7 +9,7 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 /// Stands for `NSDictionary` in iOS.
 @native()
 class NSDictionary extends NSSubclass<Map> {
-  NSDictionary(Map value, {InitSubclass init: _new}) : super(value, init) {
+  NSDictionary(Map value, {InitSubclass init = _new}) : super(value, init) {
     value = Map.of(value);
   }
 

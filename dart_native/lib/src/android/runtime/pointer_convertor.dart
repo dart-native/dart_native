@@ -34,8 +34,7 @@ void registerDartConvertor(
   if (_dataConvertorCache[dartClass] == null) {
     _dataConvertorCache[dartClass] = Convertor(javaClass, convertor);
   } else {
-    throw 'registerDartConvertor has contains dartClass $dartClass.' +
-        ' Java class and dart class are one-to-one mapping.';
+    throw 'registerDartConvertor has contains dartClass $dartClass.' ' Java class and dart class are one-to-one mapping.';
   }
 }
 
@@ -45,8 +44,7 @@ void registerJavaConvertor(
   if (_javaConvertorCache[javaClass] == null) {
     _javaConvertorCache[javaClass] = convertor;
   } else {
-    throw 'registerJavaConvertor has contains javaClass $javaClass.' +
-        ' Java class and dart class are one-to-one mapping.';
+    throw 'registerJavaConvertor has contains javaClass $javaClass.' ' Java class and dart class are one-to-one mapping.';
   }
 }
 

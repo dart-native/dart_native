@@ -2,6 +2,7 @@ class NativeBox<T> {
   final T raw;
   const NativeBox(this.raw);
 
+  @override
   bool operator ==(other) {
     if (other is T) {
       return raw == other;

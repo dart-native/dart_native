@@ -1,5 +1,5 @@
 class JClass {
-  String _className;
+  final String _className;
 
   JClass(this._className);
   String get className => _className;

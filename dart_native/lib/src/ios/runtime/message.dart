@@ -9,7 +9,7 @@ import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:ffi/ffi.dart';
 
-typedef void _AsyncMessageCallback(dynamic result);
+typedef _AsyncMessageCallback = void Function(dynamic result);
 
 Pointer<Void> _sendMsgToNative(
   Pointer<Void> target,
@@ -117,10 +117,8 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     // Return value is passed to block.
     Block block = Block(callback);
     callbackPtr = block.pointer;
-    if (onQueue == null) {
-      // Send message to main queue by default.
-      onQueue = DispatchQueue.main;
-    }
+    // Send message to main queue by default.
+    onQueue ??= DispatchQueue.main;
   }
 
   Pointer<Void> resultPtr = _sendMsgToNative(
@@ -153,7 +151,9 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
       if (resultTypePtr.isStruct) {
         structTypes.add(resultTypePtr);
       }
-      outRefArgs.forEach((ref) => ref.syncValue());
+      for (var ref in outRefArgs) {
+        ref.syncValue();
+      }
     }
   }
   // free struct type memory (malloc on native side)
@@ -179,9 +179,8 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
 /// Return value will be converted to Dart types.
 Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
     {List? args, DispatchQueue? onQueue}) async {
-  if (onQueue == null) {
-    onQueue = DispatchQueue.global();
-  }
+  // Send message to global queue by default.
+  onQueue ??= DispatchQueue.global();
   final completer = Completer<dynamic>();
   _msgSend(target, selector, args: args, onQueue: onQueue,
       callback: (dynamic result) {

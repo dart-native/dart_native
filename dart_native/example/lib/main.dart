@@ -10,16 +10,18 @@ import 'dn_unit_test.dart';
 void main() {
   DartNative.init();
   runDartNativeExample();
-  runApp(DartNativeApp());
+  runApp(const DartNativeApp());
 }
 
 class DartNativeApp extends StatefulWidget {
+  const DartNativeApp({Key? key}) : super(key: key);
+
   @override
-  _DartNativeAppState createState() => _DartNativeAppState();
+  State createState() => _DartNativeAppState();
 }
 
 class _DartNativeAppState extends State<DartNativeApp> {
-  static const platform = const MethodChannel('sample.dartnative.com');
+  static const platform = MethodChannel('sample.dartnative.com');
   @override
   void initState() {
     super.initState();
@@ -57,7 +59,7 @@ class _DartNativeAppState extends State<DartNativeApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
+        body: const Center(
           child: Text('Using DartNative\n'),
         ),
       ),
