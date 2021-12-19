@@ -5,18 +5,6 @@
 // **************************************************************************
 
 import 'package:dart_native/dart_native.dart';
-import 'package:dart_native/src/android/foundation/collection/jset.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/integer.dart';
-import 'package:dart_native/src/android/foundation/collection/jarray.dart';
-import 'package:dart_native/src/android/foundation/collection/jlist.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/float.dart';
-import 'package:dart_native/src/android/foundation/collection/jmap.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/long.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/short.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/byte.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/character.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/double.dart';
-import 'package:dart_native/src/android/foundation/wrapperclass/boolean.dart';
 
 bool _hadRanDartNative = false;
 bool get hadRanDartNative => _hadRanDartNative;

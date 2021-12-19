@@ -4,11 +4,8 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
-import 'package:dart_native/src/ios/foundation/gcd.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
-import 'package:dart_native/src/ios/runtime/nsobject.dart';
-import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:ffi/ffi.dart';
 

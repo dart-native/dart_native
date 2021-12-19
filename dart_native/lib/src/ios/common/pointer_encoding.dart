@@ -6,7 +6,6 @@ import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_box.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
-import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:ffi/ffi.dart';
 
 // TODO: change encoding hard code string to const var.
