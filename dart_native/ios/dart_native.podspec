@@ -5,28 +5,34 @@
 Pod::Spec.new do |s|
   s.name             = 'dart_native'
   s.version          = '0.0.1'
-  s.summary          = 'Write native code using Dart. This package liberates you from native code and low performance channel.'
+  s.summary          = 'Write native code using Dart. This package liberates you from undercompetent channel.'
   s.description      = <<-DESC
-Write native code using Dart. This package liberates you from native code and low performance channel.
+Write native code using Dart. This package liberates you from undercompetent channel.
                        DESC
   s.homepage         = 'https://github.com/dart-native/dart_native'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'DartNative' => 'email@example.com' }
+  s.author           = { 'DartNative' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }
   
   # Debug
-  # s.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
-  # s.vendored_libraries = 'libffi/libffi.a'
+  s.ios.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
+  s.osx.source_files = 'Classes/**/*', 'libffi-macos/*.h', 'common/**/*'
+  s.ios.vendored_libraries = 'libffi/libffi.a'
+  s.osx.vendored_libraries = 'libffi-macos/libffi-macos.a'
 
   # Release
-  s.source_files = 'Classes/DartNativePlugin.*'
-  s.vendored_frameworks = 'DartNative.xcframework'
+  # s.source_files = 'Classes/DartNativePlugin.*'
+  # s.vendored_frameworks = 'DartNative.xcframework'
   
   s.public_header_files = 'Classes/DartNativePlugin.h'
-  s.dependency 'Flutter'
-  s.platform = :ios, '8.0'
+  s.ios.dependency 'Flutter'
+  s.osx.dependency 'FlutterMacOS'
+
+  s.ios.deployment_target = '8.0'
+  s.osx.deployment_target = '10.11'
   s.libraries = 'c++'
   
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386 arm64' }
+  s.ios.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386 arm64' }
+  s.osx.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 end

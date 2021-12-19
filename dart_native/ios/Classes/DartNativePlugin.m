@@ -11,7 +11,11 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"getPlatformVersion" isEqualToString:call.method]) {
-    result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+#if TARGET_OS_OSX
+      result([@"macOS " stringByAppendingString:NSProcessInfo.processInfo.operatingSystemVersionString]);
+#elif TARGET_OS_IOS
+      result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+#endif
   } else {
     result(FlutterMethodNotImplemented);
   }

@@ -6,7 +6,12 @@
 //
 
 #import "DNFFIHelper.h"
+#if TARGET_OS_OSX
+#import <AppKit/AppKit.h>
+#elif TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#endif
+
 
 #if !__has_feature(objc_arc)
 #error
@@ -68,9 +73,13 @@ int DNTypeLengthWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_LENGTH(CGRect);
         DN_DEFINE_TYPE_LENGTH(CGPoint);
         DN_DEFINE_TYPE_LENGTH(CGVector);
+#if TARGET_OS_OSX
+
+#elif TARGET_OS_IOS
         DN_DEFINE_TYPE_LENGTH(UIOffset);
         DN_DEFINE_TYPE_LENGTH(UIEdgeInsets);
-        if (@available(iOS 11.0, *)) {
+#endif
+        if (@available(iOS 11.0, macOS 10.15, *)) {
             DN_DEFINE_TYPE_LENGTH(NSDirectionalEdgeInsets);
         }
         DN_DEFINE_TYPE_LENGTH(CGAffineTransform);
@@ -120,9 +129,13 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_ENCODE_CASE(CGPoint);
         DN_DEFINE_TYPE_ENCODE_CASE(CGVector);
         DN_DEFINE_TYPE_ENCODE_CASE(NSRange);
+#if TARGET_OS_OSX
+
+#elif TARGET_OS_IOS
         DN_DEFINE_TYPE_ENCODE_CASE(UIOffset);
         DN_DEFINE_TYPE_ENCODE_CASE(UIEdgeInsets);
-        if (@available(iOS 11.0, *)) {
+#endif
+        if (@available(iOS 11.0, macOS 10.15, *)) {
             DN_DEFINE_TYPE_ENCODE_CASE(NSDirectionalEdgeInsets);
         }
         DN_DEFINE_TYPE_ENCODE_CASE(CGAffineTransform);

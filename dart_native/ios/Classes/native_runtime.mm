@@ -460,6 +460,8 @@ const char *native_type_encoding(const char *str) {
     }
     
     COND(_Bool, native_type_bool);
+//    FIXME: BOOL is 'c' on macOS
+//    COND(BOOL, native_type_bool);
     SINT(signed char);
     UINT(unsigned char);
     INT(short);
