@@ -1,11 +1,16 @@
 import 'dart:ffi';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/common/precompile_macro.dart';
 import 'package:ffi/ffi.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 
 abstract class NativeStruct {
   Pointer get addressOf;
+
+  /// Alias for box/unbox [NSValue]
+  /// See [valueWithStruct]
+  String get aliasForNSValue => runtimeType.toString();
 
   PointerWrapper? _wrapper;
   PointerWrapper get wrapper {
@@ -36,7 +41,7 @@ class NSUInteger64x2 extends Struct {
         ..ref.i2 = i2;
 }
 
-class NSUIntegerx2Wrapper extends NativeStruct {
+abstract class NSUIntegerx2Wrapper extends NativeStruct {
   late Pointer<NSUInteger32x2> _ptr32;
   late Pointer<NSUInteger64x2> _ptr64;
 
@@ -115,7 +120,7 @@ class CGFloat64x2 extends Struct {
         ..ref.d2 = d2;
 }
 
-class CGFloatx2Wrapper extends NativeStruct {
+abstract class CGFloatx2Wrapper extends NativeStruct {
   late Pointer<CGFloat32x2> _ptr32;
   late Pointer<CGFloat64x2> _ptr64;
 
@@ -198,7 +203,7 @@ class CGFloat64x4 extends Struct {
         ..ref.d4 = d4;
 }
 
-class CGFloatx4Wrapper extends NativeStruct {
+abstract class CGFloatx4Wrapper extends NativeStruct {
   late Pointer<CGFloat32x4> _ptr32;
   late Pointer<CGFloat64x4> _ptr64;
 
@@ -308,7 +313,7 @@ class CGFloat64x6 extends Struct {
         ..ref.d6 = d6;
 }
 
-class CGFloatx6Wrapper extends NativeStruct {
+abstract class CGFloatx6Wrapper extends NativeStruct {
   late Pointer<CGFloat32x6> _ptr32;
   late Pointer<CGFloat64x6> _ptr64;
 
@@ -525,7 +530,7 @@ class CGFloat64x16 extends Struct {
         ..ref.d16 = d16;
 }
 
-class CGFloatx16Wrapper extends NativeStruct {
+abstract class CGFloatx16Wrapper extends NativeStruct {
   late Pointer<CGFloat32x16> _ptr32;
   late Pointer<CGFloat64x16> _ptr64;
 

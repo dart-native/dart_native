@@ -7,7 +7,7 @@ final id nil = id(nullptr);
 
 typedef Finalizer = void Function();
 
-/// Stands for `NSObject` in iOS.
+/// Stands for `NSObject` in iOS and macOS.
 ///
 /// The root class of most Objective-C class hierarchies, from which subclasses inherit a basic interface to the runtime system and the ability to behave as Objective-C objects.
 class NSObject extends id {

@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
-/// Stands for `CGPoint` in iOS.
+/// Stands for `CGPoint` in iOS and macOS.
 class CGPoint extends CGFloatx2Wrapper {
   double get x => d1;
   set x(double x) {
@@ -16,4 +16,13 @@ class CGPoint extends CGFloatx2Wrapper {
 
   CGPoint(double x, double y) : super(x, y);
   CGPoint.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+}
+
+/// Stands for `NSPoint` in macOS.
+class NSPoint extends CGPoint {
+  @override
+  String get aliasForNSValue => 'Point';
+  
+  NSPoint(double x, double y) : super(x, y);
+  NSPoint.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }

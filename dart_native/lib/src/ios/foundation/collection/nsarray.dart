@@ -6,7 +6,7 @@ import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:ffi/ffi.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-/// Stands for `NSArray` in iOS.
+/// Stands for `NSArray` in iOS and macOS.
 @native()
 class NSArray extends NSSubclass<List> {
   NSArray(List value, {InitSubclass init = _new}) : super(value, init) {
@@ -30,7 +30,7 @@ class NSArray extends NSSubclass<List> {
   }
 }
 
-/// Stands for `NSMutableArray` in iOS.
+/// Stands for `NSMutableArray` in iOS and macOS.
 ///
 /// Only for type casting. It's unmodifiable.
 @native()

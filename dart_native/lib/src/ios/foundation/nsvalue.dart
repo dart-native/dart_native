@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/struct/catransform3d.dart';
+import 'package:dart_native/src/ios/foundation/struct/uiedgeinsets.dart';
 import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
@@ -15,7 +16,7 @@ import 'package:dart_native/src/ios/foundation/struct/uioffset.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-/// Stands for `NSValue` in iOS.
+/// Stands for `NSValue` in iOS and macOS.
 @native()
 class NSValue extends NSSubclass {
   NSValue(dynamic value) : super(value, _new);
@@ -48,7 +49,15 @@ class NSValue extends NSSubclass {
       if (structName == null) {
         return null;
       }
-      return '${structName}Value';
+      const specialStructs = {
+        'NSPoint': 'point',
+        'NSSize': 'size',
+        'NSRect': 'rect',
+        'NSRange': 'range',
+        'NSEdgeInsets': 'edgeInsets'
+      };
+      String selPrefix = specialStructs[structName] ?? structName;
+      return '${selPrefix}Value';
     } else if (encoding.length == 1 &&
         _encodingToNativeValueName.containsKey(encoding)) {
       return '${_encodingToNativeValueName[encoding]}Value';
@@ -62,8 +71,13 @@ class NSValue extends NSSubclass {
     return NSValue.fromPointer(result.pointer);
   }
 
-  static NSValue valueWithStruct<T extends NativeStruct>(T struct) {
-    String selName = 'valueWith${struct.runtimeType.toString()}:';
+  /// Stands for `-[NSValue valueWith{StructName}]` in iOS and macOS.
+  /// `StructName` is [struct].runtimeType.toString() by default. You can also pass in an alias:
+  /// See the implementation of [valueWithRange] in [NSValueRangeExtensions].
+  static NSValue valueWithStruct<T extends NativeStruct>(T struct,
+      {String? structAlias}) {
+    String selName =
+        'valueWith${structAlias ?? struct.aliasForNSValue}:';
     NSObject result = type(of: NSValue).perform(SEL(selName), args: [struct]);
     NSValue value = NSValue.fromPointer(result.pointer);
     value.raw = struct;
@@ -124,6 +138,13 @@ extension NSValueUIGeometryExtensions on NSValue {
   CGAffineTransform get CGAffineTransformValue =>
       perform(SEL('CGAffineTransformValue'));
 
+  static NSValue valueWithUIEdgeInsets(UIEdgeInsets insets) {
+    return NSValue.valueWithStruct(insets);
+  }
+
+  // ignore: non_constant_identifier_names
+  UIEdgeInsets get UIEdgeInsetsValue => perform(SEL('UIEdgeInsetsValue'));
+
   static NSValue valueWithDirectionalEdgeInsets(
       NSDirectionalEdgeInsets insets) {
     return NSValue.valueWithStruct(insets);
@@ -138,6 +159,36 @@ extension NSValueUIGeometryExtensions on NSValue {
 
   // ignore: non_constant_identifier_names
   UIOffset get UIOffsetValue => perform(SEL('UIOffsetValue'));
+}
+
+extension NSValueGeometryExtensions on NSValue {
+  static NSValue valueWithPoint(NSPoint point) {
+    return NSValue.valueWithStruct(point);
+  }
+
+  // ignore: non_constant_identifier_names
+  NSPoint get pointValue => perform(SEL('pointValue'));
+
+  static NSValue valueWithSize(NSSize size) {
+    return NSValue.valueWithStruct(size);
+  }
+
+  // ignore: non_constant_identifier_names
+  NSSize get sizeValue => perform(SEL('sizeValue'));
+
+  static NSValue valueWithRect(NSRect rect) {
+    return NSValue.valueWithStruct(rect);
+  }
+
+  // ignore: non_constant_identifier_names
+  NSRect get rectValue => perform(SEL('rectValue'));
+
+  static NSValue valueWithEdgeInsets(NSEdgeInsets insets) {
+    return NSValue.valueWithStruct(insets);
+  }
+
+  // ignore: non_constant_identifier_names
+  NSEdgeInsets get edgeInsetsValue => perform(SEL('edgeInsetsValue'));
 }
 
 extension NSValueRangeExtensions on NSValue {

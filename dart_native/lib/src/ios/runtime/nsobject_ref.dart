@@ -5,7 +5,7 @@ import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `NSObject **` in iOS.
+/// Stands for `NSObject **` in iOS and macOS.
 ///
 /// This Class is an experimental implementation.
 /// Broken changes are likely in the future.

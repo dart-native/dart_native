@@ -40,7 +40,7 @@ Pointer<Void> _sendMsgToNative(
 
 Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
-/// Send a message to [target], which should be an instance in iOS.
+/// Send a message to [target], which should be an instance in iOS and macOS.
 ///
 /// The message will consist of a [selector] and zero or more [args].
 ///
@@ -162,7 +162,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
   return result;
 }
 
-/// Send a message synchronously to [target], which should be an instance in iOS.
+/// Send a message synchronously to [target], which should be an instance in iOS and macOS.
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types when [decodeRetVal] is `true`.
@@ -172,7 +172,7 @@ dynamic msgSend(Pointer<Void> target, SEL selector,
 }
 
 /// Send a message to [target] on GCD queues asynchronously using [onQueue].
-/// [target] should be an instance in iOS.
+/// [target] should be an instance in iOS and macOS.
 /// [onQueue] is `DispatchQueue.main` by default.
 ///
 /// The message will consist of a [selector] and zero or more [args].
@@ -187,4 +187,10 @@ Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
     completer.complete(result);
   });
   return completer.future;
+}
+
+extension Convert2Bool on int {
+  bool toBool() {
+    return this != 0;
+  }
 }

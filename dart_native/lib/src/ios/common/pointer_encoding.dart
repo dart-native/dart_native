@@ -11,9 +11,13 @@ import 'package:ffi/ffi.dart';
 // TODO: change encoding hard code string to const var.
 Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
   TypeEncodings.b: (Pointer ptr, dynamic object) {
-    ptr.cast<Int8>().value = object;
+    ptr.cast<Bool>().value = object;
   },
   TypeEncodings.sint8: (Pointer ptr, dynamic object) {
+    // Type-encoding for BOOL is 'c' on macOS and 32-bit iOS simulators.
+    if (object is bool) {
+      object = object ? 1 : 0;
+    }
     ptr.cast<Int8>().value = object.toInt();
   },
   TypeEncodings.sint16: (Pointer ptr, dynamic object) {
@@ -59,10 +63,6 @@ dynamic storeValueToPointer(
     if (object is NativeBox) {
       // unwrap from box.
       object = object.raw;
-    }
-    if (object is bool) {
-      // waiting for ffi bool type support.
-      object = object ? 1 : 0;
     }
     Function? strategy = _storeValueStrategyMap[encoding];
     if (strategy == null) {
@@ -145,7 +145,7 @@ dynamic storeCStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
 
 Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   TypeEncodings.b: (ByteData data) {
-    return data.getInt8(0);
+    return data.getInt8(0) != 0;
   },
   TypeEncodings.sint8: (ByteData data) {
     return data.getInt8(0);
@@ -205,9 +205,6 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
     ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
     ByteData data = ByteData.view(buffer);
     result = Function.apply(_loadValueStrategyMap[encoding]!, [data]);
-    if (encoding == TypeEncodings.b) {
-      result = result != 0;
-    }
   } else {
     // object
     Function? strategy = _loadValueStrategyMap[encoding];
@@ -270,18 +267,28 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
   if (structName != null) {
     NativeStruct? result;
     // struct
+    // TODO: using annotation
     switch (structName) {
       case 'CGSize':
         result = CGSize.fromPointer(ptr);
         break;
+      case 'NSSize':
+        result = NSSize.fromPointer(ptr);
+        break;
       case 'CGPoint':
         result = CGPoint.fromPointer(ptr);
+        break;
+      case 'NSPoint':
+        result = NSPoint.fromPointer(ptr);
         break;
       case 'CGVector':
         result = CGVector.fromPointer(ptr);
         break;
       case 'CGRect':
         result = CGRect.fromPointer(ptr);
+        break;
+      case 'NSRect':
+        result = NSRect.fromPointer(ptr);
         break;
       case 'NSRange':
         result = NSRange.fromPointer(ptr);
@@ -291,6 +298,9 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
         break;
       case 'UIEdgeInsets':
         result = UIEdgeInsets.fromPointer(ptr);
+        break;
+      case 'NSEdgeInsets':
+        result = NSEdgeInsets.fromPointer(ptr);
         break;
       case 'NSDirectionalEdgeInsets':
         result = NSDirectionalEdgeInsets.fromPointer(ptr);
@@ -316,6 +326,7 @@ Map<String, String> _nativeTypeNameMap = {
   'unsigned_long_long': 'unsigned long long',
 };
 
+// FIXME: this list shouldn't hardcode custom structs
 List<String> _nativeTypeNames = [
   'id',
   'BOOL',
@@ -343,19 +354,23 @@ List<String> _nativeTypeNames = [
   'uint32_t',
   'uint64_t',
   'CGFloat',
-  'CGSize',
-  'CGRect',
-  'CGPoint',
-  'CGVector',
-  'NSRange',
-  'UIOffset',
-  'UIEdgeInsets',
-  'NSDirectionalEdgeInsets',
-  'CGAffineTransform',
   'NSInteger',
   'NSUInteger',
   'Class',
   'SEL',
+  'CGSize',
+  'NSSize',
+  'CGRect',
+  'NSRect',
+  'CGPoint',
+  'NSPoint',
+  'CGVector',
+  'NSRange',
+  'UIOffset',
+  'UIEdgeInsets',
+  'NSEdgeInsets',
+  'NSDirectionalEdgeInsets',
+  'CGAffineTransform',
 ];
 
 List<String> dartTypeStringForFunction(Function function) {

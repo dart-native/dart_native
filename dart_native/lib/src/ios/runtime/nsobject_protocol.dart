@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/dart_objc.dart';
 
-/// Stands for `@protocol NSObject` in iOS.
+/// Stands for `@protocol NSObject` in iOS and macOS.
 ///
 /// The group of methods that are fundamental to all Objective-C objects.
 abstract class NSObjectProtocol {

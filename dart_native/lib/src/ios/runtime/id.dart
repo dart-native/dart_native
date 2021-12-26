@@ -3,10 +3,10 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 
-/// Stands for `id` in iOS.
+/// Stands for `id` in iOS and macOS.
 // ignore: camel_case_types
 class id implements NSObjectProtocol {
-  /// Stands for `isa` in iOS.
+  /// Stands for `isa` in iOS and macOS.
   Class? get isa {
     if (_ptr == nullptr) {
       return null;

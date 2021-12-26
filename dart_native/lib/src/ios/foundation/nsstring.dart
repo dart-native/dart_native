@@ -8,7 +8,7 @@ import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `NSString` in iOS.
+/// Stands for `NSString` in iOS and macOS.
 @native()
 class NSString extends NSSubclass<String> {
   NSString(String value, {InitSubclass init = _newNSString})
@@ -23,7 +23,7 @@ class NSString extends NSSubclass<String> {
   }
 }
 
-/// Stands for `NSMutableString` in iOS.
+/// Stands for `NSMutableString` in iOS and macOS.
 ///
 /// Only for type casting. It's unmodifiable.
 @native()

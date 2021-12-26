@@ -6,7 +6,7 @@ import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `Protocol` and `@protocol` in iOS.
+/// Stands for `Protocol` and `@protocol` in iOS and macOS.
 ///
 /// A class interface declares the methods and properties associated with that
 /// class. A protocol, by contrast, is used to declare methods and properties

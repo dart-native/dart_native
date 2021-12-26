@@ -18,7 +18,7 @@ final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
     .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
         'DNBlockTypeEncodeString');
 
-/// Stands for `NSBlock` in iOS. [Block] can be used as an argument
+/// Stands for `NSBlock` in iOS and macOS. [Block] can be used as an argument
 /// to a method and as a callback.
 ///
 /// You can create [Block] from Dart [Function], or just obtain [Block] from

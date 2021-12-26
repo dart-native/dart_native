@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
-/// Stands for `CGVector` in iOS.
+/// Stands for `CGVector` in iOS and macOS.
 class CGVector extends CGFloatx2Wrapper {
   double get dx => d1;
   set dx(double dx) {

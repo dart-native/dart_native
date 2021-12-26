@@ -34,11 +34,6 @@
 		A4074B01276F934E009F0EFD /* dart_tools_api.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D55258B3E0A009C163D /* dart_tools_api.h */; };
 		A4074B02276F9353009F0EFD /* dart_api_dl.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D56258B3E0A009C163D /* dart_api_dl.h */; };
 		A4074B03276F9359009F0EFD /* dart_api_dl_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D54258B3E0A009C163D /* dart_api_dl_impl.h */; };
-		A4074B33276FB697009F0EFD /* ffitarget.h in Headers */ = {isa = PBXBuildFile; fileRef = A4074B2E276FB697009F0EFD /* ffitarget.h */; };
-		A4074B34276FB697009F0EFD /* ffitarget_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A4074B2F276FB697009F0EFD /* ffitarget_x86_64.h */; };
-		A4074B35276FB697009F0EFD /* ffi_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A4074B30276FB697009F0EFD /* ffi_x86_64.h */; };
-		A4074B36276FB697009F0EFD /* libffi-macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A4074B31276FB697009F0EFD /* libffi-macos.a */; };
-		A4074B37276FB697009F0EFD /* ffi.h in Headers */ = {isa = PBXBuildFile; fileRef = A4074B32276FB697009F0EFD /* ffi.h */; };
 		A45C1CAC262DB7B500FC10FE /* DNError.h in Headers */ = {isa = PBXBuildFile; fileRef = A45C1CAA262DB7B500FC10FE /* DNError.h */; };
 		A45C1CAD262DB7B500FC10FE /* DNError.m in Sources */ = {isa = PBXBuildFile; fileRef = A45C1CAB262DB7B500FC10FE /* DNError.m */; };
 		A45D1D78258B3E0A009C163D /* dart_api.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D4C258B3E0A009C163D /* dart_api.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -50,18 +45,6 @@
 		A45D1D7E258B3E0A009C163D /* dart_api_dl_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D54258B3E0A009C163D /* dart_api_dl_impl.h */; };
 		A45D1D7F258B3E0A009C163D /* dart_tools_api.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D55258B3E0A009C163D /* dart_tools_api.h */; };
 		A45D1D80258B3E0A009C163D /* dart_api_dl.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D56258B3E0A009C163D /* dart_api_dl.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		A45D1D81258B3E0A009C163D /* ffitarget_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D58258B3E0A009C163D /* ffitarget_arm64.h */; };
-		A45D1D82258B3E0A009C163D /* ffitarget.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D59258B3E0A009C163D /* ffitarget.h */; };
-		A45D1D83258B3E0A009C163D /* ffi_arm.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D5A258B3E0A009C163D /* ffi_arm.h */; };
-		A45D1D84258B3E0A009C163D /* ffi_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D5B258B3E0A009C163D /* ffi_i386.h */; };
-		A45D1D85258B3E0A009C163D /* ffitarget_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D5C258B3E0A009C163D /* ffitarget_x86_64.h */; };
-		A45D1D86258B3E0A009C163D /* ffi_x86_64.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D5D258B3E0A009C163D /* ffi_x86_64.h */; };
-		A45D1D87258B3E0A009C163D /* ffitarget_arm.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D5E258B3E0A009C163D /* ffitarget_arm.h */; };
-		A45D1D88258B3E0A009C163D /* ffitarget_i386.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D5F258B3E0A009C163D /* ffitarget_i386.h */; };
-		A45D1D89258B3E0A009C163D /* ffi_common.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D60258B3E0A009C163D /* ffi_common.h */; };
-		A45D1D8A258B3E0A009C163D /* libffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A45D1D61258B3E0A009C163D /* libffi.a */; };
-		A45D1D8B258B3E0A009C163D /* ffi.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D62258B3E0A009C163D /* ffi.h */; };
-		A45D1D8C258B3E0A009C163D /* ffi_arm64.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D63258B3E0A009C163D /* ffi_arm64.h */; };
 		A45D1D8D258B3E0A009C163D /* DNInvocation.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D65258B3E0A009C163D /* DNInvocation.h */; };
 		A45D1D8E258B3E0A009C163D /* DNMacro.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNMacro.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A45D1D91258B3E0A009C163D /* DNObjectDealloc.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D69258B3E0A009C163D /* DNObjectDealloc.h */; };
@@ -79,15 +62,12 @@
 		A45D1D9F258B3E0A009C163D /* DNBlockWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D77258B3E0A009C163D /* DNBlockWrapper.m */; };
 		A4EECFD026A479240025502E /* DNAssociatedDartObject.h in Headers */ = {isa = PBXBuildFile; fileRef = A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */; };
 		A4EECFD126A479240025502E /* DNAssociatedDartObject.m in Sources */ = {isa = PBXBuildFile; fileRef = A4EECFCF26A479240025502E /* DNAssociatedDartObject.m */; };
+		A4F688BC27788CFA0053A9B9 /* libffi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4F688BB27788CFA0053A9B9 /* libffi.xcframework */; };
+		A4F688BD27788CFA0053A9B9 /* libffi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4F688BB27788CFA0053A9B9 /* libffi.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A4074AE0276F92CC009F0EFD /* DartNative_macOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DartNative_macOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A4074B2E276FB697009F0EFD /* ffitarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
-		A4074B2F276FB697009F0EFD /* ffitarget_x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
-		A4074B30276FB697009F0EFD /* ffi_x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_x86_64.h; sourceTree = "<group>"; };
-		A4074B31276FB697009F0EFD /* libffi-macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libffi-macos.a"; sourceTree = "<group>"; };
-		A4074B32276FB697009F0EFD /* ffi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
 		A45C1CAA262DB7B500FC10FE /* DNError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNError.h; sourceTree = "<group>"; };
 		A45C1CAB262DB7B500FC10FE /* DNError.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DNError.m; sourceTree = "<group>"; };
 		A45D1D3D258B3DC6009C163D /* DartNative.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DartNative.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,18 +80,6 @@
 		A45D1D54258B3E0A009C163D /* dart_api_dl_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_api_dl_impl.h; sourceTree = "<group>"; };
 		A45D1D55258B3E0A009C163D /* dart_tools_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_tools_api.h; sourceTree = "<group>"; };
 		A45D1D56258B3E0A009C163D /* dart_api_dl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_api_dl.h; sourceTree = "<group>"; };
-		A45D1D58258B3E0A009C163D /* ffitarget_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_arm64.h; sourceTree = "<group>"; };
-		A45D1D59258B3E0A009C163D /* ffitarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget.h; sourceTree = "<group>"; };
-		A45D1D5A258B3E0A009C163D /* ffi_arm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_arm.h; sourceTree = "<group>"; };
-		A45D1D5B258B3E0A009C163D /* ffi_i386.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_i386.h; sourceTree = "<group>"; };
-		A45D1D5C258B3E0A009C163D /* ffitarget_x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_x86_64.h; sourceTree = "<group>"; };
-		A45D1D5D258B3E0A009C163D /* ffi_x86_64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_x86_64.h; sourceTree = "<group>"; };
-		A45D1D5E258B3E0A009C163D /* ffitarget_arm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_arm.h; sourceTree = "<group>"; };
-		A45D1D5F258B3E0A009C163D /* ffitarget_i386.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffitarget_i386.h; sourceTree = "<group>"; };
-		A45D1D60258B3E0A009C163D /* ffi_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_common.h; sourceTree = "<group>"; };
-		A45D1D61258B3E0A009C163D /* libffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libffi.a; sourceTree = "<group>"; };
-		A45D1D62258B3E0A009C163D /* ffi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi.h; sourceTree = "<group>"; };
-		A45D1D63258B3E0A009C163D /* ffi_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ffi_arm64.h; sourceTree = "<group>"; };
 		A45D1D65258B3E0A009C163D /* DNInvocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNInvocation.h; sourceTree = "<group>"; };
 		A45D1D66258B3E0A009C163D /* DNMacro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNMacro.h; sourceTree = "<group>"; };
 		A45D1D69258B3E0A009C163D /* DNObjectDealloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNObjectDealloc.h; sourceTree = "<group>"; };
@@ -130,6 +98,7 @@
 		A49438DF25934C39004BF483 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNAssociatedDartObject.h; sourceTree = "<group>"; };
 		A4EECFCF26A479240025502E /* DNAssociatedDartObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNAssociatedDartObject.m; sourceTree = "<group>"; };
+		A4F688BB27788CFA0053A9B9 /* libffi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libffi.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,7 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A4074B36276FB697009F0EFD /* libffi-macos.a in Frameworks */,
+				A4F688BD27788CFA0053A9B9 /* libffi.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,33 +114,20 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A45D1D8A258B3E0A009C163D /* libffi.a in Frameworks */,
+				A4F688BC27788CFA0053A9B9 /* libffi.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A4074B2D276FB697009F0EFD /* libffi-macos */ = {
-			isa = PBXGroup;
-			children = (
-				A4074B2E276FB697009F0EFD /* ffitarget.h */,
-				A4074B2F276FB697009F0EFD /* ffitarget_x86_64.h */,
-				A4074B30276FB697009F0EFD /* ffi_x86_64.h */,
-				A4074B31276FB697009F0EFD /* libffi-macos.a */,
-				A4074B32276FB697009F0EFD /* ffi.h */,
-			);
-			path = "libffi-macos";
-			sourceTree = "<group>";
-		};
 		A45D1D33258B3DC6009C163D = {
 			isa = PBXGroup;
 			children = (
 				A45D1D64258B3E0A009C163D /* Classes */,
 				A45D1D4A258B3E0A009C163D /* common */,
-				A4074B2D276FB697009F0EFD /* libffi-macos */,
-				A45D1D57258B3E0A009C163D /* libffi */,
 				A49438DE25934C39004BF483 /* DartNative */,
+				A4F688BB27788CFA0053A9B9 /* libffi.xcframework */,
 				A45D1D3E258B3DC6009C163D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -225,25 +181,6 @@
 			path = internal;
 			sourceTree = "<group>";
 		};
-		A45D1D57258B3E0A009C163D /* libffi */ = {
-			isa = PBXGroup;
-			children = (
-				A45D1D58258B3E0A009C163D /* ffitarget_arm64.h */,
-				A45D1D59258B3E0A009C163D /* ffitarget.h */,
-				A45D1D5A258B3E0A009C163D /* ffi_arm.h */,
-				A45D1D5B258B3E0A009C163D /* ffi_i386.h */,
-				A45D1D5C258B3E0A009C163D /* ffitarget_x86_64.h */,
-				A45D1D5D258B3E0A009C163D /* ffi_x86_64.h */,
-				A45D1D5E258B3E0A009C163D /* ffitarget_arm.h */,
-				A45D1D5F258B3E0A009C163D /* ffitarget_i386.h */,
-				A45D1D60258B3E0A009C163D /* ffi_common.h */,
-				A45D1D61258B3E0A009C163D /* libffi.a */,
-				A45D1D62258B3E0A009C163D /* ffi.h */,
-				A45D1D63258B3E0A009C163D /* ffi_arm64.h */,
-			);
-			path = libffi;
-			sourceTree = "<group>";
-		};
 		A45D1D64258B3E0A009C163D /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -287,19 +224,15 @@
 			files = (
 				A4074AFF276F9347009F0EFD /* dart_embedder_api.h in Headers */,
 				A4074AF7276F92FF009F0EFD /* DNFFIHelper.h in Headers */,
-				A4074B34276FB697009F0EFD /* ffitarget_x86_64.h in Headers */,
 				A4074AFE276F9343009F0EFD /* dart_version.h in Headers */,
 				A4074AEB276F92FF009F0EFD /* DNMethodIMP.h in Headers */,
 				A4074AED276F92FF009F0EFD /* native_runtime.h in Headers */,
 				A4074B00276F934B009F0EFD /* dart_native_api.h in Headers */,
 				A4074B02276F9353009F0EFD /* dart_api_dl.h in Headers */,
-				A4074B33276FB697009F0EFD /* ffitarget.h in Headers */,
 				A4074AF2276F92FF009F0EFD /* DNAssociatedDartObject.h in Headers */,
 				A4074AF3276F92FF009F0EFD /* DNObjectDealloc.h in Headers */,
 				A4074AF9276F92FF009F0EFD /* DNBlockWrapper.h in Headers */,
-				A4074B37276FB697009F0EFD /* ffi.h in Headers */,
 				A4074B01276F934E009F0EFD /* dart_tools_api.h in Headers */,
-				A4074B35276FB697009F0EFD /* ffi_x86_64.h in Headers */,
 				A4074AF1276F92FF009F0EFD /* DNError.h in Headers */,
 				A4074AFC276F9339009F0EFD /* dart_api.h in Headers */,
 				A4074B03276F9359009F0EFD /* dart_api_dl_impl.h in Headers */,
@@ -313,34 +246,23 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A45D1D87258B3E0A009C163D /* ffitarget_arm.h in Headers */,
 				A45D1D80258B3E0A009C163D /* dart_api_dl.h in Headers */,
 				A45D1D78258B3E0A009C163D /* dart_api.h in Headers */,
 				A45D1D8D258B3E0A009C163D /* DNInvocation.h in Headers */,
 				A45D1D94258B3E0A009C163D /* DNPointerWrapper.h in Headers */,
-				A45D1D8C258B3E0A009C163D /* ffi_arm64.h in Headers */,
-				A45D1D85258B3E0A009C163D /* ffitarget_x86_64.h in Headers */,
-				A45D1D88258B3E0A009C163D /* ffitarget_i386.h in Headers */,
-				A45D1D8B258B3E0A009C163D /* ffi.h in Headers */,
 				A45D1D7C258B3E0A009C163D /* dart_embedder_api.h in Headers */,
 				A4EECFD026A479240025502E /* DNAssociatedDartObject.h in Headers */,
 				A45D1D9C258B3E0A009C163D /* DNMethodIMP.h in Headers */,
-				A45D1D83258B3E0A009C163D /* ffi_arm.h in Headers */,
 				A45D1D7F258B3E0A009C163D /* dart_tools_api.h in Headers */,
 				A45D1D97258B3E0A009C163D /* native_runtime.h in Headers */,
-				A45D1D82258B3E0A009C163D /* ffitarget.h in Headers */,
 				A45C1CAC262DB7B500FC10FE /* DNError.h in Headers */,
 				A45D1D92258B3E0A009C163D /* DNBlockWrapper.h in Headers */,
 				A45D1D7A258B3E0A009C163D /* dart_version.h in Headers */,
 				A45D1D7D258B3E0A009C163D /* dart_native_api.h in Headers */,
-				A45D1D89258B3E0A009C163D /* ffi_common.h in Headers */,
-				A45D1D81258B3E0A009C163D /* ffitarget_arm64.h in Headers */,
 				A45D1D9E258B3E0A009C163D /* DNFFIHelper.h in Headers */,
 				A45D1D7B258B3E0A009C163D /* dart_io_api.h in Headers */,
 				A45D1D8E258B3E0A009C163D /* DNMacro.h in Headers */,
 				A45D1D91258B3E0A009C163D /* DNObjectDealloc.h in Headers */,
-				A45D1D84258B3E0A009C163D /* ffi_i386.h in Headers */,
-				A45D1D86258B3E0A009C163D /* ffi_x86_64.h in Headers */,
 				A45D1D7E258B3E0A009C163D /* dart_api_dl_impl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

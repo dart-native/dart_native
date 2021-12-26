@@ -25,11 +25,9 @@
    ----------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------
-   libffi-iOS is built based on libffi-3.2.1, provides universal library
+   libffi is built based on libffi-3.2.1, provides universal library
    (i386, x86_64, armv7, arm64), both ffi_call and ffi_closure are fully
    tested.
-   https://github.com/sunnyxx/libffi-iOS
-   by sunnyxx
    -------------------------------------------------------------------- */
 
 #ifdef __arm64__

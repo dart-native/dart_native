@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/library.dart';
 
-/// Stands for `DispatchQoS` in iOS.
+/// Stands for `DispatchQoS` in iOS and macOS.
 ///
 /// The quality of service, or the execution priority, to apply to tasks.
 ///
@@ -44,7 +44,7 @@ typedef DispatchWorkItem = void Function();
 
 Pointer<Void> _mainQueue = dispatch_get_main_queue();
 
-/// Stands for `DispatchQueue` in iOS.
+/// Stands for `DispatchQueue` in iOS and macOS.
 /// An object that manages the execution of tasks serially or concurrently on
 /// your app's main thread or on a background thread.
 class DispatchQueue {

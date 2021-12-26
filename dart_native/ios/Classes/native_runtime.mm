@@ -734,7 +734,7 @@ void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
 
 static NSMutableDictionary<NSNumber *, NSNumber *> *objectRefCount = [NSMutableDictionary dictionary];
 
-API_AVAILABLE(ios(10.0))
+API_AVAILABLE(ios(10.0), macos(10.12))
 static os_unfair_lock _refCountUnfairLock = OS_UNFAIR_LOCK_INIT;
 static NSLock *_refCountLock = [[NSLock alloc] init];
 
@@ -752,7 +752,7 @@ static void _RunFinalizer(void *isolate_callback_data,
 
 static void RunFinalizer(void *isolate_callback_data,
                          void *peer) {
-    if (@available(iOS 10.0, *)) {
+    if (@available(iOS 10.0, macOS 10.12, *)) {
         os_unfair_lock_lock(&_refCountUnfairLock);
         _RunFinalizer(isolate_callback_data, peer);
         os_unfair_lock_unlock(&_refCountUnfairLock);
@@ -798,7 +798,7 @@ DNPassObjectResult _PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer)
 
 DNPassObjectResult PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer) {
     DNPassObjectResult result;
-    if (@available(iOS 10.0, *)) {
+    if (@available(iOS 10.0, macOS 10.12, *)) {
         os_unfair_lock_lock(&_refCountUnfairLock);
         result = _PassObjectToCUseDynamicLinking(h, pointer);
         os_unfair_lock_unlock(&_refCountUnfairLock);

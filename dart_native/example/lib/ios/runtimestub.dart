@@ -43,7 +43,11 @@ class RuntimeStub extends NSObject {
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   bool? fooBOOL(bool b) {
-    return perform(SEL('fooBOOL:'), args: [b]);
+    dynamic result = perform(SEL('fooBOOL:'), args: [b]);
+    if (result is int) {
+      return result.toBool();
+    }
+    return result;
   }
 
   int? fooInt8(int int8) {

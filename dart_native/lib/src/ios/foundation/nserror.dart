@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-/// Stands for `NSError` in iOS.
+/// Stands for `NSError` in iOS and macOS.
 @native()
 class NSError extends NSObject {
   String get domain {

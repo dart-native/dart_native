@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
-/// Stands for `CGRect` in iOS.
+/// Stands for `CGRect` in iOS and macOS.
 class CGRect extends CGFloatx4Wrapper {
   double get x => d1;
   set x(double x) {
@@ -27,4 +27,12 @@ class CGRect extends CGFloatx4Wrapper {
   CGRect(double x, double y, double width, double height)
       : super(x, y, width, height);
   CGRect.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+}
+/// Stands for `NSRect` in macOS.
+class NSRect extends CGRect {
+  @override
+  String get aliasForNSValue => 'Rect';
+  
+  NSRect(double x, double y, double width, double height) : super(x, y, width, height);
+  NSRect.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }

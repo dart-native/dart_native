@@ -15,10 +15,8 @@ Write native code using Dart. This package liberates you from undercompetent cha
   s.source           = { :path => '.' }
   
   # Debug
-  s.ios.source_files = 'Classes/**/*', 'libffi/*.h', 'common/**/*'
-  s.osx.source_files = 'Classes/**/*', 'libffi-macos/*.h', 'common/**/*'
-  s.ios.vendored_libraries = 'libffi/libffi.a'
-  s.osx.vendored_libraries = 'libffi-macos/libffi-macos.a'
+  s.source_files = 'Classes/**/*', 'common/**/*'
+  s.vendored_frameworks = 'libffi.xcframework'
 
   # Release
   # s.source_files = 'Classes/DartNativePlugin.*'
