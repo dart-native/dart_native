@@ -52,13 +52,13 @@ Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 ///
 /// The Result of the message will be converted to Dart types when
 /// [decodeRetVal] is `true`.
-dynamic _msgSend(Pointer<Void> target, SEL selector,
+dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
     {List? args,
     DispatchQueue? onQueue,
     _AsyncMessageCallback? callback,
     bool decodeRetVal = true}) {
   if (target == nullptr) {
-    return;
+    return null;
   }
 
   int argCount = (args?.length ?? 0);
@@ -145,7 +145,7 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
       if (resultTypePtr.isString) {
         result = loadStringFromPointer(resultPtr);
       } else {
-        result = loadValueFromPointer(resultPtr, resultTypePtr);
+        result = loadValueFromPointer(resultPtr, resultTypePtr, dartType: T.toString());
       }
 
       if (resultTypePtr.isStruct) {
@@ -166,9 +166,9 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types when [decodeRetVal] is `true`.
-dynamic msgSend(Pointer<Void> target, SEL selector,
+T msgSend<T>(Pointer<Void> target, SEL selector,
     {List? args, bool decodeRetVal = true}) {
-  return _msgSend(target, selector, args: args, decodeRetVal: decodeRetVal);
+  return _msgSend<T>(target, selector, args: args, decodeRetVal: decodeRetVal);
 }
 
 /// Send a message to [target] on GCD queues asynchronously using [onQueue].
@@ -187,10 +187,4 @@ Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
     completer.complete(result);
   });
   return completer.future;
-}
-
-extension Convert2Bool on int {
-  bool toBool() {
-    return this != 0;
-  }
 }

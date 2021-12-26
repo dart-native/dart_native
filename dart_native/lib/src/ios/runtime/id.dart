@@ -104,8 +104,8 @@ class id implements NSObjectProtocol {
   /// Return value will be converted to Dart types when [decodeRetVal] is
   /// `true`.
   @override
-  dynamic perform(SEL selector, {List? args, bool decodeRetVal = true}) {
-    return msgSend(pointer, selector,
+  T perform<T>(SEL selector, {List? args, bool decodeRetVal = true}) {
+    return msgSend<T>(pointer, selector,
         args: args, decodeRetVal: decodeRetVal);
   }
 

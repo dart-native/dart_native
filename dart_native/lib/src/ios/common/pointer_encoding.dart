@@ -177,8 +177,8 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   TypeEncodings.float64: (ByteData data) {
     return data.getFloat64(0, Endian.host);
   },
-  TypeEncodings.object: (Pointer<Void> ptr) {
-    return objcInstanceFromPointer(null, ptr);
+  TypeEncodings.object: (Pointer<Void> ptr, String dartType) {
+    return objcInstanceFromPointer(ptr, dartType);
   },
   TypeEncodings.cls: (Pointer<Void> ptr) {
     return Class.fromPointer(ptr);
@@ -198,34 +198,61 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   },
 };
 
-dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
+dynamic _handleObjCBasicValue(String type, dynamic value) {
+  if (type.toLowerCase() == '$bool') {
+    if (value is num) {
+      return value != 0;
+    }
+    return value != null;
+  }
+  if (type == '$CString') {
+    return CString(value);
+  }
+  return value;
+}
+
+dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
+    {String? dartType}) {
   dynamic result = nil;
-  // num or bool
-  if (encoding.isNum || encoding == TypeEncodings.b) {
-    ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
-    ByteData data = ByteData.view(buffer);
-    result = Function.apply(_loadValueStrategyMap[encoding]!, [data]);
-  } else {
-    // object
+
+  do {
+    // num or bool
+    if (encoding.isNum || encoding == TypeEncodings.b) {
+      ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
+      ByteData data = ByteData.view(buffer);
+      result = Function.apply(_loadValueStrategyMap[encoding]!, [data]);
+      break;
+    }
+    // Non-basic type
     Function? strategy = _loadValueStrategyMap[encoding];
     if (strategy != null) {
-      // built-in class.
       if (ptr == nullptr) {
         return nil;
       }
-      result = strategy(ptr);
-    } else {
-      if (ptr == nullptr) {
-        return null;
-      }
-      // built-in struct, [ptr] is struct pointer.
-      var struct = loadStructFromPointer(ptr, encoding.encodingForStruct);
-      if (struct != null) {
-        result = struct;
+      // object
+      if (encoding == TypeEncodings.object) {
+        // known class annotated with '@native()'.
+        result = strategy(ptr, dartType);
       } else {
-        result = ptr;
+        result = strategy(ptr);
       }
+      break;
     }
+    // Maybe structs
+    if (ptr == nullptr) {
+      return null;
+    }
+    // built-in struct, [ptr] is struct pointer.
+    var struct = loadStructFromPointer(ptr, encoding.encodingForStruct);
+    if (struct != null) {
+      result = struct;
+    } else {
+      result = ptr;
+    }
+  } while (false);
+  // Post-processing
+  if (dartType != null) {
+    result = _handleObjCBasicValue(dartType, result);
   }
   return result;
 }
@@ -402,7 +429,7 @@ List<String> nativeTypeStringForDartTypes(List<String> types) {
     s = _nativeTypeNameMap[s] ?? s;
     if (s.contains('Pointer')) {
       return 'ptr';
-    } else if (s.contains('NativeBox<String>')) {
+    } else if (s.contains('$CString')) {
       return 'CString';
     } else if (s.contains('Function')) {
       return 'block';

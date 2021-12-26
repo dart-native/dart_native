@@ -79,29 +79,26 @@ void registerTypeConvertor(String type, ConvertorFromPointer convertor) {
   }
 }
 
-dynamic objcInstanceFromPointer(String? type, dynamic arg) {
-  Pointer<Void> ptr;
-  if (arg is NSObject) {
-    ptr = arg.pointer;
-  } else if (arg is Pointer) {
-    ptr = arg.cast<Void>();
+/// Convert [arg] to its custom type, which is annotated with `@native()`.
+dynamic objcInstanceFromPointer(Pointer<Void> arg, String? type) {
+  if (arg == nullptr) {
+    return arg;
+  }
+  // delete '?' for null-safety
+  if (type != null) {
+    if (type.endsWith('?')) {
+      type = type.substring(0, type.length - 1);
+    }
   } else {
-    return arg;
-  }
-
-  if (ptr == nullptr) {
-    return arg;
-  }
-  if (type == null) {
     /// Retrive class name from native.
-    var object = NSObject.fromPointer(ptr);
+    var object = NSObject.fromPointer(arg);
     type = object.isa?.name;
   }
   ConvertorFromPointer? convertor = _convertorCache[type];
   if (convertor != null) {
-    return convertor(ptr);
+    return convertor(arg);
   }
-  return NSObject.fromPointer(ptr);
+  return NSObject.fromPointer(arg);
 }
 
 Map<String, ConvertorFromPointer> _convertorCache = {};

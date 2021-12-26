@@ -25,7 +25,7 @@ class NSObjectRef<T extends id> {
 
   syncValue() {
     if (_ptr.value != nullptr) {
-      value = objcInstanceFromPointer(T.toString(), _ptr.value);
+      value = objcInstanceFromPointer(_ptr.value, T.toString());
     }
   }
 }

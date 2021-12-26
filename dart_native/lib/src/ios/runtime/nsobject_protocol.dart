@@ -37,7 +37,7 @@ abstract class NSObjectProtocol {
   String get debugDescription;
 
   /// Sends a specified message to the receiver and returns the result of the message.
-  dynamic perform(SEL selector, {List args});
+  T perform<T>(SEL selector, {List args});
 
   /// Returns a Boolean value that indicates whether the receiver does not descend froms NSObject.
   bool isProxy();

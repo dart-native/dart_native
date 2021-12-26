@@ -43,11 +43,7 @@ class RuntimeStub extends NSObject {
   RuntimeStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   bool? fooBOOL(bool b) {
-    dynamic result = perform(SEL('fooBOOL:'), args: [b]);
-    if (result is int) {
-      return result.toBool();
-    }
-    return result;
+    return perform<bool>(SEL('fooBOOL:'), args: [b]);
   }
 
   int? fooInt8(int int8) {
@@ -261,7 +257,7 @@ class RuntimeStub extends NSObject {
   }
 
   bool? fooWithError(NSObjectRef<NSError> error) {
-    return perform(SEL('fooWithError:'), args: [error]);
+    return perform<bool>(SEL('fooWithError:'), args: [error]);
   }
 
   ItemIndex? fooWithOptions(ItemIndex options) {

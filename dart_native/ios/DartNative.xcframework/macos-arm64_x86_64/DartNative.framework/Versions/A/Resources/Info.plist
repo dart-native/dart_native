@@ -7,13 +7,13 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>DartNative_macOS</string>
+	<string>DartNative</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.tencent.DartNative-macOS</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>DartNative_macOS</string>
+	<string>DartNative</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>

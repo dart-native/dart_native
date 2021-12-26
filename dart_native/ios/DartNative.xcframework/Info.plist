@@ -6,19 +6,6 @@
 	<array>
 		<dict>
 			<key>LibraryIdentifier</key>
-			<string>ios-arm64_armv7</string>
-			<key>LibraryPath</key>
-			<string>DartNative.framework</string>
-			<key>SupportedArchitectures</key>
-			<array>
-				<string>arm64</string>
-				<string>armv7</string>
-			</array>
-			<key>SupportedPlatform</key>
-			<string>ios</string>
-		</dict>
-		<dict>
-			<key>LibraryIdentifier</key>
 			<string>ios-i386_x86_64-simulator</string>
 			<key>LibraryPath</key>
 			<string>DartNative.framework</string>
@@ -34,9 +21,22 @@
 		</dict>
 		<dict>
 			<key>LibraryIdentifier</key>
+			<string>ios-arm64_armv7</string>
+			<key>LibraryPath</key>
+			<string>DartNative.framework</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64</string>
+				<string>armv7</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>ios</string>
+		</dict>
+		<dict>
+			<key>LibraryIdentifier</key>
 			<string>macos-arm64_x86_64</string>
 			<key>LibraryPath</key>
-			<string>DartNative_macOS.framework</string>
+			<string>DartNative.framework</string>
 			<key>SupportedArchitectures</key>
 			<array>
 				<string>arm64</string>

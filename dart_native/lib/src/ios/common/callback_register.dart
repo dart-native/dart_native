@@ -59,13 +59,12 @@ _callback(
     if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    dynamic arg = loadValueFromPointer(ptr, argTypePtr);
+    
     if (i + 1 < dartTypes.length) {
       String dartType = dartTypes[i + 1];
-      arg = handleObjCBasicValue(dartType, arg);
-      arg = objcInstanceFromPointer(dartType, arg);
+      dynamic arg = loadValueFromPointer(ptr, argTypePtr, dartType: dartType);
+      args.add(arg);
     }
-    args.add(arg);
   }
 
   dynamic result = Function.apply(function, args);

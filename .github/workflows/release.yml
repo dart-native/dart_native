@@ -17,7 +17,7 @@ jobs:
       - uses: subosito/flutter-action@v1
         with:
           # same with pubspec.yaml
-          flutter-version: "2.5.3"
+          flutter-version: "2.8.1"
       - run: flutter pub get
         working-directory: dart_native/example
       - run: flutter analyze --no-pub --no-current-package lib/ test/
@@ -27,6 +27,8 @@ jobs:
       - run: flutter build apk
         working-directory: dart_native/example
       - run: flutter build ios --release --no-codesign
+        working-directory: dart_native/example
+      - run: flutter build macos --release
         working-directory: dart_native/example
       - uses: softprops/action-gh-release@v1
         with:
