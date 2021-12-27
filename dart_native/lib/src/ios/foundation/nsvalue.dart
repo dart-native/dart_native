@@ -76,8 +76,7 @@ class NSValue extends NSSubclass {
   /// See the implementation of [valueWithRange] in [NSValueRangeExtensions].
   static NSValue valueWithStruct<T extends NativeStruct>(T struct,
       {String? structAlias}) {
-    String selName =
-        'valueWith${structAlias ?? struct.aliasForNSValue}:';
+    String selName = 'valueWith${structAlias ?? struct.aliasForNSValue}:';
     NSObject result = type(of: NSValue).perform(SEL(selName), args: [struct]);
     NSValue value = NSValue.fromPointer(result.pointer);
     value.raw = struct;

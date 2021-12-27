@@ -111,11 +111,19 @@ extension JObjectAsyncInvoke on JObject {
       Thread thread = Thread.MainThread}) async {
     String type = T.toString();
     if (type == 'dynamic') {
-      throw 'invokeObject error. \n' 'Using invokeObject need specify the dart type.\n' 'And this dart class need extend jobject. \n' 'For example: invokeObject<JInteger>("getTest");';
+      throw 'invokeObject error. \n'
+          'Using invokeObject need specify the dart type.\n'
+          'And this dart class need extend jobject. \n'
+          'For example: invokeObject<JInteger>("getTest");';
     }
     final sig = getRegisterJavaClassSignature(type);
     if (sig == null) {
-      throw 'invokeObject error. \n' 'Can not find signature in register map.\n' 'You should use @nativeJavaClass specify the java class.' 'See more in https://github.com/dart-native/dart_native/tree/master#usage.\n' 'Or you can just use invoke method to specify the return type,' 'like invoke("getString", "Ljava/lang/String;")';
+      throw 'invokeObject error. \n'
+          'Can not find signature in register map.\n'
+          'You should use @nativeJavaClass specify the java class.'
+          'See more in https://github.com/dart-native/dart_native/tree/master#usage.\n'
+          'Or you can just use invoke method to specify the return type,'
+          'like invoke("getString", "Ljava/lang/String;")';
     }
     final convertor = getRegisterPointerConvertor(type);
     return invokeAsync(methodName, sig,

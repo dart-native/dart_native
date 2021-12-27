@@ -145,7 +145,8 @@ dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
       if (resultTypePtr.isString) {
         result = loadStringFromPointer(resultPtr);
       } else {
-        result = loadValueFromPointer(resultPtr, resultTypePtr, dartType: T.toString());
+        result = loadValueFromPointer(resultPtr, resultTypePtr,
+            dartType: T.toString());
       }
 
       if (resultTypePtr.isStruct) {

@@ -34,6 +34,7 @@ class NSEdgeInsets extends UIEdgeInsets {
   @override
   String get aliasForNSValue => 'EdgeInsets';
 
-  NSEdgeInsets(double top, double left, double bottom, double right) : super(top, left, bottom, right);
+  NSEdgeInsets(double top, double left, double bottom, double right)
+      : super(top, left, bottom, right);
   NSEdgeInsets.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }

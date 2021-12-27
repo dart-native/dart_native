@@ -182,7 +182,8 @@ NativeArguments _parseNativeArguments(List? args,
     for (var i = 0, pi = 0; i < args.length; i++, pi++) {
       var arg = args[i];
       if (arg == null) {
-        throw 'One of args list is null, not allowed null argument.' ' You can use [createNullJObj] to wrapper a null object.';
+        throw 'One of args list is null, not allowed null argument.'
+            ' You can use [createNullJObj] to wrapper a null object.';
       }
 
       /// check extension signature

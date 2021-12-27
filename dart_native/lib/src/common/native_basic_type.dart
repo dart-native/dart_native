@@ -69,4 +69,3 @@ typedef uint32_t = int;
 /// Stands for `uint64_t` in C.
 // ignore: camel_case_types
 typedef uint64_t = int;
-

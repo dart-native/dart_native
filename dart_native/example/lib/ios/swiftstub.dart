@@ -10,7 +10,8 @@ class SwiftStub extends NSObject {
   SwiftStub.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   static get instance {
-    Pointer<Void> resultPtr = Class(_objcClassName).perform(SEL('instance'), decodeRetVal: false);
+    Pointer<Void> resultPtr =
+        Class(_objcClassName).perform(SEL('instance'), decodeRetVal: false);
     return SwiftStub.fromPointer(resultPtr);
   }
 

@@ -95,14 +95,16 @@ testAndroid(RuntimeStub stub) async {
     }
   }
 
-  list = stub.getByteList([const byte(1), const byte(2), const byte(3), const byte(4)]);
+  list = stub.getByteList(
+      [const byte(1), const byte(2), const byte(3), const byte(4)]);
   if (list != null) {
     for (int item in list) {
       print("item $item");
     }
   }
 
-  list = stub.getFloatList([const float(1.0), const float(2.0), const float(3.0), const float(4.0)]);
+  list = stub.getFloatList(
+      [const float(1.0), const float(2.0), const float(3.0), const float(4.0)]);
   if (list != null) {
     for (double item in list) {
       print("item $item");
@@ -122,7 +124,8 @@ testAndroid(RuntimeStub stub) async {
     }
   }
 
-  List byteArray = stub.getByteArray([const byte(1), const byte(2), const byte(3)]);
+  List byteArray =
+      stub.getByteArray([const byte(1), const byte(2), const byte(3)]);
   for (int byte in byteArray) {
     print("item $byte");
   }
@@ -134,7 +137,8 @@ testAndroid(RuntimeStub stub) async {
     }
   }
 
-  Set? fSet = stub.getFloatSet({const float(1.0), const float(2.0), const float(4.0)});
+  Set? fSet =
+      stub.getFloatSet({const float(1.0), const float(2.0), const float(4.0)});
   if (fSet != null) {
     for (double setF in fSet) {
       print("fSet $setF");

@@ -79,7 +79,8 @@ class JObject {
   JObject({List? args, bool isInterface = false, String? className}) {
     _cls = className ?? getRegisterJavaClass(runtimeType.toString());
     if (_cls == null) {
-      throw 'Java class name is null, you can specify the java class name in constructor' ' or use @nativeJavaClass annotation to specify the java class';
+      throw 'Java class name is null, you can specify the java class name in constructor'
+          ' or use @nativeJavaClass annotation to specify the java class';
     }
     _ptr = newObject(_cls!, this, args: args, isInterface: isInterface);
     bindLifeCycleWithNative(this);
@@ -93,7 +94,8 @@ class JObject {
   /// If java class is specified by [className], we will use it first.
   JObject.fromPointer(Pointer<Void> pointer, {String? className}) {
     if (pointer == nullptr && className == null) {
-      throw 'Java object pointer and classname are null.' ' When java object pointer is nullptr, you must specify the java class name.';
+      throw 'Java object pointer and classname are null.'
+          ' When java object pointer is nullptr, you must specify the java class name.';
     }
     _ptr = pointer;
     _cls = className ?? getJClassName(pointer);

@@ -3,11 +3,9 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
-import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
-import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
@@ -59,7 +57,7 @@ _callback(
     if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    
+
     if (i + 1 < dartTypes.length) {
       String dartType = dartTypes[i + 1];
       dynamic arg = loadValueFromPointer(ptr, argTypePtr, dartType: dartType);

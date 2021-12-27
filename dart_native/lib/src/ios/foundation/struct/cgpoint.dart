@@ -22,7 +22,7 @@ class CGPoint extends CGFloatx2Wrapper {
 class NSPoint extends CGPoint {
   @override
   String get aliasForNSValue => 'Point';
-  
+
   NSPoint(double x, double y) : super(x, y);
   NSPoint.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }

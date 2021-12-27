@@ -22,7 +22,7 @@ class CGSize extends CGFloatx2Wrapper {
 class NSSize extends CGSize {
   @override
   String get aliasForNSValue => 'Size';
-  
+
   NSSize(double width, double height) : super(width, height);
   NSSize.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }

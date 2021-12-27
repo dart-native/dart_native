@@ -6,7 +6,6 @@ import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
-import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/internal/block_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
@@ -208,7 +207,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    
+
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
       dynamic arg = loadValueFromPointer(ptr, argTypePtr, dartType: dartType);

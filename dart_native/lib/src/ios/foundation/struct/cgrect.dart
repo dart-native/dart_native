@@ -28,11 +28,13 @@ class CGRect extends CGFloatx4Wrapper {
       : super(x, y, width, height);
   CGRect.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
+
 /// Stands for `NSRect` in macOS.
 class NSRect extends CGRect {
   @override
   String get aliasForNSValue => 'Rect';
-  
-  NSRect(double x, double y, double width, double height) : super(x, y, width, height);
+
+  NSRect(double x, double y, double width, double height)
+      : super(x, y, width, height);
   NSRect.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
