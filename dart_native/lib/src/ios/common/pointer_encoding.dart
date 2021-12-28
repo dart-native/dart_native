@@ -203,6 +203,12 @@ dynamic _handleObjCBasicValue(String type, dynamic value) {
     if (value is num) {
       return value != 0;
     }
+    if (value is bool) {
+      return value;
+    }
+    if (value is Pointer) {
+      return value != nullptr;
+    }
     return value != null;
   }
   if (type == '$CString') {
@@ -213,8 +219,13 @@ dynamic _handleObjCBasicValue(String type, dynamic value) {
 
 dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
     {String? dartType}) {
+  // delete '?' for null-safety
+  if (dartType != null) {
+    if (dartType.endsWith('?')) {
+      dartType = dartType.substring(0, dartType.length - 1);
+    }
+  }
   dynamic result = nil;
-
   do {
     // num or bool
     if (encoding.isNum || encoding == TypeEncodings.b) {

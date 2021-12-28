@@ -147,6 +147,7 @@ BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dar
     // Existing implemention can't be replaced. Flutter hot-reload must also be well handled.
     if ([target respondsToSelector:selector]) {
         if (imp) {
+            [imp addCallback:(NativeMethodCallback)callback forDartPort:dartPort];
             return YES;
         } else {
             return NO;
@@ -156,6 +157,7 @@ BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dar
         NSError *error;
         DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types
                                                                   callback:(NativeMethodCallback)callback
+                                                                  dartPort:dartPort
                                                                      error:&error];
         if (error.code) {
             return NO;
@@ -694,22 +696,23 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                                      userInfo:nil];
     }
     dispatch_group_t group = dispatch_group_create();
-    NativeMethodCallback callback = methodIMP.callback;
-    const Work work = [=]() {
-        callback(invocation.realArgs,
-                 invocation.realRetValue,
-                 numberOfArguments,
-                 types,
-                 methodIMP.stret);
-        dispatch_group_leave(group);
-    };
-    const Work* work_ptr = new Work(work);
-    DNObjectDealloc *dealloc = [DNObjectDealloc objectForHost:(__bridge id)(*(void **)invocation.args[0])];
-    NSSet<NSNumber *> *dartPorts = dealloc.dartPorts;
-    for (NSNumber *port in dartPorts) {
+    NSDictionary<NSNumber *, NSNumber *> *callbackForDartPort = methodIMP.callbackForDartPort;
+    for (NSNumber *port in callbackForDartPort) {
+        const Work work = [=]() {
+            NativeMethodCallback callback = (NativeMethodCallback)callbackForDartPort[port].integerValue;
+            callback(invocation.realArgs,
+                     invocation.realRetValue,
+                     numberOfArguments,
+                     types,
+                     methodIMP.stret);
+            dispatch_group_leave(group);
+        };
+        const Work* work_ptr = new Work(work);
         BOOL success = NotifyDart(port.integerValue, work_ptr);
         if (success) {
             dispatch_group_enter(group);
+        } else {
+            // TODO: remove dart port
         }
     }
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
