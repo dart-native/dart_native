@@ -708,11 +708,12 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
             dispatch_group_leave(group);
         };
         const Work* work_ptr = new Work(work);
-        BOOL success = NotifyDart(port.integerValue, work_ptr);
+        Dart_Port dartPort = port.integerValue;
+        BOOL success = NotifyDart(dartPort, work_ptr);
         if (success) {
             dispatch_group_enter(group);
         } else {
-            // TODO: remove dart port
+            [methodIMP removeCallbackForDartPort:dartPort];
         }
     }
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
@@ -726,11 +727,13 @@ void RegisterDeallocCallback(void (*callback)(intptr_t)) {
     native_dealloc_callback = callback;
 }
 
-void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
+bool NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
     auto callback = native_dealloc_callback;
-    const Work work = [address, callback]() { callback(address); };
+    const Work work = [address, callback]() {
+        callback(address);
+    };
     const Work* work_ptr = new Work(work);
-    NotifyDart(dartPort, work_ptr);
+    return NotifyDart(dartPort, work_ptr);
 }
 
 #pragma mark - Dart Finalizer
