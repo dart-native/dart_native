@@ -46,7 +46,8 @@ int DNTypeLengthWithTypeName(NSString *typeName) {
         return 0;
     }
     static NSMutableDictionary *_typeLengthDict;
-    if (!_typeLengthDict) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         _typeLengthDict = [[NSMutableDictionary alloc] init];
         
         #define DN_DEFINE_TYPE_LENGTH(_type) \
@@ -93,7 +94,7 @@ int DNTypeLengthWithTypeName(NSString *typeName) {
         [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"NSObject*"];
         [_typeLengthDict setObject:@(sizeof(NSObject *)) forKey:@"NSObject"];
         [_typeLengthDict setObject:@(sizeof(char *)) forKey:@"CString"];
-    }
+    });
     return [_typeLengthDict[typeName] intValue];
 }
 
@@ -102,7 +103,8 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
         return nil;
     }
     static NSMutableDictionary *_typeEncodeDict;
-    if (!_typeEncodeDict) {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
         _typeEncodeDict = [[NSMutableDictionary alloc] init];
         #define DN_DEFINE_TYPE_ENCODE_CASE(_type) \
         [_typeEncodeDict setObject:[NSString stringWithUTF8String:@encode(_type)] forKey:@#_type];\
@@ -148,7 +150,7 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
         [_typeEncodeDict setObject:@"^@" forKey:@"NSObject*"];
         [_typeEncodeDict setObject:@"@" forKey:@"NSObject"];
         [_typeEncodeDict setObject:@"*" forKey:@"CString"];
-    }
+    });
     return _typeEncodeDict[typeName];
 }
 
