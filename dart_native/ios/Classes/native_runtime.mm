@@ -697,9 +697,13 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
     }
     dispatch_group_t group = dispatch_group_create();
     NSDictionary<NSNumber *, NSNumber *> *callbackForDartPort = methodIMP.callbackForDartPort;
-    for (NSNumber *port in callbackForDartPort) {
+    // Each isolate has a ReceivePort for callbacks.
+    // `invocation.args[0]` is delegate object, whose dealloc object records it's dart ports.
+    DNObjectDealloc *dealloc = [DNObjectDealloc objectForHost:(__bridge id)(*(void **)invocation.args[0])];
+    NSSet<NSNumber *> *dartPorts = dealloc.dartPorts;
+    for (NSNumber *port in dartPorts) {
+        NativeMethodCallback callback = (NativeMethodCallback)callbackForDartPort[port].integerValue;
         const Work work = [=]() {
-            NativeMethodCallback callback = (NativeMethodCallback)callbackForDartPort[port].integerValue;
             callback(invocation.realArgs,
                      invocation.realRetValue,
                      numberOfArguments,
@@ -713,6 +717,7 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
         if (success) {
             dispatch_group_enter(group);
         } else {
+            // Remove port in died isolate
             [methodIMP removeCallbackForDartPort:dartPort];
         }
     }

@@ -23,8 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
                 storageKey:(const void *)storageKey;
 + (instancetype)objectForHost:(NSObject *)host
                    storageKey:(const void *)storageKey;
-- (void)addDartPort:(Dart_Port)port;
-- (void)removeDartPort:(Dart_Port)port;
+
 @end
 
 NS_ASSUME_NONNULL_END
