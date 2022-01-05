@@ -462,8 +462,6 @@ const char *native_type_encoding(const char *str) {
     }
     
     COND(_Bool, native_type_bool);
-//    FIXME: BOOL is 'c' on macOS
-//    COND(BOOL, native_type_bool);
     SINT(signed char);
     UINT(unsigned char);
     INT(short);
@@ -563,7 +561,12 @@ const char *native_struct_encoding(const char *encoding) {
         if (i != 0) {
             [structType appendString:@","];
         }
-        [structType appendFormat:@"%@", [NSString stringWithUTF8String:elements[i]]];
+        const char *element = elements[i];
+        [structType appendFormat:@"%@", [NSString stringWithUTF8String:element]];
+        // `structType` contains other structs, we should free nested struct types.
+        if (*element == '{') {
+            free((void *)element);
+        }
     }
     [structType appendString:@"}"];
     free(elements);

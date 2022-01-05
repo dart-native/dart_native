@@ -12,7 +12,7 @@ import 'package:dart_native_example/ios/runtimestub.dart';
 import 'package:dart_native_example/ios/swiftstub.dart';
 
 /// IOS unit test implementation.
-class DNIOSUnitTest with DNUnitTestBase {
+class DNAppleUnitTest with DNUnitTestBase {
   final stub = RuntimeSon();
   final delegate = DelegateStub();
 
@@ -23,11 +23,11 @@ class DNIOSUnitTest with DNUnitTestBase {
 
   @override
   Future<void> runAllUnitTests() async {
-    await testIOS(stub, delegate);
+    await testMacOSAndIOS(stub, delegate);
   }
 }
 
-Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
+Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
   bool? resultBool = stub.fooBOOL(false);
   print('fooBool result:$resultBool');
 

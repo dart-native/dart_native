@@ -13,15 +13,19 @@ class NSObjectRef<T extends id> {
   late T value;
   late Pointer<Pointer<Void>> _ptr;
   Pointer<Pointer<Void>> get pointer => _ptr;
+  late final PointerWrapper _wrapper = PointerWrapper(_ptr.cast<Void>());
 
   NSObjectRef() {
     _ptr = calloc<Pointer<Void>>();
     _ptr.value = nullptr;
-    PointerWrapper wrapper = PointerWrapper();
-    wrapper.value = _ptr.cast<Void>();
+    _wrapper;
   }
 
-  NSObjectRef.fromPointer(this._ptr);
+  NSObjectRef.fromPointer(Pointer<Pointer<Void>> ptr) {
+    _ptr = calloc<Pointer<Void>>();
+    _ptr.value = ptr.value;
+    _wrapper;
+  }
 
   syncValue() {
     if (_ptr.value != nullptr) {

@@ -11,14 +11,7 @@ abstract class NativeStruct {
   /// Alias for box/unbox [NSValue]
   /// See [valueWithStruct]
   String get aliasForNSValue => runtimeType.toString();
-
-  PointerWrapper? _wrapper;
-  PointerWrapper get wrapper {
-    _wrapper ??= PointerWrapper();
-    Pointer<Void> result = addressOf.cast<Void>();
-    _wrapper!.value = result;
-    return _wrapper!;
-  }
+  late PointerWrapper wrapper = PointerWrapper(addressOf.cast<Void>());
 }
 
 class NSUInteger32x2 extends Struct {
@@ -71,7 +64,6 @@ abstract class NSUIntegerx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = NSUInteger32x2.callocPointer(i1, i2);
     }
-    wrapper;
   }
 
   @override
@@ -83,6 +75,7 @@ abstract class NSUIntegerx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
   @override
@@ -148,7 +141,6 @@ abstract class CGFloatx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = CGFloat32x2.callocPointer(d1, d2);
     }
-    wrapper;
   }
 
   @override
@@ -160,6 +152,7 @@ abstract class CGFloatx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
   @override
@@ -249,7 +242,6 @@ abstract class CGFloatx4Wrapper extends NativeStruct {
     } else {
       _ptr32 = CGFloat32x4.callocPointer(d1, d2, d3, d4);
     }
-    wrapper;
   }
 
   @override
@@ -261,6 +253,7 @@ abstract class CGFloatx4Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
   @override
@@ -378,7 +371,6 @@ abstract class CGFloatx6Wrapper extends NativeStruct {
     } else {
       _ptr32 = CGFloat32x6.callocPointer(d1, d2, d3, d4, d5, d6);
     }
-    wrapper;
   }
 
   @override
@@ -390,6 +382,7 @@ abstract class CGFloatx6Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
   @override
@@ -702,7 +695,6 @@ abstract class CGFloatx16Wrapper extends NativeStruct {
       _ptr32 = CGFloat32x16.callocPointer(d1, d2, d3, d4, d5, d6, d7, d8, d9,
           d10, d11, d12, d13, d14, d15, d16);
     }
-    wrapper;
   }
 
   @override
@@ -714,6 +706,7 @@ abstract class CGFloatx16Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
   @override

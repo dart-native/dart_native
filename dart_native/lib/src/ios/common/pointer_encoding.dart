@@ -137,8 +137,7 @@ void storeStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
 
 dynamic storeCStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
   Pointer<Utf8> charPtr = object.toNativeUtf8();
-  PointerWrapper wrapper = PointerWrapper();
-  wrapper.value = charPtr.cast<Void>();
+  PointerWrapper wrapper = PointerWrapper(charPtr.cast<Void>());
   ptr.cast<Pointer<Utf8>>().value = charPtr;
   return wrapper;
 }
@@ -349,7 +348,7 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
       default:
     }
     if (result != null) {
-      return result..wrapper;
+      return result;
     }
   }
   return null;
