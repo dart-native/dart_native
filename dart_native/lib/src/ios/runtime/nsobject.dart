@@ -20,13 +20,13 @@ class NSObject extends id {
   }
 
   NSObject([Class? isa]) : super(_new(isa)) {
-    bindLifecycleOnNative(this);
+    bindLifecycleForObject(this);
   }
 
   /// Before calling [fromPointer], MAKE SURE the [ptr] for object exists.
   /// If [ptr] was already freed, you would get a crash!
   NSObject.fromPointer(Pointer<Void> ptr) : super(ptr) {
-    bindLifecycleOnNative(this);
+    bindLifecycleForObject(this);
   }
 
   NSObject init() {
@@ -56,8 +56,8 @@ class NSObject extends id {
 
 Pointer<Void> alloc(Class? isa) {
   isa ??= Class('NSObject');
-  NSObject result = isa.perform(SEL('alloc'));
-  return result.autorelease().pointer;
+  Pointer<Void> resultPtr = isa.perform(SEL('alloc'), decodeRetVal: false);
+  return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
 }
 
 typedef ConvertorFromPointer = dynamic Function(Pointer<Void> ptr);

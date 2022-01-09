@@ -19,6 +19,7 @@
 #import "DNObjectDealloc.h"
 #import "DNPointerWrapper.h"
 #import "DNInvocation.h"
+#import "NSObject+DartHandleExternalSize.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -777,12 +778,14 @@ static void RunFinalizer(void *isolate_callback_data,
     }
 }
 
-DNPassObjectResult _PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer) {
+DNPassObjectResult _BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
     NSNumber *address = @((intptr_t)pointer);
     NSUInteger refCount = objectRefCount[address].unsignedIntegerValue;
     // pointer is already retained by dart object, just increase its reference count.
     if (refCount > 0) {
-        Dart_NewWeakPersistentHandle_DL(h, pointer, 8, RunFinalizer);
+        id object = (__bridge id)pointer;
+        size_t size = [object dn_objectSize];
+        Dart_NewWeakPersistentHandle_DL(h, pointer, size, RunFinalizer);
         objectRefCount[address] = @(refCount + 1);
         return DNPassObjectResultSuccess;
     }
@@ -805,20 +808,21 @@ DNPassObjectResult _PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer)
         return DNPassObjectResultNeedless;
     }
     native_retain_object(object);
-    Dart_NewWeakPersistentHandle_DL(h, pointer, 8, RunFinalizer);
+    size_t size = [object dn_objectSize];
+    Dart_NewWeakPersistentHandle_DL(h, pointer, size, RunFinalizer);
     objectRefCount[address] = @1;
     return DNPassObjectResultSuccess;
 }
 
-DNPassObjectResult PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer) {
+DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
     DNPassObjectResult result;
     if (@available(iOS 10.0, macOS 10.12, *)) {
         os_unfair_lock_lock(&_refCountUnfairLock);
-        result = _PassObjectToCUseDynamicLinking(h, pointer);
+        result = _BindObjcLifecycleToDart(h, pointer);
         os_unfair_lock_unlock(&_refCountUnfairLock);
     } else {
         [_refCountLock lock];
-        result = _PassObjectToCUseDynamicLinking(h, pointer);
+        result = _BindObjcLifecycleToDart(h, pointer);
         [_refCountLock unlock];
     }
     return result;

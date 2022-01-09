@@ -9,10 +9,51 @@
 #import "DNMacro.h"
 #import "dart_api_dl.h"
 
+#ifndef DNBlockWrapper_h
+#define DNBlockWrapper_h
+
 NS_ASSUME_NONNULL_BEGIN
 
-DN_EXTERN
-const char *DNBlockTypeEncodeString(id blockObj);
+#pragma mark - Block Layout
+
+typedef void(*DNBlockCopyFunction)(void *, const void *);
+typedef void(*DNBlockDisposeFunction)(const void *);
+typedef void(*DNBlockInvokeFunction)(void *, ...);
+
+typedef struct DNBlockDescriptor1 {
+    uintptr_t reserved;
+    uintptr_t size;
+} DNBlockDescriptor1;
+
+typedef struct DNBlockDescriptor2 {
+    // requires BLOCK_HAS_COPY_DISPOSE
+    DNBlockCopyFunction copy;
+    DNBlockDisposeFunction dispose;
+} DNBlockDescriptor2;
+
+typedef struct DNBlockDescriptor3 {
+    // requires BLOCK_HAS_SIGNATURE
+    const char *signature;
+} DNBlockDescriptor3;
+
+typedef struct DNBlockDescriptor {
+    DNBlockDescriptor1 descriptor1;
+    DNBlockDescriptor2 descriptor2;
+    DNBlockDescriptor3 descriptor3;
+} DNBlockDescriptor;
+
+typedef struct DNBlock {
+    void *isa;
+    volatile int32_t flags; // contains ref count
+    int32_t reserved;
+    DNBlockInvokeFunction invoke;
+    DNBlockDescriptor *descriptor;
+    void *wrapper;
+} DNBlock;
+
+#pragma mark - Block Wrapper
+
+DN_EXTERN const char *DNBlockTypeEncodeString(id blockObj);
 
 typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, void *ret, int numberOfArguments, BOOL stret, int64_t seq);
 
@@ -34,3 +75,5 @@ typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, voi
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif
