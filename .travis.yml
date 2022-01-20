@@ -37,18 +37,20 @@ jobs:
 
     - os: osx
       language: generic
-      osx_image: xcode12
+      osx_image: xcode13.2
       before_install: cd dart_native/example
       before_script:
         - brew update
         - brew install libimobiledevice
         - brew install ideviceinstaller
         - brew install ios-deploy
-        - git clone https://github.com/flutter/flutter.git --depth 1 --branch 2.5.3
+        - git clone https://github.com/flutter/flutter.git --depth 1 --branch 2.8.1
         - export PATH=./flutter/bin:$PATH
         - flutter doctor
+        - flutter config --enable-macos-desktop
       script:
-        - flutter -v build ios --no-codesign
+        - flutter -v build ios --release --no-codesign
+        - flutter -v build macos --release 
 
 cache:
   directories:

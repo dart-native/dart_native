@@ -28,6 +28,7 @@ jobs:
         working-directory: dart_native/example
       - run: flutter build ios --release --no-codesign
         working-directory: dart_native/example
+      - run: flutter config --enable-macos-desktop
       - run: flutter build macos --release
         working-directory: dart_native/example
       - uses: softprops/action-gh-release@v1
