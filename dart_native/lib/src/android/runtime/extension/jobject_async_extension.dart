@@ -9,7 +9,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<int> invokeAsyncInt(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'I',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -19,7 +19,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<int> invokeAsyncByte(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'B',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -29,7 +29,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<int> invokeAsyncShort(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'S',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -39,7 +39,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<int> invokeAsyncChar(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'C',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -49,7 +49,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<int> invokeAsyncLong(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'J',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -59,7 +59,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<double> invokeAsyncFloat(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'F',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -69,7 +69,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<double> invokeAsyncDouble(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'D',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -79,7 +79,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<bool> invokeAsyncBool(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'Z',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -89,7 +89,7 @@ extension JObjectAsyncInvoke on JObject {
   void invokeAsyncVoid(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     invokeAsync(methodName, 'V',
         args: args, assignedSignature: assignedSignature, thread: thread);
   }
@@ -98,7 +98,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<String>? invokeAsyncString(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeAsync(methodName, 'Ljava/lang/String;',
             args: args, assignedSignature: assignedSignature, thread: thread)
         .then((value) => value);
@@ -108,7 +108,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<dynamic> invokeAsyncObject<T extends JObject>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     String type = T.toString();
     if (type == 'dynamic') {
       throw 'invokeObject error. \n'
@@ -135,7 +135,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<List<E>?> invokeAsyncList<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/List;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
@@ -148,7 +148,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<List<E>?> invokeAsyncArrayList<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/ArrayList;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
@@ -161,7 +161,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<Set<E>?> invokeAsyncSet<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/Set;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
@@ -174,7 +174,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<Set<E>?> invokeAsyncHashSet<E>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/HashSet;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
@@ -187,7 +187,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<Map<K, V>?> invokeAsyncMap<K, V>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/Map;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {
@@ -200,7 +200,7 @@ extension JObjectAsyncInvoke on JObject {
   Future<Map<K, V>?> invokeAsyncHashMap<K, V>(String methodName,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     final ptr = await invokeAsync(methodName, 'Ljava/util/HashMap;',
         args: args, assignedSignature: assignedSignature, thread: thread);
     if (ptr == nullptr) {

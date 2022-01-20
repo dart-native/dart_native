@@ -17,21 +17,19 @@ JObject createNullJObj(String clsName) {
 void bindLifeCycleWithNative(JObject? obj) {
   if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
     passJObjectToC!(obj, obj.pointer.cast<Void>());
-  } else {
-    print('pass object to native failed! address=${obj?.pointer}');
   }
 }
 
 /// When invoke with async method, dart can set run thread.
 enum Thread {
   /// Flutter UI thread.
-  FlutterUI,
+  flutterUI,
 
   /// Native main thread.
-  MainThread,
+  mainThread,
 
   /// Native sub thread.
-  SubThread
+  subThread
 }
 
 /// Class [JObject] is the root of the java class hierarchy in dart.
@@ -146,11 +144,11 @@ class JObject {
   ///
   /// Same arguments as [invoke].
   /// Beside that arguments, invoke thread can be assigned by using [thread].
-  /// Default java thread [Thread.MainThread].
+  /// Default java thread [Thread.mainThread].
   Future<dynamic> invokeAsync(String methodName, String returnType,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature, thread: thread);
   }

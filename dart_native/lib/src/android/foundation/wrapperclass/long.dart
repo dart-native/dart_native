@@ -5,13 +5,13 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Long` in Android.
-const String cls_long = 'java/lang/Long';
+const String jLongCls = 'java/lang/Long';
 
-@native(javaClass: cls_long)
+@native(javaClass: jLongCls)
 class JLong extends JSubclass<int> {
-  JLong(int value) : super(value, _new, cls_long);
+  JLong(int value) : super(value, _new, jLongCls);
 
-  JLong.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, cls_long) {
+  JLong.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, jLongCls) {
     raw = invokeLong('longValue');
   }
 }

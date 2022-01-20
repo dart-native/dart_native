@@ -5,14 +5,14 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Character` in Android.
-const String cls_character = 'java/lang/Character';
+const String jCharacterCls = 'java/lang/Character';
 
-@native(javaClass: cls_character)
+@native(javaClass: jCharacterCls)
 class JCharacter extends JSubclass<int> {
-  JCharacter(int value) : super(value, _new, cls_character);
+  JCharacter(int value) : super(value, _new, jCharacterCls);
 
   JCharacter.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, cls_character) {
+      : super.fromPointer(ptr, jCharacterCls) {
     raw = invokeChar('charValue');
   }
 }

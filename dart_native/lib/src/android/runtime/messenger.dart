@@ -79,7 +79,7 @@ void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
 dynamic _invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
-    Thread thread = Thread.FlutterUI,
+    Thread thread = Thread.flutterUI,
     _AsyncMessageCallback? callback}) {
   if (objPtr == nullptr) {
     throw 'InvokeMethod error native object pointer is nullptr.';
@@ -148,7 +148,7 @@ dynamic invokeMethod(
 Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
-    Thread thread = Thread.MainThread}) async {
+    Thread thread = Thread.mainThread}) async {
   final completer = Completer<dynamic>();
   _invokeMethod(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature,
