@@ -171,7 +171,7 @@ Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
   stub.fooWithError(ref);
   print('fooWithError result:${ref.value.description}');
 
-  ItemIndex? options = stub.fooWithOptions(ItemIndexOne | ItemIndexTwo);
+  ItemIndex? options = stub.fooWithOptions(itemIndexOne | itemIndexTwo);
   print('fooWithOptions result:$options');
 
   Class('NSThread')

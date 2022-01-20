@@ -10,11 +10,11 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 
 typedef ItemIndex = NSOptions;
 
-const ItemIndex ItemIndexNone = 0;
+const ItemIndex itemIndexNone = 0;
 
-const ItemIndex ItemIndexOne = 1 << 0;
+const ItemIndex itemIndexOne = 1 << 0;
 
-const ItemIndex ItemIndexTwo = 1 << 1;
+const ItemIndex itemIndexTwo = 1 << 1;
 
 abstract class SampleDelegate {
   registerSampleDelegate() {
