@@ -4,7 +4,7 @@ import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:ffi/ffi.dart';
 
 extension TypeEncodings on Pointer<Utf8> {
-  static Pointer<Pointer<Utf8>> _typeEncodings = nativeAllTypeEncodings();
+  static final Pointer<Pointer<Utf8>> _typeEncodings = nativeAllTypeEncodings();
   static final Pointer<Utf8> sint8 = _typeEncodings.elementAt(0).value;
   static final Pointer<Utf8> sint16 = _typeEncodings.elementAt(1).value;
   static final Pointer<Utf8> sint32 = _typeEncodings.elementAt(2).value;
@@ -28,7 +28,7 @@ extension TypeEncodings on Pointer<Utf8> {
   // Return encoding only if type is struct.
   String? get encodingForStruct {
     if (isStruct) {
-      return this.toDartString();
+      return toDartString();
     }
     return null;
   }

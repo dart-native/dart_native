@@ -28,7 +28,7 @@
 #ifdef __cplusplus
 #define DART_EXTERN_C extern "C"
 #else
-#define DART_EXTERN_C
+#define DART_EXTERN_C extern
 #endif
 
 #if defined(__CYGWIN__)
@@ -475,7 +475,7 @@ DART_EXPORT void Dart_DeletePersistentHandle(Dart_PersistentHandle object);
  *
  * Requires there to be a current isolate.
  *
- * \param object An object.
+ * \param object An object with identity.
  * \param peer A pointer to a native object or NULL.  This value is
  *   provided to callback when it is invoked.
  * \param external_allocation_size The number of externally allocated
@@ -531,7 +531,7 @@ DART_EXPORT void Dart_UpdateExternalSize(Dart_WeakPersistentHandle object,
  *
  * Requires there to be a current isolate.
  *
- * \param object An object.
+ * \param object An object with identity.
  * \param peer A pointer to a native object or NULL.  This value is
  *   provided to callback when it is invoked.
  * \param external_allocation_size The number of externally allocated
@@ -608,6 +608,7 @@ typedef struct {
   bool copy_parent_code;
   bool null_safety;
   bool is_system_isolate;
+  bool snapshot_is_dontneed_safe;
 } Dart_IsolateFlags;
 
 /**
@@ -3041,6 +3042,13 @@ typedef Dart_NativeFunction (*Dart_NativeEntryResolver)(Dart_Handle name,
  */
 typedef const uint8_t* (*Dart_NativeEntrySymbol)(Dart_NativeFunction nf);
 
+/**
+ * FFI Native C function pointer resolver callback.
+ *
+ * See Dart_SetFfiNativeResolver.
+ */
+typedef void* (*Dart_FfiNativeResolver)(const char* name, uintptr_t args_n);
+
 /*
  * ===========
  * Environment
@@ -3103,6 +3111,22 @@ Dart_GetNativeResolver(Dart_Handle library, Dart_NativeEntryResolver* resolver);
 DART_EXPORT Dart_Handle Dart_GetNativeSymbol(Dart_Handle library,
                                              Dart_NativeEntrySymbol* resolver);
 
+/**
+ * Sets the callback used to resolve FFI native functions for a library.
+ * The resolved functions are expected to be a C function pointer of the
+ * correct signature (as specified in the `@FfiNative<NFT>()` function
+ * annotation in Dart code).
+ *
+ * NOTE: This is an experimental feature and might change in the future.
+ *
+ * \param library A library.
+ * \param resolver A native function resolver.
+ *
+ * \return A valid handle if the native resolver was set successfully.
+ */
+DART_EXPORT Dart_Handle
+Dart_SetFfiNativeResolver(Dart_Handle library, Dart_FfiNativeResolver resolver);
+
 /*
  * =====================
  * Scripts and Libraries
@@ -3113,7 +3137,6 @@ typedef enum {
   Dart_kCanonicalizeUrl = 0,
   Dart_kImportTag,
   Dart_kKernelTag,
-  Dart_kImportExtensionTag,
 } Dart_LibraryTag;
 
 /**
@@ -3148,10 +3171,6 @@ typedef enum {
  * script tags. The return value should be an error or a TypedData containing
  * the kernel bytes.
  *
- * Dart_kImportExtensionTag
- *
- * This tag is used to load an external import (shared object file). The
- * extension path must have the scheme 'dart-ext:'.
  */
 typedef Dart_Handle (*Dart_LibraryTagHandler)(
     Dart_LibraryTag tag,
@@ -3432,17 +3451,6 @@ Dart_LoadLibraryFromKernel(const uint8_t* kernel_buffer,
                            intptr_t kernel_buffer_size);
 
 /**
- * Returns a flattened list of pairs. The first element in each pair is the
- * importing library and and the second element is the imported library for each
- * import in the isolate of a library whose URI's scheme is [scheme].
- *
- * Requires there to be a current isolate.
- *
- * \return A handle to a list of flattened pairs of importer-importee.
- */
-DART_EXPORT Dart_Handle Dart_GetImportsOfScheme(Dart_Handle scheme);
-
-/**
  * Indicates that all outstanding load requests have been satisfied.
  * This finalizes all the new classes loaded and optionally completes
  * deferred library futures.
@@ -3515,6 +3523,7 @@ typedef enum {
   Dart_KernelCompilationStatus_Ok = 0,
   Dart_KernelCompilationStatus_Error = 1,
   Dart_KernelCompilationStatus_Crash = 2,
+  Dart_KernelCompilationStatus_MsgFailed = 3,
 } Dart_KernelCompilationStatus;
 
 typedef struct {
@@ -3666,58 +3675,6 @@ DART_EXPORT bool Dart_IsServiceIsolate(Dart_Isolate isolate);
  *         otherwise.
  */
 DART_EXPORT bool Dart_WriteProfileToTimeline(Dart_Port main_port, char** error);
-
-/*
- * ====================
- * Compilation Feedback
- * ====================
- */
-
-/**
- * Record all functions which have been compiled in the current isolate.
- *
- * \param buffer Returns a pointer to a buffer containing the trace.
- *   This buffer is scope allocated and is only valid  until the next call to
- *   Dart_ExitScope.
- * \param size Returns the size of the buffer.
- * \return Returns an valid handle upon success.
- */
-DART_EXPORT DART_WARN_UNUSED_RESULT Dart_Handle
-Dart_SaveCompilationTrace(uint8_t** buffer, intptr_t* buffer_length);
-
-/**
- * Compile all functions from data from Dart_SaveCompilationTrace. Unlike JIT
- * feedback, this data is fuzzy: loading does not need to happen in the exact
- * program that was saved, the saver and loader do not need to agree on checked
- * mode versus production mode or debug/release/product.
- *
- * \return Returns an error handle if a compilation error was encountered.
- */
-DART_EXPORT DART_WARN_UNUSED_RESULT Dart_Handle
-Dart_LoadCompilationTrace(uint8_t* buffer, intptr_t buffer_length);
-
-/**
- * Record runtime feedback for the current isolate, including type feedback
- * and usage counters.
- *
- * \param buffer Returns a pointer to a buffer containing the trace.
- *   This buffer is scope allocated and is only valid  until the next call to
- *   Dart_ExitScope.
- * \param size Returns the size of the buffer.
- * \return Returns an valid handle upon success.
- */
-DART_EXPORT DART_WARN_UNUSED_RESULT Dart_Handle
-Dart_SaveTypeFeedback(uint8_t** buffer, intptr_t* buffer_length);
-
-/**
- * Compile functions using data from Dart_SaveTypeFeedback. The data must from a
- * VM with the same version and compiler flags.
- *
- * \return Returns an error handle if a compilation error was encountered or a
- *   version mismatch is detected.
- */
-DART_EXPORT DART_WARN_UNUSED_RESULT Dart_Handle
-Dart_LoadTypeFeedback(uint8_t* buffer, intptr_t buffer_length);
 
 /*
  * ==============

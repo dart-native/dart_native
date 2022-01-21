@@ -95,14 +95,16 @@ testAndroid(RuntimeStub stub) async {
     }
   }
 
-  list = stub.getByteList([byte(1), byte(2), byte(3), byte(4)]);
+  list = stub.getByteList(
+      [const byte(1), const byte(2), const byte(3), const byte(4)]);
   if (list != null) {
     for (int item in list) {
       print("item $item");
     }
   }
 
-  list = stub.getFloatList([float(1.0), float(2.0), float(3.0), float(4.0)]);
+  list = stub.getFloatList(
+      [const float(1.0), const float(2.0), const float(3.0), const float(4.0)]);
   if (list != null) {
     for (double item in list) {
       print("item $item");
@@ -122,19 +124,21 @@ testAndroid(RuntimeStub stub) async {
     }
   }
 
-  List byteArray = stub.getByteArray([byte(1), byte(2), byte(3)]);
+  List byteArray =
+      stub.getByteArray([const byte(1), const byte(2), const byte(3)]);
   for (int byte in byteArray) {
     print("item $byte");
   }
 
-  Set? intSet = stub.getIntSet(Set.from([1, 2, 3]));
+  Set? intSet = stub.getIntSet({1, 2, 3});
   if (intSet != null) {
     for (int setInt in intSet) {
       print("intSet $setInt");
     }
   }
 
-  Set? fSet = stub.getFloatSet(Set.from([float(1.0), float(2.0), float(4.0)]));
+  Set? fSet =
+      stub.getFloatSet({const float(1.0), const float(2.0), const float(4.0)});
   if (fSet != null) {
     for (double setF in fSet) {
       print("fSet $setF");
@@ -162,5 +166,5 @@ testAndroid(RuntimeStub stub) async {
 }
 
 int currentTimeMillis() {
-  return new DateTime.now().millisecondsSinceEpoch;
+  return DateTime.now().millisecondsSinceEpoch;
 }

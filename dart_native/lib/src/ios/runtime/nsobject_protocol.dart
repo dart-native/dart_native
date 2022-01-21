@@ -1,11 +1,8 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/dart_objc.dart';
-import 'package:dart_native/src/ios/runtime/class.dart';
-import 'package:dart_native/src/ios/runtime/protocol.dart';
-import 'package:dart_native/src/ios/runtime/selector.dart';
 
-/// Stands for `@protocol NSObject` in iOS.
+/// Stands for `@protocol NSObject` in iOS and macOS.
 ///
 /// The group of methods that are fundamental to all Objective-C objects.
 abstract class NSObjectProtocol {
@@ -40,7 +37,7 @@ abstract class NSObjectProtocol {
   String get debugDescription;
 
   /// Sends a specified message to the receiver and returns the result of the message.
-  dynamic perform(SEL selector, {List args});
+  T perform<T>(SEL selector, {List args});
 
   /// Returns a Boolean value that indicates whether the receiver does not descend froms NSObject.
   bool isProxy();

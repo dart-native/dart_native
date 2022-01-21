@@ -24,6 +24,7 @@ class _NativeType<T> {
   final T raw;
   const _NativeType(this.raw);
 
+  @override
   bool operator ==(other) {
     if (other is T) {
       return raw == other;

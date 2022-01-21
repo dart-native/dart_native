@@ -6,7 +6,7 @@ import 'package:dart_native/src/ios/runtime/internal/block_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 
-void bindLifecycleOnNative(NSObject obj) {
+void bindLifecycleForObject(NSObject obj) {
   // Ignore null and nil
   if (obj == nil || obj.pointer == nullptr) {
     return;
@@ -16,7 +16,7 @@ void bindLifecycleOnNative(NSObject obj) {
     throw 'dfailed to initialize dart API!';
   }
   // passObjectToC returns DNPassObjectResult.
-  int result = passObjectToC(obj, obj.pointer);
+  int result = bindObjcLifecycleToDart(obj, obj.pointer);
   if (result == 0) {
     throw 'pass object to native failed! address=${obj.pointer}';
   }

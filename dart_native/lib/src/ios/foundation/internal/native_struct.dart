@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/common/precompile_macro.dart';
 import 'package:ffi/ffi.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
@@ -7,15 +8,10 @@ import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 abstract class NativeStruct {
   Pointer get addressOf;
 
-  PointerWrapper? _wrapper;
-  PointerWrapper get wrapper {
-    if (_wrapper == null) {
-      _wrapper = PointerWrapper();
-    }
-    Pointer<Void> result = addressOf.cast<Void>();
-    _wrapper!.value = result;
-    return _wrapper!;
-  }
+  /// Alias for box/unbox [NSValue]
+  /// See [valueWithStruct]
+  String get aliasForNSValue => runtimeType.toString();
+  late PointerWrapper wrapper = PointerWrapper(addressOf.cast<Void>());
 }
 
 class NSUInteger32x2 extends Struct {
@@ -38,7 +34,7 @@ class NSUInteger64x2 extends Struct {
         ..ref.i2 = i2;
 }
 
-class NSUIntegerx2Wrapper extends NativeStruct {
+abstract class NSUIntegerx2Wrapper extends NativeStruct {
   late Pointer<NSUInteger32x2> _ptr32;
   late Pointer<NSUInteger64x2> _ptr64;
 
@@ -68,7 +64,6 @@ class NSUIntegerx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = NSUInteger32x2.callocPointer(i1, i2);
     }
-    wrapper;
   }
 
   @override
@@ -80,8 +75,10 @@ class NSUIntegerx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
+  @override
   bool operator ==(other) {
     if (other is NSUIntegerx2Wrapper) return i1 == other.i1 && i2 == other.i2;
     return false;
@@ -116,7 +113,7 @@ class CGFloat64x2 extends Struct {
         ..ref.d2 = d2;
 }
 
-class CGFloatx2Wrapper extends NativeStruct {
+abstract class CGFloatx2Wrapper extends NativeStruct {
   late Pointer<CGFloat32x2> _ptr32;
   late Pointer<CGFloat64x2> _ptr64;
 
@@ -144,7 +141,6 @@ class CGFloatx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = CGFloat32x2.callocPointer(d1, d2);
     }
-    wrapper;
   }
 
   @override
@@ -156,8 +152,10 @@ class CGFloatx2Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
+  @override
   bool operator ==(other) {
     if (other is CGFloatx2Wrapper) return d1 == other.d1 && d2 == other.d2;
     return false;
@@ -198,7 +196,7 @@ class CGFloat64x4 extends Struct {
         ..ref.d4 = d4;
 }
 
-class CGFloatx4Wrapper extends NativeStruct {
+abstract class CGFloatx4Wrapper extends NativeStruct {
   late Pointer<CGFloat32x4> _ptr32;
   late Pointer<CGFloat64x4> _ptr64;
 
@@ -244,7 +242,6 @@ class CGFloatx4Wrapper extends NativeStruct {
     } else {
       _ptr32 = CGFloat32x4.callocPointer(d1, d2, d3, d4);
     }
-    wrapper;
   }
 
   @override
@@ -256,14 +253,17 @@ class CGFloatx4Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
+  @override
   bool operator ==(other) {
-    if (other is CGFloatx4Wrapper)
+    if (other is CGFloatx4Wrapper) {
       return d1 == other.d1 &&
           d2 == other.d2 &&
           d3 == other.d3 &&
           d4 == other.d4;
+    }
     return false;
   }
 
@@ -306,7 +306,7 @@ class CGFloat64x6 extends Struct {
         ..ref.d6 = d6;
 }
 
-class CGFloatx6Wrapper extends NativeStruct {
+abstract class CGFloatx6Wrapper extends NativeStruct {
   late Pointer<CGFloat32x6> _ptr32;
   late Pointer<CGFloat64x6> _ptr64;
 
@@ -371,7 +371,6 @@ class CGFloatx6Wrapper extends NativeStruct {
     } else {
       _ptr32 = CGFloat32x6.callocPointer(d1, d2, d3, d4, d5, d6);
     }
-    wrapper;
   }
 
   @override
@@ -383,16 +382,19 @@ class CGFloatx6Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
+  @override
   bool operator ==(other) {
-    if (other is CGFloatx6Wrapper)
+    if (other is CGFloatx6Wrapper) {
       return d1 == other.d1 &&
           d2 == other.d2 &&
           d3 == other.d3 &&
           d4 == other.d4 &&
           d5 == other.d5 &&
           d6 == other.d6;
+    }
     return false;
   }
 
@@ -521,7 +523,7 @@ class CGFloat64x16 extends Struct {
         ..ref.d16 = d16;
 }
 
-class CGFloatx16Wrapper extends NativeStruct {
+abstract class CGFloatx16Wrapper extends NativeStruct {
   late Pointer<CGFloat32x16> _ptr32;
   late Pointer<CGFloat64x16> _ptr64;
 
@@ -693,7 +695,6 @@ class CGFloatx16Wrapper extends NativeStruct {
       _ptr32 = CGFloat32x16.callocPointer(d1, d2, d3, d4, d5, d6, d7, d8, d9,
           d10, d11, d12, d13, d14, d15, d16);
     }
-    wrapper;
   }
 
   @override
@@ -705,10 +706,12 @@ class CGFloatx16Wrapper extends NativeStruct {
     } else {
       _ptr32 = ptr.cast();
     }
+    wrapper;
   }
 
+  @override
   bool operator ==(other) {
-    if (other is CGFloatx16Wrapper)
+    if (other is CGFloatx16Wrapper) {
       return d1 == other.d1 &&
           d2 == other.d2 &&
           d3 == other.d3 &&
@@ -725,6 +728,7 @@ class CGFloatx16Wrapper extends NativeStruct {
           d14 == other.d14 &&
           d15 == other.d15 &&
           d16 == other.d16;
+    }
     return false;
   }
 

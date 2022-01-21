@@ -6,7 +6,6 @@
 //
 
 #import "RuntimeStub.h"
-#import <UIKit/UIKit.h>
 #import <CocoaLumberjack/CocoaLumberjack.h>
 
 #ifdef DEBUG
@@ -143,6 +142,7 @@
     return (NSRange){12345, 23456};
 }
 
+#if TARGET_OS_IOS
 - (UIOffset)fooUIOffset:(UIOffset)offset {
     DDLogInfo(@"%s %f, %f", __FUNCTION__, offset.horizontal, offset.vertical);
     return (UIOffset){1.2345, 2.3456};
@@ -152,6 +152,7 @@
     DDLogInfo(@"%s %f, %f, %f, %f", __FUNCTION__, insets.top, insets.left, insets.bottom, insets.right);
     return (UIEdgeInsets){1, 2, 3, 4};
 }
+#endif
 
 - (NSDirectionalEdgeInsets)fooNSDirectionalEdgeInsets:(NSDirectionalEdgeInsets)insets
 API_AVAILABLE(ios(11.0)){
@@ -217,13 +218,17 @@ API_AVAILABLE(ios(11.0)){
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             CGAffineTransform result = block(arg);
+#if TARGET_OS_IOS
             DDLogInfo(@"%s result: %@", __FUNCTION__, NSStringFromCGAffineTransform(result));
+#elif TARGET_OS_OSX
+            DDLogInfo(@"%s result: {%f, %f, %f, %f, %f, %f}", __FUNCTION__, result.a, result.b, result.c, result.d, result.tx, result.ty);
+#endif
         }
     });
 }
 
 - (void)fooCompletion:(void (^)(void))block {
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             block();
             DDLogInfo(@"%s", __FUNCTION__);
@@ -263,7 +268,11 @@ API_AVAILABLE(ios(11.0)){
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         CGRect result = [delegate callbackStruct:CGRectMake(1.1, 2.2, 3.3, 4.4)];
+#if TARGET_OS_OSX
+        DDLogInfo(@"%s callback result:%@", __FUNCTION__, NSStringFromRect(result));
+#elif TARGET_OS_IOS
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, NSStringFromCGRect(result));
+#endif
     });
 }
 

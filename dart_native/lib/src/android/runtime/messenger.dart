@@ -8,9 +8,9 @@ import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:ffi/ffi.dart';
 
 Pointer<Void> _newNativeObject(String className, {List? args}) {
-  final objectPtr;
+  final Pointer<Void> objectPtr;
   Pointer<Utf8> classNamePtr = className.toNativeUtf8();
-  if (args == null || args.length == 0) {
+  if (args == null || args.isEmpty) {
     objectPtr =
         nativeCreateObject!(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
   } else {
@@ -50,10 +50,10 @@ String getJClassName(Pointer<Void> pointer) {
   return name.replaceAll('.', '/');
 }
 
-typedef void _AsyncMessageCallback(dynamic result);
+typedef _AsyncMessageCallback = void Function(dynamic result);
 
-Map<Pointer<Utf8>, _AsyncMessageCallback> _invokeCallbackMap = Map();
-Map<Pointer<Utf8>, List<Pointer<Utf8>>> _assignedSignatureMap = Map();
+Map<Pointer<Utf8>, _AsyncMessageCallback> _invokeCallbackMap = {};
+Map<Pointer<Utf8>, List<Pointer<Utf8>>> _assignedSignatureMap = {};
 Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
     Pointer.fromFunction(_invokeCallback);
 
@@ -79,7 +79,7 @@ void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
 dynamic _invokeMethod(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
-    Thread thread = Thread.FlutterUI,
+    Thread thread = Thread.flutterUI,
     _AsyncMessageCallback? callback}) {
   if (objPtr == nullptr) {
     throw 'InvokeMethod error native object pointer is nullptr.';
@@ -98,9 +98,9 @@ dynamic _invokeMethod(
   List<Pointer<Utf8>>? assignedSignaturePtr;
   if ((assignedSignature?.length ?? 0) > 0) {
     assignedSignaturePtr = [];
-    assignedSignature!.forEach((signature) {
-      assignedSignaturePtr!.add(signature.toNativeUtf8());
-    });
+    for (var signature in assignedSignature!) {
+      assignedSignaturePtr.add(signature.toNativeUtf8());
+    }
 
     if (callback != null) {
       _assignedSignatureMap[methodNamePtr] = assignedSignaturePtr;
@@ -148,7 +148,7 @@ dynamic invokeMethod(
 Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
-    Thread thread = Thread.MainThread}) async {
+    Thread thread = Thread.mainThread}) async {
   final completer = Completer<dynamic>();
   _invokeMethod(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature,
@@ -166,23 +166,23 @@ NativeArguments _parseNativeArguments(List? args,
 
   /// extend for string
   int stringTypeBitmask = 0;
-  if (args != null && args.length > 0) {
+  if (args != null && args.isNotEmpty) {
     int length = args.length;
 
     /// for 32 bit system
     if (!is64Bit) {
-      args.forEach((arg) {
+      for (var arg in args) {
         if (arg is double || arg is long) {
           length++;
         }
-      });
+      }
     }
     pointers = calloc<Pointer<Void>>(length);
 
     for (var i = 0, pi = 0; i < args.length; i++, pi++) {
       var arg = args[i];
       if (arg == null) {
-        throw 'One of args list is null, not allowed null argument.' +
+        throw 'One of args list is null, not allowed null argument.'
             ' You can use [createNullJObj] to wrapper a null object.';
       }
 

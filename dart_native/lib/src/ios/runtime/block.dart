@@ -6,14 +6,9 @@ import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
-import 'package:dart_native/src/ios/foundation/internal/objc_type_box.dart';
-import 'package:dart_native/src/ios/runtime/class.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
-import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/block_lifecycle.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
-import 'package:dart_native/src/ios/runtime/nsobject.dart';
-import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
 
 typedef _DNBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
@@ -22,7 +17,7 @@ final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
     .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
         'DNBlockTypeEncodeString');
 
-/// Stands for `NSBlock` in iOS. [Block] can be used as an argument
+/// Stands for `NSBlock` in iOS and macOS. [Block] can be used as an argument
 /// to a method and as a callback.
 ///
 /// You can create [Block] from Dart [Function], or just obtain [Block] from
@@ -74,6 +69,7 @@ class Block extends id {
 
   /// This [isa] block in iOS, but it's meaningless for a block created
   /// by Dart function.
+  @override
   Class? get isa {
     if (function != null) {
       throw 'Block created by Dart';
@@ -83,6 +79,7 @@ class Block extends id {
 
   /// Superclass for block in iOS, meaningless for a block
   /// created by Dart function.
+  @override
   Class get superclass {
     if (function != null) {
       throw 'Block created by Dart';
@@ -91,14 +88,17 @@ class Block extends id {
     return isa!.perform(SEL('superclass'));
   }
 
+  @override
   String get description {
     return toString();
   }
 
+  @override
   String get debugDescription {
     return toString();
   }
 
+  @override
   int get hash {
     return hashCode;
   }
@@ -150,9 +150,7 @@ class Block extends id {
       argsPtrPtr = calloc<Pointer<Void>>(args.length);
       for (var i = 0; i < args.length; i++) {
         var arg = args[i];
-        if (arg == null) {
-          arg = nil;
-        }
+        arg ??= nil;
         if (arg is String) {
           stringTypeBitmask |= (0x1 << i);
         }
@@ -209,13 +207,12 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     if (!argTypePtr.isStruct) {
       ptr = ptr.cast<Pointer<Void>>().value;
     }
-    dynamic arg = loadValueFromPointer(ptr, argTypePtr);
+
     if (i + 1 < block.types.length) {
       String dartType = block.types[i + 1];
-      arg = handleObjCBasicValue(dartType, arg);
-      arg = objcInstanceFromPointer(dartType, arg);
+      dynamic arg = loadValueFromPointer(ptr, argTypePtr, dartType: dartType);
+      args.add(arg);
     }
-    args.add(arg);
   }
 
   dynamic result = Function.apply(block.function!, args);

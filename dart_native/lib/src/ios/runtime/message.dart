@@ -4,15 +4,12 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
-import 'package:dart_native/src/ios/foundation/gcd.dart';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:dart_native/src/ios/runtime/internal/native_runtime.dart';
-import 'package:dart_native/src/ios/runtime/nsobject.dart';
-import 'package:dart_native/src/ios/runtime/selector.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:ffi/ffi.dart';
 
-typedef void _AsyncMessageCallback(dynamic result);
+typedef _AsyncMessageCallback = void Function(dynamic result);
 
 Pointer<Void> _sendMsgToNative(
   Pointer<Void> target,
@@ -43,7 +40,7 @@ Pointer<Void> _sendMsgToNative(
 
 Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 
-/// Send a message to [target], which should be an instance in iOS.
+/// Send a message to [target], which should be an instance in iOS and macOS.
 ///
 /// The message will consist of a [selector] and zero or more [args].
 ///
@@ -55,13 +52,13 @@ Map<Pointer, Map<SEL, Pointer>> _methodSignatureCache = {};
 ///
 /// The Result of the message will be converted to Dart types when
 /// [decodeRetVal] is `true`.
-dynamic _msgSend(Pointer<Void> target, SEL selector,
+dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
     {List? args,
     DispatchQueue? onQueue,
     _AsyncMessageCallback? callback,
     bool decodeRetVal = true}) {
   if (target == nullptr) {
-    return;
+    return null;
   }
 
   int argCount = (args?.length ?? 0);
@@ -120,10 +117,8 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
     // Return value is passed to block.
     Block block = Block(callback);
     callbackPtr = block.pointer;
-    if (onQueue == null) {
-      // Send message to main queue by default.
-      onQueue = DispatchQueue.main;
-    }
+    // Send message to main queue by default.
+    onQueue ??= DispatchQueue.main;
   }
 
   Pointer<Void> resultPtr = _sendMsgToNative(
@@ -150,13 +145,16 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
       if (resultTypePtr.isString) {
         result = loadStringFromPointer(resultPtr);
       } else {
-        result = loadValueFromPointer(resultPtr, resultTypePtr);
+        result = loadValueFromPointer(resultPtr, resultTypePtr,
+            dartType: T.toString());
       }
 
       if (resultTypePtr.isStruct) {
         structTypes.add(resultTypePtr);
       }
-      outRefArgs.forEach((ref) => ref.syncValue());
+      for (var ref in outRefArgs) {
+        ref.syncValue();
+      }
     }
   }
   // free struct type memory (malloc on native side)
@@ -165,26 +163,25 @@ dynamic _msgSend(Pointer<Void> target, SEL selector,
   return result;
 }
 
-/// Send a message synchronously to [target], which should be an instance in iOS.
+/// Send a message synchronously to [target], which should be an instance in iOS and macOS.
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types when [decodeRetVal] is `true`.
-dynamic msgSend(Pointer<Void> target, SEL selector,
+T msgSend<T>(Pointer<Void> target, SEL selector,
     {List? args, bool decodeRetVal = true}) {
-  return _msgSend(target, selector, args: args, decodeRetVal: decodeRetVal);
+  return _msgSend<T>(target, selector, args: args, decodeRetVal: decodeRetVal);
 }
 
 /// Send a message to [target] on GCD queues asynchronously using [onQueue].
-/// [target] should be an instance in iOS.
+/// [target] should be an instance in iOS and macOS.
 /// [onQueue] is `DispatchQueue.main` by default.
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types.
 Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
     {List? args, DispatchQueue? onQueue}) async {
-  if (onQueue == null) {
-    onQueue = DispatchQueue.global();
-  }
+  // Send message to global queue by default.
+  onQueue ??= DispatchQueue.global();
   final completer = Completer<dynamic>();
   _msgSend(target, selector, args: args, onQueue: onQueue,
       callback: (dynamic result) {

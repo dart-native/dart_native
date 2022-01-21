@@ -19,11 +19,11 @@ class NativePlatform {
   const NativePlatform();
 }
 
-const NativePlatform ios = const NativePlatform();
-const NativePlatform macos = const NativePlatform();
-const NativePlatform tvos = const NativePlatform();
-const NativePlatform watchos = const NativePlatform();
-const NativePlatform android = const NativePlatform();
+const NativePlatform ios = NativePlatform();
+const NativePlatform macos = NativePlatform();
+const NativePlatform tvos = NativePlatform();
+const NativePlatform watchos = NativePlatform();
+const NativePlatform android = NativePlatform();
 
 /// Annotation for unavailable API on native platforms.
 ///
@@ -50,6 +50,7 @@ class NativeDeprecated {
       {this.ios, this.macos, this.tvos, this.watchos, this.android});
 }
 
+// ignore: constant_identifier_names
 const String API_TO_BE_DEPRECATED = 'API_TO_BE_DEPRECATED';
 
 typedef NativeDeprecatedReplacement = NativeDeprecated;

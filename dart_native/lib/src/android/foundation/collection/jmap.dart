@@ -6,17 +6,17 @@ import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Map` in Android.
-const String cls_map = 'java/util/Map';
-const String cls_hash_map = 'java/util/HashMap';
+const String jMapCls = 'java/util/Map';
+const String jHashMapCls = 'java/util/HashMap';
 
-@native(javaClass: cls_map)
+@native(javaClass: jMapCls)
 class JMap<K, V> extends JSubclass<Map> {
-  JMap(Map value, {String clsName = cls_map, InitSubclass init = _new})
+  JMap(Map value, {String clsName = jMapCls, InitSubclass init = _new})
       : super(value, _new, clsName) {
     value = Map.of(value);
   }
 
-  JMap.fromPointer(Pointer<Void> ptr, {String clsName = cls_map})
+  JMap.fromPointer(Pointer<Void> ptr, {String clsName = jMapCls})
       : super.fromPointer(ptr, clsName) {
     Set keySet = JSet<K>.fromPointer(invoke('keySet', 'Ljava/util/Set;')).raw;
     Map temp = {};
@@ -43,19 +43,19 @@ class JMap<K, V> extends JSubclass<Map> {
   }
 }
 
-@native(javaClass: cls_hash_map)
+@native(javaClass: jHashMapCls)
 class JHashMap<K, V> extends JMap {
-  JHashMap(Map value) : super(value, clsName: cls_hash_map);
+  JHashMap(Map value) : super(value, clsName: jHashMapCls);
 
   JHashMap.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: cls_hash_map);
+      : super.fromPointer(ptr, clsName: jHashMapCls);
 }
 
 /// New native 'HashMap'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is Map) {
     ///'Map' default implementation 'HashMap'.
-    if (clsName == cls_map) clsName = cls_hash_map;
+    if (clsName == jMapCls) clsName = jHashMapCls;
 
     JObject nativeMap = JObject(className: clsName);
     value.forEach((key, value) {

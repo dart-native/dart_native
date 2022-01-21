@@ -1,16 +1,13 @@
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
-import 'package:dart_native/src/ios/runtime/class.dart';
-import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/internal/nsobject_lifecycle.dart';
-import 'package:dart_native/src/ios/runtime/selector.dart';
 
 final id nil = id(nullptr);
 
-typedef void Finalizer();
+typedef Finalizer = void Function();
 
-/// Stands for `NSObject` in iOS.
+/// Stands for `NSObject` in iOS and macOS.
 ///
 /// The root class of most Objective-C class hierarchies, from which subclasses inherit a basic interface to the runtime system and the ability to behave as Objective-C objects.
 class NSObject extends id {
@@ -23,13 +20,13 @@ class NSObject extends id {
   }
 
   NSObject([Class? isa]) : super(_new(isa)) {
-    bindLifecycleOnNative(this);
+    bindLifecycleForObject(this);
   }
 
   /// Before calling [fromPointer], MAKE SURE the [ptr] for object exists.
   /// If [ptr] was already freed, you would get a crash!
   NSObject.fromPointer(Pointer<Void> ptr) : super(ptr) {
-    bindLifecycleOnNative(this);
+    bindLifecycleForObject(this);
   }
 
   NSObject init() {
@@ -51,23 +48,19 @@ class NSObject extends id {
   }
 
   static Pointer<Void> _new(Class? isa) {
-    if (isa == null) {
-      isa = Class('NSObject');
-    }
+    isa ??= Class('NSObject');
     Pointer<Void> resultPtr = isa.perform(SEL('new'), decodeRetVal: false);
     return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
   }
 }
 
 Pointer<Void> alloc(Class? isa) {
-  if (isa == null) {
-    isa = Class('NSObject');
-  }
-  NSObject result = isa.perform(SEL('alloc'));
-  return result.autorelease().pointer;
+  isa ??= Class('NSObject');
+  Pointer<Void> resultPtr = isa.perform(SEL('alloc'), decodeRetVal: false);
+  return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
 }
 
-typedef dynamic ConvertorFromPointer(Pointer<Void> ptr);
+typedef ConvertorFromPointer = dynamic Function(Pointer<Void> ptr);
 
 /// Register a function for converting a Dart object from a [Pointer].
 ///
@@ -86,29 +79,26 @@ void registerTypeConvertor(String type, ConvertorFromPointer convertor) {
   }
 }
 
-dynamic objcInstanceFromPointer(String? type, dynamic arg) {
-  Pointer<Void> ptr;
-  if (arg is NSObject) {
-    ptr = arg.pointer;
-  } else if (arg is Pointer) {
-    ptr = arg.cast<Void>();
+/// Convert [arg] to its custom type, which is annotated with `@native()`.
+dynamic objcInstanceFromPointer(Pointer<Void> arg, String? type) {
+  if (arg == nullptr) {
+    return arg;
+  }
+  // delete '?' for null-safety
+  if (type != null) {
+    if (type.endsWith('?')) {
+      type = type.substring(0, type.length - 1);
+    }
   } else {
-    return arg;
-  }
-
-  if (ptr == nullptr) {
-    return arg;
-  }
-  if (type == null) {
     /// Retrive class name from native.
-    var object = NSObject.fromPointer(ptr);
+    var object = NSObject.fromPointer(arg);
     type = object.isa?.name;
   }
   ConvertorFromPointer? convertor = _convertorCache[type];
   if (convertor != null) {
-    return convertor(ptr);
+    return convertor(arg);
   }
-  return NSObject.fromPointer(ptr);
+  return NSObject.fromPointer(arg);
 }
 
 Map<String, ConvertorFromPointer> _convertorCache = {};

@@ -137,7 +137,7 @@ final ConvertNSStringToUTF16 convertNSStringToUTF16 =
     nativeDylib.lookupFunction<ConvertNSStringToUTF16, ConvertNSStringToUTF16>(
         'native_convert_nsstring_to_utf16');
 
-final int Function(Object, Pointer<Void>) passObjectToC = nativeDylib
+final int Function(Object, Pointer<Void>) bindObjcLifecycleToDart = nativeDylib
     .lookup<NativeFunction<Int32 Function(Handle, Pointer<Void>)>>(
-        "PassObjectToCUseDynamicLinking")
+        "BindObjcLifecycleToDart")
     .asFunction();

@@ -5,7 +5,7 @@ import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `NSObject **` in iOS.
+/// Stands for `NSObject **` in iOS and macOS.
 ///
 /// This Class is an experimental implementation.
 /// Broken changes are likely in the future.
@@ -13,19 +13,23 @@ class NSObjectRef<T extends id> {
   late T value;
   late Pointer<Pointer<Void>> _ptr;
   Pointer<Pointer<Void>> get pointer => _ptr;
+  late final PointerWrapper _wrapper = PointerWrapper(_ptr.cast<Void>());
 
   NSObjectRef() {
     _ptr = calloc<Pointer<Void>>();
     _ptr.value = nullptr;
-    PointerWrapper wrapper = PointerWrapper();
-    wrapper.value = _ptr.cast<Void>();
+    _wrapper;
   }
 
-  NSObjectRef.fromPointer(this._ptr);
+  NSObjectRef.fromPointer(Pointer<Pointer<Void>> ptr) {
+    _ptr = calloc<Pointer<Void>>();
+    _ptr.value = ptr.value;
+    _wrapper;
+  }
 
   syncValue() {
     if (_ptr.value != nullptr) {
-      value = objcInstanceFromPointer(T.toString(), _ptr.value);
+      value = objcInstanceFromPointer(_ptr.value, T.toString());
     }
   }
 }

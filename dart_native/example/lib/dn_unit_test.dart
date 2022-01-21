@@ -13,7 +13,7 @@ class DNUnitTest {
 
   DNUnitTest() {
     /// Dispatch to platform.
-    _unitTest = Platform.isAndroid ? DNAndroidUnitTest() : DNIOSUnitTest();
+    _unitTest = Platform.isAndroid ? DNAndroidUnitTest() : DNAppleUnitTest();
   }
 
   String fooString(String str) {

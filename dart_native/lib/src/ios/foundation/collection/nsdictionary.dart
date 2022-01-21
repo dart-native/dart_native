@@ -6,10 +6,10 @@ import 'package:dart_native/src/ios/foundation/collection/nsarray.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
-/// Stands for `NSDictionary` in iOS.
+/// Stands for `NSDictionary` in iOS and macOS.
 @native()
 class NSDictionary extends NSSubclass<Map> {
-  NSDictionary(Map value, {InitSubclass init: _new}) : super(value, init) {
+  NSDictionary(Map value, {InitSubclass init = _new}) : super(value, init) {
     value = Map.of(value);
   }
 
@@ -43,7 +43,7 @@ class NSDictionary extends NSSubclass<Map> {
   }
 }
 
-/// Stands for `NSMutableDictionary` in iOS.
+/// Stands for `NSMutableDictionary` in iOS and macOS.
 ///
 /// Only for type casting. It's unmodifiable.
 @native()

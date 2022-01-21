@@ -28,3 +28,13 @@ class UIEdgeInsets extends CGFloatx4Wrapper {
       : super(top, left, bottom, right);
   UIEdgeInsets.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 }
+
+/// Stands for `NSEdgeInsets` in macOS.
+class NSEdgeInsets extends UIEdgeInsets {
+  @override
+  String get aliasForNSValue => 'EdgeInsets';
+
+  NSEdgeInsets(double top, double left, double bottom, double right)
+      : super(top, left, bottom, right);
+  NSEdgeInsets.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+}

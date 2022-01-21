@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:isolate';
+import 'dart:io';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/dn_unit_test.dart';
@@ -11,7 +12,7 @@ import 'package:dart_native_example/ios/runtimestub.dart';
 import 'package:dart_native_example/ios/swiftstub.dart';
 
 /// IOS unit test implementation.
-class DNIOSUnitTest with DNUnitTestBase {
+class DNAppleUnitTest with DNUnitTestBase {
   final stub = RuntimeSon();
   final delegate = DelegateStub();
 
@@ -22,11 +23,11 @@ class DNIOSUnitTest with DNUnitTestBase {
 
   @override
   Future<void> runAllUnitTests() async {
-    await testIOS(stub, delegate);
+    await testMacOSAndIOS(stub, delegate);
   }
 }
 
-Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
+Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
   bool? resultBool = stub.fooBOOL(false);
   print('fooBool result:$resultBool');
 
@@ -92,11 +93,13 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
   NSRange? range = stub.fooNSRange(NSRange(2, 1));
   print('fooNSRange result:$range');
 
-  UIOffset? offset = stub.fooUIOffset(UIOffset(2, 1));
-  print('fooUIOffset result:$offset');
+  if (Platform.isIOS) {
+    UIOffset? offset = stub.fooUIOffset(UIOffset(2, 1));
+    print('fooUIOffset result:$offset');
 
-  UIEdgeInsets? insets = stub.fooUIEdgeInsets(UIEdgeInsets(4, 3, 2, 1));
-  print('fooUIEdgeInsets result:$insets');
+    UIEdgeInsets? insets = stub.fooUIEdgeInsets(UIEdgeInsets(4, 3, 2, 1));
+    print('fooUIEdgeInsets result:$insets');
+  }
 
   NSDirectionalEdgeInsets? dInsets =
       stub.fooNSDirectionalEdgeInsets(NSDirectionalEdgeInsets(4, 3, 2, 1));
@@ -110,10 +113,10 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
       CATransform3D(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1));
   print('fooCATransform3D result:$transform3D');
 
-  List? list = stub.fooNSArray([1, 2.345, 'I\'m String', rect]);
+  List? list = stub.fooNSArray([1, 2.345, 'I\'m String', range]);
   print('NSArray to List: $list');
 
-  list = stub.fooNSMutableArray([1, 2.345, 'I\'m String', rect]);
+  list = stub.fooNSMutableArray([1, 2.345, 'I\'m String', range]);
   print('NSMutableArray to List: $list');
 
   Map? map = stub.fooNSDictionary({'foo': 'bar'});
@@ -122,10 +125,10 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
   map = stub.fooNSMutableDictionary({'foo': 'bar'});
   print('NSMutableDictionary to Map: $map');
 
-  Set? set = stub.fooNSSet(Set.from([1, 2.345, 'I\'m String', rect]));
+  Set? set = stub.fooNSSet({1, 2.345, 'I\'m String', range});
   print('NSSet to Set: $set');
 
-  set = stub.fooNSMutableSet(Set.from([1, 2.345, 'I\'m String', rect]));
+  set = stub.fooNSMutableSet({1, 2.345, 'I\'m String', range});
   print('fooNSMutableSet to Set: $set');
 
   stub.fooBlock((NSObject? a) {
@@ -140,7 +143,7 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
 
   stub.fooCStringBlock((CString? a) {
     print('hello block cstring! $a');
-    return CString('test return cstring');
+    return const CString('test return cstring');
   });
 
   stub.fooNSDictionaryBlock((NSDictionary? dict) {
@@ -168,7 +171,7 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
   stub.fooWithError(ref);
   print('fooWithError result:${ref.value.description}');
 
-  ItemIndex? options = stub.fooWithOptions(ItemIndexOne | ItemIndexTwo);
+  ItemIndex? options = stub.fooWithOptions(itemIndexOne | itemIndexTwo);
   print('fooWithOptions result:$options');
 
   Class('NSThread')
@@ -198,7 +201,7 @@ Future<void> testIOS(RuntimeStub stub, DelegateStub delegate) async {
 void _checkTimer(String isolateID) async {
   RuntimeStub stub = RuntimeStub();
   DelegateStub delegate = DelegateStub();
-  Timer.periodic(new Duration(seconds: 1), (Timer t) {
+  Timer.periodic(const Duration(seconds: 1), (Timer t) {
     stub.fooCompletion(() {
       print('hello completion block on $isolateID!');
     });

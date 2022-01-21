@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/ios/common/library.dart';
 
-/// Stands for `DispatchQoS` in iOS.
+/// Stands for `DispatchQoS` in iOS and macOS.
 ///
 /// The quality of service, or the execution priority, to apply to tasks.
 ///
@@ -11,7 +11,7 @@ import 'package:dart_native/src/ios/common/library.dart';
 /// importance to your app. When scheduling tasks, the system prioritizes those
 /// that have higher service classes.
 class DispatchQoS {
-  int _class;
+  final int _class;
   static final DispatchQoS background = DispatchQoS._internal(0x09);
   static final DispatchQoS utility = DispatchQoS._internal(0x11);
   static final DispatchQoS useDefault = DispatchQoS._internal(0x15);
@@ -40,11 +40,11 @@ final Pointer<Void> Function() dispatch_get_main_queue = nativeDylib
         '_dispatch_get_main_queue')
     .asFunction();
 
-typedef void DispatchWorkItem();
+typedef DispatchWorkItem = void Function();
 
 Pointer<Void> _mainQueue = dispatch_get_main_queue();
 
-/// Stands for `DispatchQueue` in iOS.
+/// Stands for `DispatchQueue` in iOS and macOS.
 /// An object that manages the execution of tasks serially or concurrently on
 /// your app's main thread or on a background thread.
 class DispatchQueue {
@@ -52,9 +52,7 @@ class DispatchQueue {
   Pointer<Void> get pointer => _queue;
 
   DispatchQueue.global({DispatchQoS? qos}) {
-    if (qos == null) {
-      qos = DispatchQoS.useDefault;
-    }
+    qos ??= DispatchQoS.useDefault;
     _queue = dispatch_get_global_queue(qos._class, 0);
   }
 

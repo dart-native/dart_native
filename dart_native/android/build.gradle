@@ -4,25 +4,25 @@ version '1.0'
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.0'
+        classpath 'com.android.tools.build:gradle:4.1.0'
     }
 }
 
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     // Fix CI error: https://stackoverflow.com/questions/61146248/github-actions-flutter-ci-error-no-version-of-ndk-matched
     ndkVersion "18.1.5063045"
     // Encapsulates your external native build configurations.
@@ -36,14 +36,21 @@ android {
 //        }
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         minSdkVersion 16
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     lintOptions {
         disable 'InvalidPackage'
     }
-    sourceSets{
+    
+    sourceSets {
         main {
             jniLibs.srcDirs=['src/libs']
         }

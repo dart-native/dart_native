@@ -19,6 +19,7 @@
 #import "DNObjectDealloc.h"
 #import "DNPointerWrapper.h"
 #import "DNInvocation.h"
+#import "NSObject+DartHandleExternalSize.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -147,6 +148,7 @@ BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dar
     // Existing implemention can't be replaced. Flutter hot-reload must also be well handled.
     if ([target respondsToSelector:selector]) {
         if (imp) {
+            [imp addCallback:(NativeMethodCallback)callback forDartPort:dartPort];
             return YES;
         } else {
             return NO;
@@ -156,6 +158,7 @@ BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dar
         NSError *error;
         DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types
                                                                   callback:(NativeMethodCallback)callback
+                                                                  dartPort:dartPort
                                                                      error:&error];
         if (error.code) {
             return NO;
@@ -559,7 +562,12 @@ const char *native_struct_encoding(const char *encoding) {
         if (i != 0) {
             [structType appendString:@","];
         }
-        [structType appendFormat:@"%@", [NSString stringWithUTF8String:elements[i]]];
+        const char *element = elements[i];
+        [structType appendFormat:@"%@", [NSString stringWithUTF8String:element]];
+        // `structType` contains other structs, we should free nested struct types.
+        if (*element == '{') {
+            free((void *)element);
+        }
     }
     [structType appendString:@"}"];
     free(elements);
@@ -692,22 +700,29 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                                      userInfo:nil];
     }
     dispatch_group_t group = dispatch_group_create();
-    NativeMethodCallback callback = methodIMP.callback;
-    const Work work = [=]() {
-        callback(invocation.realArgs,
-                 invocation.realRetValue,
-                 numberOfArguments,
-                 types,
-                 methodIMP.stret);
-        dispatch_group_leave(group);
-    };
-    const Work* work_ptr = new Work(work);
+    NSDictionary<NSNumber *, NSNumber *> *callbackForDartPort = methodIMP.callbackForDartPort;
+    // Each isolate has a ReceivePort for callbacks.
+    // `invocation.args[0]` is delegate object, whose dealloc object records it's dart ports.
     DNObjectDealloc *dealloc = [DNObjectDealloc objectForHost:(__bridge id)(*(void **)invocation.args[0])];
     NSSet<NSNumber *> *dartPorts = dealloc.dartPorts;
     for (NSNumber *port in dartPorts) {
-        BOOL success = NotifyDart(port.integerValue, work_ptr);
+        NativeMethodCallback callback = (NativeMethodCallback)callbackForDartPort[port].integerValue;
+        const Work work = [=]() {
+            callback(invocation.realArgs,
+                     invocation.realRetValue,
+                     numberOfArguments,
+                     types,
+                     methodIMP.stret);
+            dispatch_group_leave(group);
+        };
+        const Work* work_ptr = new Work(work);
+        Dart_Port dartPort = port.integerValue;
+        BOOL success = NotifyDart(dartPort, work_ptr);
         if (success) {
             dispatch_group_enter(group);
+        } else {
+            // Remove port in died isolate
+            [methodIMP removeCallbackForDartPort:dartPort];
         }
     }
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
@@ -721,18 +736,20 @@ void RegisterDeallocCallback(void (*callback)(intptr_t)) {
     native_dealloc_callback = callback;
 }
 
-void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
+bool NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
     auto callback = native_dealloc_callback;
-    const Work work = [address, callback]() { callback(address); };
+    const Work work = [address, callback]() {
+        callback(address);
+    };
     const Work* work_ptr = new Work(work);
-    NotifyDart(dartPort, work_ptr);
+    return NotifyDart(dartPort, work_ptr);
 }
 
 #pragma mark - Dart Finalizer
 
 static NSMutableDictionary<NSNumber *, NSNumber *> *objectRefCount = [NSMutableDictionary dictionary];
 
-API_AVAILABLE(ios(10.0))
+API_AVAILABLE(ios(10.0), macos(10.12))
 static os_unfair_lock _refCountUnfairLock = OS_UNFAIR_LOCK_INIT;
 static NSLock *_refCountLock = [[NSLock alloc] init];
 
@@ -750,7 +767,7 @@ static void _RunFinalizer(void *isolate_callback_data,
 
 static void RunFinalizer(void *isolate_callback_data,
                          void *peer) {
-    if (@available(iOS 10.0, *)) {
+    if (@available(iOS 10.0, macOS 10.12, *)) {
         os_unfair_lock_lock(&_refCountUnfairLock);
         _RunFinalizer(isolate_callback_data, peer);
         os_unfair_lock_unlock(&_refCountUnfairLock);
@@ -761,12 +778,14 @@ static void RunFinalizer(void *isolate_callback_data,
     }
 }
 
-DNPassObjectResult _PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer) {
+DNPassObjectResult _BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
     NSNumber *address = @((intptr_t)pointer);
     NSUInteger refCount = objectRefCount[address].unsignedIntegerValue;
     // pointer is already retained by dart object, just increase its reference count.
     if (refCount > 0) {
-        Dart_NewWeakPersistentHandle_DL(h, pointer, 8, RunFinalizer);
+        id object = (__bridge id)pointer;
+        size_t size = [object dn_objectSize];
+        Dart_NewWeakPersistentHandle_DL(h, pointer, size, RunFinalizer);
         objectRefCount[address] = @(refCount + 1);
         return DNPassObjectResultSuccess;
     }
@@ -789,20 +808,21 @@ DNPassObjectResult _PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer)
         return DNPassObjectResultNeedless;
     }
     native_retain_object(object);
-    Dart_NewWeakPersistentHandle_DL(h, pointer, 8, RunFinalizer);
+    size_t size = [object dn_objectSize];
+    Dart_NewWeakPersistentHandle_DL(h, pointer, size, RunFinalizer);
     objectRefCount[address] = @1;
     return DNPassObjectResultSuccess;
 }
 
-DNPassObjectResult PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer) {
+DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
     DNPassObjectResult result;
-    if (@available(iOS 10.0, *)) {
+    if (@available(iOS 10.0, macOS 10.12, *)) {
         os_unfair_lock_lock(&_refCountUnfairLock);
-        result = _PassObjectToCUseDynamicLinking(h, pointer);
+        result = _BindObjcLifecycleToDart(h, pointer);
         os_unfair_lock_unlock(&_refCountUnfairLock);
     } else {
         [_refCountLock lock];
-        result = _PassObjectToCUseDynamicLinking(h, pointer);
+        result = _BindObjcLifecycleToDart(h, pointer);
         [_refCountLock unlock];
     }
     return result;

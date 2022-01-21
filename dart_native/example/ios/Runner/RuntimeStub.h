@@ -5,7 +5,12 @@
 //  Created by 杨萧玉 on 2019/9/29.
 //
 
+#import <Foundation/Foundation.h>
+#if TARGET_OS_OSX
+#import <AppKit/AppKit.h>
+#elif TARGET_OS_IOS
 #import <UIKit/UIKit.h>
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,10 +57,12 @@ typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 - (CGVector)fooCGVector:(CGVector)vector;
 - (CGRect)fooCGRect:(CGRect)rect;
 - (NSRange)fooNSRange:(NSRange)range;
+#if TARGET_OS_IOS
 - (UIOffset)fooUIOffset:(UIOffset)offset;
 - (UIEdgeInsets)fooUIEdgeInsets:(UIEdgeInsets)insets;
+#endif
 - (NSDirectionalEdgeInsets)fooNSDirectionalEdgeInsets:(NSDirectionalEdgeInsets)insets
-    API_AVAILABLE(ios(11.0));
+    API_AVAILABLE(ios(11.0), macos(10.15));
 - (CGAffineTransform)fooCGAffineTransform:(CGAffineTransform)transform;
 - (CATransform3D)fooCATransform3D:(CATransform3D)transform3D;
 - (NSArray *)fooNSArray:(NSArray *)array;

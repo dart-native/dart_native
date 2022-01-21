@@ -6,15 +6,18 @@ import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_box.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
-import 'package:dart_native/src/ios/runtime/id.dart';
 import 'package:ffi/ffi.dart';
 
 // TODO: change encoding hard code string to const var.
 Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
   TypeEncodings.b: (Pointer ptr, dynamic object) {
-    ptr.cast<Int8>().value = object;
+    ptr.cast<Bool>().value = object;
   },
   TypeEncodings.sint8: (Pointer ptr, dynamic object) {
+    // Type-encoding for BOOL is 'c' on macOS and 32-bit iOS simulators.
+    if (object is bool) {
+      object = object ? 1 : 0;
+    }
     ptr.cast<Int8>().value = object.toInt();
   },
   TypeEncodings.sint16: (Pointer ptr, dynamic object) {
@@ -60,10 +63,6 @@ dynamic storeValueToPointer(
     if (object is NativeBox) {
       // unwrap from box.
       object = object.raw;
-    }
-    if (object is bool) {
-      // waiting for ffi bool type support.
-      object = object ? 1 : 0;
     }
     Function? strategy = _storeValueStrategyMap[encoding];
     if (strategy == null) {
@@ -138,15 +137,14 @@ void storeStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
 
 dynamic storeCStringToPointer(String object, Pointer<Pointer<Void>> ptr) {
   Pointer<Utf8> charPtr = object.toNativeUtf8();
-  PointerWrapper wrapper = PointerWrapper();
-  wrapper.value = charPtr.cast<Void>();
+  PointerWrapper wrapper = PointerWrapper(charPtr.cast<Void>());
   ptr.cast<Pointer<Utf8>>().value = charPtr;
   return wrapper;
 }
 
 Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   TypeEncodings.b: (ByteData data) {
-    return data.getInt8(0);
+    return data.getInt8(0) != 0;
   },
   TypeEncodings.sint8: (ByteData data) {
     return data.getInt8(0);
@@ -178,8 +176,8 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   TypeEncodings.float64: (ByteData data) {
     return data.getFloat64(0, Endian.host);
   },
-  TypeEncodings.object: (Pointer<Void> ptr) {
-    return objcInstanceFromPointer(null, ptr);
+  TypeEncodings.object: (Pointer<Void> ptr, String dartType) {
+    return objcInstanceFromPointer(ptr, dartType);
   },
   TypeEncodings.cls: (Pointer<Void> ptr) {
     return Class.fromPointer(ptr);
@@ -199,37 +197,72 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   },
 };
 
-dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding) {
-  dynamic result = nil;
-  // num or bool
-  if (encoding.isNum || encoding == TypeEncodings.b) {
-    ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
-    ByteData data = ByteData.view(buffer);
-    result = Function.apply(_loadValueStrategyMap[encoding]!, [data]);
-    if (encoding == TypeEncodings.b) {
-      result = result != 0;
+dynamic _handleObjCBasicValue(String type, dynamic value) {
+  if (type.toLowerCase() == '$bool') {
+    if (value is num) {
+      return value != 0;
     }
-  } else {
-    // object
+    if (value is bool) {
+      return value;
+    }
+    if (value is Pointer) {
+      return value != nullptr;
+    }
+    return value != null;
+  }
+  if (type == '$CString') {
+    return CString(value);
+  }
+  return value;
+}
+
+dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
+    {String? dartType}) {
+  // delete '?' for null-safety
+  if (dartType != null) {
+    if (dartType.endsWith('?')) {
+      dartType = dartType.substring(0, dartType.length - 1);
+    }
+  }
+  dynamic result = nil;
+  do {
+    // num or bool
+    if (encoding.isNum || encoding == TypeEncodings.b) {
+      ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
+      ByteData data = ByteData.view(buffer);
+      result = Function.apply(_loadValueStrategyMap[encoding]!, [data]);
+      break;
+    }
+    // Non-basic type
     Function? strategy = _loadValueStrategyMap[encoding];
     if (strategy != null) {
-      // built-in class.
       if (ptr == nullptr) {
         return nil;
       }
-      result = strategy(ptr);
-    } else {
-      if (ptr == nullptr) {
-        return null;
-      }
-      // built-in struct, [ptr] is struct pointer.
-      var struct = loadStructFromPointer(ptr, encoding.encodingForStruct);
-      if (struct != null) {
-        result = struct;
+      // object
+      if (encoding == TypeEncodings.object) {
+        // known class annotated with '@native()'.
+        result = strategy(ptr, dartType);
       } else {
-        result = ptr;
+        result = strategy(ptr);
       }
+      break;
     }
+    // Maybe structs
+    if (ptr == nullptr) {
+      return null;
+    }
+    // built-in struct, [ptr] is struct pointer.
+    var struct = loadStructFromPointer(ptr, encoding.encodingForStruct);
+    if (struct != null) {
+      result = struct;
+    } else {
+      result = ptr;
+    }
+  } while (false);
+  // Post-processing
+  if (dartType != null) {
+    result = _handleObjCBasicValue(dartType, result);
   }
   return result;
 }
@@ -271,18 +304,28 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
   if (structName != null) {
     NativeStruct? result;
     // struct
+    // TODO: using annotation
     switch (structName) {
       case 'CGSize':
         result = CGSize.fromPointer(ptr);
         break;
+      case 'NSSize':
+        result = NSSize.fromPointer(ptr);
+        break;
       case 'CGPoint':
         result = CGPoint.fromPointer(ptr);
+        break;
+      case 'NSPoint':
+        result = NSPoint.fromPointer(ptr);
         break;
       case 'CGVector':
         result = CGVector.fromPointer(ptr);
         break;
       case 'CGRect':
         result = CGRect.fromPointer(ptr);
+        break;
+      case 'NSRect':
+        result = NSRect.fromPointer(ptr);
         break;
       case 'NSRange':
         result = NSRange.fromPointer(ptr);
@@ -293,6 +336,9 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
       case 'UIEdgeInsets':
         result = UIEdgeInsets.fromPointer(ptr);
         break;
+      case 'NSEdgeInsets':
+        result = NSEdgeInsets.fromPointer(ptr);
+        break;
       case 'NSDirectionalEdgeInsets':
         result = NSDirectionalEdgeInsets.fromPointer(ptr);
         break;
@@ -302,7 +348,7 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
       default:
     }
     if (result != null) {
-      return result..wrapper;
+      return result;
     }
   }
   return null;
@@ -317,6 +363,7 @@ Map<String, String> _nativeTypeNameMap = {
   'unsigned_long_long': 'unsigned long long',
 };
 
+// FIXME: this list shouldn't hardcode custom structs
 List<String> _nativeTypeNames = [
   'id',
   'BOOL',
@@ -344,19 +391,23 @@ List<String> _nativeTypeNames = [
   'uint32_t',
   'uint64_t',
   'CGFloat',
-  'CGSize',
-  'CGRect',
-  'CGPoint',
-  'CGVector',
-  'NSRange',
-  'UIOffset',
-  'UIEdgeInsets',
-  'NSDirectionalEdgeInsets',
-  'CGAffineTransform',
   'NSInteger',
   'NSUInteger',
   'Class',
   'SEL',
+  'CGSize',
+  'NSSize',
+  'CGRect',
+  'NSRect',
+  'CGPoint',
+  'NSPoint',
+  'CGVector',
+  'NSRange',
+  'UIOffset',
+  'UIEdgeInsets',
+  'NSEdgeInsets',
+  'NSDirectionalEdgeInsets',
+  'CGAffineTransform',
 ];
 
 List<String> dartTypeStringForFunction(Function function) {
@@ -388,7 +439,7 @@ List<String> nativeTypeStringForDartTypes(List<String> types) {
     s = _nativeTypeNameMap[s] ?? s;
     if (s.contains('Pointer')) {
       return 'ptr';
-    } else if (s.contains('NativeBox<String>')) {
+    } else if (s.contains('$CString')) {
       return 'CString';
     } else if (s.contains('Function')) {
       return 'block';

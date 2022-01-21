@@ -18,7 +18,7 @@ DynamicLibrary get runtimeLib {
       _runtimeLib = DynamicLibrary.open('dart_native.framework/dart_native');
     } catch (e) {
       // Debug mode
-      _runtimeLib = nativeDylib;  
+      _runtimeLib = nativeDylib;
     }
   }
   registerDeallocCallback(nativeObjectDeallocPtr.cast());

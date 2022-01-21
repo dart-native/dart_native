@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/src/ios/runtime/internal/functions.dart';
 import 'package:ffi/ffi.dart';
 
-/// Stands for `SEL` and `@selector` in iOS.
+/// Stands for `SEL` and `@selector` in iOS and macOS.
 ///
 /// An opaque type that represents a method selector.
 class SEL {
@@ -38,18 +38,20 @@ class SEL {
   }
 
   SEL._internal(this.name, this._selPtr) {
-    _cache[this.name] = this;
+    _cache[name] = this;
   }
 
   Pointer<Void> toPointer() {
     return _selPtr;
   }
 
+  @override
   bool operator ==(other) {
     if (other is SEL) return _selPtr == other._selPtr;
     return false;
   }
 
+  @override
   int get hashCode {
     return _selPtr.hashCode;
   }
