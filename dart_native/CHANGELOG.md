@@ -1,3 +1,7 @@
+## 0.3.24
+
+* [Fix] JNI crash on Android.
+
 ## 0.3.23
 
 * [Fix] Some issues on 32-bit Android.
