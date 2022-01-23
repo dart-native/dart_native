@@ -398,6 +398,7 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     auto argument = env->GetObjectArrayElement(argumentsArray, i);
     dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString, 0);
     if (strcmp(dataTypes[i], "java.lang.String") == 0) {
+      /// argument will delete in ConvertToDartUtf16
       arguments[i] = (jstring) argument == nullptr
                      ? reinterpret_cast<uint16_t *>((char *) "")
                      : convertToDartUtf16(env, (jstring) argument);
@@ -405,10 +406,10 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
       jobject gObj = env->NewGlobalRef(argument);
       _addGlobalObject(gObj);
       arguments[i] = gObj;
+      env->DeleteLocalRef(argument);
     }
 
     env->DeleteLocalRef(argTypeString);
-    env->DeleteLocalRef(argument);
   }
 
   /// when return void, jstring which from native is null.
