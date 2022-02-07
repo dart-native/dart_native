@@ -7,6 +7,7 @@
 
 #import "RuntimeStub.h"
 #import <CocoaLumberjack/CocoaLumberjack.h>
+#import <dart_native/DNMacro.h>
 
 #ifdef DEBUG
   static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
@@ -276,7 +277,9 @@ API_AVAILABLE(ios(11.0)){
     });
 }
 
-- (NSString *)fooNSString:(NSString *)str {
+DN_INTERFACE(RuntimeStubInterface)
+
+DN_INTERFACE_METHOD(fooString, fooNSString:(NSString *)str) {
 //    DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
     return @"test nsstring";
 }

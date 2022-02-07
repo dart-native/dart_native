@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/unit_test.dart';
 import 'package:dart_native_example/ios/unit_test.dart';
 
@@ -22,6 +23,9 @@ class DNUnitTest {
 
   /// Run all test case.
   Future<void> runAllUnitTests() async {
+    final interface = Interface("RuntimeStubInterface");
+    final result = interface.invoke('fooString', args: ['bar']);
+    print('DartNative Interface result: $result');
     return _unitTest.runAllUnitTests();
   }
 }

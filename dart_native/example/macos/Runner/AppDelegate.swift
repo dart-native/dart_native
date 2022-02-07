@@ -1,7 +1,6 @@
 import Cocoa
 import FlutterMacOS
 import CocoaLumberjack
-import dart_native
 
 @NSApplicationMain
 class AppDelegate: FlutterAppDelegate {
