@@ -101,4 +101,9 @@ dynamic objcInstanceFromPointer(Pointer<Void> arg, String? type) {
   return NSObject.fromPointer(arg);
 }
 
-Map<String, ConvertorFromPointer> _convertorCache = {};
+// built-in convertors
+Map<String, ConvertorFromPointer> _convertorCache = {
+  'String': (ptr) {
+    return NSString.fromPointer(ptr).raw;
+  },
+};

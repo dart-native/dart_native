@@ -16,7 +16,7 @@ class Interface {
   late Map<String, String> _methodTable;
   Interface(this.name) {
     if (Platform.isIOS || Platform.isMacOS) {
-      _runtime = InterfaceRuntimeIOS();
+      _runtime = InterfaceRuntimeObjC();
     } else if (Platform.isAndroid) {
       // TODO: Android runtime
     } else {

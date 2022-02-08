@@ -34,9 +34,10 @@ class _DartNativeAppState extends State<DartNativeApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    result = helloWorld();
     final unitTest = DNUnitTest();
     /// run all test case
-    await unitTest.runAllUnitTests();
+    // await unitTest.runAllUnitTests();
   }
 
   String helloWorld() {  
@@ -47,6 +48,14 @@ class _DartNativeAppState extends State<DartNativeApp> {
     return interface.invoke('sum', args: [a, b]);
   }
 
+  void testCallback() {
+    interface.invoke('testCallback', args: [(bool success, String result) {
+      if (success) {
+        print(result);
+      }
+    }]);
+  }
+
   void calculate() {
     final aStr = _controllerA.text;
     final bStr = _controllerB.text;
@@ -55,6 +64,7 @@ class _DartNativeAppState extends State<DartNativeApp> {
     } else {
       result = helloWorld();
     }
+    testCallback();
   }
 
   @override

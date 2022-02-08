@@ -4,7 +4,7 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 
-class InterfaceRuntimeIOS extends InterfaceRuntime {
+class InterfaceRuntimeObjC extends InterfaceRuntime {
   @override
   Pointer<Void> hostObjectWithInterfaceName(String name) {
     final ptr = NSString(name).pointer;
