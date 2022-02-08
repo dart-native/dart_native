@@ -38,7 +38,7 @@ class _DartNativeAppState extends State<DartNativeApp> {
     final unitTest = DNUnitTest();
 
     /// run all test case
-    // await unitTest.runAllUnitTests();
+    await unitTest.runAllUnitTests();
   }
 
   String helloWorld() {

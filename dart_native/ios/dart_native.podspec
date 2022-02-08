@@ -15,14 +15,14 @@ Write native code using Dart. This package liberates you from undercompetent cha
   s.source           = { :path => '.' }
   
   # Debug
-   s.source_files = 'Classes/**/*', 'common/**/*'
-   s.vendored_frameworks = 'libffi.xcframework'
-   s.public_header_files = 'Classes/DartNativePlugin.h', 'Classes/DNMacro.h'
+  # s.source_files = 'Classes/**/*', 'common/**/*'
+  # s.vendored_frameworks = 'libffi.xcframework'
+  # s.public_header_files = 'Classes/DartNativePlugin.h', 'Classes/DNMacro.h'
 
   # Release
-#  s.source_files = 'Classes/DartNativePlugin.*'
-#  s.vendored_frameworks = 'DartNative.xcframework'
-#  s.public_header_files = 'Classes/DartNativePlugin.h'
+  s.source_files = 'Classes/DartNativePlugin.*'
+  s.vendored_frameworks = 'DartNative.xcframework'
+  s.public_header_files = 'Classes/DartNativePlugin.h'
   
   s.ios.dependency 'Flutter'
   s.osx.dependency 'FlutterMacOS'
