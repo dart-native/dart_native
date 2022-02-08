@@ -2,12 +2,9 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/common/library.dart';
-import 'package:dart_native/src/ios/foundation/internal/native_box.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
 
 class InterfaceRuntimeIOS extends InterfaceRuntime {
-  InterfaceRuntimeIOS() : super();
-
   @override
   Pointer<Void> hostObjectWithInterfaceName(String name) {
     final ptr = NSString(name).pointer;
@@ -15,11 +12,19 @@ class InterfaceRuntimeIOS extends InterfaceRuntime {
   }
 
   @override
-  invoke(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args}) {
+  T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args}) {
     dynamic result = msgSend(hostObject, SEL(methodName), args: args);
-    if (result is NativeBox || result is NSSubclass) {
+
+    if (result is NSSubclass) {
       // unbox
       result = result.raw;
+    }
+    if (result is NSObject && result.isKind(of: Class('NSNumber'))) {
+      // The type of result is NSObject, we should unbox it.
+      final number = NSNumber.fromPointer(result.pointer);
+      if (T == int || T == double) {
+        return number.raw;
+      }
     }
     return result;
   }

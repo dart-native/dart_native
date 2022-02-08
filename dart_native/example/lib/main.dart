@@ -12,6 +12,8 @@ void main() {
   runApp(const DartNativeApp());
 }
 
+final interface = Interface("MyFirstInterface");
+
 class DartNativeApp extends StatefulWidget {
   const DartNativeApp({Key? key}) : super(key: key);
 
@@ -20,6 +22,10 @@ class DartNativeApp extends StatefulWidget {
 }
 
 class _DartNativeAppState extends State<DartNativeApp> {
+  final TextEditingController _controllerA = TextEditingController();
+  final TextEditingController _controllerB = TextEditingController();
+  String result = '';
+
   @override
   void initState() {
     super.initState();
@@ -31,8 +37,24 @@ class _DartNativeAppState extends State<DartNativeApp> {
     final unitTest = DNUnitTest();
     /// run all test case
     await unitTest.runAllUnitTests();
-    var map = {};
-    map[null] = 1;
+  }
+
+  String helloWorld() {  
+    return interface.invoke('hello', args: ['world']);
+  }
+
+  int sum(int a, int b) {
+    return interface.invoke('sum', args: [a, b]);
+  }
+
+  void calculate() {
+    final aStr = _controllerA.text;
+    final bStr = _controllerB.text;
+    if (aStr.isNotEmpty && bStr.isNotEmpty) {
+      result = sum(int.parse(aStr), int.parse(bStr)).toString();
+    } else {
+      result = helloWorld();
+    }
   }
 
   @override
@@ -40,11 +62,42 @@ class _DartNativeAppState extends State<DartNativeApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('DartNative example app'),
         ),
-        body: const Center(
-          child: Text('Using DartNative\n'),
-        ),
+        body: 
+        // Center(
+           Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                textAlign: TextAlign.center,
+                controller: _controllerA,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  hintText: 'Input integer A',
+                ),
+              ),
+              TextField(
+                textAlign: TextAlign.center,
+                controller: _controllerB,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  hintText: 'Input integer B',
+                ),
+              ),
+              Text(result, style: const TextStyle(fontSize: 20),),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    calculate();
+                  });
+                },
+                child: const Text('SUM'),
+              ),
+            ],
+          ),
+        // ),
       ),
     );
   }

@@ -17,11 +17,6 @@ class DNAppleUnitTest with DNUnitTestBase {
   final delegate = DelegateStub();
 
   @override
-  String fooString(String str) {
-    return stub.fooNSString(str) ?? '';
-  }
-
-  @override
   Future<void> runAllUnitTests() async {
     await testMacOSAndIOS(stub, delegate);
   }

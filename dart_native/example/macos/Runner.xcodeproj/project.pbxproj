@@ -29,6 +29,7 @@
 		A4074B3E276FB8F0009F0EFD /* RuntimeStub.m in Sources */ = {isa = PBXBuildFile; fileRef = A4074B39276FB8EF009F0EFD /* RuntimeStub.m */; };
 		A4074B3F276FB8F0009F0EFD /* SwiftStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4074B3B276FB8EF009F0EFD /* SwiftStub.swift */; };
 		A4074B40276FB8F0009F0EFD /* RuntimeSon.m in Sources */ = {isa = PBXBuildFile; fileRef = A4074B3D276FB8F0009F0EFD /* RuntimeSon.m */; };
+		A4ECB74F27B26D360084A547 /* DNInterfaceDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB74D27B26D360084A547 /* DNInterfaceDemo.m */; };
 		E6F5C4B1FDE5F91AC1343E5C /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B6E796016E25A275661EE5B /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
 
@@ -81,6 +82,8 @@
 		A4074B3B276FB8EF009F0EFD /* SwiftStub.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SwiftStub.swift; path = ../../ios/Runner/SwiftStub.swift; sourceTree = "<group>"; };
 		A4074B3C276FB8EF009F0EFD /* RuntimeSon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RuntimeSon.h; path = ../../ios/Runner/RuntimeSon.h; sourceTree = "<group>"; };
 		A4074B3D276FB8F0009F0EFD /* RuntimeSon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RuntimeSon.m; path = ../../ios/Runner/RuntimeSon.m; sourceTree = "<group>"; };
+		A4ECB74D27B26D360084A547 /* DNInterfaceDemo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DNInterfaceDemo.m; path = ../../ios/Runner/DNInterfaceDemo.m; sourceTree = "<group>"; };
+		A4ECB74E27B26D360084A547 /* DNInterfaceDemo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DNInterfaceDemo.h; path = ../../ios/Runner/DNInterfaceDemo.h; sourceTree = "<group>"; };
 		FAE5F2FF75493B6610B6E270 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -157,6 +160,8 @@
 				A4074B3D276FB8F0009F0EFD /* RuntimeSon.m */,
 				A4074B3A276FB8EF009F0EFD /* RuntimeStub.h */,
 				A4074B39276FB8EF009F0EFD /* RuntimeStub.m */,
+				A4ECB74E27B26D360084A547 /* DNInterfaceDemo.h */,
+				A4ECB74D27B26D360084A547 /* DNInterfaceDemo.m */,
 				A4074B3B276FB8EF009F0EFD /* SwiftStub.swift */,
 				33E51913231747F40026EE4D /* DebugProfile.entitlements */,
 				33E51914231749380026EE4D /* Release.entitlements */,
@@ -351,6 +356,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4ECB74F27B26D360084A547 /* DNInterfaceDemo.m in Sources */,
 				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
 				A4074B3E276FB8F0009F0EFD /* RuntimeStub.m in Sources */,

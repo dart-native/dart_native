@@ -12,11 +12,6 @@ class DNAndroidUnitTest with DNUnitTestBase {
   final stub = RuntimeStub();
 
   @override
-  String fooString(String str) {
-    return stub.getString(str) ?? "";
-  }
-
-  @override
   Future<void> runAllUnitTests() async {
     await testAndroid(stub);
   }

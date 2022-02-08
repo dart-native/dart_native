@@ -7,12 +7,6 @@
 @import CocoaLumberjack;
 #endif
 
-#if __has_include(<dart_native/native_runtime.h>)
-#import <dart_native/native_runtime.h>
-#else
-@import dart_native;
-#endif
-
 #import "RuntimeSon.h"
 
 @implementation AppDelegate

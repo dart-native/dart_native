@@ -64,10 +64,6 @@
 		A4ECB74127AFFC090084A547 /* DNInterfaceRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = A4ECB73E27AFFC090084A547 /* DNInterfaceRegistry.h */; };
 		A4ECB74227AFFC090084A547 /* DNInterfaceRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */; };
 		A4ECB74327AFFC090084A547 /* DNInterfaceRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */; };
-		A4ECB74627B1092A0084A547 /* DNInterfaceInvoker.h in Headers */ = {isa = PBXBuildFile; fileRef = A4ECB74427B1092A0084A547 /* DNInterfaceInvoker.h */; };
-		A4ECB74727B1092A0084A547 /* DNInterfaceInvoker.h in Headers */ = {isa = PBXBuildFile; fileRef = A4ECB74427B1092A0084A547 /* DNInterfaceInvoker.h */; };
-		A4ECB74827B1092A0084A547 /* DNInterfaceInvoker.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB74527B1092A0084A547 /* DNInterfaceInvoker.m */; };
-		A4ECB74927B1092A0084A547 /* DNInterfaceInvoker.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB74527B1092A0084A547 /* DNInterfaceInvoker.m */; };
 		A4EECFD026A479240025502E /* DNAssociatedDartObject.h in Headers */ = {isa = PBXBuildFile; fileRef = A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */; };
 		A4EECFD126A479240025502E /* DNAssociatedDartObject.m in Sources */ = {isa = PBXBuildFile; fileRef = A4EECFCF26A479240025502E /* DNAssociatedDartObject.m */; };
 		A4F688BC27788CFA0053A9B9 /* libffi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4F688BB27788CFA0053A9B9 /* libffi.xcframework */; };
@@ -110,8 +106,6 @@
 		A49438DF25934C39004BF483 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A4ECB73E27AFFC090084A547 /* DNInterfaceRegistry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNInterfaceRegistry.h; sourceTree = "<group>"; };
 		A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DNInterfaceRegistry.m; sourceTree = "<group>"; };
-		A4ECB74427B1092A0084A547 /* DNInterfaceInvoker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNInterfaceInvoker.h; sourceTree = "<group>"; };
-		A4ECB74527B1092A0084A547 /* DNInterfaceInvoker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DNInterfaceInvoker.m; sourceTree = "<group>"; };
 		A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNAssociatedDartObject.h; sourceTree = "<group>"; };
 		A4EECFCF26A479240025502E /* DNAssociatedDartObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNAssociatedDartObject.m; sourceTree = "<group>"; };
 		A4F688BB27788CFA0053A9B9 /* libffi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libffi.xcframework; sourceTree = "<group>"; };
@@ -226,8 +220,6 @@
 				A4F688BF278AEB250053A9B9 /* NSObject+DartHandleExternalSize.m */,
 				A4ECB73E27AFFC090084A547 /* DNInterfaceRegistry.h */,
 				A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */,
-				A4ECB74427B1092A0084A547 /* DNInterfaceInvoker.h */,
-				A4ECB74527B1092A0084A547 /* DNInterfaceInvoker.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -273,7 +265,6 @@
 				A4074AF4276F92FF009F0EFD /* DNInvocation.h in Headers */,
 				A4074AEF276F92FF009F0EFD /* DNMacro.h in Headers */,
 				A4074AF0276F92FF009F0EFD /* DNPointerWrapper.h in Headers */,
-				A4ECB74727B1092A0084A547 /* DNInterfaceInvoker.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -296,7 +287,6 @@
 				A45D1D7D258B3E0A009C163D /* dart_native_api.h in Headers */,
 				A45D1D9E258B3E0A009C163D /* DNFFIHelper.h in Headers */,
 				A45D1D7B258B3E0A009C163D /* dart_io_api.h in Headers */,
-				A4ECB74627B1092A0084A547 /* DNInterfaceInvoker.h in Headers */,
 				A45D1D8E258B3E0A009C163D /* DNMacro.h in Headers */,
 				A4F688C0278AEB260053A9B9 /* NSObject+DartHandleExternalSize.h in Headers */,
 				A45D1D91258B3E0A009C163D /* DNObjectDealloc.h in Headers */,
@@ -411,7 +401,6 @@
 				A4074AF6276F92FF009F0EFD /* DNBlockWrapper.m in Sources */,
 				A4ECB74327AFFC090084A547 /* DNInterfaceRegistry.m in Sources */,
 				A4074AEA276F92FF009F0EFD /* DNMethodIMP.m in Sources */,
-				A4ECB74927B1092A0084A547 /* DNInterfaceInvoker.m in Sources */,
 				A4074AE9276F92FF009F0EFD /* DNInvocation.m in Sources */,
 				A4074AF5276F92FF009F0EFD /* DNAssociatedDartObject.m in Sources */,
 			);
@@ -431,7 +420,6 @@
 				A45D1D96258B3E0A009C163D /* DNInvocation.m in Sources */,
 				A4ECB74227AFFC090084A547 /* DNInterfaceRegistry.m in Sources */,
 				A45D1D79258B3E0A009C163D /* dart_api_dl.c in Sources */,
-				A4ECB74827B1092A0084A547 /* DNInterfaceInvoker.m in Sources */,
 				A45D1D93258B3E0A009C163D /* DNFFIHelper.m in Sources */,
 				A45D1D95258B3E0A009C163D /* DNMethodIMP.m in Sources */,
 			);
