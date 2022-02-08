@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
@@ -12,9 +13,24 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
   }
 
   @override
+  Map<String, String> methodTableWithInterfaceName(String name) {
+    return _interfaceMetaData[name].cast<String, String>();
+  }
+
+  @override
   T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args}) {
     dynamic result = msgSend(hostObject, SEL(methodName), args: args);
+    return _postprocessResult<T>(result);
+  }
 
+  @override
+  Future<T> invokeAsync<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args}) {
+    return msgSendAsync<dynamic>(hostObject, SEL(methodName), args: args).then((value){
+      return _postprocessResult<T>(value);
+    });
+  }
+
+  T _postprocessResult<T>(dynamic result) {
     if (result is NSSubclass) {
       // unbox
       result = result.raw;
@@ -27,11 +43,6 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
       }
     }
     return result;
-  }
-
-  @override
-  Map<String, String> methodTableWithInterfaceName(String name) {
-    return _interfaceMetaData[name].cast<String, String>();
   }
 }
 

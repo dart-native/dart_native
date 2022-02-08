@@ -36,34 +36,42 @@ class _DartNativeAppState extends State<DartNativeApp> {
   Future<void> initPlatformState() async {
     result = helloWorld();
     final unitTest = DNUnitTest();
+
     /// run all test case
     // await unitTest.runAllUnitTests();
   }
 
-  String helloWorld() {  
+  String helloWorld() {
     return interface.invoke('hello', args: ['world']);
   }
 
-  int sum(int a, int b) {
-    return interface.invoke('sum', args: [a, b]);
+  Future<int> sum(int a, int b) {
+    return interface.invokeAsync('sum', args: [a, b]);
   }
 
   void testCallback() {
-    interface.invoke('testCallback', args: [(bool success, String result) {
-      if (success) {
-        print(result);
+    interface.invoke('testCallback', args: [
+      (bool success, String result) {
+        if (success) {
+          print(result);
+        }
       }
-    }]);
+    ]);
   }
 
-  void calculate() {
+  Future<void> calculate() async {
     final aStr = _controllerA.text;
     final bStr = _controllerB.text;
+    String r;
     if (aStr.isNotEmpty && bStr.isNotEmpty) {
-      result = sum(int.parse(aStr), int.parse(bStr)).toString();
+      int aPlusB = await sum(int.parse(aStr), int.parse(bStr));
+      r = aPlusB.toString();
     } else {
-      result = helloWorld();
+      r = helloWorld();
     }
+    setState(() {
+      result = r;
+    });
     testCallback();
   }
 
@@ -74,40 +82,39 @@ class _DartNativeAppState extends State<DartNativeApp> {
         appBar: AppBar(
           title: const Text('DartNative example app'),
         ),
-        body: 
-        // Center(
-           Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextField(
-                textAlign: TextAlign.center,
-                controller: _controllerA,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  hintText: 'Input integer A',
-                ),
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            TextField(
+              textAlign: TextAlign.center,
+              controller: _controllerA,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                hintText: 'Input integer A',
               ),
-              TextField(
-                textAlign: TextAlign.center,
-                controller: _controllerB,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  hintText: 'Input integer B',
-                ),
+            ),
+            TextField(
+              textAlign: TextAlign.center,
+              controller: _controllerB,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                hintText: 'Input integer B',
               ),
-              Text(result, style: const TextStyle(fontSize: 20),),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    calculate();
-                  });
-                },
-                child: const Text('SUM'),
-              ),
-            ],
-          ),
-        // ),
+            ),
+            Text(
+              result,
+              style: const TextStyle(fontSize: 20),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                calculate();
+              },
+              child: const Text('SUM'),
+            ),
+          ],
+        ),
       ),
     );
   }

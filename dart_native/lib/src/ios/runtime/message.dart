@@ -178,11 +178,11 @@ T msgSend<T>(Pointer<Void> target, SEL selector,
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types.
-Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
+Future<T> msgSendAsync<T>(Pointer<Void> target, SEL selector,
     {List? args, DispatchQueue? onQueue}) async {
   // Send message to global queue by default.
   onQueue ??= DispatchQueue.global();
-  final completer = Completer<dynamic>();
+  final completer = Completer<T>();
   _msgSend(target, selector, args: args, onQueue: onQueue,
       callback: (dynamic result) {
     completer.complete(result);
