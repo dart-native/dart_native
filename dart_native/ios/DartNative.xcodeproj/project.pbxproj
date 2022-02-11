@@ -60,10 +60,6 @@
 		A45D1D9D258B3E0A009C163D /* DNPointerWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D75258B3E0A009C163D /* DNPointerWrapper.m */; };
 		A45D1D9E258B3E0A009C163D /* DNFFIHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D76258B3E0A009C163D /* DNFFIHelper.h */; };
 		A45D1D9F258B3E0A009C163D /* DNBlockWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D77258B3E0A009C163D /* DNBlockWrapper.m */; };
-		A4ECB74027AFFC090084A547 /* DNInterfaceRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = A4ECB73E27AFFC090084A547 /* DNInterfaceRegistry.h */; };
-		A4ECB74127AFFC090084A547 /* DNInterfaceRegistry.h in Headers */ = {isa = PBXBuildFile; fileRef = A4ECB73E27AFFC090084A547 /* DNInterfaceRegistry.h */; };
-		A4ECB74227AFFC090084A547 /* DNInterfaceRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */; };
-		A4ECB74327AFFC090084A547 /* DNInterfaceRegistry.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */; };
 		A4EECFD026A479240025502E /* DNAssociatedDartObject.h in Headers */ = {isa = PBXBuildFile; fileRef = A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */; };
 		A4EECFD126A479240025502E /* DNAssociatedDartObject.m in Sources */ = {isa = PBXBuildFile; fileRef = A4EECFCF26A479240025502E /* DNAssociatedDartObject.m */; };
 		A4F688BC27788CFA0053A9B9 /* libffi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4F688BB27788CFA0053A9B9 /* libffi.xcframework */; };
@@ -104,8 +100,6 @@
 		A45D1D76258B3E0A009C163D /* DNFFIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNFFIHelper.h; sourceTree = "<group>"; };
 		A45D1D77258B3E0A009C163D /* DNBlockWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNBlockWrapper.m; sourceTree = "<group>"; };
 		A49438DF25934C39004BF483 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A4ECB73E27AFFC090084A547 /* DNInterfaceRegistry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNInterfaceRegistry.h; sourceTree = "<group>"; };
-		A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DNInterfaceRegistry.m; sourceTree = "<group>"; };
 		A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNAssociatedDartObject.h; sourceTree = "<group>"; };
 		A4EECFCF26A479240025502E /* DNAssociatedDartObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNAssociatedDartObject.m; sourceTree = "<group>"; };
 		A4F688BB27788CFA0053A9B9 /* libffi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libffi.xcframework; sourceTree = "<group>"; };
@@ -218,8 +212,6 @@
 				A45D1D72258B3E0A009C163D /* native_runtime.mm */,
 				A4F688BE278AEB250053A9B9 /* NSObject+DartHandleExternalSize.h */,
 				A4F688BF278AEB250053A9B9 /* NSObject+DartHandleExternalSize.m */,
-				A4ECB73E27AFFC090084A547 /* DNInterfaceRegistry.h */,
-				A4ECB73F27AFFC090084A547 /* DNInterfaceRegistry.m */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -253,7 +245,6 @@
 				A4074AED276F92FF009F0EFD /* native_runtime.h in Headers */,
 				A4074B00276F934B009F0EFD /* dart_native_api.h in Headers */,
 				A4074B02276F9353009F0EFD /* dart_api_dl.h in Headers */,
-				A4ECB74127AFFC090084A547 /* DNInterfaceRegistry.h in Headers */,
 				A4074AF2276F92FF009F0EFD /* DNAssociatedDartObject.h in Headers */,
 				A4074AF3276F92FF009F0EFD /* DNObjectDealloc.h in Headers */,
 				A4074AF9276F92FF009F0EFD /* DNBlockWrapper.h in Headers */,
@@ -291,7 +282,6 @@
 				A4F688C0278AEB260053A9B9 /* NSObject+DartHandleExternalSize.h in Headers */,
 				A45D1D91258B3E0A009C163D /* DNObjectDealloc.h in Headers */,
 				A45D1D7E258B3E0A009C163D /* dart_api_dl_impl.h in Headers */,
-				A4ECB74027AFFC090084A547 /* DNInterfaceRegistry.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,9 +334,11 @@
 				TargetAttributes = {
 					A4074ADF276F92CC009F0EFD = {
 						CreatedOnToolsVersion = 13.2;
+						LastSwiftMigration = 1320;
 					};
 					A45D1D3C258B3DC6009C163D = {
 						CreatedOnToolsVersion = 12.2;
+						LastSwiftMigration = 1320;
 					};
 				};
 			};
@@ -399,7 +391,6 @@
 				A4074AFB276F92FF009F0EFD /* DNFFIHelper.m in Sources */,
 				A4074AFD276F933F009F0EFD /* dart_api_dl.c in Sources */,
 				A4074AF6276F92FF009F0EFD /* DNBlockWrapper.m in Sources */,
-				A4ECB74327AFFC090084A547 /* DNInterfaceRegistry.m in Sources */,
 				A4074AEA276F92FF009F0EFD /* DNMethodIMP.m in Sources */,
 				A4074AE9276F92FF009F0EFD /* DNInvocation.m in Sources */,
 				A4074AF5276F92FF009F0EFD /* DNAssociatedDartObject.m in Sources */,
@@ -418,7 +409,6 @@
 				A45D1D9D258B3E0A009C163D /* DNPointerWrapper.m in Sources */,
 				A45D1D9B258B3E0A009C163D /* DNObjectDealloc.m in Sources */,
 				A45D1D96258B3E0A009C163D /* DNInvocation.m in Sources */,
-				A4ECB74227AFFC090084A547 /* DNInterfaceRegistry.m in Sources */,
 				A45D1D79258B3E0A009C163D /* dart_api_dl.c in Sources */,
 				A45D1D93258B3E0A009C163D /* DNFFIHelper.m in Sources */,
 				A45D1D95258B3E0A009C163D /* DNMethodIMP.m in Sources */,
@@ -432,6 +422,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -456,6 +447,8 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = NO;
 			};
 			name = Debug;
@@ -464,6 +457,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -488,6 +482,7 @@
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = NO;
 			};
 			name = Release;
@@ -613,6 +608,7 @@
 		A45D1D46258B3DC6009C163D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = ZUNBU5UKTM;
@@ -634,6 +630,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.dartnative.DartNative;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -641,6 +639,7 @@
 		A45D1D47258B3DC6009C163D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = ZUNBU5UKTM;
@@ -662,6 +661,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.dartnative.DartNative;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 import 'package:dart_native/dart_native.dart';
 
+import 'log.dart';
 import 'dn_unit_test.dart';
 
 @nativeRoot
@@ -53,7 +54,7 @@ class _DartNativeAppState extends State<DartNativeApp> {
     interface.invoke('testCallback', args: [
       (bool success, String result) {
         if (success) {
-          print(result);
+          Log.i(result);
         }
       }
     ]);

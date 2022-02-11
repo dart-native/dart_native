@@ -8,6 +8,11 @@
 #import "DNInterfaceRegistry.h"
 #import <objc/message.h>
 #import <os/lock.h>
+#if __has_include(<ClassWrittenInSwift/ClassWrittenInSwift.h>)
+#import <ClassWrittenInSwift/ClassWrittenInSwift.h>
+#else
+@import ClassWrittenInSwift;
+#endif
 
 NSString *DNSelectorNameForMethodDeclaration(NSString *methodDeclaration) {
     if (![methodDeclaration containsString:@":"]) {
@@ -29,67 +34,91 @@ NSString *DNSelectorNameForMethodDeclaration(NSString *methodDeclaration) {
     return selectorName;
 }
 
+@implementation DNInterfaceRegistry
+
 // Map: Dart interface name -> OC class
-static NSMutableDictionary<NSString *, Class> *interfaceNameToClassInnerMap;
-static NSDictionary<NSString *, Class> *interfaceNameToClassCache;
+static NSMutableDictionary<NSString *, NSObject *> *interfaceNameToHostObjectInnerMap;
+static NSDictionary<NSString *, NSObject *> *interfaceNameToHostObjectCache;
 
 // Map: Dart interface name -> OC meta data
 static NSMutableDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfaceMethodsInnerMap;
-static DartNativeInterfaceMap interfaceMethodsCache;
+static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfaceMethodsCache;
 
-/// Register interface, called from +load method.
-/// @param name The interface name for dart
-/// @param cls The OC class that implements the interface
-BOOL DartNativeRegisterInterface(NSString *name, Class cls) {
++ (void)load {
+    unsigned int countOfMethods = 0;
+    Method *methods = class_copyMethodList(object_getClass(self), &countOfMethods);
+    for (int i = 0; i < countOfMethods; i++) {
+        Method method = methods[i];
+        SEL selector = method_getName(method);
+        const char *typeEncoding = method_getTypeEncoding(method);
+        if (strcmp(typeEncoding, "#16@0:8") == 0) {
+            Class cls = ((Class (*)(Class, SEL))method_getImplementation(method))(self, selector);
+            if (class_conformsToProtocol(cls, @protocol(SwiftInterfaceEntry))) {
+                [self registerInterface:NSStringFromSelector(selector) forClass:cls];
+            }
+        }
+    }
+}
+
++ (BOOL)registerInterface:(NSString *)name forClass:(Class)cls {
     if (!cls || name.length == 0) {
         return NO;
     }
         
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        interfaceNameToClassInnerMap = [NSMutableDictionary dictionary];
+        interfaceNameToHostObjectInnerMap = [NSMutableDictionary dictionary];
         interfaceMethodsInnerMap = [NSMutableDictionary dictionary];
     });
 
-    if (interfaceNameToClassInnerMap[name]) {
+    if (interfaceNameToHostObjectInnerMap[name]) {
         return NO;
     }
-    interfaceNameToClassInnerMap[name] = cls;
+    NSObject<SwiftInterfaceEntry> *instance = [[cls alloc] init];
+    interfaceNameToHostObjectInnerMap[name] = instance;
     
+    BOOL isSwiftClass = [ClassWrittenInSwift isSwiftClass:cls];
     // find all registered methods
     NSMutableDictionary<NSString *, NSString *> *tempMethods = [NSMutableDictionary dictionary];
-    unsigned int methodCount;
-    Method *methods = class_copyMethodList(object_getClass(cls), &methodCount);
-    for (unsigned int i = 0; i < methodCount; i++) {
-        Method method = methods[i];
-        SEL selector = method_getName(method);
-        if ([NSStringFromSelector(selector) hasPrefix:@"dn_interface_method_"]) {
-            IMP imp = method_getImplementation(method);
-            NSArray<NSString *> *entries = ((NSArray<NSString *> *(*)(id, SEL))imp)(cls, selector);
-            if (entries.count != 2) {
-                continue;
-            }
-            // TODO: check duplicated entries
-            tempMethods[entries[0]] = DNSelectorNameForMethodDeclaration(entries[1]);
+    
+    if (isSwiftClass) {
+        if ([instance respondsToSelector:@selector(mappingTableForInterfaceMethod)]) {
+            NSDictionary<NSString *, id> *table = [instance mappingTableForInterfaceMethod];
+            [table enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+                tempMethods[key] = [NSString stringWithFormat:@"%@", obj];
+            }];
         }
+    } else {
+        unsigned int methodCount;
+        Method *methods = class_copyMethodList(object_getClass(cls), &methodCount);
+        for (unsigned int i = 0; i < methodCount; i++) {
+            Method method = methods[i];
+            SEL selector = method_getName(method);
+            if ([NSStringFromSelector(selector) hasPrefix:@"dn_interface_method_"]) {
+                IMP imp = method_getImplementation(method);
+                NSArray<NSString *> *entries = ((NSArray<NSString *> *(*)(id, SEL))imp)(cls, selector);
+                if (entries.count != 2) {
+                    continue;
+                }
+                // TODO: check duplicated entries
+                tempMethods[entries[0]] = DNSelectorNameForMethodDeclaration(entries[1]);
+            }
+        }
+        free(methods);
     }
-    free(methods);
     interfaceMethodsInnerMap[name] = [tempMethods copy];
     return YES;
 }
 
-NSObject *DNInterfaceHostObjectWithName(NSString *name) {
++ (NSObject *)hostObjectWithName:(NSString *)name {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        interfaceNameToClassCache = [interfaceNameToClassInnerMap copy];
+        interfaceNameToHostObjectCache = [interfaceNameToHostObjectInnerMap copy];
     });
-    Class cls = interfaceNameToClassCache[name];
-    SEL selector = NSSelectorFromString(@"sharedInstanceForDartNative");
-    NSObject *interface = ((NSObject *(*)(Class, SEL))objc_msgSend)(cls, selector);
-    return interface;
+    return interfaceNameToHostObjectCache[name];
 }
 
-DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
++ (NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *)allMetaData {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         interfaceMethodsCache = [interfaceMethodsInnerMap copy];
@@ -97,3 +126,4 @@ DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
     return interfaceMethodsCache;
 }
 
+@end

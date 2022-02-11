@@ -6,14 +6,40 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DNMacro.h"
+
+#define DN_INTERFACE_ENTRY(name)                                               \
+    + (void)load {                                                             \
+        [DNInterfaceRegistry registerInterface:@#name forClass:self];          \
+    }
+
+#define DN_INTERFACE_METHOD(name, method) DN_REGISTER_METHOD(name, method, __LINE__, __COUNTER__)
+
+#define DN_REGISTER_METHOD(name, method, line, count) \
+    DN_EXPORT_METHOD(name, method, line, count)       \
+    - (id)method
+
+#define DN_EXPORT_METHOD(name, method, line, count)                    \
+    + (NSArray<NSString *> *)dn_interface_method_##name##line##count { \
+        return @[@#name, @#method];                                    \
+    }
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *DartNativeInterfaceMap;
+NS_SWIFT_NAME(InterfaceRegistry)
+@interface DNInterfaceRegistry : NSObject
 
-DN_EXTERN BOOL DartNativeRegisterInterface(NSString *name, Class cls);
-DN_EXTERN NSObject *DNInterfaceHostObjectWithName(NSString *name);
-DN_EXTERN DartNativeInterfaceMap DNInterfaceAllMetaData(void);
+/// Register interface, called from +load method.
+/// @param name The interface name for dart
+/// @param cls The OC class that implements the interface
++ (BOOL)registerInterface:(NSString *)name forClass:(Class)cls;
+
+@end
+
+@protocol SwiftInterfaceEntry
+
+@required
+- (NSDictionary<NSString *, id> *)mappingTableForInterfaceMethod;
+
+@end
 
 NS_ASSUME_NONNULL_END

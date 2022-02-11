@@ -196,10 +196,8 @@ Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
 void _checkTimer(String isolateID) async {
   RuntimeStub stub = RuntimeStub();
   DelegateStub delegate = DelegateStub();
-  Timer.periodic(const Duration(seconds: 1), (Timer t) {
-    stub.fooCompletion(() {
-      print('hello completion block on $isolateID!');
-    });
-    stub.fooDelegate(delegate);
+  stub.fooCompletion(() {
+    print('hello completion block on $isolateID!');
   });
+  stub.fooDelegate(delegate);
 }

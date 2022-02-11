@@ -7,6 +7,7 @@
 
 #import "native_runtime.h"
 #import <objc/runtime.h>
+#import <objc/message.h>
 #import <mach/mach.h>
 #import <os/lock.h>
 #import <Foundation/Foundation.h>
@@ -826,4 +827,28 @@ DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
         [_refCountLock unlock];
     }
     return result;
+}
+
+#pragma mark - Interface
+
+// Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class,
+// so we have to use objc runtime.
+DN_EXTERN NSObject *DNInterfaceHostObjectWithName(NSString *name) {
+    Class target = NSClassFromString(@"DNInterfaceRegistry");
+    SEL selector = NSSelectorFromString(@"hostObjectWithName:");
+    if (!target || !selector) {
+        // TODO: throw exception
+        return nil;
+    }
+    return ((NSObject *(*)(Class, SEL, NSString *))objc_msgSend)(target, selector, name);
+}
+
+DN_EXTERN DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
+    Class target = NSClassFromString(@"DNInterfaceRegistry");
+    SEL selector = NSSelectorFromString(@"allMetaData");
+    if (!target || !selector) {
+        // TODO: throw exception
+        return nil;
+    }
+    return ((DartNativeInterfaceMap(*)(Class, SEL))objc_msgSend)(target, selector);
 }

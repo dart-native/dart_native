@@ -6,15 +6,15 @@
 //
 
 #import "DNInterfaceDemo.h"
-#if __has_include(<DartNative/DNMacro.h>)
-#import <DartNative/DNMacro.h>
+#if __has_include(<dart_native/DNInterfaceRegistry.h>)
+#import <dart_native/DNInterfaceRegistry.h>
 #else
 @import dart_native;
 #endif
 
 @implementation DNInterfaceDemo
 
-DN_INTERFACE(MyFirstInterface)
+DN_INTERFACE_ENTRY(MyFirstInterface)
 
 DN_INTERFACE_METHOD(hello, myHello:(NSString *)str) {
     return [NSString stringWithFormat:@"hello %@!", str];
