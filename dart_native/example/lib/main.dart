@@ -8,6 +8,7 @@ import 'dn_unit_test.dart';
 
 @nativeRoot
 void main() {
+  Log.setLevel(LogLevel.verbose);
   DartNative.init();
   runDartNativeExample();
   runApp(const DartNativeApp());

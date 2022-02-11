@@ -8,20 +8,18 @@
 #import <Foundation/Foundation.h>
 
 #define InterfaceEntry(name)                                          \
-    class DNInterfaceRegistry;                                        \
     + (void)load {                                                    \
         [DNInterfaceRegistry registerInterface:@#name forClass:self]; \
     }
 
-#define InterfaceMethod(name, method)                       \
-    class DNInterfaceRegistry;                              \
-    DN_REGISTER_METHOD(name, method, __LINE__, __COUNTER__)
+#define InterfaceMethod(name, method) \
+    RegisterMethod(name, method, __LINE__, __COUNTER__)
 
-#define DN_REGISTER_METHOD(name, method, line, count) \
-    DN_EXPORT_METHOD(name, method, line, count)       \
+#define RegisterMethod(name, method, line, count) \
+    ExportMethod(name, method, line, count)       \
     - (id)method
 
-#define DN_EXPORT_METHOD(name, method, line, count)                    \
+#define ExportMethod(name, method, line, count)                        \
     + (NSArray<NSString *> *)dn_interface_method_##name##line##count { \
         return @[@#name, @#method];                                    \
     }

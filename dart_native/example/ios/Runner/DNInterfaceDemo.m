@@ -14,17 +14,17 @@
 
 @implementation DNInterfaceDemo
 
-@InterfaceEntry(MyFirstInterface)
+InterfaceEntry(MyFirstInterface)
 
-@InterfaceMethod(hello, myHello:(NSString *)str) {
+InterfaceMethod(hello, myHello:(NSString *)str) {
     return [NSString stringWithFormat:@"hello %@!", str];
 }
 
-@InterfaceMethod(sum, addA:(int32_t)a withB:(int32_t)b) {
+InterfaceMethod(sum, addA:(int32_t)a withB:(int32_t)b) {
     return @(a + b);
 }
 
-@InterfaceMethod(testCallback, performBlock:(void(^)(BOOL success, NSString *result))block) {
+InterfaceMethod(testCallback, performBlock:(void(^)(BOOL success, NSString *result))block) {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             block(YES, @"callback from native");

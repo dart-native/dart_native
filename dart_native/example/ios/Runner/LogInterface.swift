@@ -28,6 +28,7 @@ class LogInterface: NSObject, SwiftInterfaceEntry {
         // Binding selectors and interface method
         return [
             "log": #selector(LogInterface.log(_:message:)),
+            "setLevel": #selector(LogInterface.setLevel(_:)),
         ]
     }
     
@@ -48,6 +49,12 @@ class LogInterface: NSObject, SwiftInterfaceEntry {
             default:
                 print(message)
             }
+        }
+    }
+    
+    func setLevel(_ level: UInt) {
+        if let level = DDLogLevel(rawValue: level) {
+            dynamicLogLevel = level
         }
     }
 }

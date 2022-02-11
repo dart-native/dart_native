@@ -4,14 +4,14 @@ import 'package:dart_native/dart_native.dart';
 final _logInterface = Interface("logInterface");
 
 class LogLevel {
-  final int _level;
+  final int raw;
   static const LogLevel error = LogLevel._internal(0x1);
-  static const LogLevel warning = LogLevel._internal(0x11);
-  static const LogLevel info = LogLevel._internal(0x111);
-  static const LogLevel debug = LogLevel._internal(0x1111);
-  static const LogLevel verbose = LogLevel._internal(0x11111);
+  static const LogLevel warning = LogLevel._internal(0x3);
+  static const LogLevel info = LogLevel._internal(0x7);
+  static const LogLevel debug = LogLevel._internal(0xF);
+  static const LogLevel verbose = LogLevel._internal(0x1F);
 
-  const LogLevel._internal(this._level);
+  const LogLevel._internal(this.raw);
 }
 
 class Log {
@@ -36,6 +36,10 @@ class Log {
   }
 
   static _log(LogLevel level, String message) {
-    _logInterface.invoke('log', args: [level._level, message]);
+    _logInterface.invoke('log', args: [level.raw, message]);
+  }
+
+  static setLevel(LogLevel level) {
+    _logInterface.invoke('setLevel', args: [level.raw]);
   }
 }

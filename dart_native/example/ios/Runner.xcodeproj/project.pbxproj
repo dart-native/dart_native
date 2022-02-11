@@ -15,6 +15,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A4ECB74C27B26C640084A547 /* DNInterfaceDemo.m in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB74B27B26C640084A547 /* DNInterfaceDemo.m */; };
+		A4ECB75827B6C8880084A547 /* LogInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4ECB75727B6C8880084A547 /* LogInterface.swift */; };
 		A4ECDB31274BBF8800362389 /* SwiftStub.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4ECDB30274BBF8800362389 /* SwiftStub.swift */; };
 		A4EECFBF2691CBF50025502E /* RuntimeSon.m in Sources */ = {isa = PBXBuildFile; fileRef = A4EECFBD2691CBF40025502E /* RuntimeSon.m */; };
 		A4EECFC02691CBF50025502E /* RuntimeStub.m in Sources */ = {isa = PBXBuildFile; fileRef = A4EECFBE2691CBF40025502E /* RuntimeStub.m */; };
@@ -53,6 +54,7 @@
 		9CB3F088E1519AF7D9E72E82 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		A4ECB74A27B26C640084A547 /* DNInterfaceDemo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNInterfaceDemo.h; sourceTree = "<group>"; };
 		A4ECB74B27B26C640084A547 /* DNInterfaceDemo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DNInterfaceDemo.m; sourceTree = "<group>"; };
+		A4ECB75727B6C8880084A547 /* LogInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogInterface.swift; sourceTree = "<group>"; };
 		A4ECDB2F274BBF8800362389 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		A4ECDB30274BBF8800362389 /* SwiftStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftStub.swift; sourceTree = "<group>"; };
 		A4EECFBB2691CBF40025502E /* RuntimeStub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuntimeStub.h; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 				A4EECFBE2691CBF40025502E /* RuntimeStub.m */,
 				A4ECB74A27B26C640084A547 /* DNInterfaceDemo.h */,
 				A4ECB74B27B26C640084A547 /* DNInterfaceDemo.m */,
+				A4ECB75727B6C8880084A547 /* LogInterface.swift */,
 				A4ECDB30274BBF8800362389 /* SwiftStub.swift */,
 				A4ECDB2F274BBF8800362389 /* Runner-Bridging-Header.h */,
 			);
@@ -302,6 +305,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4ECB75827B6C8880084A547 /* LogInterface.swift in Sources */,
 				A4ECB74C27B26C640084A547 /* DNInterfaceDemo.m in Sources */,
 				978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */,
 				97C146F31CF9000F007C117D /* main.m in Sources */,
