@@ -7,12 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
-#define DN_INTERFACE_ENTRY(name)                                               \
-    + (void)load {                                                             \
-        [DNInterfaceRegistry registerInterface:@#name forClass:self];          \
+#define InterfaceEntry(name)                                          \
+    class DNInterfaceRegistry;                                        \
+    + (void)load {                                                    \
+        [DNInterfaceRegistry registerInterface:@#name forClass:self]; \
     }
 
-#define DN_INTERFACE_METHOD(name, method) DN_REGISTER_METHOD(name, method, __LINE__, __COUNTER__)
+#define InterfaceMethod(name, method)                       \
+    class DNInterfaceRegistry;                              \
+    DN_REGISTER_METHOD(name, method, __LINE__, __COUNTER__)
 
 #define DN_REGISTER_METHOD(name, method, line, count) \
     DN_EXPORT_METHOD(name, method, line, count)       \
