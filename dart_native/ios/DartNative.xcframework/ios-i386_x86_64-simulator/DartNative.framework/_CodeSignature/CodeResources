@@ -8,6 +8,10 @@
 		<data>
 		GJnW4UhOEgNT/y0AEsYLfzdmrzs=
 		</data>
+		<key>Headers/DartNative.h</key>
+		<data>
+		HsSSY3tsEqwrSgmv6aP0DMB6Ayo=
+		</data>
 		<key>Headers/dart_api.h</key>
 		<data>
 		ZqiXzPd8GHvc4QLuFiqC89EFXgU=
@@ -22,11 +26,15 @@
 		</data>
 		<key>Headers/native_runtime.h</key>
 		<data>
-		f6/JpCAVl1Jp9haKjunicYQjJuM=
+		Y3ppUDhwEoNakhlHvNZiVePJ4F4=
 		</data>
 		<key>Info.plist</key>
 		<data>
 		HkmZPsUdvRqPviRdInk7kbwv3EE=
+		</data>
+		<key>Modules/module.modulemap</key>
+		<data>
+		vjrlfuonagHnzeJwN9GC4ytIMTY=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -40,6 +48,17 @@
 			<key>hash2</key>
 			<data>
 			JBEFj6YSs9VvTZlZ74Q2yW9Skmb0W6jfMTyht84VAoM=
+			</data>
+		</dict>
+		<key>Headers/DartNative.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			HsSSY3tsEqwrSgmv6aP0DMB6Ayo=
+			</data>
+			<key>hash2</key>
+			<data>
+			hya/7ggY75hsKDAQJnXD8OWMwTCkFN7Z0flxmzzkRHU=
 			</data>
 		</dict>
 		<key>Headers/dart_api.h</key>
@@ -79,11 +98,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			f6/JpCAVl1Jp9haKjunicYQjJuM=
+			Y3ppUDhwEoNakhlHvNZiVePJ4F4=
 			</data>
 			<key>hash2</key>
 			<data>
-			Vf1mWGzlTKWPhQYKQYGL/4FeOXsceZLJv2xkfrMVjyo=
+			gxbq8c43F/vEplKwjW3SuQzRHsZ1dXJyHFZxT9DgH3g=
+			</data>
+		</dict>
+		<key>Modules/module.modulemap</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			vjrlfuonagHnzeJwN9GC4ytIMTY=
+			</data>
+			<key>hash2</key>
+			<data>
+			j9dwyArTcGNFfNaGyqfoPUhQO6VmpQhSI020KW0KPN4=
 			</data>
 		</dict>
 	</dict>

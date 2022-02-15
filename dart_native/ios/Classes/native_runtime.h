@@ -6,7 +6,6 @@
 //
 
 #import "DNMacro.h"
-#import "dart_api_dl.h"
 #import <Foundation/Foundation.h>
 
 @class DNBlockWrapper;
@@ -15,6 +14,12 @@
 
 #ifndef native_runtime_h
 #define native_runtime_h
+
+/**
+ * A port is used to send or receive inter-isolate messages
+ */
+typedef int64_t Dart_Port;
+typedef struct _Dart_Handle* Dart_Handle;
 
 NS_ASSUME_NONNULL_BEGIN
 
