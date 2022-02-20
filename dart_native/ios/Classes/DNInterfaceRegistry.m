@@ -34,6 +34,15 @@ NSString *DNSelectorNameForMethodDeclaration(NSString *methodDeclaration) {
     return selectorName;
 }
 
+typedef NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSMutableDictionary<NSNumber *, id> *> *> *InterfaceMethodCallMap;
+
+@interface DNInterfaceRegistry ()
+
+@property (class, nonatomic, readonly) dispatch_queue_t methodCallBlockQueue;
+@property (class, nonatomic, readonly) InterfaceMethodCallMap methodCallBlockInnerMap;
+
+@end
+
 @implementation DNInterfaceRegistry
 
 // Map: Dart interface name -> OC class
@@ -124,6 +133,78 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
         interfaceMethodsCache = [interfaceMethodsInnerMap copy];
     });
     return interfaceMethodsCache;
+}
+
+// Map: Dart interface name -> OC class
+static InterfaceMethodCallMap _methodCallBlockInnerMap;
+static dispatch_queue_t _methodCallBlockQueue;
+
++ (dispatch_queue_t)methodCallBlockQueue {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _methodCallBlockQueue = dispatch_queue_create("com.dartnative.interface", DISPATCH_QUEUE_CONCURRENT);
+    });
+    return _methodCallBlockQueue;
+}
+
++ (InterfaceMethodCallMap)methodCallBlockInnerMap {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _methodCallBlockInnerMap = [NSMutableDictionary dictionary];
+    });
+    return _methodCallBlockInnerMap;
+}
+
++ (void)registerDartInterface:(NSString *)interface
+                       method:(NSString *)method
+                        block:(id)block
+                     dartPort:(int64_t)port {
+    if (interface.length == 0 || method.length == 0) {
+        // TODO: throw exception
+        return;
+    }
+    dispatch_barrier_async(self.methodCallBlockQueue, ^{
+        __auto_type methodCallMap = self.methodCallBlockInnerMap[interface];
+        if (!methodCallMap) {
+            methodCallMap = [NSMutableDictionary dictionary];
+            self.methodCallBlockInnerMap[interface] = methodCallMap;
+        }
+        __auto_type callForPortMap = methodCallMap[method];
+        if (!callForPortMap) {
+            callForPortMap = [NSMutableDictionary dictionary];
+            methodCallMap[method] = callForPortMap;
+        }
+        callForPortMap[@(port)] = block;
+    });
+}
+
++ (void)invokeMethod:(NSString *)method
+        forInterface:(NSString *)interface
+           arguments:(NSArray *)arguments
+              result:(DartNativeResult)result {
+    if (interface.length == 0 || method.length == 0) {
+        // TODO: throw exception
+        return;
+    }
+    extern BOOL DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallback)(id result, NSError *error));
+    extern BOOL TestNotifyDart(int64_t port_id);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        __block NSDictionary<NSNumber *, id> *callForPortMap;
+        dispatch_sync(self.methodCallBlockQueue, ^{
+            callForPortMap = [self.methodCallBlockInnerMap[interface][method] copy];
+        });
+        [callForPortMap enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+            int64_t port = key.longValue;
+            // test isolate alive.
+            BOOL success = TestNotifyDart(port);
+            if (success) {
+                DNInterfaceBlockInvoke((__bridge void *)(obj), arguments, result);
+            } else {
+                // remove block for dead isolate.
+                [self registerDartInterface:interface method:method block:nil dartPort:port];
+            }
+        }];
+    });
 }
 
 @end

@@ -8,6 +8,8 @@ abstract class InterfaceRuntime {
   Map<String, String> methodTableWithInterfaceName(String name);
   T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args});
   Future<T> invokeAsync<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args});
+  void setMethodCallHandler(
+      String interfaceName, String method, Function? function);
 }
 
 class Interface {
@@ -31,18 +33,22 @@ class Interface {
   }
 
   T invoke<T>(String method, {List? args}) {
-    return _runtime.invoke(name, _hostObject, nativeMethodName(method), args: args);
+    return _runtime.invoke(name, _hostObject, _nativeMethodName(method), args: args);
   }
 
   Future<T> invokeAsync<T>(String method, {List? args}) {
-    return _runtime.invokeAsync(name, _hostObject, nativeMethodName(method), args: args);
+    return _runtime.invokeAsync(name, _hostObject, _nativeMethodName(method), args: args);
   }
 
-  String nativeMethodName(String method) {
+  String _nativeMethodName(String method) {
     String? result = _methodTable[method];
     if (result == null) {
       throw 'Native method \'$method\' is not exists on interface \'$name\'';
     }
     return result;
+  }
+
+  void setMethodCallHandler(String method, Function? function) {
+    _runtime.setMethodCallHandler(name, method, function);
   }
 }

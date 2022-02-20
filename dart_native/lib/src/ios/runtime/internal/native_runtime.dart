@@ -21,12 +21,14 @@ typedef AddMethodC = Int32 Function(
     Pointer<Void> target,
     Pointer<Void> selector,
     Pointer<Utf8> types,
+    Bool returnString,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback,
     Int64 dartPort);
 typedef AddMethodD = int Function(
     Pointer<Void> target,
     Pointer<Void> selector,
     Pointer<Utf8> types,
+    bool returnString,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback,
     int dartPort);
 final AddMethodD nativeAddMethod =
@@ -139,5 +141,5 @@ final ConvertNSStringToUTF16 convertNSStringToUTF16 =
 
 final int Function(Object, Pointer<Void>) bindObjcLifecycleToDart = nativeDylib
     .lookup<NativeFunction<Int32 Function(Handle, Pointer<Void>)>>(
-        "BindObjcLifecycleToDart")
+        'BindObjcLifecycleToDart')
     .asFunction();

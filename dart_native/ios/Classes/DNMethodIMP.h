@@ -19,11 +19,13 @@ typedef void (*NativeMethodCallback)(void *_Nullable *_Null_unspecified args,
 @interface DNMethodIMP : NSObject
 
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
+@property (nonatomic, getter=isReturnString, readonly) BOOL returnString;
 // Every dart port has its own callback.
 @property (nonatomic, readonly) NSDictionary<NSNumber *, NSNumber *> *callbackForDartPort;
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncodings
                             callback:(NativeMethodCallback)callback
+                        returnString:(BOOL)returnString
                             dartPort:(Dart_Port)dartPort
                                error:(NSError **)error;
 - (void)addCallback:(NativeMethodCallback)callback forDartPort:(Dart_Port)port;

@@ -8,7 +8,6 @@
 #import "DNInterfaceDemo.h"
 #if __has_include(<dart_native/DNInterfaceRegistry.h>)
 #import <dart_native/DNInterfaceRegistry.h>
-#import <dart_native/DartNativeInterface.h>
 #else
 @import dart_native;
 #endif
@@ -18,8 +17,9 @@
 InterfaceEntry(MyFirstInterface)
 
 InterfaceMethod(hello, myHello:(NSString *)str) {
-//    DartNativeInterface *interface = [[DartNativeInterface alloc] initWithName:@"test"];
-//    [interface invokeMethod:@"aa" result:nil arguments:@"134", @"12"];
+    [DNInterfaceDemo invokeMethod:@"hello" arguments:@[@"world"] result:^(id  _Nullable result, NSError * _Nullable error) {
+        NSLog(@"%@", result);
+    }];
     return [NSString stringWithFormat:@"hello %@!", str];
 }
 

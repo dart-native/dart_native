@@ -10,6 +10,14 @@
 #define InterfaceEntry(name)                                          \
     + (void)load {                                                    \
         [DNInterfaceRegistry registerInterface:@#name forClass:self]; \
+    }                                                                 \
+    + (void)invokeMethod:(NSString*)method                            \
+               arguments:(nullable NSArray *)arguments                \
+                  result:(nullable DartNativeResult)result {          \
+        [DNInterfaceRegistry invokeMethod:method                      \
+                             forInterface:@#name                      \
+                                arguments:arguments                   \
+                                   result:result];                    \
     }
 
 #define InterfaceMethod(name, method) \
@@ -26,6 +34,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void (^DartNativeResult)(id _Nullable result, NSError * _Nullable error);
+
 NS_SWIFT_NAME(InterfaceRegistry)
 @interface DNInterfaceRegistry : NSObject
 
@@ -33,6 +43,14 @@ NS_SWIFT_NAME(InterfaceRegistry)
 /// @param name The interface name for dart
 /// @param cls The OC class that implements the interface
 + (BOOL)registerInterface:(NSString *)name forClass:(Class)cls;
++ (void)registerDartInterface:(NSString *)interface
+                       method:(NSString *)method
+                        block:(nullable id)block
+                     dartPort:(int64_t)port;
++ (void)invokeMethod:(NSString *)method
+        forInterface:(NSString *)interface
+           arguments:(nullable NSArray *)arguments
+              result:(nullable DartNativeResult)result;
 
 @end
 

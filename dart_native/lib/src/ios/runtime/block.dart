@@ -141,7 +141,7 @@ class Block extends id {
     calloc.free(countPtr);
     // typesPtrPtr contains return type and block itself.
     if (count != (args?.length ?? 0) + 2) {
-      throw 'Args Count NOT match';
+      throw 'The number of arguments for methods dart and objc does not match';
     }
     int stringTypeBitmask = 0;
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
@@ -236,8 +236,6 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     retainObject(result.pointer);
   }
 }
-
-int cc = 0;
 
 void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr, int argCount, int stret, int seq) {

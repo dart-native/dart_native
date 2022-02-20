@@ -134,7 +134,7 @@ static atomic_uint_fast64_t _seq = 0;
                                  withEncodeString:typeString
                                             flags:flags];
     if (numberOfArguments == -1) { // Unknown encode.
-        DN_ERROR(DNCreateBlockError, @"Prepare ffi_cif failed.");
+        DN_ERROR(error, DNCreateBlockError, @"Prepare ffi_cif failed.");
         return;
     }
     self.numberOfArguments = numberOfArguments;
@@ -146,7 +146,7 @@ static atomic_uint_fast64_t _seq = 0;
     
     ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DNFFIBlockClosureFunc, (__bridge void *)(self), _blockIMP);
     if (status != FFI_OK) {
-        DN_ERROR(DNCreateBlockError, @"ffi_prep_closure returned %d", (int)status);
+        DN_ERROR(error, DNCreateBlockError, @"ffi_prep_closure returned %d", (int)status);
         return;
     }
 
@@ -160,7 +160,7 @@ static atomic_uint_fast64_t _seq = 0;
     
     _descriptor = malloc(sizeof(DNBlockDescriptor));
     if (!_descriptor) {
-        DN_ERROR(DNCreateBlockError, @"malloc _DNBlockDescriptor failed.")
+        DN_ERROR(error, DNCreateBlockError, @"malloc _DNBlockDescriptor failed.")
         return;
     }
     memcpy(_descriptor, &descriptor, sizeof(DNBlockDescriptor));
@@ -229,7 +229,7 @@ static atomic_uint_fast64_t _seq = 0;
     if (!_typeEncodings) {
         _typeEncodings = malloc(sizeof(char *) * typeArr.count);
         if (_typeEncodings == NULL) {
-            DN_ERROR(DNCreateTypeEncodingError, @"malloc for type encoding fail");
+            DN_ERROR(error, DNCreateTypeEncodingError, @"malloc for type encoding fail");
             return nil;
         }
     }
@@ -256,6 +256,9 @@ static atomic_uint_fast64_t _seq = 0;
             // Blocks are passed one implicit argument - the block, of type "@?".
             [encodeStr appendString:@"@?0"];
             retEncodeStr = encode;
+            if ([typeStr isEqualToString:@"String"]) {
+                self.typeEncodings[i] = native_type_string;
+            }
         } else {
             [encodeStr appendString:encode];
             [encodeStr appendString:[NSString stringWithFormat:@"%d", currentLength]];
@@ -273,6 +276,13 @@ static void DNHandleReturnValue(void *origRet, DNBlockWrapper *wrapper, DNInvoca
         // synchronize stret value from first argument. `origRet` is not the target.
         [invocation setReturnValue:*(void **)invocation.realArgs[0]];
         return;
+    } else if (wrapper.typeEncodings[0] == native_type_string) {
+        // type is native_type_object but result is a string
+        NSString *string = NSStringFromUTF16Data(*(const unichar **)ret);
+        if (string) {
+            native_retain_object(string);
+            [invocation setReturnValue:&string];
+        }
     } else if ([wrapper.typeString hasPrefix:@"{"]) {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
@@ -349,8 +359,8 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, wrapper, invocation);
     const char *type = wrapper.typeEncodings[0];
-    if (type == native_type_object || type == native_type_block) {
-        native_release_object((__bridge id)*(void **)retAddr);
+    if (type == native_type_object || type == native_type_block || type == native_type_string) {
+        native_autorelease_object((__bridge id)*(void **)retAddr);
     }
 }
 

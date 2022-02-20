@@ -36,9 +36,11 @@ class _DartNativeAppState extends State<DartNativeApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    interface.setMethodCallHandler('hello', (String world) {
+      return 'hello $world';
+    });
     result = helloWorld();
     final unitTest = DNUnitTest();
-
     /// run all test case
     await unitTest.runAllUnitTests();
   }

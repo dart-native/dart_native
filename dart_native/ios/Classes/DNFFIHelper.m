@@ -149,6 +149,7 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
         [_typeEncodeDict setObject:@"@?" forKey:@"block"];
         [_typeEncodeDict setObject:@"^@" forKey:@"NSObject*"];
         [_typeEncodeDict setObject:@"@" forKey:@"NSObject"];
+        [_typeEncodeDict setObject:@"@" forKey:@"String"];
         [_typeEncodeDict setObject:@"*" forKey:@"CString"];
     });
     return _typeEncodeDict[typeName];

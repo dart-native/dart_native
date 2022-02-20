@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "DNMacro.h"
 
-#define DN_ERROR(errorCode, desc, ...) \
+#define DN_ERROR(error, errorCode, desc, ...) \
 if (error) { \
     NSString *reason = [NSString stringWithFormat:desc, ##__VA_ARGS__]; \
     NSLog(desc, ##__VA_ARGS__);\
@@ -26,6 +26,8 @@ extern NSErrorDomain const DNErrorDomain;
 typedef NS_ERROR_ENUM(DNErrorDomain, DNErrorCode) {
     DNCreateTypeEncodingError = 1, // creating type encoding fail.
     DNCreateBlockError, // creating block fail.
+    DNUnwrapValueError, // unwrap NSValue fail.
+    DNInterfaceError, // interface invoke fail.
 };
 
 DN_EXTERN NSError *DNErrorWithUnderlyingError(NSError *error, NSError *underlyingError);

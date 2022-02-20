@@ -54,6 +54,9 @@ class Work extends Opaque {}
 
 void requestExecuteCallback(dynamic message) {
   final int workAddress = message;
+  if (workAddress == 0) {
+    return;
+  }
   final work = Pointer<Work>.fromAddress(workAddress);
   executeCallback(work);
 }

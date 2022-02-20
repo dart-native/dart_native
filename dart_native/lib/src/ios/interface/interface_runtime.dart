@@ -2,14 +2,18 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
+import 'package:ffi/ffi.dart';
 
 class InterfaceRuntimeObjC extends InterfaceRuntime {
   @override
   Pointer<Void> hostObjectWithInterfaceName(String name) {
-    final ptr = NSString(name).pointer;
-    return interfaceHostObjectWithName(ptr);
+    final ptr = name.toNativeUtf8();
+    final result = interfaceHostObjectWithName(ptr);
+    calloc.free(ptr);
+    return result;
   }
 
   @override
@@ -65,10 +69,20 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
     }
     return result;
   }
+
+  @override
+  void setMethodCallHandler(String interfaceName, String method, Function? function) {
+    final block = function == null ? nil : Block(function);
+    final namePtr = interfaceName.toNativeUtf8();
+    final methodPtr = method.toNativeUtf8();
+    registerDartInterface(namePtr, methodPtr, block.pointer, nativePort);
+    calloc.free(namePtr);
+    calloc.free(methodPtr);
+  }
 }
 
-final Pointer<Void> Function(Pointer<Void>) interfaceHostObjectWithName = nativeDylib
-    .lookup<NativeFunction<Pointer<Void> Function(Pointer<Void>)>>(
+final Pointer<Void> Function(Pointer<Utf8>) interfaceHostObjectWithName = nativeDylib
+    .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
         'DNInterfaceHostObjectWithName')
     .asFunction();
 
@@ -77,6 +91,11 @@ final Pointer<Void> Function() interfaceAllMetaData =
         .lookup<NativeFunction<Pointer<Void> Function()>>(
             'DNInterfaceAllMetaData')
         .asFunction();
+
+final void Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Void>, int) registerDartInterface = nativeDylib
+    .lookup<NativeFunction<Void Function(Pointer<Utf8>, Pointer<Utf8>,
+                    Pointer<Void>, Int64)>>('DNInterfaceRegisterDartInterface')
+    .asFunction();
 
 Map _mapForInterfaceMetaData() {
   Pointer<Void> ptr = interfaceAllMetaData();

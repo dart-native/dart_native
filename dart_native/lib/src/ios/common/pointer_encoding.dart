@@ -86,7 +86,7 @@ dynamic storeValueToPointer(
   } else if (object is String) {
     if (encoding.maybeCString) {
       return storeCStringToPointer(object, ptr);
-    } else if (encoding.maybeObject) {
+    } else if (encoding.maybeObject || encoding.isString) {
       storeStringToPointer(object, ptr);
     }
   } else if (object is List && encoding.maybeObject) {
@@ -444,7 +444,12 @@ List<String> nativeTypeStringForDartTypes(List<String> types) {
     } else if (s.contains('Function')) {
       return 'block';
     } else if (!_nativeTypeNames.contains(s)) {
-      return 'NSObject';
+      if (s == 'String') {
+        // special logic for String, see objc function '_parseTypeNames:error:'
+        return 'String';
+      } else {  
+        return 'NSObject';
+      }
     }
     return s;
   }).toList();

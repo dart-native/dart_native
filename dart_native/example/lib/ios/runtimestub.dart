@@ -23,7 +23,7 @@ abstract class SampleDelegate {
         this, callbackStruct, 'callbackStruct:', SampleDelegate);
   }
 
-  NSObject? callback();
+  String? callback();
   CGRect? callbackStruct(CGRect rect);
 }
 
@@ -32,6 +32,8 @@ typedef BarBlock = NSObject? Function(NSObject? a);
 typedef StretBlock = CGAffineTransform? Function(CGAffineTransform? a);
 
 typedef CStringRetBlock = CString? Function(CString? a);
+
+typedef StringRetBlock = String? Function(String? a);
 
 typedef NSDictionaryRetBlock = NSDictionary? Function(NSDictionary? a);
 
@@ -231,6 +233,10 @@ class RuntimeStub extends NSObject {
 
   void fooCStringBlock(CStringRetBlock block) {
     perform(SEL('fooCStringBlock:'), args: [block]);
+  }
+
+  void fooStringBlock(StringRetBlock block) {
+    perform(SEL('fooStringBlock:'), args: [block]);
   }
 
   void fooNSDictionaryBlock(NSDictionaryRetBlock block) {

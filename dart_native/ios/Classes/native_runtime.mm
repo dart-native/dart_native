@@ -21,6 +21,7 @@
 #import "DNPointerWrapper.h"
 #import "DNInvocation.h"
 #import "NSObject+DartHandleExternalSize.h"
+#import "NSNumber+DNUnwrapValues.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -141,7 +142,7 @@ void native_signature_encoding_list(NSMethodSignature *signature, const char **t
     }
 }
 
-BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort) {
+BOOL native_add_method(id target, SEL selector, char *types, bool returnString, void *callback, Dart_Port dartPort) {
     Class cls = object_getClass(target);
     NSString *selName = [NSString stringWithFormat:@"dart_native_%@", NSStringFromSelector(selector)];
     SEL key = NSSelectorFromString(selName);
@@ -159,6 +160,7 @@ BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dar
         NSError *error;
         DNMethodIMP *methodIMP = [[DNMethodIMP alloc] initWithTypeEncoding:types
                                                                   callback:(NativeMethodCallback)callback
+                                                              returnString:returnString
                                                                   dartPort:dartPort
                                                                      error:&error];
         if (error.code) {
@@ -202,6 +204,41 @@ void *_mallocReturnStruct(NSMethodSignature *signature) {
     return result;
 }
 
+NSString *NSStringFromUTF16Data(const unichar *data) {
+    if (!data) {
+        return nil;
+    }
+    // First four uint16_t is for data length.
+    const NSUInteger lengthDataSize = 4;
+    uint64_t length = data[0];
+    for (int i = 1; i < lengthDataSize; i++) {
+        length <<= 16;
+        length |= data[i];
+    }
+    NSString *result = [NSString stringWithCharacters:data + lengthDataSize length:(NSUInteger)length];
+    return result;
+}
+
+/// Return data for NSString: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
+/// @param retVal origin return value
+uint16_t *UTF16DataFromNSString(NSString *retVal) {
+    uint64_t length = 0;
+    const uint16_t *utf16BufferPtr = native_convert_nsstring_to_utf16(retVal, &length);
+    size_t size = sizeof(uint16_t) * (size_t)length;
+    const size_t lengthDataSize = 4;
+    // free memory on dart side.
+    uint16_t *dataPtr = (uint16_t *)malloc(size + sizeof(uint16_t) * lengthDataSize);
+    memcpy(dataPtr + lengthDataSize, utf16BufferPtr, size);
+    uint16_t lengthData[4] = {
+        static_cast<uint16_t>(length >> 48 & 0xffff),
+        static_cast<uint16_t>(length >> 32 & 0xffff),
+        static_cast<uint16_t>(length >> 16 & 0xffff),
+        static_cast<uint16_t>(length & 0xffff)
+    };
+    memcpy(dataPtr, lengthData, sizeof(uint16_t) * lengthDataSize);
+    return dataPtr;
+}
+
 void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
     for (NSUInteger i = offset; i < signature.numberOfArguments; i++) {
         const char *argType = [signature getArgumentTypeAtIndex:i];
@@ -219,14 +256,7 @@ void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocati
         } else if (argType[0] == '@' &&
                    (stringTypeBitmask >> argsIndex & 0x1) == 1) {
             const unichar *data = ((const unichar **)args)[argsIndex];
-            // First four uint16_t is for data length.
-            const NSUInteger lengthDataSize = 4;
-            uint64_t length = data[0];
-            for (int i = 1; i < lengthDataSize; i++) {
-                length <<= 16;
-                length |= data[i];
-            }
-            NSString *realArg = [NSString stringWithCharacters:data + lengthDataSize length:(NSUInteger)length];
+            NSString *realArg = NSStringFromUTF16Data(data);
             [stringTypeBucket addObject:realArg];
             free((void *)data); // Malloc data on dart side, need free here.
             [invocation setArgument:&realArg atIndex:i];
@@ -234,30 +264,6 @@ void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocati
             [invocation setArgument:&args[argsIndex] atIndex:i];
         }
     }
-}
-
-
-/// Return data for NSString: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
-/// @param retVal origin return value
-/// @param retType type for return value
-void *_dataForNSStringReturnValue(NSString *retVal, const char **retType) {
-    // first bit is for return value.
-    *retType = native_all_type_encodings()[18];
-    uint64_t length = 0;
-    const uint16_t *utf16BufferPtr = native_convert_nsstring_to_utf16(retVal, &length);
-    size_t size = sizeof(uint16_t) * (size_t)length;
-    const size_t lengthDataSize = 4;
-    // free memory on dart side.
-    uint16_t *dataPtr = (uint16_t *)malloc(size + sizeof(uint16_t) * lengthDataSize);
-    memcpy(dataPtr + lengthDataSize, utf16BufferPtr, size);
-    uint16_t lengthData[4] = {
-        static_cast<uint16_t>(length >> 48 & 0xffff),
-        static_cast<uint16_t>(length >> 32 & 0xffff),
-        static_cast<uint16_t>(length >> 16 & 0xffff),
-        static_cast<uint16_t>(length & 0xffff)
-    };
-    memcpy(dataPtr, lengthData, sizeof(uint16_t) * lengthDataSize);
-    return dataPtr;
 }
 
 void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signature, dispatch_queue_t queue, void **args, void (^callback)(void *), Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
@@ -287,7 +293,11 @@ void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signatu
                     BOOL returnUsingCallback = queue && callback;
                     // return value is a NSString and needs decode.
                     if (isNSString && decodeRetVal && !returnUsingCallback) {
-                        result = _dataForNSStringReturnValue((__bridge NSString *)result, retType);
+                        // change return type from 'object' to 'string'.
+                        if (retType) {
+                            *retType = native_type_string;
+                        }
+                        result = UTF16DataFromNSString((__bridge NSString *)result);
                     } else {
                         [DNObjectDealloc attachHost:(__bridge id)result
                                            dartPort:dartPort];
@@ -349,7 +359,11 @@ void *native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t 
             BOOL decodeRetVal = (stringTypeBitmask & (1LL << 63)) != 0;
             // return value is a NSString and needs decode.
             if (isNSString && decodeRetVal) {
-                result = _dataForNSStringReturnValue((__bridge NSString *)result, retType);
+                // change return type from 'object' to 'string'.
+                if (retType) {
+                    *retType = native_type_string;
+                }
+                result = UTF16DataFromNSString((__bridge NSString *)result);
             } else {
                 [DNObjectDealloc attachHost:(__bridge id)result
                                    dartPort:dartPort];
@@ -616,6 +630,14 @@ void native_release_object(id object) {
     #pragma clang diagnostic pop
 }
 
+void native_autorelease_object(id object) {
+    SEL selector = NSSelectorFromString(@"autorelease");
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    [object performSelector:selector];
+    #pragma clang diagnostic pop
+}
+
 const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t *length) {
     NSData *data = [string dataUsingEncoding:NSUTF16StringEncoding];
     // UTF16, 2-byte per unit
@@ -652,6 +674,10 @@ BOOL NotifyDart(Dart_Port send_port, const Work* work) {
     return result;
 }
 
+BOOL TestNotifyDart(Dart_Port send_port) {
+    return NotifyDart(send_port, nullptr);
+}
+
 DN_EXTERN
 void ExecuteCallback(Work* work_ptr) {
     const Work work = *work_ptr;
@@ -672,7 +698,12 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
                                        reason:BlockingUIExceptionReason
                                      userInfo:nil];
     }
-    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+    BOOL isVoid = invocation.methodSignature.methodReturnType[0] == 'v';
+    dispatch_semaphore_t sema;
+    if (!isVoid) {
+        sema = dispatch_semaphore_create(0);
+    }
+    
     NativeBlockCallback callback = wrapper.callback;
     const Work work = [=]() {
         callback(invocation.realArgs,
@@ -680,11 +711,13 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
                  numberOfArguments,
                  wrapper.hasStret,
                  wrapper.sequence);
-        dispatch_semaphore_signal(sema);
+        if (!isVoid) {
+            dispatch_semaphore_signal(sema);
+        }
     };
     const Work* work_ptr = new Work(work);
     BOOL success = NotifyDart(wrapper.dartPort, work_ptr);
-    if (success) {
+    if (success && !isVoid) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
 }
@@ -833,17 +866,18 @@ DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
 
 // Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class,
 // so we have to use objc runtime.
-DN_EXTERN NSObject *DNInterfaceHostObjectWithName(NSString *name) {
+NSObject *DNInterfaceHostObjectWithName(char *name) {
     Class target = NSClassFromString(@"DNInterfaceRegistry");
     SEL selector = NSSelectorFromString(@"hostObjectWithName:");
     if (!target || !selector) {
         // TODO: throw exception
         return nil;
     }
-    return ((NSObject *(*)(Class, SEL, NSString *))objc_msgSend)(target, selector, name);
+    NSString *nameString = [NSString stringWithUTF8String:name];
+    return ((NSObject *(*)(Class, SEL, NSString *))objc_msgSend)(target, selector, nameString);
 }
 
-DN_EXTERN DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
+DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
     Class target = NSClassFromString(@"DNInterfaceRegistry");
     SEL selector = NSSelectorFromString(@"allMetaData");
     if (!target || !selector) {
@@ -851,4 +885,77 @@ DN_EXTERN DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
         return nil;
     }
     return ((DartNativeInterfaceMap(*)(Class, SEL))objc_msgSend)(target, selector);
+}
+
+void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, Dart_Port port) {
+    Class target = NSClassFromString(@"DNInterfaceRegistry");
+    SEL selector = NSSelectorFromString(@"registerDartInterface:method:block:dartPort:");
+    if (!target || !selector) {
+        // TODO: throw exception
+        return;
+    }
+    NSString *interfaceString = [NSString stringWithUTF8String:interface];
+    NSString *methodString = [NSString stringWithUTF8String:method];
+    ((void(*)(Class, SEL, NSString *, NSString *, NSString *, int64_t))objc_msgSend)(target, selector, interfaceString, methodString, block, port);
+}
+
+void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallback)(id result, NSError *error)) {
+    const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
+    int count = 0;
+    const char **types = native_types_encoding(typeString, &count, 0);
+    NSError *error = nil;
+    if (count != arguments.count + 2) {
+        DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match")
+        if (resultCallback) {
+            resultCallback(nil, error);
+        }
+        return;
+    }
+    
+    NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    void **argsPtrPtr = (void **)alloca(arguments.count * sizeof(void *));
+    for (int i = 0; i < arguments.count; i++) {
+        const char *type = types[i + 2];
+        id arg = arguments[i];
+        if (type == native_type_object) {
+            argsPtrPtr[i] = (__bridge void *)arguments[i];
+        } else if (type[0] == '{') {
+            // Ignore, not support yet.
+            free((void *)type);
+            DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
+            if (resultCallback) {
+                resultCallback(nil, error);
+            }
+            return;
+        } else if ([arg isKindOfClass:NSNumber.class]) {
+            NSNumber *number = (NSNumber *)arg;
+            BOOL success = [number dn_setAsArgumentInList:argsPtrPtr atIndex:i encoding:type error:&error];
+            if (!success) {
+                DN_ERROR(&error, DNInterfaceError, @"NSNumber convertion failed")
+                if (resultCallback) {
+                    resultCallback(nil, error);
+                }
+                return;
+            }
+        }
+    }
+    _fillArgsToInvocation(signature, argsPtrPtr, invocation, 1, 0, nil);
+    [invocation invokeWithTarget:(__bridge id)block];
+    void *result = NULL;
+    const char *returnType = signature.methodReturnType;
+    if (resultCallback && signature.methodReturnLength > 0) {
+        if (*returnType == '{') {
+            DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
+            resultCallback(nil, error);
+            return;
+        } else if (*returnType == '@') {
+            [invocation getReturnValue:&result];
+            resultCallback((__bridge id)result, nil);
+        } else {
+            // NSNumber
+            NSNumber *number = [NSNumber dn_numberWithEncoding:returnType buffer:result error:&error];
+            resultCallback(number, error);
+        }
+    }
 }

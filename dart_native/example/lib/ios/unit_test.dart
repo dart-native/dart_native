@@ -141,6 +141,11 @@ Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
     return const CString('test return cstring');
   });
 
+  stub.fooStringBlock((String? a) {
+    print('hello block string! $a');
+    return 'test return string';
+  });
+
   stub.fooNSDictionaryBlock((NSDictionary? dict) {
     print('hello block nsdictionary! $dict');
     return dict;

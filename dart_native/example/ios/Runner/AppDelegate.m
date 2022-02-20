@@ -22,7 +22,7 @@
     FlutterViewController *controller = (FlutterViewController*)self.window.rootViewController;
 
     FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:@"sample.dartnative.com"
-                                                                       binaryMessenger:controller.binaryMessenger];
+                                                                binaryMessenger:controller.binaryMessenger];
     RuntimeSon *son = [RuntimeSon new];
     [channel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
         if ([call.method isEqualToString:@"fooString"]) {

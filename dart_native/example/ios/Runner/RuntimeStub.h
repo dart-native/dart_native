@@ -22,7 +22,7 @@ typedef NS_OPTIONS(NSUInteger, ItemIndex) {
 
 @protocol SampleDelegate
 
-- (NSObject *)callback;
+- (NSString *)callback;
 - (CGRect)callbackStruct:(CGRect)rect;
 
 @end
@@ -30,6 +30,7 @@ typedef NS_OPTIONS(NSUInteger, ItemIndex) {
 typedef NSObject * _Nonnull (^BarBlock)(NSObject *a);
 typedef CGAffineTransform (^StretBlock)(CGAffineTransform a);
 typedef char * _Nonnull (^CStringRetBlock)(char *a);
+typedef NSString * _Nonnull (^StringRetBlock)(NSString *a);
 typedef NSDictionary *_Nonnull (^NSDictionaryRetBlock)(NSDictionary *a);
 typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 
