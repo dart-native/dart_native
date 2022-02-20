@@ -268,6 +268,16 @@ static atomic_uint_fast64_t _seq = 0;
     return [NSString stringWithFormat:@"%@%d%@", retEncodeStr, currentLength, encodeStr];
 }
 
++ (void)invokeInterfaceBlock:(void *)block
+                   arguments:(NSArray *)arguments
+                      result:(void(^)(id result, NSError *error))resultCallback {
+    DNInterfaceBlockInvoke(block, arguments, resultCallback);
+}
+
++ (BOOL)testNotifyDart:(int64_t)port {
+    return TestNotifyDart(port);
+}
+
 @end
 
 static void DNHandleReturnValue(void *origRet, DNBlockWrapper *wrapper, DNInvocation *invocation) {

@@ -40,6 +40,7 @@ typedef NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSMutabl
 
 @property (class, nonatomic, readonly) dispatch_queue_t methodCallBlockQueue;
 @property (class, nonatomic, readonly) InterfaceMethodCallMap methodCallBlockInnerMap;
+@property (class, nonatomic, readonly) NSDictionary<NSString *, NSString *> *interfaceClassToNameMap;
 
 @end
 
@@ -48,6 +49,17 @@ typedef NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSMutabl
 // Map: Dart interface name -> OC class
 static NSMutableDictionary<NSString *, NSObject *> *interfaceNameToHostObjectInnerMap;
 static NSDictionary<NSString *, NSObject *> *interfaceNameToHostObjectCache;
+
+static NSMutableDictionary<NSString *, NSString *> *interfaceClassToNameInnerMap;
+static NSDictionary<NSString *, NSString *> *_interfaceClassToNameMap;
+
++ (NSDictionary<NSString *, NSString *> *)interfaceClassToNameMap {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _interfaceClassToNameMap = [interfaceClassToNameInnerMap copy];
+    });
+    return _interfaceClassToNameMap;
+}
 
 // Map: Dart interface name -> OC meta data
 static NSMutableDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfaceMethodsInnerMap;
@@ -78,6 +90,7 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
     dispatch_once(&onceToken, ^{
         interfaceNameToHostObjectInnerMap = [NSMutableDictionary dictionary];
         interfaceMethodsInnerMap = [NSMutableDictionary dictionary];
+        interfaceClassToNameInnerMap = [NSMutableDictionary dictionary];
     });
 
     if (interfaceNameToHostObjectInnerMap[name]) {
@@ -85,6 +98,7 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
     }
     NSObject<SwiftInterfaceEntry> *instance = [[cls alloc] init];
     interfaceNameToHostObjectInnerMap[name] = instance;
+    interfaceClassToNameInnerMap[NSStringFromClass(cls)] = name;
     
     BOOL isSwiftClass = [ClassWrittenInSwift isSwiftClass:cls];
     // find all registered methods
@@ -160,7 +174,7 @@ static dispatch_queue_t _methodCallBlockQueue;
                         block:(id)block
                      dartPort:(int64_t)port {
     if (interface.length == 0 || method.length == 0) {
-        // TODO: throw exception
+        NSCAssert(NO, @"interface and method shouldn't be empty!");
         return;
     }
     dispatch_barrier_async(self.methodCallBlockQueue, ^{
@@ -183,28 +197,61 @@ static dispatch_queue_t _methodCallBlockQueue;
            arguments:(NSArray *)arguments
               result:(DartNativeResult)result {
     if (interface.length == 0 || method.length == 0) {
-        // TODO: throw exception
+        NSCAssert(NO, @"interface and method shouldn't be empty!");
         return;
     }
-    extern BOOL DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallback)(id result, NSError *error));
     extern BOOL TestNotifyDart(int64_t port_id);
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         __block NSDictionary<NSNumber *, id> *callForPortMap;
         dispatch_sync(self.methodCallBlockQueue, ^{
             callForPortMap = [self.methodCallBlockInnerMap[interface][method] copy];
         });
+        if (callForPortMap.count == 0) {
+            NSCAssert(NO, @"Can't find method(%@) on interface(%@)!", method, interface);
+        }
+        Class target = NSClassFromString(@"DNBlockWrapper");
+        SEL invokeInterfaceSel = NSSelectorFromString(@"invokeInterfaceBlock:arguments:result:");
+        SEL testNotifyDartSel = NSSelectorFromString(@"testNotifyDart:");
+        if (!target || !invokeInterfaceSel) {
+            NSCAssert(NO, @"Can't load class DNBlockWrapper!");
+            return;
+        }
         [callForPortMap enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
             int64_t port = key.longValue;
             // test isolate alive.
-            BOOL success = TestNotifyDart(port);
+            BOOL success = ((BOOL(*)(Class, SEL, int64_t))objc_msgSend)(target, testNotifyDartSel, port);
             if (success) {
-                DNInterfaceBlockInvoke((__bridge void *)(obj), arguments, result);
+                ((void(*)(Class, SEL, void *, NSArray *, id))objc_msgSend)(target, invokeInterfaceSel, (__bridge void *)(obj), arguments, result);
             } else {
                 // remove block for dead isolate.
                 [self registerDartInterface:interface method:method block:nil dartPort:port];
             }
         }];
     });
+}
+
+@end
+
+@implementation NSObject (DNInterface)
+
++ (void)invokeMethod:(NSString *)method
+           arguments:(nullable NSArray *)arguments
+              result:(nullable DartNativeResult)result {
+    NSString *interfaceName = DNInterfaceRegistry.interfaceClassToNameMap[NSStringFromClass(self)];
+    [DNInterfaceRegistry invokeMethod:method
+                         forInterface:interfaceName
+                            arguments:arguments
+                               result:result];
+}
+
+- (void)invokeMethod:(NSString *)method
+           arguments:(nullable NSArray *)arguments
+              result:(nullable DartNativeResult)result {
+    NSString *interfaceName = DNInterfaceRegistry.interfaceClassToNameMap[NSStringFromClass(self.class)];
+    [DNInterfaceRegistry invokeMethod:method
+                         forInterface:interfaceName
+                            arguments:arguments
+                               result:result];
 }
 
 @end

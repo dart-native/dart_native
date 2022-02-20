@@ -63,12 +63,19 @@ DN_EXTERN NSMethodSignature * _Nullable native_method_signature(Class cls, SEL s
 
 DN_EXTERN void native_signature_encoding_list(NSMethodSignature *signature, const char * _Nonnull * _Nonnull typeEncodings, BOOL decodeRetVal);
 
-DN_EXTERN BOOL native_add_method(id target, SEL selector, char *types, void *callback, Dart_Port dartPort);
+DN_EXTERN BOOL native_add_method(id target, SEL selector, char *types, bool returnString, void *callback, Dart_Port dartPort);
 
 DN_EXTERN char * _Nullable native_protocol_method_types(Protocol *proto, SEL selector);
 
 DN_EXTERN Class _Nullable native_get_class(const char *className, Class superclass);
 
+/// Return a NSString for utf-16 data
+/// @param data data format: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
+DN_EXTERN NSString *NSStringFromUTF16Data(const unichar *data);
+
+/// Return utf-16 data for NSString. format: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
+/// @param retVal origin return value
+DN_EXTERN uint16_t *UTF16DataFromNSString(NSString *retVal);
 
 /// Invoke Objective-C method.
 /// @param object instance or class object.
@@ -78,7 +85,7 @@ DN_EXTERN Class _Nullable native_get_class(const char *className, Class supercla
 /// @param args arguments passed to method.
 /// @param dartPort port for dart isolate.
 /// @param stringTypeBitmask bitmask for checking if an argument is a string.
-/// @param retType type of return value.
+/// @param retType type of return value(out parameter).
 DN_EXTERN void * _Nullable native_instance_invoke(id object,
                                                   SEL selector,
                                                   NSMethodSignature *signature,
@@ -87,11 +94,17 @@ DN_EXTERN void * _Nullable native_instance_invoke(id object,
                                                   void (^callback)(void *),
                                                   Dart_Port dartPort, int64_t
                                                   stringTypeBitmask,
-                                                  const char *_Nonnull *_Nonnull retType);
+                                                  const char *_Nullable *_Nullable retType);
 
 DN_EXTERN void *native_block_create(char *types, void *callback, Dart_Port dartPort);
 
-DN_EXTERN void *native_block_invoke(void *block, void * _Nonnull * _Nullable args, Dart_Port dartPort, int64_t stringTypeBitmask);
+/// Invoke Objective-C block.
+/// @param block block object.
+/// @param args arguments passed to block.
+/// @param dartPort port for dart isolate.
+/// @param stringTypeBitmask bitmask for checking if an argument is a string.
+/// @param retType type of return value(out parameter).
+DN_EXTERN void *native_block_invoke(void *block, void * _Nonnull * _Nullable args, Dart_Port dartPort, int64_t stringTypeBitmask, const char *_Nullable *_Nullable retType);
 
 DN_EXTERN const char * _Nonnull * _Nonnull native_all_type_encodings(void);
 
@@ -111,11 +124,17 @@ DN_EXTERN void native_retain_object(id object);
 
 DN_EXTERN void native_release_object(id object);
 
+DN_EXTERN void native_autorelease_object(id object);
+
 DN_EXTERN const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t *length);
 
 #pragma mark - Dart VM API
 
 DN_EXTERN intptr_t InitDartApiDL(void *data);
+
+#pragma mark - Async Callback Basic
+
+DN_EXTERN BOOL TestNotifyDart(Dart_Port send_port);
 
 #pragma mark - Async Block Callback
 
@@ -148,8 +167,10 @@ DN_EXTERN bool NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
 DN_EXTERN void RegisterDeallocCallback(void (*callback)(intptr_t));
 
 typedef NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *DartNativeInterfaceMap;
-DN_EXTERN NSObject *DNInterfaceHostObjectWithName(NSString *name);
+DN_EXTERN NSObject *DNInterfaceHostObjectWithName(char *name);
 DN_EXTERN DartNativeInterfaceMap DNInterfaceAllMetaData(void);
+DN_EXTERN void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, Dart_Port port);
+DN_EXTERN void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallback)(id result, NSError *error));
 
 NS_ASSUME_NONNULL_END
 

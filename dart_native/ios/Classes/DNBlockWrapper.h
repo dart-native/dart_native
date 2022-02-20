@@ -72,6 +72,11 @@ typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, voi
                           dartPort:(Dart_Port)dartPort
                              error:(out NSError **)error;
 
++ (void)invokeInterfaceBlock:(void *)block
+                   arguments:(NSArray *)arguments
+                      result:(void(^)(id result, NSError *error))resultCallback;
++ (BOOL)testNotifyDart:(int64_t)port;
+
 @end
 
 NS_ASSUME_NONNULL_END

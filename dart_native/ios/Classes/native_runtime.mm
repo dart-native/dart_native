@@ -795,7 +795,7 @@ static void _RunFinalizer(void *isolate_callback_data,
         objectRefCount[address] = @(refCount - 1);
         return;
     }
-    native_release_object((__bridge id)peer );
+    native_release_object((__bridge id)peer);
     objectRefCount[address] = nil;
 }
 
@@ -930,7 +930,9 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallbac
             return;
         } else if ([arg isKindOfClass:NSNumber.class]) {
             NSNumber *number = (NSNumber *)arg;
-            BOOL success = [number dn_setAsArgumentInList:argsPtrPtr atIndex:i encoding:type error:&error];
+            // first argument is block itself, skip it.
+            const char *encoding = [signature getArgumentTypeAtIndex:i + 1];
+            BOOL success = [number dn_setAsArgumentInBuffer:argsPtrPtr + i encoding:encoding error:&error];
             if (!success) {
                 DN_ERROR(&error, DNInterfaceError, @"NSNumber convertion failed")
                 if (resultCallback) {
@@ -953,6 +955,7 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallbac
             [invocation getReturnValue:&result];
             resultCallback((__bridge id)result, nil);
         } else {
+            [invocation getReturnValue:&result];
             // NSNumber
             NSNumber *number = [NSNumber dn_numberWithEncoding:returnType buffer:result error:&error];
             resultCallback(number, error);

@@ -17,7 +17,7 @@
 InterfaceEntry(MyFirstInterface)
 
 InterfaceMethod(hello, myHello:(NSString *)str) {
-    [DNInterfaceDemo invokeMethod:@"hello" arguments:@[@"world"] result:^(id  _Nullable result, NSError * _Nullable error) {
+    [self invokeMethod:@"totalCost" arguments:@[@0.123456789, @10, @[@"testArray"]] result:^(id _Nullable result, NSError * _Nullable error) {
         NSLog(@"%@", result);
     }];
     return [NSString stringWithFormat:@"hello %@!", str];

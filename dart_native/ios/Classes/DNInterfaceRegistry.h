@@ -11,14 +11,6 @@
     + (void)load {                                                    \
         [DNInterfaceRegistry registerInterface:@#name forClass:self]; \
     }                                                                 \
-    + (void)invokeMethod:(NSString*)method                            \
-               arguments:(nullable NSArray *)arguments                \
-                  result:(nullable DartNativeResult)result {          \
-        [DNInterfaceRegistry invokeMethod:method                      \
-                             forInterface:@#name                      \
-                                arguments:arguments                   \
-                                   result:result];                    \
-    }
 
 #define InterfaceMethod(name, method) \
     RegisterMethod(name, method, __LINE__, __COUNTER__)
@@ -57,7 +49,20 @@ NS_SWIFT_NAME(InterfaceRegistry)
 @protocol SwiftInterfaceEntry
 
 @required
+
 - (NSDictionary<NSString *, id> *)mappingTableForInterfaceMethod;
+
+@end
+
+@interface NSObject (DNInterface)
+
++ (void)invokeMethod:(NSString *)method
+           arguments:(nullable NSArray *)arguments
+              result:(nullable DartNativeResult)result;
+
+- (void)invokeMethod:(NSString *)method
+           arguments:(nullable NSArray *)arguments
+              result:(nullable DartNativeResult)result;
 
 @end
 

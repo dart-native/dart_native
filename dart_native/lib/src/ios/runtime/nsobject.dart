@@ -89,6 +89,12 @@ dynamic objcInstanceFromPointer(Pointer<Void> arg, String? type) {
     if (type.endsWith('?')) {
       type = type.substring(0, type.length - 1);
     }
+    for (String keyword in ['List', 'Map', 'Set']) {
+      if (type?.startsWith(keyword) ?? false) {
+        type = keyword;
+        break;
+      }
+    }
   } else {
     /// Retrive class name from native.
     var object = NSObject.fromPointer(arg);
@@ -105,5 +111,14 @@ dynamic objcInstanceFromPointer(Pointer<Void> arg, String? type) {
 Map<String, ConvertorFromPointer> _convertorCache = {
   'String': (ptr) {
     return NSString.fromPointer(ptr).raw;
+  },
+  'List': (ptr) {
+    return NSArray.fromPointer(ptr).raw;
+  },
+  'Map': (ptr) {
+    return NSDictionary.fromPointer(ptr).raw;
+  },
+  'Set': (ptr) {
+    return NSSet.fromPointer(ptr).raw;
   },
 };

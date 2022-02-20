@@ -15,10 +15,9 @@ typedef NSNumber *(^DNArgumentGetAction)(void *buffer);
 static NSDictionary<NSNumber *, DNArgumentSetAction> *gArgumentTypeSetStrategy;
 static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
 
-- (BOOL)dn_setAsArgumentInList:(void **)args
-                       atIndex:(NSUInteger)index
-                      encoding:(const char *)encoding
-                         error:(out NSError **)error {
+- (BOOL)dn_setAsArgumentInBuffer:(void **)buffer
+                        encoding:(const char *)encoding
+                           error:(out NSError **)error {
     
 
     /** Doing this type switching below because when we call NSNumber's methods like 'doubleValue' or 'floatValue',
@@ -29,15 +28,14 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
         NSMutableDictionary<NSNumber *, DNArgumentSetAction> *temp = [NSMutableDictionary dictionary];
          
 #define SET_ARG_METHOD(type, method) \
-        temp[@(*@encode(type))] = ^void(NSNumber *num, void **argList, NSInteger index) { \
+        temp[@(*@encode(type))] = ^void(NSNumber *num, void **buffer, NSInteger index) { \
             type converted = [num method]; \
-            if (!argList[index]) { \
+            if (!buffer) { \
                 return; \
             } \
-            void *arg = argList[index]; \
             NSUInteger argSize; \
             NSGetSizeAndAlignment(@encode(type), &argSize, NULL); \
-            memcpy(arg, (void *)&converted, argSize); \
+            memcpy(buffer, (void *)&converted, argSize); \
         };
 #define SET_ARG(type) SET_ARG_METHOD(type, type##Value)
         
@@ -70,10 +68,9 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
     }
     
     DNArgumentSetAction action = gArgumentTypeSetStrategy[@(*encoding)];
-    
     if (action) {
         NSInteger signedIndex = (NSInteger)index;
-        action(self, args, signedIndex);
+        action(self, buffer, signedIndex);
     } else {
         DN_ERROR(error, DNUnwrapValueError, @"Invalid Number: Type '%s' is not supported.", encoding)
         return NO;
@@ -84,7 +81,7 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
 + (instancetype)dn_numberWithEncoding:(const char *)encoding
                                buffer:(void *)buffer
                                 error:(out NSError **)error {
-    if (!gArgumentTypeSetStrategy) {
+    if (!gArgumentTypeGetStrategy) {
         NSMutableDictionary<NSNumber *, DNArgumentGetAction> *temp = [NSMutableDictionary dictionary];
 #define DNConcat(a, b) a##b
 #define GET_ARG_METHOD(type, method) \
@@ -96,7 +93,7 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
         NSUInteger argSize; \
         NSGetSizeAndAlignment(@encode(type), &argSize, NULL); \
         memcpy((void *)&num, &buffer, argSize); \
-return [NSNumber DNConcat(numberWith, method) : num ]; \
+        return [NSNumber DNConcat(numberWith, method):num]; \
     };
         GET_ARG_METHOD(int, Int)
         GET_ARG_METHOD(unsigned int, UnsignedInt)
@@ -115,6 +112,7 @@ return [NSNumber DNConcat(numberWith, method) : num ]; \
         GET_ARG_METHOD(NSInteger, UnsignedInteger)
         gArgumentTypeGetStrategy = [temp copy];
     }
+
     DNArgumentGetAction action = gArgumentTypeGetStrategy[@(*encoding)];
     if (action) {
         return action(buffer);

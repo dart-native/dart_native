@@ -234,6 +234,9 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
   }
   if (result is id) {
     retainObject(result.pointer);
+  } else if (result is List || result is Map || result is Set) {
+    // retain lifecycle for async invocation. release on objc when invocation finished.
+    retainObject(retPtrPtr.value);
   }
 }
 
