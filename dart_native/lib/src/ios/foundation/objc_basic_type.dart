@@ -5,7 +5,9 @@ typedef BOOL = bool;
 typedef NSInteger = int;
 typedef NSUInteger = int;
 typedef CGFloat = double;
-typedef CString = NativeBox<String>;
+class CString extends NativeBox<String> {
+  const CString(String raw) : super(raw);
+}
 
 /// Wrapper for Objective-C NS_ENUM
 typedef NSEnum = int;

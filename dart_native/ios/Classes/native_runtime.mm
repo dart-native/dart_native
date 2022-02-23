@@ -905,7 +905,7 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallbac
     const char **types = native_types_encoding(typeString, &count, 0);
     NSError *error = nil;
     if (count != arguments.count + 2) {
-        DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match")
+        DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match! ")
         if (resultCallback) {
             resultCallback(nil, error);
         }

@@ -6,8 +6,11 @@ import 'package:dart_native/src/ios/interface/interface_runtime.dart';
 abstract class InterfaceRuntime {
   Pointer<Void> hostObjectWithInterfaceName(String name);
   Map<String, String> methodTableWithInterfaceName(String name);
-  T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args});
-  Future<T> invokeAsync<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args});
+  T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName,
+      {List? args});
+  Future<T> invokeAsync<T>(
+      String interfaceName, Pointer<Void> hostObject, String methodName,
+      {List? args});
   void setMethodCallHandler(
       String interfaceName, String method, Function? function);
 }
@@ -33,11 +36,13 @@ class Interface {
   }
 
   T invoke<T>(String method, {List? args}) {
-    return _runtime.invoke(name, _hostObject, _nativeMethodName(method), args: args);
+    return _runtime.invoke(name, _hostObject, _nativeMethodName(method),
+        args: args);
   }
 
   Future<T> invokeAsync<T>(String method, {List? args}) {
-    return _runtime.invokeAsync(name, _hostObject, _nativeMethodName(method), args: args);
+    return _runtime.invokeAsync(name, _hostObject, _nativeMethodName(method),
+        args: args);
   }
 
   String _nativeMethodName(String method) {

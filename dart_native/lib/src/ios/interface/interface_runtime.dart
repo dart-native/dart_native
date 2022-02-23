@@ -22,14 +22,18 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
   }
 
   @override
-  T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args}) {
+  T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName,
+      {List? args}) {
     dynamic result = msgSend(hostObject, SEL(methodName), args: args);
     return _postprocessResult<T>(result);
   }
 
   @override
-  Future<T> invokeAsync<T>(String interfaceName, Pointer<Void> hostObject, String methodName, {List? args}) {
-    return msgSendAsync<dynamic>(hostObject, SEL(methodName), args: args).then((value){
+  Future<T> invokeAsync<T>(
+      String interfaceName, Pointer<Void> hostObject, String methodName,
+      {List? args}) {
+    return msgSendAsync<dynamic>(hostObject, SEL(methodName), args: args)
+        .then((value) {
       return _postprocessResult<T>(value);
     });
   }
@@ -71,7 +75,8 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
   }
 
   @override
-  void setMethodCallHandler(String interfaceName, String method, Function? function) {
+  void setMethodCallHandler(
+      String interfaceName, String method, Function? function) {
     final block = function == null ? nil : Block(function);
     final namePtr = interfaceName.toNativeUtf8();
     final methodPtr = method.toNativeUtf8();
@@ -81,21 +86,23 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
   }
 }
 
-final Pointer<Void> Function(Pointer<Utf8>) interfaceHostObjectWithName = nativeDylib
-    .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
-        'DNInterfaceHostObjectWithName')
-    .asFunction();
-
-final Pointer<Void> Function() interfaceAllMetaData =
+final Pointer<Void> Function(Pointer<Utf8>) interfaceHostObjectWithName =
     nativeDylib
-        .lookup<NativeFunction<Pointer<Void> Function()>>(
-            'DNInterfaceAllMetaData')
+        .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
+            'DNInterfaceHostObjectWithName')
         .asFunction();
 
-final void Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Void>, int) registerDartInterface = nativeDylib
-    .lookup<NativeFunction<Void Function(Pointer<Utf8>, Pointer<Utf8>,
-                    Pointer<Void>, Int64)>>('DNInterfaceRegisterDartInterface')
+final Pointer<Void> Function() interfaceAllMetaData = nativeDylib
+    .lookup<NativeFunction<Pointer<Void> Function()>>('DNInterfaceAllMetaData')
     .asFunction();
+
+final void Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Void>, int)
+    registerDartInterface = nativeDylib
+        .lookup<
+            NativeFunction<
+                Void Function(Pointer<Utf8>, Pointer<Utf8>, Pointer<Void>,
+                    Int64)>>('DNInterfaceRegisterDartInterface')
+        .asFunction();
 
 Map _mapForInterfaceMetaData() {
   Pointer<Void> ptr = interfaceAllMetaData();

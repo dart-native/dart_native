@@ -18,8 +18,8 @@ bool registerMethodCallback(
   List<String> dartTypes = dartTypeStringForFunction(function);
   List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
   bool returnString = nativeTypes.first == 'String';
-  int result =
-      nativeAddMethod(targetPtr, selectorPtr, types, returnString, _callbackPtr, nativePort);
+  int result = nativeAddMethod(
+      targetPtr, selectorPtr, types, returnString, _callbackPtr, nativePort);
   return result != 0;
 }
 

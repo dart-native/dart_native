@@ -13,11 +13,13 @@
 #endif
 
 @implementation DNInterfaceDemo
-
-InterfaceEntry(MyFirstInterface)
-
+// Register interface name.
+InterfaceEntry(MyFirstInterface) 
+// Register method name.
 InterfaceMethod(hello, myHello:(NSString *)str) {
-    [self invokeMethod:@"totalCost" arguments:@[@0.123456789, @10, @[@"testArray"]] result:^(id _Nullable result, NSError * _Nullable error) {
+    [self invokeMethod:@"totalCost"
+             arguments:@[@0.123456789, @10, @[@"testArray"]]
+                result:^(id _Nullable result, NSError * _Nullable error) {
         NSLog(@"%@", result);
     }];
     return [NSString stringWithFormat:@"hello %@!", str];

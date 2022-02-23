@@ -6,7 +6,8 @@ import 'package:dart_native/src/ios/runtime/nsobject.dart';
 import 'package:dart_native/src/ios/runtime/selector.dart';
 
 class PointerWrapper extends NSObject {
-  PointerWrapper(Pointer<Void> value) : super.fromPointer(_initWithPointer(value));
+  PointerWrapper(Pointer<Void> value)
+      : super.fromPointer(_initWithPointer(value));
 
   Pointer<Void> get value => perform(SEL('pointer'));
 

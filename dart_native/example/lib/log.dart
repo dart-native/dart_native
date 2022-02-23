@@ -3,6 +3,10 @@ import 'package:dart_native/dart_native.dart';
 /// Log using DartNative Interface
 final _logInterface = Interface("logInterface");
 
+_log(LogLevel level, String message) {
+  _logInterface.invoke('log', args: [level.raw, message]);
+}
+
 class LogLevel {
   final int raw;
   static const LogLevel error = LogLevel._internal(0x1);
@@ -33,10 +37,6 @@ class Log {
 
   static v(String message) {
     _log(LogLevel.verbose, message);
-  }
-
-  static _log(LogLevel level, String message) {
-    _logInterface.invoke('log', args: [level.raw, message]);
   }
 
   static setLevel(LogLevel level) {

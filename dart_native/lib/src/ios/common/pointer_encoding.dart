@@ -410,6 +410,36 @@ List<String> _nativeTypeNames = [
   'CGAffineTransform',
 ];
 
+List<String> parseSignature(String signature) {
+  List<String> result = [];
+  String current = '';
+  int depth = 0;
+  for (var rune in signature.runes) {
+    // skip generic
+    if (rune == 60) { // '<'
+      depth++;
+      continue;
+    } else if (rune == 62) { // '>'
+      depth--;
+      continue;
+    } else if (depth > 0) {
+      continue;
+    } else if (rune == 32) { // ' '
+      // skip whitespace
+      continue;
+    } else if (rune == 44) { // ','
+      result.add(current);
+      current = '';
+    } else {
+      // add char to current type
+      current += String.fromCharCode(rune);
+    }
+  }
+  // Add last
+  result.add(current);
+  return result;
+}
+
 List<String> dartTypeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
@@ -419,9 +449,9 @@ List<String> dartTypeStringForFunction(Function function) {
     String ret = argsAndRet.last.replaceAll('Null', 'void');
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      result = '$ret, $args'.split(', ');
+      result = parseSignature('$ret, $args');
     } else {
-      result = [ret];
+      result = parseSignature(ret);
     }
   }
   // handle nullsafety, such as [NSString?]
