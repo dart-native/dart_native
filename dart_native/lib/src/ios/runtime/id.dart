@@ -24,9 +24,6 @@ class id implements NSObjectProtocol {
     return _ptr;
   }
 
-  String get _address =>
-      '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
-
   id(this._ptr);
 
   /// NSObjectProtocol
@@ -132,7 +129,8 @@ class id implements NSObjectProtocol {
 
   @override
   String toString() {
-    return '<${isa?.name}: $_address>';
+    final address = '0x${pointer.address.toRadixString(16).padLeft(16, '0')}';
+    return '<${isa?.name}: $address>';
   }
 
   @override

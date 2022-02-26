@@ -24,12 +24,6 @@ class Writer {
     }
 
     String result = "import 'package:dart_native/dart_native.dart';";
-    Set<String> importFiles = type == ClassType.Java
-        ? collector.javaImportFiles
-        : collector.ocImportFiles;
-    result += importFiles.map((String importFile) {
-      return "import '$importFile';";
-    }).join('\n');
 
     if (Collector.packageName == 'dart_native') {
       result += """
@@ -37,6 +31,13 @@ class Writer {
         bool get hadRanDartNative => _hadRanDartNative;
 
         """;
+    } else {
+      Set<String> importFiles = type == ClassType.Java
+          ? collector.javaImportFiles
+          : collector.ocImportFiles;
+      result += importFiles.map((String importFile) {
+        return "import '$importFile';";
+      }).join('\n');
     }
 
     String functionName =

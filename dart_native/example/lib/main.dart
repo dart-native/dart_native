@@ -1,3 +1,4 @@
+import 'package:ffi/ffi.dart';
 import 'package:dart_native_example/main.dn.dart';
 import 'package:flutter/material.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
@@ -42,9 +43,16 @@ class _DartNativeAppState extends State<DartNativeApp> {
       return {'totalCost: ${unitCost * count}': list};
     });
     result = helloWorld();
+    final data = getUTF8Data(result);
+    // The number of bytes equals the length of uint8 list.
+    final utf8Result = data.bytes.cast<Utf8>().toDartString(length: data.length);
+    // They should be equal.
+    assert(utf8Result == result);
+    // ignore: unused_local_variable
+    final objectWillDie = DartLifecycleObject(); // test dart finalizer
+    
     final unitTest = DNUnitTest();
-
-    /// run all test case
+    /// Run all test cases.
     await unitTest.runAllUnitTests();
   }
 
@@ -54,6 +62,10 @@ class _DartNativeAppState extends State<DartNativeApp> {
 
   Future<int> sum(int a, int b) {
     return interface.invokeAsync('sum', args: [a, b]);
+  }
+
+  NativeData getUTF8Data(String str) {
+    return interface.invoke('getUTF8Data', args: [str]);
   }
 
   void testCallback() {
@@ -124,5 +136,13 @@ class _DartNativeAppState extends State<DartNativeApp> {
         ),
       ),
     );
+  }
+}
+
+
+class DartLifecycleObject {
+  late final dynamic finalizer;
+  DartLifecycleObject() {
+    finalizer = interface.invoke('finalizer');
   }
 }

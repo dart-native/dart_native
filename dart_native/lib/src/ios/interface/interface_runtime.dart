@@ -51,6 +51,11 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
           final str = NSString.fromPointer(result.pointer);
           return str.raw as T;
         }
+      } else if (T == NativeData || T == NSData) {
+        if (result.isKind(of: Class('NSData'))) {
+          final data = NSData.fromPointer(result.pointer);
+          return data as T;
+        }
       } else if (T == List) {
         if (result.isKind(of: Class('NSArray'))) {
           final array = NSArray.fromPointer(result.pointer);
@@ -66,6 +71,8 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
           final set = NSSet.fromPointer(result.pointer);
           return set.raw as T;
         }
+      } else if (T == dynamic) {
+        return result as T;
       }
       throw 'The result for interface doesn\'t match it\'s type $T';
     } else if (result is NSSubclass) {

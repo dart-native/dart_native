@@ -410,24 +410,32 @@ List<String> _nativeTypeNames = [
   'CGAffineTransform',
 ];
 
-List<String> parseSignature(String signature) {
+/// Parse signature to list of types.
+///
+/// These contents will be ignored: generics, whitespaces, question marks for nullable.
+List<String> parseFunctionSignature(String signature) {
   List<String> result = [];
   String current = '';
   int depth = 0;
   for (var rune in signature.runes) {
     // skip generic
-    if (rune == 60) { // '<'
+    if (rune == 60) {
+      // '<'
       depth++;
       continue;
-    } else if (rune == 62) { // '>'
+    } else if (rune == 62) {
+      // '>'
       depth--;
       continue;
     } else if (depth > 0) {
+      // skip generic body
       continue;
-    } else if (rune == 32) { // ' '
-      // skip whitespace
+    } else if (rune == 32 || rune == 63) {
+      // ' ' or '?'
+      // skip whitespace and nullable
       continue;
-    } else if (rune == 44) { // ','
+    } else if (rune == 44) {
+      // ','
       result.add(current);
       current = '';
     } else {
@@ -446,21 +454,14 @@ List<String> dartTypeStringForFunction(Function function) {
   List<String> result = [];
   if (argsAndRet.length == 2) {
     String args = argsAndRet.first;
-    String ret = argsAndRet.last.replaceAll('Null', 'void');
+    String ret = argsAndRet.last;
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      result = parseSignature('$ret, $args');
+      result = parseFunctionSignature('$ret, $args');
     } else {
-      result = parseSignature(ret);
+      result = parseFunctionSignature(ret);
     }
   }
-  // handle nullsafety, such as [NSString?]
-  result = result.map((e) {
-    if (e.endsWith("?")) {
-      e = e.substring(0, e.length - 1);
-    }
-    return e;
-  }).toList();
   return result;
 }
 
@@ -477,7 +478,7 @@ List<String> nativeTypeStringForDartTypes(List<String> types) {
       if (s == 'String') {
         // special logic for String, see objc function '_parseTypeNames:error:'
         return 'String';
-      } else {  
+      } else {
         return 'NSObject';
       }
     }
