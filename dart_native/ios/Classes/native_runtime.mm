@@ -660,9 +660,8 @@ intptr_t InitDartApiDL(void *data) {
 
 typedef std::function<void()> Work;
 
-BOOL NotifyDart(Dart_Port send_port, const Work* work) {
+BOOL NotifyDart(Dart_Port send_port, const Work *work) {
     const intptr_t work_addr = reinterpret_cast<intptr_t>(work);
-
     Dart_CObject dart_object;
     dart_object.type = Dart_CObject_kInt64;
     dart_object.value.as_int64 = work_addr;
@@ -715,7 +714,7 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
             dispatch_semaphore_signal(sema);
         }
     };
-    const Work* work_ptr = new Work(work);
+    const Work *work_ptr = new Work(work);
     BOOL success = NotifyDart(wrapper.dartPort, work_ptr);
     if (success && !isVoid) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
@@ -749,7 +748,7 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                      methodIMP.stret);
             dispatch_group_leave(group);
         };
-        const Work* work_ptr = new Work(work);
+        const Work *work_ptr = new Work(work);
         Dart_Port dartPort = port.integerValue;
         BOOL success = NotifyDart(dartPort, work_ptr);
         if (success) {
@@ -775,7 +774,8 @@ bool NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
     const Work work = [address, callback]() {
         callback(address);
     };
-    const Work* work_ptr = new Work(work);
+
+    const Work *work_ptr = new Work(work);
     return NotifyDart(dartPort, work_ptr);
 }
 
@@ -864,8 +864,8 @@ DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
 
 #pragma mark - Interface
 
-// Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class,
-// so we have to use objc runtime.
+/// Each interface has an object on each thread. Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class, so we have to use objc runtime.
+/// @param name name of interface
 NSObject *DNInterfaceHostObjectWithName(char *name) {
     Class target = NSClassFromString(@"DNInterfaceRegistry");
     SEL selector = NSSelectorFromString(@"hostObjectWithName:");

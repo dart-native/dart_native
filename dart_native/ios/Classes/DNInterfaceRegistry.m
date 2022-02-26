@@ -47,8 +47,8 @@ typedef NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSMutabl
 @implementation DNInterfaceRegistry
 
 // Map: Dart interface name -> OC class
-static NSMutableDictionary<NSString *, NSObject *> *interfaceNameToHostObjectInnerMap;
-static NSDictionary<NSString *, NSObject *> *interfaceNameToHostObjectCache;
+static NSMutableDictionary<NSString *, Class> *interfaceNameToClassInnerMap;
+static NSDictionary<NSString *, Class> *interfaceNameToClassCache;
 
 static NSMutableDictionary<NSString *, NSString *> *interfaceClassToNameInnerMap;
 static NSDictionary<NSString *, NSString *> *_interfaceClassToNameMap;
@@ -88,16 +88,16 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
         
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        interfaceNameToHostObjectInnerMap = [NSMutableDictionary dictionary];
+        interfaceNameToClassInnerMap = [NSMutableDictionary dictionary];
         interfaceMethodsInnerMap = [NSMutableDictionary dictionary];
         interfaceClassToNameInnerMap = [NSMutableDictionary dictionary];
     });
 
-    if (interfaceNameToHostObjectInnerMap[name]) {
+    if (interfaceNameToClassInnerMap[name]) {
         return NO;
     }
-    NSObject<SwiftInterfaceEntry> *instance = [[cls alloc] init];
-    interfaceNameToHostObjectInnerMap[name] = instance;
+    
+    interfaceNameToClassInnerMap[name] = cls;
     interfaceClassToNameInnerMap[NSStringFromClass(cls)] = name;
     
     BOOL isSwiftClass = [ClassWrittenInSwift isSwiftClass:cls];
@@ -105,8 +105,8 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
     NSMutableDictionary<NSString *, NSString *> *tempMethods = [NSMutableDictionary dictionary];
     
     if (isSwiftClass) {
-        if ([instance respondsToSelector:@selector(mappingTableForInterfaceMethod)]) {
-            NSDictionary<NSString *, id> *table = [instance mappingTableForInterfaceMethod];
+        if ([cls respondsToSelector:@selector(mappingTableForInterfaceMethod)]) {
+            NSDictionary<NSString *, id> *table = [cls mappingTableForInterfaceMethod];
             [table enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
                 tempMethods[key] = [NSString stringWithFormat:@"%@", obj];
             }];
@@ -133,12 +133,23 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
     return YES;
 }
 
+/// Each interface has an object on each thread
+/// @param name name of interface
 + (NSObject *)hostObjectWithName:(NSString *)name {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        interfaceNameToHostObjectCache = [interfaceNameToHostObjectInnerMap copy];
+        interfaceNameToClassCache = [interfaceNameToClassInnerMap copy];
     });
-    return interfaceNameToHostObjectCache[name];
+    static NSString * const DartNativeInterfaceNameTLSPrefix = @"__DartNativeInterfaceName__";
+    // store host object using tls.
+    NSString *key = [NSString stringWithFormat:@"%@%@", DartNativeInterfaceNameTLSPrefix, name];
+    NSObject *result = NSThread.currentThread.threadDictionary[key];
+    Class cls = interfaceNameToClassCache[name];
+    if (!result) {
+        result = [[cls alloc] init];
+        NSThread.currentThread.threadDictionary[key] = result;
+    }
+    return result;
 }
 
 + (NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *)allMetaData {

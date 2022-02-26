@@ -23,8 +23,8 @@ extension InterfaceRegistry {
 @objcMembers
 class LogInterface: NSObject, SwiftInterfaceEntry {
     // Step 4: Register selectors for interface methods
-    // #selector(forInterfaceMethod:) is declared in SwiftInterfaceEntry
-    func mappingTableForInterfaceMethod() -> [String : Any] {
+    // mappingTableForInterfaceMethod is declared in SwiftInterfaceEntry
+    static func mappingTableForInterfaceMethod() -> [String : Any] {
         // Binding selectors and interface method
         return [
             "log": #selector(LogInterface.log(_:message:)),

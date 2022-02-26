@@ -50,7 +50,7 @@ NS_SWIFT_NAME(InterfaceRegistry)
 
 @required
 
-- (NSDictionary<NSString *, id> *)mappingTableForInterfaceMethod;
++ (NSDictionary<NSString *, id> *)mappingTableForInterfaceMethod;
 
 @end
 

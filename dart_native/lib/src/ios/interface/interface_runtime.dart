@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/common/interface_runtime.dart';
 import 'package:dart_native/src/ios/common/callback_manager.dart';
 import 'package:dart_native/src/ios/common/library.dart';
 import 'package:dart_native/src/ios/runtime/internal/nssubclass.dart';
@@ -9,7 +10,7 @@ import 'package:ffi/ffi.dart';
 
 class InterfaceRuntimeObjC extends InterfaceRuntime {
   @override
-  Pointer<Void> hostObjectWithInterfaceName(String name) {
+  Pointer<Void> nativeObjectPointerForInterfaceName(String name) {
     final ptr = name.toNativeUtf8();
     final result = interfaceHostObjectWithName(ptr);
     calloc.free(ptr);
@@ -22,17 +23,16 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
   }
 
   @override
-  T invoke<T>(String interfaceName, Pointer<Void> hostObject, String methodName,
+  T invoke<T>(Pointer<Void> nativeObjectPointer, String methodName,
       {List? args}) {
-    dynamic result = msgSend(hostObject, SEL(methodName), args: args);
+    dynamic result = msgSend(nativeObjectPointer, SEL(methodName), args: args);
     return _postprocessResult<T>(result);
   }
 
   @override
-  Future<T> invokeAsync<T>(
-      String interfaceName, Pointer<Void> hostObject, String methodName,
+  Future<T> invokeAsync<T>(Pointer<Void> nativeObjectPointer, String methodName,
       {List? args}) {
-    return msgSendAsync<dynamic>(hostObject, SEL(methodName), args: args)
+    return msgSendAsync<dynamic>(nativeObjectPointer, SEL(methodName), args: args)
         .then((value) {
       return _postprocessResult<T>(value);
     });
@@ -67,6 +67,7 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
           return set.raw as T;
         }
       }
+      throw 'The result for interface doesn\'t match it\'s type $T';
     } else if (result is NSSubclass) {
       // unbox
       result = result.raw;
