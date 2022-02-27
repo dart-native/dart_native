@@ -105,9 +105,9 @@ typedef BlockCallbackC = Void Function(
     Int32 stret,
     Int64 seq);
 typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
-    Pointer<NativeFunction<BlockCallbackC>> callback, Int64 dartPort);
+    Pointer<NativeFunction<BlockCallbackC>> callback, Bool shouldReturnAsync, Int64 dartPort);
 typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
-    Pointer<NativeFunction<BlockCallbackC>> callback, int dartPort);
+    Pointer<NativeFunction<BlockCallbackC>> callback, bool shouldReturnAsync, int dartPort);
 final BlockCreateD blockCreate = runtimeLib
     .lookupFunction<BlockCreateC, BlockCreateD>('native_block_create');
 

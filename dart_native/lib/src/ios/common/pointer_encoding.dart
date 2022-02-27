@@ -1,15 +1,14 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
-import 'package:dart_native/src/ios/dart_objc.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_box.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 import 'package:ffi/ffi.dart';
 
-// TODO: change encoding hard code string to const var.
-Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
+Map<Pointer<Utf8>, Function> _storeBasicValueStrategyMap = {
   TypeEncodings.b: (Pointer ptr, dynamic object) {
     ptr.cast<Bool>().value = object;
   },
@@ -64,11 +63,17 @@ dynamic storeValueToPointer(
       // unwrap from box.
       object = object.raw;
     }
-    Function? strategy = _storeValueStrategyMap[encoding];
-    if (strategy == null) {
-      throw '$object not match type $encoding!';
-    } else {
-      return strategy(ptr, object);
+    if (encoding == TypeEncodings.object) {
+      // should convert to NSNumber object
+      NSNumber number = NSNumber(object);
+      ptr.value = number.pointer;
+    } else  {
+      Function? strategy = _storeBasicValueStrategyMap[encoding];
+      if (strategy == null) {
+        throw '$object not match type $encoding!';
+      } else {
+        return strategy(ptr, object);
+      }
     }
   } else if (object is Pointer<Void> && !encoding.isNum) {
     ptr.value = object;
@@ -103,6 +108,8 @@ dynamic storeValueToPointer(
   } else if (encoding.isStruct) {
     // ptr is struct pointer
     return storeStructToPointer(ptr, object);
+  } else if (object is NativeBuffer) {
+    ptr.value = object.raw.pointer;
   } else {
     throw '$object not match type $encoding!';
   }

@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "DNMacro.h"
 #import "dart_api_dl.h"
+#import "native_runtime.h"
 
 #ifndef DNBlockWrapper_h
 #define DNBlockWrapper_h
@@ -55,26 +56,29 @@ typedef struct DNBlock {
 
 DN_EXTERN const char *DNBlockTypeEncodeString(id blockObj);
 
-typedef void (*NativeBlockCallback)(void *_Nullable *_Null_unspecified args, void *ret, int numberOfArguments, BOOL stret, int64_t seq);
+typedef void (*BlockFunctionPointer)(void *_Nullable *_Null_unspecified args, void *ret, int numberOfArguments, BOOL stret, int64_t seq);
 
 @interface DNBlockWrapper : NSObject
 
 @property (nonatomic, readonly) const char *_Nonnull *_Nonnull typeEncodings;
-@property (nonatomic, readonly) NativeBlockCallback callback;
+@property (nonatomic, readonly) BlockFunctionPointer function;
+@property (nonatomic, readonly, getter=shouldReturnAsync) BOOL returnAsync;
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
+@property (nonatomic, readonly) NSMethodSignature *signature;
 @property (nonatomic, readonly) int64_t sequence;
 @property (nonatomic, readonly) Dart_Port dartPort;
 
 - (intptr_t)blockAddress;
 
 - (instancetype)initWithTypeString:(char *)typeString
-                          callback:(NativeBlockCallback)callback
+                          function:(BlockFunctionPointer)function
+                       returnAsync:(BOOL)returnAsync
                           dartPort:(Dart_Port)dartPort
                              error:(out NSError **)error;
 
 + (void)invokeInterfaceBlock:(void *)block
                    arguments:(NSArray *)arguments
-                      result:(void(^)(id result, NSError *error))resultCallback;
+                      result:(nullable BlockResultCallback)resultCallback;
 + (BOOL)testNotifyDart:(int64_t)port;
 
 @end

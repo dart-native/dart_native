@@ -27,6 +27,7 @@ final Block nilBlock = Block.fromPointer(nullptr);
 
 class Block extends id {
   Function? function;
+  bool shouldReturnAsync = false;
   NSObject? _wrapper; // Block hold wrapper
   List<String> types = [];
   int sequence = -1;
@@ -38,10 +39,15 @@ class Block extends id {
   /// the same name.
   factory Block(Function function) {
     List<String> dartTypes = dartTypeStringForFunction(function);
+    bool shouldReturnAsync = dartTypes.first.startsWith('Future');
+    // block receives results from dart function asynchronously by appending a callback function to arguments.
+    if (shouldReturnAsync) {
+      dartTypes.add('Function');
+    }
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
     Pointer<Void> blockWrapperPtr =
-        blockCreate(typeStringPtr, _callbackPtr, nativePort);
+        blockCreate(typeStringPtr, _callbackPtr, shouldReturnAsync, nativePort);
     assert(blockWrapperPtr != nullptr);
     if (blockWrapperPtr == nullptr) {
       return nilBlock;
@@ -54,6 +60,7 @@ class Block extends id {
     result.types = dartTypes;
     result._wrapper = blockWrapper;
     result.function = function;
+    result.shouldReturnAsync = shouldReturnAsync;
     result.sequence = sequence;
     if (blockForSequence[sequence] != null) {
       throw 'Already exists a block on sequence $sequence';
@@ -215,8 +222,20 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     }
   }
 
-  dynamic result = Function.apply(block.function!, args);
-
+  dynamic result;
+  if (block.shouldReturnAsync) {
+    Future future = Function.apply(block.function!, args.sublist(0, args.length - 1));
+    Block resultCallback = args.last;
+    future.then((value) {
+      resultCallback.invoke([value]);
+      // resultCallback is retained on objc side, we should release it after invoking.
+      Block_release(resultCallback.pointer);
+    });
+    return;
+  } else {
+    result = Function.apply(block.function!, args);
+  }
+  // sync result
   if (result != null) {
     Pointer<Utf8> resultTypePtr = typesPtrPtr.elementAt(0).value;
     Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;

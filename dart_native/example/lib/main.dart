@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:ffi/ffi.dart';
 import 'package:dart_native_example/main.dn.dart';
 import 'package:flutter/material.dart';
@@ -39,13 +41,13 @@ class _DartNativeAppState extends State<DartNativeApp> {
   Future<void> initPlatformState() async {
     // example: native call dart
     interface.setMethodCallHandler('totalCost',
-        (double unitCost, int count, List list) {
+        (double unitCost, int count, List list) async {
       return {'totalCost: ${unitCost * count}': list};
     });
     result = helloWorld();
     final data = getUTF8Data(result);
     // The number of bytes equals the length of uint8 list.
-    final utf8Result = data.bytes.cast<Utf8>().toDartString(length: data.length);
+    final utf8Result = data.bytes.cast<Utf8>().toDartString(length: data.lengthInBytes);
     // They should be equal.
     assert(utf8Result == result);
     // ignore: unused_local_variable
@@ -60,11 +62,11 @@ class _DartNativeAppState extends State<DartNativeApp> {
     return interface.invoke('hello', args: ['world']);
   }
 
-  Future<int> sum(int a, int b) {
+  Future<T> sum<T>(T a, T b) {
     return interface.invokeAsync('sum', args: [a, b]);
   }
 
-  NativeData getUTF8Data(String str) {
+  NativeBuffer getUTF8Data(String str) {
     return interface.invoke('getUTF8Data', args: [str]);
   }
 

@@ -325,10 +325,11 @@ void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signatu
     }
 }
 
-void *native_block_create(char *types, void *callback, Dart_Port dartPort) {
+void *native_block_create(char *types, void *function, BOOL shouldReturnAsync, Dart_Port dartPort) {
     NSError *error;
     DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types
-                                                                callback:(NativeBlockCallback)callback
+                                                                function:(BlockFunctionPointer)function
+                                                             returnAsync:shouldReturnAsync
                                                                 dartPort:dartPort
                                                                    error:&error];
     if (error.code) {
@@ -678,7 +679,7 @@ BOOL TestNotifyDart(Dart_Port send_port) {
 }
 
 DN_EXTERN
-void ExecuteCallback(Work* work_ptr) {
+void ExecuteCallback(Work *work_ptr) {
     const Work work = *work_ptr;
     work();
     delete work_ptr;
@@ -698,25 +699,26 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
                                      userInfo:nil];
     }
     BOOL isVoid = invocation.methodSignature.methodReturnType[0] == 'v';
+    BOOL shouldReturnAsync = wrapper.shouldReturnAsync;
     dispatch_semaphore_t sema;
-    if (!isVoid) {
+    if (!isVoid || !shouldReturnAsync) {
         sema = dispatch_semaphore_create(0);
     }
     
-    NativeBlockCallback callback = wrapper.callback;
+    BlockFunctionPointer function = wrapper.function;
     const Work work = [=]() {
-        callback(invocation.realArgs,
+        function(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
                  wrapper.hasStret,
                  wrapper.sequence);
-        if (!isVoid) {
+        if (!isVoid || !shouldReturnAsync) {
             dispatch_semaphore_signal(sema);
         }
     };
     const Work *work_ptr = new Work(work);
     BOOL success = NotifyDart(wrapper.dartPort, work_ptr);
-    if (success && !isVoid) {
+    if (success && (!isVoid || !shouldReturnAsync)) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
 }
@@ -899,13 +901,18 @@ void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, D
     ((void(*)(Class, SEL, NSString *, NSString *, NSString *, int64_t))objc_msgSend)(target, selector, interfaceString, methodString, block, port);
 }
 
-void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallback)(id result, NSError *error)) {
+void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback resultCallback) {
     const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
     int count = 0;
     const char **types = native_types_encoding(typeString, &count, 0);
     NSError *error = nil;
-    if (count != arguments.count + 2) {
-        DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match! ")
+    DNBlock *blockLayout = (DNBlock *)block;
+    DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)blockLayout->wrapper;
+    // When block returns result asynchronously, the last argument of block is the callback.
+    // types/values list in block: [returnValue, block(self), arguments...(optional), callback(optional)]
+    NSUInteger diff = wrapper.shouldReturnAsync ? 3 : 2;
+    if (count != arguments.count + diff) {
+        DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match!")
         if (resultCallback) {
             resultCallback(nil, error);
         }
@@ -914,7 +921,11 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallbac
     
     NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    void **argsPtrPtr = (void **)alloca(arguments.count * sizeof(void *));
+    NSUInteger realArgsCount = arguments.count;
+    if (wrapper.shouldReturnAsync) {
+        realArgsCount++;
+    }
+    void **argsPtrPtr = (void **)alloca(realArgsCount * sizeof(void *));
     for (int i = 0; i < arguments.count; i++) {
         const char *type = types[i + 2];
         id arg = arguments[i];
@@ -942,16 +953,35 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallbac
             }
         }
     }
+    // block receives results from dart function asynchronously by appending another block to arguments as its callback.
+    if (wrapper.shouldReturnAsync) {
+        // dartBlock is passed to dart, ignore `error`.
+        void(^dartBlock)(id result) = ^(id result) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                resultCallback(result, nil);
+            });
+        };
+        // `dartBlock` will release when invocation dead.
+        // So we should retain it and release after it's invoked on dart side.
+        native_retain_object(dartBlock);
+        argsPtrPtr[realArgsCount - 1] = (__bridge void *)dartBlock;
+    }
     _fillArgsToInvocation(signature, argsPtrPtr, invocation, 1, 0, nil);
     [invocation invokeWithTarget:(__bridge id)block];
-    void *result = NULL;
-    const char *returnType = signature.methodReturnType;
-    if (resultCallback && signature.methodReturnLength > 0) {
+    if (resultCallback && !wrapper.shouldReturnAsync) {
+        if (signature.methodReturnLength == 0) {
+            DN_ERROR(&error, DNInterfaceError, @"signature.methodReturnLength of block is zero")
+            resultCallback(nil, error);
+            return;
+        }
+        void *result = NULL;
+        const char *returnType = signature.methodReturnType;
         if (*returnType == '{') {
             DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
             resultCallback(nil, error);
             return;
-        } else if (*returnType == '@') {
+        }
+        if (*returnType == '@') {
             [invocation getReturnValue:&result];
             resultCallback((__bridge id)result, nil);
         } else {

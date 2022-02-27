@@ -51,7 +51,13 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
           final str = NSString.fromPointer(result.pointer);
           return str.raw as T;
         }
-      } else if (T == NativeData || T == NSData) {
+      } else if (T == NativeBuffer) {
+        if (result.isKind(of: Class('NSData'))) {
+          final data = NSData.fromPointer(result.pointer);
+          final buffer = NativeBuffer.fromRaw(data);
+          return buffer as T;
+        }
+      } else if (T == NSData) {
         if (result.isKind(of: Class('NSData'))) {
           final data = NSData.fromPointer(result.pointer);
           return data as T;

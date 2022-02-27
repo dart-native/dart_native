@@ -92,8 +92,7 @@ class id implements NSObjectProtocol {
   /// presentation in the debugger.
   @override
   String get debugDescription {
-    NSObject result = perform(SEL('debugDescription'));
-    return NSString.fromPointer(result.pointer).raw;
+    return perform(SEL('debugDescription'));
   }
 
   /// Sends a specified message to the receiver and returns the result of the

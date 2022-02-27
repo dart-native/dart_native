@@ -11,7 +11,6 @@
 #import "DNInvocation.h"
 #import <objc/runtime.h>
 #import "DNPointerWrapper.h"
-#import "native_runtime.h"
 #import "DNError.h"
 #import <stdatomic.h>
 
@@ -77,8 +76,9 @@ void dispose_helper(DNBlock *src) {
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic, readwrite) const char **typeEncodings;
 @property (nonatomic, getter=hasStret, readwrite) BOOL stret;
-@property (nonatomic) NSMethodSignature *signature;
-@property (nonatomic, readwrite) NativeBlockCallback callback;
+@property (nonatomic, readwrite) NSMethodSignature *signature;
+@property (nonatomic, readwrite) BlockFunctionPointer function;
+@property (nonatomic, readwrite, getter=shouldReturnAsync) BOOL returnAsync;
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSThread *thread;
 @property (nonatomic, nullable) dispatch_queue_t queue;
@@ -90,7 +90,8 @@ void dispose_helper(DNBlock *src) {
 static atomic_uint_fast64_t _seq = 0;
 
 - (instancetype)initWithTypeString:(char *)typeString
-                          callback:(NativeBlockCallback)callback
+                          function:(BlockFunctionPointer)function
+                       returnAsync:(BOOL)returnAsync
                           dartPort:(Dart_Port)dartPort
                              error:(out NSError **)error {
     self = [super init];
@@ -99,7 +100,8 @@ static atomic_uint_fast64_t _seq = 0;
         _typeString = [self _parseTypeNames:[NSString stringWithUTF8String:typeString]
                                       error:error];
         if (_typeString.length > 0) {
-            _callback = callback;
+            _function = function;
+            _returnAsync = returnAsync;
             _thread = NSThread.currentThread;
             _dartPort = dartPort;
             [self initBlockWithError:error];
@@ -171,7 +173,7 @@ static atomic_uint_fast64_t _seq = 0;
         0,
         _blockIMP,
         _descriptor,
-        (__bridge void*)self
+        (__bridge void *)self
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     _block = (__bridge id)Block_copy(&simulateBlock);
@@ -270,7 +272,7 @@ static atomic_uint_fast64_t _seq = 0;
 
 + (void)invokeInterfaceBlock:(void *)block
                    arguments:(NSArray *)arguments
-                      result:(void(^)(id result, NSError *error))resultCallback {
+                      result:(BlockResultCallback)resultCallback {
     DNInterfaceBlockInvoke(block, arguments, resultCallback);
 }
 
@@ -312,7 +314,7 @@ static void DNHandleReturnValue(void *origRet, DNBlockWrapper *wrapper, DNInvoca
 static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)userdata;
     
-    if (!wrapper.callback) {
+    if (!wrapper.function) {
         return;
     }
     
@@ -357,7 +359,7 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     int64_t retAddr = (int64_t)(invocation.realRetValue);
     
     if (wrapper.thread == NSThread.currentThread) {
-        wrapper.callback(args,
+        wrapper.function(args,
                          ret,
                          (int)numberOfArguments,
                          wrapper.hasStret,
