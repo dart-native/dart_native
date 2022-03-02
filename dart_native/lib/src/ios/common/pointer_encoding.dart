@@ -67,7 +67,7 @@ dynamic storeValueToPointer(
       // should convert to NSNumber object
       NSNumber number = NSNumber(object);
       ptr.value = number.pointer;
-    } else  {
+    } else {
       Function? strategy = _storeBasicValueStrategyMap[encoding];
       if (strategy == null) {
         throw '$object not match type $encoding!';

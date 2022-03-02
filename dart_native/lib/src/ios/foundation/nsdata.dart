@@ -11,7 +11,8 @@ class NSData extends NSObject implements BytesPointerRaw {
   @override
   late final int lengthInBytes;
 
-  NSData(this.bytes, this.lengthInBytes) : super.fromPointer(_dataWithBytes(bytes, lengthInBytes));
+  NSData(this.bytes, this.lengthInBytes)
+      : super.fromPointer(_dataWithBytes(bytes, lengthInBytes));
   NSData.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
     bytes = perform(SEL('bytes'), decodeRetVal: false);
     lengthInBytes = perform(SEL('length'));

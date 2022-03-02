@@ -224,7 +224,8 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
 
   dynamic result;
   if (block.shouldReturnAsync) {
-    Future future = Function.apply(block.function!, args.sublist(0, args.length - 1));
+    Future future =
+        Function.apply(block.function!, args.sublist(0, args.length - 1));
     Block resultCallback = args.last;
     future.then((value) {
       resultCallback.invoke([value]);

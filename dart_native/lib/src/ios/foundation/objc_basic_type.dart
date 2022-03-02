@@ -5,6 +5,7 @@ typedef BOOL = bool;
 typedef NSInteger = int;
 typedef NSUInteger = int;
 typedef CGFloat = double;
+
 class CString extends NativeBox<String> {
   const CString(String raw) : super(raw);
 }
