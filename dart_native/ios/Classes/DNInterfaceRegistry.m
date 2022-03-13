@@ -46,6 +46,20 @@ typedef NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSMutabl
 
 @implementation DNInterfaceRegistry
 
+#if Debug
+static BOOL _exceptionEnabled = YES;
+#else
+static BOOL _exceptionEnabled = NO;
+#endif
+
++ (BOOL)isExceptionEnabled {
+    return _exceptionEnabled;
+}
+
++ (void)setExceptionEnabled:(BOOL)exceptionEnabled {
+    _exceptionEnabled = exceptionEnabled;
+}
+
 // Map: Dart interface name -> OC class
 static NSMutableDictionary<NSString *, Class> *interfaceNameToClassInnerMap;
 static NSDictionary<NSString *, Class> *interfaceNameToClassCache;

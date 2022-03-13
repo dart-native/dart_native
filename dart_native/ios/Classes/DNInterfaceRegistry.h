@@ -31,6 +31,10 @@ typedef void (^DartNativeResult)(id _Nullable result, NSError * _Nullable error)
 NS_SWIFT_NAME(InterfaceRegistry)
 @interface DNInterfaceRegistry : NSObject
 
+/// Whether to enable exception throwing.
+/// This parameter is recommended for debugging.
+@property (atomic, class, getter=isExceptionEnabled) BOOL exceptionEnabled;
+
 /// Register interface, called from +load method.
 /// @param name The interface name for dart
 /// @param cls The OC class that implements the interface

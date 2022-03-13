@@ -41,16 +41,33 @@
 #   define _OBJC_TAG_MASK 1UL
 #endif
 
+static Class DNInterfaceRegistryClass = NSClassFromString(@"DNInterfaceRegistry");
+
 #pragma mark - Config
 
-static bool _canThrowException = false;
+static NSString * const ClassNotFoundExceptionReason = @"Class %@ not found.";
+NSExceptionName ClassNotFound = @"ClassNotFoundException";
 
 void DartNativeSetThrowException(bool canThrow) {
-    _canThrowException = canThrow;
+    Class target = DNInterfaceRegistryClass;
+    SEL selector = NSSelectorFromString(@"setExceptionEnabled:");
+    if (!target || !selector) {
+        if (canThrow) {
+            throw [NSException exceptionWithName:ClassNotFound
+                                          reason:ClassNotFoundExceptionReason
+                                        userInfo:nil];
+        }
+    }
+    ((void(*)(Class, SEL, BOOL))objc_msgSend)(target, selector, canThrow);
 }
 
 bool DartNativeCanThrowException() {
-    return _canThrowException;
+    Class target = DNInterfaceRegistryClass;
+    SEL selector = NSSelectorFromString(@"isExceptionEnabled");
+    if (!target || !selector) {
+        return false;
+    }
+    return ((BOOL(*)(Class, SEL))objc_msgSend)(target, selector);
 }
 
 #pragma mark - Readable and valid memory
@@ -869,7 +886,7 @@ DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
 /// Each interface has an object on each thread. Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class, so we have to use objc runtime.
 /// @param name name of interface
 NSObject *DNInterfaceHostObjectWithName(char *name) {
-    Class target = NSClassFromString(@"DNInterfaceRegistry");
+    Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"hostObjectWithName:");
     if (!target || !selector) {
         // TODO: throw exception
@@ -880,7 +897,7 @@ NSObject *DNInterfaceHostObjectWithName(char *name) {
 }
 
 DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
-    Class target = NSClassFromString(@"DNInterfaceRegistry");
+    Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"allMetaData");
     if (!target || !selector) {
         // TODO: throw exception
@@ -890,7 +907,7 @@ DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
 }
 
 void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, Dart_Port port) {
-    Class target = NSClassFromString(@"DNInterfaceRegistry");
+    Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"registerDartInterface:method:block:dartPort:");
     if (!target || !selector) {
         // TODO: throw exception

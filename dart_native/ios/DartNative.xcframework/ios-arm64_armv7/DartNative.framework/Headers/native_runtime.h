@@ -20,6 +20,7 @@
  */
 typedef int64_t Dart_Port;
 typedef struct _Dart_Handle* Dart_Handle;
+typedef void (^BlockResultCallback)(id _Nullable result, NSError * _Nullable error);
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -96,7 +97,7 @@ DN_EXTERN void * _Nullable native_instance_invoke(id object,
                                                   stringTypeBitmask,
                                                   const char *_Nullable *_Nullable retType);
 
-DN_EXTERN void *native_block_create(char *types, void *callback, Dart_Port dartPort);
+DN_EXTERN void *native_block_create(char *types, void *function, BOOL shouldReturnAsync, Dart_Port dartPort);
 
 /// Invoke Objective-C block.
 /// @param block block object.
@@ -170,7 +171,7 @@ typedef NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *DartNa
 DN_EXTERN NSObject *DNInterfaceHostObjectWithName(char *name);
 DN_EXTERN DartNativeInterfaceMap DNInterfaceAllMetaData(void);
 DN_EXTERN void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, Dart_Port port);
-DN_EXTERN void DNInterfaceBlockInvoke(void *block, NSArray *arguments, void(^resultCallback)(id result, NSError *error));
+DN_EXTERN void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback resultCallback);
 
 NS_ASSUME_NONNULL_END
 
