@@ -1,3 +1,7 @@
+## 0.3.25
+
+* [Fix] Library exception on iOS.
+
 ## 0.3.24
 
 * [Fix] JNI crash on Android.
