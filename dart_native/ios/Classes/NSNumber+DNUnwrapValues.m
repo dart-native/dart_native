@@ -11,28 +11,26 @@
 #error
 #endif
 
-typedef void(^DNArgumentSetAction)(NSNumber *num, void **argList, NSInteger index);
-typedef NSNumber *(^DNArgumentGetAction)(void *buffer);
+typedef void(^DNBufferSetAction)(NSNumber *num, void **buffer);
+typedef NSNumber *(^DNBufferGetAction)(void *buffer);
 
 @implementation NSNumber (DNUnwrapValues)
 
-static NSDictionary<NSNumber *, DNArgumentSetAction> *gArgumentTypeSetStrategy;
-static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
+static NSDictionary<NSNumber *, DNBufferSetAction> *gArgumentTypeSetStrategy;
+static NSDictionary<NSNumber *, DNBufferGetAction> *gArgumentTypeGetStrategy;
 
-- (BOOL)dn_setAsArgumentInBuffer:(void **)buffer
-                        encoding:(const char *)encoding
-                           error:(out NSError **)error {
-    
-
+- (BOOL)dn_fillBuffer:(void **)buffer
+             encoding:(const char *)encoding
+                error:(out NSError **)error {
     /** Doing this type switching below because when we call NSNumber's methods like 'doubleValue' or 'floatValue',
-    * value will be converted if necessary. (instead of approach when we just copy bytes - see NSValue category above)
+    * value will be converted if necessary. (instead of approach when we just copy bytes - see NSValue category)
     * That will handle situation when for example argumentType is float, but NSNumber's type is double */
 
     if (!gArgumentTypeSetStrategy) {
-        NSMutableDictionary<NSNumber *, DNArgumentSetAction> *temp = [NSMutableDictionary dictionary];
+        NSMutableDictionary<NSNumber *, DNBufferSetAction> *temp = [NSMutableDictionary dictionary];
          
 #define SET_ARG_METHOD(type, method) \
-        temp[@(*@encode(type))] = ^void(NSNumber *num, void **buffer, NSInteger index) { \
+        temp[@(*@encode(type))] = ^void(NSNumber *num, void **buffer) { \
             type converted = [num method]; \
             if (!buffer) { \
                 return; \
@@ -43,15 +41,14 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
         };
 #define SET_ARG(type) SET_ARG_METHOD(type, type##Value)
         
-        temp[@(*@encode(id))] = ^void(NSNumber *num, void **argList, NSInteger index) {
+        temp[@(*@encode(id))] = ^void(NSNumber *num, void **buffer) {
             id converted = num;
-            if (!argList[index]) {
+            if (!buffer) {
                 return;
             }
-            void *arg = argList[index];
             NSUInteger argSize;
             NSGetSizeAndAlignment(@encode(id), &argSize, NULL);
-            memcpy(arg, (void *)&converted, argSize);
+            memcpy(buffer, (void *)&converted, argSize);
         };
         SET_ARG(int)
         SET_ARG_METHOD(unsigned int, unsignedIntValue)
@@ -71,10 +68,9 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
         gArgumentTypeSetStrategy = [temp copy];
     }
     
-    DNArgumentSetAction action = gArgumentTypeSetStrategy[@(*encoding)];
+    DNBufferSetAction action = gArgumentTypeSetStrategy[@(*encoding)];
     if (action) {
-        NSInteger signedIndex = (NSInteger)index;
-        action(self, buffer, signedIndex);
+        action(self, buffer);
     } else {
         DN_ERROR(error, DNUnwrapValueError, @"Invalid Number: Type '%s' is not supported.", encoding)
         return NO;
@@ -82,11 +78,11 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
     return YES;
 }
 
-+ (instancetype)dn_numberWithEncoding:(const char *)encoding
-                               buffer:(void *)buffer
-                                error:(out NSError **)error {
++ (instancetype)dn_numberWithBuffer:(void *)buffer
+                           encoding:(const char *)encoding
+                              error:(out NSError **)error {
     if (!gArgumentTypeGetStrategy) {
-        NSMutableDictionary<NSNumber *, DNArgumentGetAction> *temp = [NSMutableDictionary dictionary];
+        NSMutableDictionary<NSNumber *, DNBufferGetAction> *temp = [NSMutableDictionary dictionary];
 #define DNConcat(a, b) a##b
 #define GET_ARG_METHOD(type, method) \
     temp[@(*@encode(type))] = ^NSNumber *(void *buffer) { \
@@ -117,7 +113,7 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
         gArgumentTypeGetStrategy = [temp copy];
     }
 
-    DNArgumentGetAction action = gArgumentTypeGetStrategy[@(*encoding)];
+    DNBufferGetAction action = gArgumentTypeGetStrategy[@(*encoding)];
     if (action) {
         return action(buffer);
     } else {

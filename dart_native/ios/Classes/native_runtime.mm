@@ -972,7 +972,7 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback
             NSNumber *number = (NSNumber *)arg;
             // first argument is block itself, skip it.
             const char *encoding = [signature getArgumentTypeAtIndex:i + 1];
-            BOOL success = [number dn_setAsArgumentInBuffer:argsPtrPtr + i encoding:encoding error:&error];
+            BOOL success = [number dn_fillBuffer:argsPtrPtr + i encoding:encoding error:&error];
             if (!success) {
                 DN_ERROR(&error, DNInterfaceError, @"NSNumber convertion failed")
                 if (resultCallback) {
@@ -1016,7 +1016,7 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback
         } else {
             [invocation getReturnValue:&result];
             // NSNumber
-            NSNumber *number = [NSNumber dn_numberWithEncoding:returnType buffer:result error:&error];
+            NSNumber *number = [NSNumber dn_numberWithBuffer:result encoding:returnType error:&error];
             resultCallback(number, error);
         }
     }

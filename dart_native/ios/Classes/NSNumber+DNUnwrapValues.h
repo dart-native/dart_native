@@ -14,12 +14,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSNumber (DNUnwrapValues)
 
-- (BOOL)dn_setAsArgumentInBuffer:(void * _Nullable * _Nonnull)buffer
-                        encoding:(const char *)encoding
-                           error:(out NSError **)error;
-+ (instancetype)dn_numberWithEncoding:(const char *)type
-                               buffer:(void *)buffer
-                                error:(out NSError **)error;
+- (BOOL)dn_fillBuffer:(void * _Nullable * _Nonnull)buffer
+             encoding:(const char *)encoding
+                error:(out NSError **)error;
++ (instancetype)dn_numberWithBuffer:(void *)buffer
+                           encoding:(const char *)type
+                              error:(out NSError **)error;
 
 @end
 
