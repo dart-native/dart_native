@@ -4,8 +4,9 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/common/bytes_pointer_raw.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
+/// Stands for `NSData` in iOS and macOS.
 @native()
-class NSData extends NSObject implements BytesPointerRaw {
+class NSData extends NSObject implements BytePlatformRaw {
   @override
   late final Pointer<Void> bytes;
   @override

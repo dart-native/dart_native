@@ -35,7 +35,7 @@ enum Thread {
 /// Class [JObject] is the root of the java class hierarchy in dart.
 /// Every dart class need has [JObject] as a superclass. All objects,
 /// including arrays, invoke all native method use [invoke] from this.
-class JObject {
+class JObject extends NativeObject {
   /// Java object pointer.
   late Pointer<Void> _ptr;
 

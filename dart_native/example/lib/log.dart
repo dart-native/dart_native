@@ -4,7 +4,7 @@ import 'package:dart_native/dart_native.dart';
 final _logInterface = Interface("logInterface");
 
 _log(LogLevel level, String message) {
-  _logInterface.invoke('log', args: [level.raw, message]);
+  _logInterface.invokeMethodSync('log', args: [level.raw, message]);
 }
 
 class LogLevel {
@@ -40,6 +40,6 @@ class Log {
   }
 
   static setLevel(LogLevel level) {
-    _logInterface.invoke('setLevel', args: [level.raw]);
+    _logInterface.invokeMethodSync('setLevel', args: [level.raw]);
   }
 }

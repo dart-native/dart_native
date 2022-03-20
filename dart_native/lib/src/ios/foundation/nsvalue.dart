@@ -165,28 +165,24 @@ extension NSValueGeometryExtensions on NSValue {
     return NSValue.valueWithStruct(point);
   }
 
-  // ignore: non_constant_identifier_names
   NSPoint get pointValue => perform(SEL('pointValue'));
 
   static NSValue valueWithSize(NSSize size) {
     return NSValue.valueWithStruct(size);
   }
 
-  // ignore: non_constant_identifier_names
   NSSize get sizeValue => perform(SEL('sizeValue'));
 
   static NSValue valueWithRect(NSRect rect) {
     return NSValue.valueWithStruct(rect);
   }
 
-  // ignore: non_constant_identifier_names
   NSRect get rectValue => perform(SEL('rectValue'));
 
   static NSValue valueWithEdgeInsets(NSEdgeInsets insets) {
     return NSValue.valueWithStruct(insets);
   }
 
-  // ignore: non_constant_identifier_names
   NSEdgeInsets get edgeInsetsValue => perform(SEL('edgeInsetsValue'));
 }
 

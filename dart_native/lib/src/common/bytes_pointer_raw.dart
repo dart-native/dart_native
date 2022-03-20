@@ -1,10 +1,10 @@
 import 'dart:ffi';
 
-abstract class BytesPointerRaw {
-  /// Returns a pointer to a contiguous region of memory managed by the object.
+abstract class BytePlatformRaw {
+  /// Returns a pointer to a contiguous region of memory managed by this object.
   late final Pointer<Void> bytes;
 
-  /// The number of bytes contained by the data object.
+  /// Returns the length of this object, in bytes.
   late final int lengthInBytes;
 
   /// Pointer of native object.

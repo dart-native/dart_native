@@ -61,19 +61,19 @@ class _DartNativeAppState extends State<DartNativeApp> {
   }
 
   String helloWorld() {
-    return interface.invoke('hello', args: ['world']);
+    return interface.invokeMethodSync('hello', args: ['world']);
   }
 
   Future<T> sum<T>(T a, T b) {
-    return interface.invokeAsync('sum', args: [a, b]);
+    return interface.invokeMethod('sum', args: [a, b]);
   }
 
-  NativeBuffer getUTF8Data(String str) {
-    return interface.invoke('getUTF8Data', args: [str]);
+  NativeByte getUTF8Data(String str) {
+    return interface.invokeMethodSync('getUTF8Data', args: [str]);
   }
 
   void testCallback() {
-    interface.invoke('testCallback', args: [
+    interface.invokeMethodSync('testCallback', args: [
       (bool success, String result) {
         if (success) {
           Log.i(result);
@@ -146,6 +146,6 @@ class _DartNativeAppState extends State<DartNativeApp> {
 class DartLifecycleObject {
   late final dynamic finalizer;
   DartLifecycleObject() {
-    finalizer = interface.invoke('finalizer');
+    finalizer = interface.invokeMethodSync('finalizer');
   }
 }

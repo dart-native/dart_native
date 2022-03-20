@@ -23,14 +23,14 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
   }
 
   @override
-  T invoke<T>(Pointer<Void> nativeObjectPointer, String methodName,
+  T invokeMethodSync<T>(Pointer<Void> nativeObjectPointer, String methodName,
       {List? args}) {
     dynamic result = msgSend(nativeObjectPointer, SEL(methodName), args: args);
     return _postprocessResult<T>(result);
   }
 
   @override
-  Future<T> invokeAsync<T>(Pointer<Void> nativeObjectPointer, String methodName,
+  Future<T> invokeMethod<T>(Pointer<Void> nativeObjectPointer, String methodName,
       {List? args}) {
     return msgSendAsync<dynamic>(nativeObjectPointer, SEL(methodName),
             args: args)
@@ -52,10 +52,10 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
           final str = NSString.fromPointer(result.pointer);
           return str.raw as T;
         }
-      } else if (T == NativeBuffer) {
+      } else if (T == NativeByte) {
         if (result.isKind(of: Class('NSData'))) {
           final data = NSData.fromPointer(result.pointer);
-          final buffer = NativeBuffer.fromRaw(data);
+          final buffer = NativeByte.fromRaw(data);
           return buffer as T;
         }
       } else if (T == NSData) {

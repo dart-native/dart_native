@@ -108,7 +108,7 @@ dynamic storeValueToPointer(
   } else if (encoding.isStruct) {
     // ptr is struct pointer
     return storeStructToPointer(ptr, object);
-  } else if (object is NativeBuffer) {
+  } else if (object is NativeByte) {
     ptr.value = object.raw.pointer;
   } else {
     throw '$object not match type $encoding!';
