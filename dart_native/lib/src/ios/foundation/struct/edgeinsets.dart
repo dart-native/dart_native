@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `UIEdgeInsets` in iOS.
+@native()
 class UIEdgeInsets extends CGFloatx4Wrapper {
   double get top => d1;
   set top(double top) {
@@ -30,6 +32,7 @@ class UIEdgeInsets extends CGFloatx4Wrapper {
 }
 
 /// Stands for `NSEdgeInsets` in macOS.
+@native()
 class NSEdgeInsets extends UIEdgeInsets {
   @override
   String get aliasForNSValue => 'EdgeInsets';

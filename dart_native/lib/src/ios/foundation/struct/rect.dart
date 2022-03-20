@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
+import 'package:dart_native_gen/dart_native_gen.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 /// Stands for `CGRect` in iOS and macOS.
+@native()
 class CGRect extends CGFloatx4Wrapper {
   double get x => d1;
   set x(double x) {
@@ -30,6 +32,7 @@ class CGRect extends CGFloatx4Wrapper {
 }
 
 /// Stands for `NSRect` in macOS.
+@native()
 class NSRect extends CGRect {
   @override
   String get aliasForNSValue => 'Rect';

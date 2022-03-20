@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `NSDirectionalEdgeInsets` in iOS and macOS.
+@native()
 class NSDirectionalEdgeInsets extends CGFloatx4Wrapper {
   double get top => d1;
   set top(double top) {

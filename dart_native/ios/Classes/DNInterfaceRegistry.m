@@ -14,6 +14,10 @@
 @import ClassWrittenInSwift;
 #endif
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 NSString *DNSelectorNameForMethodDeclaration(NSString *methodDeclaration) {
     if (![methodDeclaration containsString:@":"]) {
         return methodDeclaration;

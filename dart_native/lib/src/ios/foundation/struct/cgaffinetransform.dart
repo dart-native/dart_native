@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `CGAffineTransform` in iOS and macOS.
+@native()
 class CGAffineTransform extends CGFloatx6Wrapper {
   double get a => d1;
   set a(double a) {

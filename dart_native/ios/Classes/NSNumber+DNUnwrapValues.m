@@ -7,6 +7,10 @@
 
 #import "NSNumber+DNUnwrapValues.h"
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 typedef void(^DNArgumentSetAction)(NSNumber *num, void **argList, NSInteger index);
 typedef NSNumber *(^DNArgumentGetAction)(void *buffer);
 
@@ -121,4 +125,5 @@ static NSDictionary<NSNumber *, DNArgumentGetAction> *gArgumentTypeGetStrategy;
         return nil;
     }
 }
+
 @end

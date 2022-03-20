@@ -12,7 +12,6 @@
 #import <UIKit/UIKit.h>
 #endif
 
-
 #if !__has_feature(objc_arc)
 #error
 #endif
@@ -75,7 +74,10 @@ int DNTypeLengthWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_LENGTH(CGPoint);
         DN_DEFINE_TYPE_LENGTH(CGVector);
 #if TARGET_OS_OSX
-
+        DN_DEFINE_TYPE_LENGTH(NSSize);
+        DN_DEFINE_TYPE_LENGTH(NSRect);
+        DN_DEFINE_TYPE_LENGTH(NSPoint);
+        DN_DEFINE_TYPE_LENGTH(NSEdgeInsets);
 #elif TARGET_OS_IOS
         DN_DEFINE_TYPE_LENGTH(UIOffset);
         DN_DEFINE_TYPE_LENGTH(UIEdgeInsets);
@@ -132,7 +134,10 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
         DN_DEFINE_TYPE_ENCODE_CASE(CGVector);
         DN_DEFINE_TYPE_ENCODE_CASE(NSRange);
 #if TARGET_OS_OSX
-
+        DN_DEFINE_TYPE_ENCODE_CASE(NSSize);
+        DN_DEFINE_TYPE_ENCODE_CASE(NSRect);
+        DN_DEFINE_TYPE_ENCODE_CASE(NSPoint);
+        DN_DEFINE_TYPE_ENCODE_CASE(NSEdgeInsets);
 #elif TARGET_OS_IOS
         DN_DEFINE_TYPE_ENCODE_CASE(UIOffset);
         DN_DEFINE_TYPE_ENCODE_CASE(UIEdgeInsets);

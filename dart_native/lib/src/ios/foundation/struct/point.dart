@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `CGPoint` in iOS and macOS.
+@native()
 class CGPoint extends CGFloatx2Wrapper {
   double get x => d1;
   set x(double x) {
@@ -19,6 +21,7 @@ class CGPoint extends CGFloatx2Wrapper {
 }
 
 /// Stands for `NSPoint` in macOS.
+@native()
 class NSPoint extends CGPoint {
   @override
   String get aliasForNSValue => 'Point';

@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
+import 'package:dart_native_gen/dart_native_gen.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 
 /// Stands for `CATransform3D` in iOS and macOS.
+@native()
 class CATransform3D extends CGFloatx16Wrapper {
   double get m11 => d1;
   set m11(double m11) {

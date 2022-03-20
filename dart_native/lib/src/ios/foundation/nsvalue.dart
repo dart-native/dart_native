@@ -1,14 +1,14 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/struct/catransform3d.dart';
-import 'package:dart_native/src/ios/foundation/struct/uiedgeinsets.dart';
+import 'package:dart_native/src/ios/foundation/struct/edgeinsets.dart';
 import 'package:dart_native/src/ios/runtime.dart';
 import 'package:dart_native/src/ios/common/pointer_encoding.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
 import 'package:dart_native/src/ios/foundation/struct/cgaffinetransform.dart';
-import 'package:dart_native/src/ios/foundation/struct/cgpoint.dart';
-import 'package:dart_native/src/ios/foundation/struct/cgrect.dart';
-import 'package:dart_native/src/ios/foundation/struct/cgsize.dart';
+import 'package:dart_native/src/ios/foundation/struct/point.dart';
+import 'package:dart_native/src/ios/foundation/struct/rect.dart';
+import 'package:dart_native/src/ios/foundation/struct/size.dart';
 import 'package:dart_native/src/ios/foundation/struct/cgvector.dart';
 import 'package:dart_native/src/ios/foundation/struct/nsdirectionaledgeinsets.dart';
 import 'package:dart_native/src/ios/foundation/struct/nsrange.dart';

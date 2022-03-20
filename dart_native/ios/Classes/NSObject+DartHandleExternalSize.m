@@ -10,6 +10,10 @@
 #import <malloc/malloc.h>
 #import "DNBlockWrapper.h"
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 static NSString *const MallocBlockClassName = @"__NSMallocBlock";
 
 @implementation NSObject (DartHandleExternalSize)

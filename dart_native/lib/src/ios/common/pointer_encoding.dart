@@ -1,11 +1,25 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
-import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/common/native_byte.dart';
 import 'package:dart_native/src/ios/common/pointer_wrapper.dart';
+import 'package:dart_native/src/ios/foundation/collection/nsarray.dart';
+import 'package:dart_native/src/ios/foundation/collection/nsdictionary.dart';
+import 'package:dart_native/src/ios/foundation/collection/nsset.dart';
 import 'package:dart_native/src/ios/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_box.dart';
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
+import 'package:dart_native/src/ios/foundation/nsnumber.dart';
+import 'package:dart_native/src/ios/foundation/nsstring.dart';
+import 'package:dart_native/src/ios/foundation/objc_basic_type.dart';
+import 'package:dart_native/src/ios/runtime/block.dart';
+import 'package:dart_native/src/ios/runtime/class.dart';
+import 'package:dart_native/src/ios/runtime/id.dart';
+import 'package:dart_native/src/ios/runtime/nsobject.dart';
+import 'package:dart_native/src/ios/runtime/nsobject_ref.dart';
+import 'package:dart_native/src/ios/runtime/protocol.dart';
+import 'package:dart_native/src/ios/runtime/selector.dart';
+import 'package:dart_native/src/ios/runtime/type_convertor.dart';
 import 'package:ffi/ffi.dart';
 
 Map<Pointer<Utf8>, Function> _storeBasicValueStrategyMap = {
@@ -309,53 +323,10 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
   }
   String? structName = structNameForEncoding(encoding);
   if (structName != null) {
-    NativeStruct? result;
-    // struct
-    // TODO: using annotation
-    switch (structName) {
-      case 'CGSize':
-        result = CGSize.fromPointer(ptr);
-        break;
-      case 'NSSize':
-        result = NSSize.fromPointer(ptr);
-        break;
-      case 'CGPoint':
-        result = CGPoint.fromPointer(ptr);
-        break;
-      case 'NSPoint':
-        result = NSPoint.fromPointer(ptr);
-        break;
-      case 'CGVector':
-        result = CGVector.fromPointer(ptr);
-        break;
-      case 'CGRect':
-        result = CGRect.fromPointer(ptr);
-        break;
-      case 'NSRect':
-        result = NSRect.fromPointer(ptr);
-        break;
-      case 'NSRange':
-        result = NSRange.fromPointer(ptr);
-        break;
-      case 'UIOffset':
-        result = UIOffset.fromPointer(ptr);
-        break;
-      case 'UIEdgeInsets':
-        result = UIEdgeInsets.fromPointer(ptr);
-        break;
-      case 'NSEdgeInsets':
-        result = NSEdgeInsets.fromPointer(ptr);
-        break;
-      case 'NSDirectionalEdgeInsets':
-        result = NSDirectionalEdgeInsets.fromPointer(ptr);
-        break;
-      case 'CGAffineTransform':
-        result = CGAffineTransform.fromPointer(ptr);
-        break;
-      default:
-    }
-    if (result != null) {
-      return result;
+    // Structs registered by `@native()` can be created by `fromPointer` method.
+    ConvertorFromPointer? convertor = convertorForType(structName);
+    if (convertor != null) {
+      return convertor(ptr);
     }
   }
   return null;
@@ -370,7 +341,10 @@ Map<String, String> _nativeTypeNameMap = {
   'unsigned_long_long': 'unsigned long long',
 };
 
-// FIXME: this list shouldn't hardcode custom structs
+/// Names of native types.
+///
+/// The types in the list are not treated as NSObject when processing the 
+/// dart function signature.
 List<String> _nativeTypeNames = [
   'id',
   'BOOL',

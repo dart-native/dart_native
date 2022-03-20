@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/ios/foundation/internal/native_struct.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `CGSize` in iOS and macOS.
+@native()
 class CGSize extends CGFloatx2Wrapper {
   double get width => d1;
   set width(double width) {
@@ -19,6 +21,7 @@ class CGSize extends CGFloatx2Wrapper {
 }
 
 /// Stands for `NSSize` in macOS.
+@native()
 class NSSize extends CGSize {
   @override
   String get aliasForNSValue => 'Size';
