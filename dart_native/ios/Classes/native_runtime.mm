@@ -46,14 +46,14 @@ static Class DNInterfaceRegistryClass = NSClassFromString(@"DNInterfaceRegistry"
 #pragma mark - Config
 
 static NSString * const ClassNotFoundExceptionReason = @"Class %@ not found.";
-NSExceptionName ClassNotFound = @"ClassNotFoundException";
+static NSExceptionName const ClassNotFoundException = @"ClassNotFoundException";
 
 void DartNativeSetThrowException(bool canThrow) {
     Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"setExceptionEnabled:");
     if (!target || !selector) {
         if (canThrow) {
-            throw [NSException exceptionWithName:ClassNotFound
+            throw [NSException exceptionWithName:ClassNotFoundException
                                           reason:ClassNotFoundExceptionReason
                                         userInfo:nil];
         }
@@ -705,13 +705,13 @@ void ExecuteCallback(Work *work_ptr) {
 #pragma mark - Async Block Callback
 
 static NSString * const BlockingUIExceptionReason = @"Calling dart function from main thread will blocking the UI";
-NSExceptionName BlockingUI = @"BlockingUIException";
+static NSExceptionName const BlockingUIException = @"BlockingUIException";
 
 void NotifyBlockInvokeToDart(DNInvocation *invocation,
                              DNBlockWrapper *wrapper,
                              int numberOfArguments) {
     if (NSThread.isMainThread && DartNativeCanThrowException()) {
-        @throw [NSException exceptionWithName:BlockingUI
+        @throw [NSException exceptionWithName:BlockingUIException
                                        reason:BlockingUIExceptionReason
                                      userInfo:nil];
     }
@@ -747,7 +747,7 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                                int numberOfArguments,
                                const char **types) {
     if (NSThread.isMainThread && DartNativeCanThrowException()) {
-        @throw [NSException exceptionWithName:BlockingUI
+        @throw [NSException exceptionWithName:BlockingUIException
                                        reason:BlockingUIExceptionReason
                                      userInfo:nil];
     }
@@ -889,7 +889,11 @@ NSObject *DNInterfaceHostObjectWithName(char *name) {
     Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"hostObjectWithName:");
     if (!target || !selector) {
-        // TODO: throw exception
+        if (DartNativeCanThrowException()) {
+            @throw [NSException exceptionWithName:ClassNotFoundException
+                                           reason:ClassNotFoundExceptionReason
+                                         userInfo:nil];
+        }
         return nil;
     }
     NSString *nameString = [NSString stringWithUTF8String:name];
@@ -900,7 +904,11 @@ DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
     Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"allMetaData");
     if (!target || !selector) {
-        // TODO: throw exception
+        if (DartNativeCanThrowException()) {
+            @throw [NSException exceptionWithName:ClassNotFoundException
+                                           reason:ClassNotFoundExceptionReason
+                                         userInfo:nil];
+        }
         return nil;
     }
     return ((DartNativeInterfaceMap(*)(Class, SEL))objc_msgSend)(target, selector);
@@ -910,7 +918,11 @@ void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, D
     Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"registerDartInterface:method:block:dartPort:");
     if (!target || !selector) {
-        // TODO: throw exception
+        if (DartNativeCanThrowException()) {
+            @throw [NSException exceptionWithName:ClassNotFoundException
+                                           reason:ClassNotFoundExceptionReason
+                                         userInfo:nil];
+        }
         return;
     }
     NSString *interfaceString = [NSString stringWithUTF8String:interface];

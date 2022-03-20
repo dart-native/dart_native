@@ -141,8 +141,18 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
                 if (entries.count != 2) {
                     continue;
                 }
-                // TODO: check duplicated entries
-                tempMethods[entries[0]] = DNSelectorNameForMethodDeclaration(entries[1]);
+                // check repeated entries
+                if (tempMethods[entries[0]]) {
+                    if ([self isExceptionEnabled]) {
+                        static NSExceptionName const DNRegisterInterfaceException = @"RegisterInterfaceException";
+                        static NSString * const DNRepeatedEntryExceptionReason = @"The interface is already registered, repeated registration will be ignored";
+                        @throw [NSException exceptionWithName:DNRegisterInterfaceException
+                                                       reason:DNRepeatedEntryExceptionReason
+                                                     userInfo:nil];
+                    }
+                } else {
+                    tempMethods[entries[0]] = DNSelectorNameForMethodDeclaration(entries[1]);
+                }
             }
         }
         free(methods);
