@@ -45,16 +45,16 @@ static Class DNInterfaceRegistryClass = NSClassFromString(@"DNInterfaceRegistry"
 
 #pragma mark - Config
 
-static NSString * const ClassNotFoundExceptionReason = @"Class %@ not found.";
-static NSExceptionName const ClassNotFoundException = @"ClassNotFoundException";
+static NSString * const DNClassNotFoundExceptionReason = @"Class %@ not found.";
+static NSExceptionName const DNClassNotFoundException = @"ClassNotFoundException";
 
 void DartNativeSetThrowException(bool canThrow) {
     Class target = DNInterfaceRegistryClass;
     SEL selector = NSSelectorFromString(@"setExceptionEnabled:");
     if (!target || !selector) {
         if (canThrow) {
-            throw [NSException exceptionWithName:ClassNotFoundException
-                                          reason:ClassNotFoundExceptionReason
+            throw [NSException exceptionWithName:DNClassNotFoundException
+                                          reason:DNClassNotFoundExceptionReason
                                         userInfo:nil];
         }
     }
@@ -704,15 +704,15 @@ void ExecuteCallback(Work *work_ptr) {
 
 #pragma mark - Async Block Callback
 
-static NSString * const BlockingUIExceptionReason = @"Calling dart function from main thread will blocking the UI";
-static NSExceptionName const BlockingUIException = @"BlockingUIException";
+static NSString * const DNBlockingUIExceptionReason = @"Calling dart function from main thread will blocking the UI";
+static NSExceptionName const DNBlockingUIException = @"BlockingUIException";
 
 void NotifyBlockInvokeToDart(DNInvocation *invocation,
                              DNBlockWrapper *wrapper,
                              int numberOfArguments) {
     if (NSThread.isMainThread && DartNativeCanThrowException()) {
-        @throw [NSException exceptionWithName:BlockingUIException
-                                       reason:BlockingUIExceptionReason
+        @throw [NSException exceptionWithName:DNBlockingUIException
+                                       reason:DNBlockingUIExceptionReason
                                      userInfo:nil];
     }
     BOOL isVoid = invocation.methodSignature.methodReturnType[0] == 'v';
@@ -747,8 +747,8 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                                int numberOfArguments,
                                const char **types) {
     if (NSThread.isMainThread && DartNativeCanThrowException()) {
-        @throw [NSException exceptionWithName:BlockingUIException
-                                       reason:BlockingUIExceptionReason
+        @throw [NSException exceptionWithName:DNBlockingUIException
+                                       reason:DNBlockingUIExceptionReason
                                      userInfo:nil];
     }
     dispatch_group_t group = dispatch_group_create();
@@ -890,8 +890,8 @@ NSObject *DNInterfaceHostObjectWithName(char *name) {
     SEL selector = NSSelectorFromString(@"hostObjectWithName:");
     if (!target || !selector) {
         if (DartNativeCanThrowException()) {
-            @throw [NSException exceptionWithName:ClassNotFoundException
-                                           reason:ClassNotFoundExceptionReason
+            @throw [NSException exceptionWithName:DNClassNotFoundException
+                                           reason:DNClassNotFoundExceptionReason
                                          userInfo:nil];
         }
         return nil;
@@ -905,8 +905,8 @@ DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
     SEL selector = NSSelectorFromString(@"allMetaData");
     if (!target || !selector) {
         if (DartNativeCanThrowException()) {
-            @throw [NSException exceptionWithName:ClassNotFoundException
-                                           reason:ClassNotFoundExceptionReason
+            @throw [NSException exceptionWithName:DNClassNotFoundException
+                                           reason:DNClassNotFoundExceptionReason
                                          userInfo:nil];
         }
         return nil;
@@ -919,8 +919,8 @@ void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, D
     SEL selector = NSSelectorFromString(@"registerDartInterface:method:block:dartPort:");
     if (!target || !selector) {
         if (DartNativeCanThrowException()) {
-            @throw [NSException exceptionWithName:ClassNotFoundException
-                                           reason:ClassNotFoundExceptionReason
+            @throw [NSException exceptionWithName:DNClassNotFoundException
+                                           reason:DNClassNotFoundExceptionReason
                                          userInfo:nil];
         }
         return;

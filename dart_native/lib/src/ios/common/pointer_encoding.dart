@@ -292,6 +292,7 @@ String? structNameForEncoding(String encoding) {
   int index = encoding.indexOf('=');
   if (index != -1) {
     String result = encoding.substring(1, index);
+    // fix for `_NSRange`
     if (result.startsWith('_')) {
       result = result.substring(1);
     }

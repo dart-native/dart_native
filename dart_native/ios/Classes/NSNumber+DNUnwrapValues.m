@@ -6,6 +6,7 @@
 //
 
 #import "NSNumber+DNUnwrapValues.h"
+#import "DNError.h"
 
 #if !__has_feature(objc_arc)
 #error

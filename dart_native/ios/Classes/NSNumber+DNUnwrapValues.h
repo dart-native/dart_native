@@ -6,9 +6,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DNError.h"
-
-#define CStringEquals(stringA, stringB) (strcmp(stringA, stringB) == 0)
 
 NS_ASSUME_NONNULL_BEGIN
 
