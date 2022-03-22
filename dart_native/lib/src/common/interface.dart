@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dart_native/src/common/interface_runtime.dart';
 import 'package:dart_native/src/ios/interface/interface_runtime.dart';
+import 'package:dart_native/src/android/interface/interface_runtime.dart';
 
 /// A named interface for invoking platform methods directly with arguments.
 ///
@@ -21,7 +22,7 @@ class Interface {
     if (Platform.isIOS || Platform.isMacOS) {
       _runtime = InterfaceRuntimeObjC();
     } else if (Platform.isAndroid) {
-      // TODO: Android runtime
+      _runtime = InterfaceRuntimeJava();
     } else {
       throw 'Platform not supported: ${Platform.localeName}';
     }

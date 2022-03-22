@@ -30,6 +30,8 @@ std::mutex globalReferenceMtx;
 
 static std::unique_ptr<TaskRunner> gTaskRunner;
 
+static JavaGlobalRef<jobject> *gInterfaceRegistry = nullptr;
+
 void _addGlobalObject(jobject globalObject) {
   std::lock_guard<std::mutex> lockGuard(globalReferenceMtx);
   objectGlobalReference[globalObject] = 0;
@@ -60,14 +62,11 @@ JNIEnv *_getEnv() {
   jint ret = gJvm->GetEnv((void **) &env, JNI_VERSION_1_6);
 
   switch (ret) {
-    case JNI_OK:
-      return env;
-    case JNI_EDETACHED:
-      DNDebug("attach to current thread");
+    case JNI_OK:return env;
+    case JNI_EDETACHED:DNDebug("attach to current thread");
       gJvm->AttachCurrentThread(&env, nullptr);
       return env;
-    default:
-      DNDebug("fail to get env");
+    default:DNDebug("fail to get env");
       return nullptr;
   }
 }
@@ -184,7 +183,7 @@ void *getClassName(void *objectPtr) {
   auto object = static_cast<jobject>(objectPtr);
   auto objCls = env->GetObjectClass(object);
   auto jstr = (jstring) env->CallObjectMethod(objCls, getName);
-  uint16_t* clsName = ConvertToDartUtf16(env, jstr);
+  uint16_t *clsName = ConvertToDartUtf16(env, jstr);
 
   env->DeleteLocalRef(cls);
   env->DeleteLocalRef(objCls);
@@ -233,6 +232,28 @@ void *createTargetObject(char *targetClassName,
   env->DeleteLocalRef(newObj);
   env->DeleteLocalRef(cls);
   return gObj;
+}
+
+void *interfaceHostObjectWithName(char *name) {
+  auto env = _getEnv();
+  auto registryClz =
+      _findClass(env, "com/dartnative/dart_native/InterfaceRegistry");
+  if (gInterfaceRegistry == nullptr) {
+    auto instanceID =
+        env->GetStaticMethodID(registryClz,
+                               "getInstance",
+                               "()Lcom/dartnative/dart_native/InterfaceRegistry;");
+    auto registryObj = env->CallStaticObjectMethod(registryClz, instanceID);
+    gInterfaceRegistry = new JavaGlobalRef<jobject>(registryObj, env);
+    env->DeleteLocalRef(registryObj);
+  }
+
+  auto getInterface =
+      env->GetMethodID(registryClz, "getInterface", "(Ljava/lang/String;)Ljava/lang/Object;");
+  auto interfaceName = env->NewStringUTF(name);
+  auto interface = env->CallObjectMethod(gInterfaceRegistry->Object(), getInterface, interfaceName);
+  env->DeleteLocalRef(interfaceName);
+  return interface;
 }
 
 /// dart notify run callback function
@@ -456,7 +477,7 @@ void _updateObjectReference(jobject globalObject, bool isRetain) {
 
 /// release native object from cache
 static void RunFinalizer(void *isolate_callback_data,
-                          void *peer) {
+                         void *peer) {
   _updateObjectReference(static_cast<jobject>(peer), false);
 }
 
