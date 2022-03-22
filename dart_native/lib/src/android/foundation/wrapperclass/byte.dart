@@ -12,7 +12,7 @@ class JByte extends JSubclass<int> {
   JByte(int value) : super(value, _new, jByteCls);
 
   JByte.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, jByteCls) {
-    raw = invokeByte('byteValue');
+    raw = callByteMethodSync('byteValue');
   }
 }
 

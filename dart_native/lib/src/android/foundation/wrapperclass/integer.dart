@@ -13,7 +13,7 @@ class JInteger extends JSubclass<int> {
 
   JInteger.fromPointer(Pointer<Void> ptr)
       : super.fromPointer(ptr, jIntegerCls) {
-    raw = invokeInt('intValue');
+    raw = callIntMethodSync('intValue');
   }
 }
 

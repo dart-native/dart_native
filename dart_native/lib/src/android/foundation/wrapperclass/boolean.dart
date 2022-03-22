@@ -13,7 +13,7 @@ class JBoolean extends JSubclass<bool> {
 
   JBoolean.fromPointer(Pointer<Void> ptr)
       : super.fromPointer(ptr, jBooleanCls) {
-    raw = invokeBool('booleanValue');
+    raw = callBoolMethodSync('booleanValue');
   }
 }
 

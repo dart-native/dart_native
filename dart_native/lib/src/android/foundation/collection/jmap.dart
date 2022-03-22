@@ -18,11 +18,11 @@ class JMap<K, V> extends JSubclass<Map> {
 
   JMap.fromPointer(Pointer<Void> ptr, {String clsName = jMapCls})
       : super.fromPointer(ptr, clsName) {
-    Set keySet = JSet<K>.fromPointer(invoke('keySet', 'Ljava/util/Set;')).raw;
+    Set keySet = JSet<K>.fromPointer(callMethodSync('keySet', 'Ljava/util/Set;')).raw;
     Map temp = {};
     String itemType = '';
     for (var key in keySet) {
-      dynamic item = invoke('get', 'Ljava/lang/Object;',
+      dynamic item = callMethodSync('get', 'Ljava/lang/Object;',
           args: [boxingWrapperClass(key)],
           assignedSignature: ['Ljava/lang/Object;']);
       final valueConvertor = getRegisterPointerConvertor(V.toString());
@@ -59,7 +59,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
 
     JObject nativeMap = JObject(className: clsName);
     value.forEach((key, value) {
-      nativeMap.invoke('put', 'Ljava/lang/Object;',
+      nativeMap.callMethodSync('put', 'Ljava/lang/Object;',
           args: [boxingWrapperClass(key), boxingWrapperClass(value)],
           assignedSignature: ['Ljava/lang/Object;', 'Ljava/lang/Object;']);
     });

@@ -76,7 +76,7 @@ void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
   calloc.free(typePtrs);
 }
 
-dynamic _invokeMethod(
+dynamic _doInvoke(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
     Thread thread = Thread.flutterUI,
@@ -138,10 +138,10 @@ dynamic _invokeMethod(
   return result;
 }
 
-dynamic invokeMethod(
+dynamic invoke(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature}) {
-  return _invokeMethod(objPtr, methodName, args, returnType,
+  return _doInvoke(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature);
 }
 
@@ -150,7 +150,7 @@ Future<dynamic> invokeMethodAsync(
     {List<String>? assignedSignature,
     Thread thread = Thread.mainThread}) async {
   final completer = Completer<dynamic>();
-  _invokeMethod(objPtr, methodName, args, returnType,
+  _doInvoke(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature,
       thread: thread, callback: (dynamic result) {
     completer.complete(result);

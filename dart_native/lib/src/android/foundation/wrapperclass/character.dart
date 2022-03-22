@@ -13,7 +13,7 @@ class JCharacter extends JSubclass<int> {
 
   JCharacter.fromPointer(Pointer<Void> ptr)
       : super.fromPointer(ptr, jCharacterCls) {
-    raw = invokeChar('charValue');
+    raw = callCharMethodSync('charValue');
   }
 }
 

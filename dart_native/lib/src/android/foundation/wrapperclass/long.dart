@@ -12,7 +12,7 @@ class JLong extends JSubclass<int> {
   JLong(int value) : super(value, _new, jLongCls);
 
   JLong.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, jLongCls) {
-    raw = invokeLong('longValue');
+    raw = callLongMethodSync('longValue');
   }
 }
 

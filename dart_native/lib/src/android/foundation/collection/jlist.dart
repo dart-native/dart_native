@@ -18,11 +18,11 @@ class JList<E> extends JSubclass<List> {
 
   JList.fromPointer(Pointer<Void> ptr, {String clsName = jListCls})
       : super.fromPointer(ptr, clsName) {
-    int count = invokeInt('size');
+    int count = callIntMethodSync('size');
     List temp = List.filled(count, [], growable: false);
     String itemType = '';
     for (var i = 0; i < count; i++) {
-      dynamic item = invoke('get', 'Ljava/lang/Object;', args: [i]);
+      dynamic item = callMethodSync('get', 'Ljava/lang/Object;', args: [i]);
       final convertor = getRegisterPointerConvertor(E.toString());
       if (convertor != null) {
         temp[i] = convertor(item);
@@ -58,7 +58,7 @@ Pointer<Void> _new(dynamic value, String clsName) {
     JObject nativeList = JObject(className: clsName);
 
     for (var i = 0; i < value.length; i++) {
-      nativeList.invokeBool('add',
+      nativeList.callBoolMethodSync('add',
           args: [boxingWrapperClass(value[i])],
           assignedSignature: ['Ljava/lang/Object;']);
     }

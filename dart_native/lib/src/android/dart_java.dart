@@ -1,6 +1,6 @@
 export 'runtime/jobject.dart';
 export 'runtime/extension/jobject_extension.dart';
-export 'runtime/extension/jobject_async_extension.dart';
+export 'runtime/extension/jobject_sync_extension.dart';
 export 'runtime/call_back.dart';
 export 'runtime/pointer_convertor.dart';
 export 'foundation/collection/jlist.dart';

@@ -34,7 +34,7 @@ enum Thread {
 
 /// Class [JObject] is the root of the java class hierarchy in dart.
 /// Every dart class need has [JObject] as a superclass. All objects,
-/// including arrays, invoke all native method use [invoke] from this.
+/// including arrays, invoke all native method use [callMethodSync] from this.
 class JObject extends NativeObject {
   /// Java object pointer.
   late Pointer<Void> _ptr;
@@ -100,7 +100,7 @@ class JObject extends NativeObject {
     bindLifeCycleWithNative(this);
   }
 
-  /// Invoke java method, you can use [JObjectInvoke] extension method which is more simplify.
+  /// Sync call java native method, you can use [JObjectSyncCallMethod] extension method which is more simplify.
   ///
   /// [returnType] java method return type, same as JNI signature.
   /// If java method return int, return type is 'I'. Full jni signature below here.
@@ -134,18 +134,18 @@ class JObject extends NativeObject {
   /// In java ArrayList: boolean add(Object object);
   /// dart:
   /// JObject(className: 'java/util/ArrayList').invokeBool('add', args: [JInteger(10)], assignedSignature: ['Ljava/lang/Object;'])
-  dynamic invoke(String methodName, String returnType,
+  dynamic callMethodSync(String methodName, String returnType,
       {List? args, List<String>? assignedSignature}) {
-    return invokeMethod(_ptr.cast<Void>(), methodName, args, returnType,
+    return invoke(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature);
   }
 
-  /// Async invoke java method, you can use [JObjectAsyncInvoke] extension method which is more simplify.
+  /// Async call java method, you can use [JObjectCallMethod] extension method which is more simplify.
   ///
-  /// Same arguments as [invoke].
+  /// Same arguments as [callMethodSync].
   /// Beside that arguments, invoke thread can be assigned by using [thread].
   /// Default java thread [Thread.mainThread].
-  Future<dynamic> invokeAsync(String methodName, String returnType,
+  Future<dynamic> callMethod(String methodName, String returnType,
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
