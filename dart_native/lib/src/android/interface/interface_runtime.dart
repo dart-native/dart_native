@@ -1,6 +1,8 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/android/common/library.dart';
+import 'package:dart_native/src/android/common/pointer_encoding.dart';
+import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native/src/common/interface_runtime.dart';
 import 'package:ffi/ffi.dart';
 
@@ -13,16 +15,20 @@ class InterfaceRuntimeJava extends InterfaceRuntime {
   }
 
   @override
-  T invokeMethodSync<T>(Pointer<Void> nativeObjectPointer, String methodName,
+  T invokeMethodSync<T>(
+      Pointer<Void> nativeObjectPointer, String method, String methodSignature,
       {List? args}) {
-    // TODO: implement invokeMethodSync
-    throw UnimplementedError();
+    List<String> sigList = methodSignature.split('\'');
+    if (sigList.isEmpty) {
+      throw 'invokeMethodSync error can not get method signature of $method';
+    }
+    return invoke(nativeObjectPointer, method, sigList[0],
+        args: args, assignedSignature: sigList.sublist(1));
   }
 
   @override
   Map<String, String> methodTableWithInterfaceName(String name) {
-    // TODO: implement methodTableWithInterfaceName
-    throw UnimplementedError();
+    return _mapForInterfaceMetaData(name);
   }
 
   @override
@@ -45,3 +51,36 @@ final Pointer<Void> Function(Pointer<Utf8>) _interfaceHostObjectWithName =
         .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
             'interfaceHostObjectWithName')
         .asFunction();
+
+final Pointer<Void> Function(Pointer<Utf8>) _interfaceAllMetaData = nativeDylib
+    .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
+        'interfaceAllMetaData')
+    .asFunction();
+
+Map<String, String> _mapForInterfaceMetaData(String interfaceName) {
+  final namePtr = interfaceName.toNativeUtf8();
+  Pointer<Void> ptr = _interfaceAllMetaData(namePtr);
+  calloc.free(namePtr);
+
+  String? signaturesStr = fromUtf16(ptr);
+  if (signaturesStr == null ||
+      signaturesStr.length == 0 ||
+      signaturesStr == 2) {
+    return Map();
+  }
+
+  // remove '{' and '}'
+  String templeStr = signaturesStr.substring(1, signaturesStr.length - 1);
+  List<String> signatures = templeStr.split(', ');
+  Map<String, String> signatureMap = Map();
+  signatures.forEach((siganture) {
+    List<String> methodInfo = siganture.split('=');
+    if (methodInfo.length != 2) {
+      throw '\'$interfaceName\' get method signature error, siganture = \'$siganture\'';
+    }
+    // key is method name, vlaue is method signature
+    signatureMap[methodInfo[0]] = methodInfo[1];
+  });
+
+  return signatureMap;
+}

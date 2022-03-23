@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 
 public class MethodUtils {
 
-	public static String getSupportSignature(Class clazz) {
+	public static String getClassSignature(Class clazz) {
 		if (clazz == boolean.class) {
 			return "Z";
 		}
@@ -39,12 +39,12 @@ public class MethodUtils {
 	public static String buildSignature(Method method) {
 		Class[] paramTypes = method.getParameterTypes();
 
-		StringBuilder sb = new StringBuilder("(");
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClassSignature(method.getReturnType()));
 		for (Class paramType : paramTypes) {
-			sb.append(getSupportSignature(paramType));
+			sb.append("'");
+			sb.append(getClassSignature(paramType));
 		}
-        sb.append(")");
-        sb.append(getSupportSignature(method.getReturnType()));
 		return sb.toString();
 	}
 }

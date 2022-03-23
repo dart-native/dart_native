@@ -9,11 +9,13 @@ abstract class InterfaceRuntime {
   Map<String, String> methodTableWithInterfaceName(String name);
 
   /// Invoke a native method synchronously.
-  T invokeMethodSync<T>(Pointer<Void> nativeObjectPointer, String methodName,
+  T invokeMethodSync<T>(
+      Pointer<Void> nativeObjectPointer, String method, String methodSignature,
       {List? args});
 
   /// Invoke a native method asynchronously.
-  Future<T> invokeMethod<T>(Pointer<Void> nativeObjectPointer, String methodName,
+  Future<T> invokeMethod<T>(
+      Pointer<Void> nativeObjectPointer, String methodName,
       {List? args});
 
   /// Sets a callback for receiving method calls on this interface.

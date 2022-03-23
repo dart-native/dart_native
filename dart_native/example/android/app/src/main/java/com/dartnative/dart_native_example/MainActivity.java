@@ -1,6 +1,7 @@
 package com.dartnative.dart_native_example;
 
 import com.dartnative.dart_native.DartNativePlugin;
+import com.dartnative.dart_native.InterfaceRegistry;
 
 import androidx.annotation.NonNull;
 import io.flutter.Log;
@@ -35,6 +36,7 @@ public class MainActivity extends FlutterActivity {
         }
       }
     });
+    InterfaceRegistry.getInstance().registerInterface(new InterfaceDemo());
   }
 
   public int getInt(int i){

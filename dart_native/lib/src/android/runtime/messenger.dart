@@ -138,9 +138,8 @@ dynamic _doInvoke(
   return result;
 }
 
-dynamic invoke(
-    Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<String>? assignedSignature}) {
+dynamic invoke(Pointer<Void> objPtr, String methodName, String returnType,
+    {List? args, List<String>? assignedSignature}) {
   return _doInvoke(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature);
 }

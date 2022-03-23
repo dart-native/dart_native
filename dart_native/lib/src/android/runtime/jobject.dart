@@ -136,8 +136,8 @@ class JObject extends NativeObject {
   /// JObject(className: 'java/util/ArrayList').invokeBool('add', args: [JInteger(10)], assignedSignature: ['Ljava/lang/Object;'])
   dynamic callMethodSync(String methodName, String returnType,
       {List? args, List<String>? assignedSignature}) {
-    return invoke(_ptr.cast<Void>(), methodName, args, returnType,
-        assignedSignature: assignedSignature);
+    return invoke(_ptr.cast<Void>(), methodName, returnType,
+        args: args, assignedSignature: assignedSignature);
   }
 
   /// Async call java method, you can use [JObjectCallMethod] extension method which is more simplify.

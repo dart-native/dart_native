@@ -253,7 +253,21 @@ void *interfaceHostObjectWithName(char *name) {
   auto interfaceName = env->NewStringUTF(name);
   auto interface = env->CallObjectMethod(gInterfaceRegistry->Object(), getInterface, interfaceName);
   env->DeleteLocalRef(interfaceName);
+  env->DeleteLocalRef(registryClz);
   return interface;
+}
+
+void *interfaceAllMetaData(char *name) {
+  auto env = _getEnv();
+  auto registryClz =
+      _findClass(env, "com/dartnative/dart_native/InterfaceRegistry");
+  auto getSignatures =
+      env->GetMethodID(registryClz, "getMethodsSignature", "(Ljava/lang/String;)Ljava/lang/String;");
+  auto interfaceName = env->NewStringUTF(name);
+  auto signatures = env->CallObjectMethod(gInterfaceRegistry->Object(), getSignatures, interfaceName);
+  env->DeleteLocalRef(interfaceName);
+  env->DeleteLocalRef(registryClz);
+  return ConvertToDartUtf16(env, (jstring) signatures);
 }
 
 /// dart notify run callback function
@@ -385,12 +399,13 @@ void *invokeNativeMethod(void *objPtr,
                          Dart_Port dartPort,
                          int thread) {
   auto object = static_cast<jobject>(objPtr);
-  if (!_objectInReference(object)) {
-    /// maybe use cache pointer but jobject is release
-    DNError(
-        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
-    return nullptr;
-  }
+  /// todo(HUIZZ)
+//  if (!_objectInReference(object)) {
+//    /// maybe use cache pointer but jobject is release
+//    DNError(
+//        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
+//    return nullptr;
+//  }
   auto type = TaskThread(thread);
   auto invokeFunction = [=] {
     return _doInvokeMethod(object,
