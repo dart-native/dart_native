@@ -8,14 +8,17 @@ import 'package:ffi/ffi.dart';
 
 class InterfaceRuntimeJava extends InterfaceRuntime {
   @override
-  Future<T> invokeMethod<T>(
-      Pointer<Void> nativeObjectPointer, String method, String methodSignature,
+  Future<T> invokeMethod<T>(Pointer<Void> nativeObjectPointer, String method,
       {List? args}) {
-    List<String> sigList = methodSignature.split('\'');
-    if (sigList.isEmpty) {
-      throw 'invokeMethodSync error can not get method signature of $method';
+    List<String> methodInfo = method.split(':');
+    if (methodInfo.length != 2) {
+      throw 'invokeMethod error can not get method info of $method';
     }
-    return invoke(nativeObjectPointer, method, sigList[0],
+    List<String> sigList = methodInfo[1].split('\'');
+    if (sigList.isEmpty) {
+      throw 'invokeMethod error can not get method signature of $method';
+    }
+    return invoke(nativeObjectPointer, methodInfo[0], sigList[0],
             args: args,
             assignedSignature: sigList.sublist(1),
             isInterface: true)
@@ -25,14 +28,17 @@ class InterfaceRuntimeJava extends InterfaceRuntime {
   }
 
   @override
-  T invokeMethodSync<T>(
-      Pointer<Void> nativeObjectPointer, String method, String methodSignature,
+  T invokeMethodSync<T>(Pointer<Void> nativeObjectPointer, String method,
       {List? args}) {
-    List<String> sigList = methodSignature.split('\'');
+    List<String> methodInfo = method.split(':');
+    if (methodInfo.length != 2) {
+      throw 'invokeMethod error can not get method info of $method';
+    }
+    List<String> sigList = methodInfo[1].split('\'');
     if (sigList.isEmpty) {
       throw 'invokeMethodSync error can not get method signature of $method';
     }
-    return invokeSync(nativeObjectPointer, method, sigList[0],
+    return invokeSync(nativeObjectPointer, methodInfo[0], sigList[0],
         args: args, assignedSignature: sigList.sublist(1), isInterface: true);
   }
 
@@ -79,7 +85,7 @@ Map<String, String> _mapForInterfaceMetaData(String interfaceName) {
     return {};
   }
 
-  // remove '{' and '}'
+  /// remove '{' and '}'
   String templeStr = signaturesStr.substring(1, signaturesStr.length - 1);
   List<String> signatures = templeStr.split(', ');
   Map<String, String> signatureMap = {};
@@ -88,7 +94,8 @@ Map<String, String> _mapForInterfaceMetaData(String interfaceName) {
     if (methodInfo.length != 2) {
       throw '\'$interfaceName\' get method signature error, siganture = \'$siganture\'';
     }
-    // key is method name, vlaue is method signature
+
+    /// key is interface method name, value is java method signature
     signatureMap[methodInfo[0]] = methodInfo[1];
   }
 

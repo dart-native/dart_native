@@ -79,12 +79,15 @@ public class InterfaceRegistry {
                 continue;
             }
             String sig = MethodUtils.buildSignature(method);
-            String methodName = interfaceMethod.name();
-            if (methodName == null || methodName.isEmpty()) {
-                methodName = method.getName();
+            String interfaceMethodName = interfaceMethod.name();
+            if (interfaceMethodName == null || interfaceMethodName.isEmpty()) {
+                interfaceMethodName = method.getName();
             }
-            sigMap.put(methodName, sig);
+            sigMap.put(interfaceMethodName, sig);
         }
+        // mMethodSigMap value format like:
+        // {buildSignature=buildSignature:Ljava/lang/String;'Ljava/lang/reflect/Method;}
+        // It will decode in dart side.
         mMethodSigMap.put(clazz, sigMap.toString());
         return sigMap.toString();
     }

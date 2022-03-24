@@ -39,7 +39,10 @@ public class MethodUtils {
 	public static String buildSignature(Method method) {
 		Class[] paramTypes = method.getParameterTypes();
 
+		// signature format like buildSignature:Ljava/lang/String;'Ljava/lang/reflect/Method;
 		StringBuilder sb = new StringBuilder();
+		sb.append(method.getName());
+		sb.append(":");
 		sb.append(getClassSignature(method.getReturnType()));
 		for (Class paramType : paramTypes) {
 			sb.append("'");

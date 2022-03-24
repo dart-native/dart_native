@@ -38,7 +38,7 @@ class Interface {
   /// Types of support: [num]/[String]/[List]/[Map]/[Set]/[Function]/[Pointer]/[NativeByte]/[NativeObject]
   T invokeMethodSync<T>(String method, {List? args}) {
     return _runtime.invokeMethodSync(
-        _nativeObjectPointer, method, _nativeMethodName(method),
+        _nativeObjectPointer, _nativeMethod(method),
         args: args);
   }
 
@@ -46,8 +46,7 @@ class Interface {
   ///
   /// Types of support: [num]/[String]/[List]/[Map]/[Set]/[Function]/[Pointer]/[NativeByte]/[NativeObject]
   Future<T> invokeMethod<T>(String method, {List? args}) {
-    return _runtime.invokeMethod(
-        _nativeObjectPointer, method, _nativeMethodName(method),
+    return _runtime.invokeMethod(_nativeObjectPointer, _nativeMethod(method),
         args: args);
   }
 
@@ -60,10 +59,10 @@ class Interface {
     _runtime.setMethodCallHandler(name, method, function);
   }
 
-  String _nativeMethodName(String method) {
-    String? result = _methodTable[method];
+  String _nativeMethod(String interfaceMethodName) {
+    String? result = _methodTable[interfaceMethodName];
     if (result == null) {
-      throw 'Native method \'$method\' is not exists on interface \'$name\'';
+      throw 'Native method \'$interfaceMethodName\' is not exists on interface \'$name\'';
     }
     return result;
   }
