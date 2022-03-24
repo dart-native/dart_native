@@ -80,7 +80,8 @@ dynamic _doInvoke(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
     Thread thread = Thread.flutterUI,
-    _AsyncMessageCallback? callback}) {
+    _AsyncMessageCallback? callback,
+    bool isInterface = false}) {
   if (objPtr == nullptr) {
     throw 'InvokeMethod error native object pointer is nullptr.';
   }
@@ -120,7 +121,8 @@ dynamic _doInvoke(
       nativeArguments.stringTypeBitmask,
       callbackPtr,
       nativePort,
-      thread.index);
+      thread.index,
+      isInterface);
 
   dynamic result;
   if (callback == null) {
@@ -139,21 +141,22 @@ dynamic _doInvoke(
 }
 
 dynamic invoke(Pointer<Void> objPtr, String methodName, String returnType,
-    {List? args, List<String>? assignedSignature}) {
+    {List? args, List<String>? assignedSignature, bool isInterface = false}) {
   return _doInvoke(objPtr, methodName, args, returnType,
-      assignedSignature: assignedSignature);
+      assignedSignature: assignedSignature, isInterface: isInterface);
 }
 
 Future<dynamic> invokeMethodAsync(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
-    Thread thread = Thread.mainThread}) async {
+    Thread thread = Thread.mainThread,
+    bool isInterface = false}) async {
   final completer = Completer<dynamic>();
   _doInvoke(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature,
       thread: thread, callback: (dynamic result) {
     completer.complete(result);
-  });
+  }, isInterface: isInterface);
   return completer.future;
 }
 

@@ -23,7 +23,7 @@ class InterfaceRuntimeJava extends InterfaceRuntime {
       throw 'invokeMethodSync error can not get method signature of $method';
     }
     return invoke(nativeObjectPointer, method, sigList[0],
-        args: args, assignedSignature: sigList.sublist(1));
+        args: args, assignedSignature: sigList.sublist(1), isInterface: true);
   }
 
   @override

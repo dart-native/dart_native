@@ -397,15 +397,16 @@ void *invokeNativeMethod(void *objPtr,
                          uint32_t stringTypeBitmask,
                          void *callback,
                          Dart_Port dartPort,
-                         int thread) {
+                         int thread,
+                         bool isInterface) {
   auto object = static_cast<jobject>(objPtr);
-  /// todo(HUIZZ)
-//  if (!_objectInReference(object)) {
-//    /// maybe use cache pointer but jobject is release
-//    DNError(
-//        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
-//    return nullptr;
-//  }
+  /// interface skip object check
+  if (!isInterface && !_objectInReference(object)) {
+    /// maybe use cache pointer but jobject is release
+    DNError(
+        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
+    return nullptr;
+  }
   auto type = TaskThread(thread);
   auto invokeFunction = [=] {
     return _doInvokeMethod(object,

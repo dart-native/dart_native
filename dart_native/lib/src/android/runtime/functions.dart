@@ -54,7 +54,8 @@ final Pointer<Void> Function(
         int stringTypeBitmask,
         Pointer<NativeFunction<InvokeCallback>>,
         int dartPort,
-        int thread)? nativeInvoke =
+        int thread,
+        bool isInterface)? nativeInvoke =
     nativeDylib
         .lookup<
             NativeFunction<
@@ -68,7 +69,8 @@ final Pointer<Void> Function(
                     Uint32 stringTypeBitmask,
                     Pointer<NativeFunction<InvokeCallback>>,
                     Int64 dartPort,
-                    Int32 thread)>>('invokeNativeMethod')
+                    Int32 thread,
+                    Bool isInterface)>>('invokeNativeMethod')
         .asFunction();
 
 ///
