@@ -33,9 +33,9 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
 
   @override
   Future<T> invokeMethod<T>(
-      Pointer<Void> nativeObjectPointer, String methodName,
+      Pointer<Void> nativeObjectPointer, String method, String methodSignature,
       {List? args}) {
-    return msgSendAsync<dynamic>(nativeObjectPointer, SEL(methodName),
+    return msgSendAsync<dynamic>(nativeObjectPointer, SEL(methodSignature),
             args: args)
         .then((value) {
       return _postprocessResult<T>(value);

@@ -47,7 +47,7 @@ class Interface {
   /// Types of support: [num]/[String]/[List]/[Map]/[Set]/[Function]/[Pointer]/[NativeByte]/[NativeObject]
   Future<T> invokeMethod<T>(String method, {List? args}) {
     return _runtime.invokeMethod(
-        _nativeObjectPointer, _nativeMethodName(method),
+        _nativeObjectPointer, method, _nativeMethodName(method),
         args: args);
   }
 

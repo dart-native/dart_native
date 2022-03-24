@@ -15,7 +15,7 @@ abstract class InterfaceRuntime {
 
   /// Invoke a native method asynchronously.
   Future<T> invokeMethod<T>(
-      Pointer<Void> nativeObjectPointer, String methodName,
+      Pointer<Void> nativeObjectPointer, String method, String methodSignature,
       {List? args});
 
   /// Sets a callback for receiving method calls on this interface.

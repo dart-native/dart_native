@@ -9,9 +9,19 @@ import 'package:ffi/ffi.dart';
 class InterfaceRuntimeJava extends InterfaceRuntime {
   @override
   Future<T> invokeMethod<T>(
-      Pointer<Void> nativeObjectPointer, String methodName,
+      Pointer<Void> nativeObjectPointer, String method, String methodSignature,
       {List? args}) {
-    throw UnimplementedError();
+    List<String> sigList = methodSignature.split('\'');
+    if (sigList.isEmpty) {
+      throw 'invokeMethodSync error can not get method signature of $method';
+    }
+    return invoke(nativeObjectPointer, method, sigList[0],
+            args: args,
+            assignedSignature: sigList.sublist(1),
+            isInterface: true)
+        .then((reslut) {
+      return reslut;
+    });
   }
 
   @override
@@ -22,7 +32,7 @@ class InterfaceRuntimeJava extends InterfaceRuntime {
     if (sigList.isEmpty) {
       throw 'invokeMethodSync error can not get method signature of $method';
     }
-    return invoke(nativeObjectPointer, method, sigList[0],
+    return invokeSync(nativeObjectPointer, method, sigList[0],
         args: args, assignedSignature: sigList.sublist(1), isInterface: true);
   }
 
@@ -64,23 +74,23 @@ Map<String, String> _mapForInterfaceMetaData(String interfaceName) {
 
   String? signaturesStr = fromUtf16(ptr);
   if (signaturesStr == null ||
-      signaturesStr.length == 0 ||
-      signaturesStr == 2) {
-    return Map();
+      signaturesStr.isEmpty ||
+      signaturesStr.length == 2) {
+    return {};
   }
 
   // remove '{' and '}'
   String templeStr = signaturesStr.substring(1, signaturesStr.length - 1);
   List<String> signatures = templeStr.split(', ');
-  Map<String, String> signatureMap = Map();
-  signatures.forEach((siganture) {
+  Map<String, String> signatureMap = {};
+  for (var siganture in signatures) {
     List<String> methodInfo = siganture.split('=');
     if (methodInfo.length != 2) {
       throw '\'$interfaceName\' get method signature error, siganture = \'$siganture\'';
     }
     // key is method name, vlaue is method signature
     signatureMap[methodInfo[0]] = methodInfo[1];
-  });
+  }
 
   return signatureMap;
 }

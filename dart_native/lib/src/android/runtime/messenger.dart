@@ -140,15 +140,16 @@ dynamic _doInvoke(
   return result;
 }
 
-dynamic invoke(Pointer<Void> objPtr, String methodName, String returnType,
+dynamic invokeSync(Pointer<Void> objPtr, String methodName, String returnType,
     {List? args, List<String>? assignedSignature, bool isInterface = false}) {
   return _doInvoke(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature, isInterface: isInterface);
 }
 
-Future<dynamic> invokeMethodAsync(
-    Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<String>? assignedSignature,
+Future<dynamic> invoke(
+    Pointer<Void> objPtr, String methodName, String returnType,
+    {List? args,
+    List<String>? assignedSignature,
     Thread thread = Thread.mainThread,
     bool isInterface = false}) async {
   final completer = Completer<dynamic>();

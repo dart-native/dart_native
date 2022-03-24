@@ -136,7 +136,7 @@ class JObject extends NativeObject {
   /// JObject(className: 'java/util/ArrayList').invokeBool('add', args: [JInteger(10)], assignedSignature: ['Ljava/lang/Object;'])
   dynamic callMethodSync(String methodName, String returnType,
       {List? args, List<String>? assignedSignature}) {
-    return invoke(_ptr.cast<Void>(), methodName, returnType,
+    return invokeSync(_ptr.cast<Void>(), methodName, returnType,
         args: args, assignedSignature: assignedSignature);
   }
 
@@ -149,7 +149,7 @@ class JObject extends NativeObject {
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
-        assignedSignature: assignedSignature, thread: thread);
+    return invoke(_ptr.cast<Void>(), methodName, returnType,
+        args: args, assignedSignature: assignedSignature, thread: thread);
   }
 }
