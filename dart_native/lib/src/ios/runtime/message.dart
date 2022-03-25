@@ -167,7 +167,7 @@ dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types when [decodeRetVal] is `true`.
-T msgSend<T>(Pointer<Void> target, SEL selector,
+T msgSendSync<T>(Pointer<Void> target, SEL selector,
     {List? args, bool decodeRetVal = true}) {
   return _msgSend<T>(target, selector, args: args, decodeRetVal: decodeRetVal);
 }
@@ -178,7 +178,7 @@ T msgSend<T>(Pointer<Void> target, SEL selector,
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types.
-Future<T> msgSendAsync<T>(Pointer<Void> target, SEL selector,
+Future<T> msgSend<T>(Pointer<Void> target, SEL selector,
     {List? args, DispatchQueue? onQueue}) async {
   // Send message to global queue by default.
   onQueue ??= DispatchQueue.global();

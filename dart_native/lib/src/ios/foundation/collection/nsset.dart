@@ -17,10 +17,10 @@ class NSSet extends NSSubclass<Set> {
     raw = elements.toSet();
   }
 
-  int get count => perform(SEL('count'));
+  int get count => performSync(SEL('count'));
 
   List get allObjects {
-    Pointer<Void> ptr = perform(SEL('allObjects'), decodeRetVal: false);
+    Pointer<Void> ptr = performSync(SEL('allObjects'), decodeRetVal: false);
     return NSArray.fromPointer(ptr).raw;
   }
 }
@@ -44,7 +44,7 @@ Pointer<Void> _new(dynamic value) {
     List list = value.toList(growable: false);
     NSArray array = NSArray(list);
     NSObject result =
-        Class('NSSet').perform(SEL('setWithArray:'), args: [array]);
+        Class('NSSet').performSync(SEL('setWithArray:'), args: [array]);
     return result.pointer;
   } else {
     throw 'Invalid param when initializing NSSet.';

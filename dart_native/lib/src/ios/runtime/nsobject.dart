@@ -34,34 +34,34 @@ class NSObject extends id {
   }
 
   NSObject init() {
-    return perform(SEL('init'));
+    return performSync(SEL('init'));
   }
 
   NSObject copy() {
-    NSObject result = perform(SEL('copy'));
+    NSObject result = performSync(SEL('copy'));
     return NSObject.fromPointer(result.autorelease().pointer);
   }
 
   NSObject mutableCopy() {
-    NSObject result = perform(SEL('mutableCopy'));
+    NSObject result = performSync(SEL('mutableCopy'));
     return NSObject.fromPointer(result.autorelease().pointer);
   }
 
   NSObject autorelease() {
-    return perform(SEL('autorelease'));
+    return performSync(SEL('autorelease'));
   }
 
   static Pointer<Void> _new(Class? isa) {
     isa ??= Class('NSObject');
-    Pointer<Void> resultPtr = isa.perform(SEL('new'), decodeRetVal: false);
-    return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
+    Pointer<Void> resultPtr = isa.performSync(SEL('new'), decodeRetVal: false);
+    return msgSendSync(resultPtr, SEL('autorelease'), decodeRetVal: false);
   }
 }
 
 Pointer<Void> alloc(Class? isa) {
   isa ??= Class('NSObject');
-  Pointer<Void> resultPtr = isa.perform(SEL('alloc'), decodeRetVal: false);
-  return msgSend(resultPtr, SEL('autorelease'), decodeRetVal: false);
+  Pointer<Void> resultPtr = isa.performSync(SEL('alloc'), decodeRetVal: false);
+  return msgSendSync(resultPtr, SEL('autorelease'), decodeRetVal: false);
 }
 
 /// Convert [arg] to its custom type, which is annotated with `@native()`.

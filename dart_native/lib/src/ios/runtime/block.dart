@@ -53,8 +53,8 @@ class Block extends id {
       return nilBlock;
     }
     NSObject blockWrapper = NSObject.fromPointer(blockWrapperPtr);
-    int blockAddr = blockWrapper.perform(SEL('blockAddress'));
-    int sequence = blockWrapper.perform(SEL('sequence'));
+    int blockAddr = blockWrapper.performSync(SEL('blockAddress'));
+    int sequence = blockWrapper.performSync(SEL('sequence'));
     Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
     calloc.free(typeStringPtr);
     result.types = dartTypes;
@@ -92,7 +92,7 @@ class Block extends id {
       throw 'Block created by Dart';
       //return null;
     }
-    return isa!.perform(SEL('superclass'));
+    return isa!.performSync(SEL('superclass'));
   }
 
   @override
@@ -205,7 +205,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     throw 'Can\'t find block by sequence $seq';
   }
   List args = [];
-  Pointer pointer = block._wrapper!.perform(SEL('typeEncodings'));
+  Pointer pointer = block._wrapper!.performSync(SEL('typeEncodings'));
   Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.

@@ -46,7 +46,7 @@ Pointer<Void> _new(dynamic value, Class isa) {
   if (value is String) {
     List<int> units = value.codeUnits;
     Pointer<Uint16> utf16Ptr = units.toUtf16Buffer();
-    Pointer<Void> result = isa.perform(SEL('stringWithCharacters:length:'),
+    Pointer<Void> result = isa.performSync(SEL('stringWithCharacters:length:'),
         args: [utf16Ptr, units.length], decodeRetVal: false);
     calloc.free(utf16Ptr);
     return result;

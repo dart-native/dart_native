@@ -15,12 +15,12 @@ class NSData extends NSObject implements BytePlatformRaw {
   NSData(this.bytes, this.lengthInBytes)
       : super.fromPointer(_dataWithBytes(bytes, lengthInBytes));
   NSData.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    bytes = perform(SEL('bytes'), decodeRetVal: false);
-    lengthInBytes = perform(SEL('length'));
+    bytes = performSync(SEL('bytes'), decodeRetVal: false);
+    lengthInBytes = performSync(SEL('length'));
   }
 
   static Pointer<Void> _dataWithBytes(Pointer<Void> bytes, int lengthInBytes) {
-    return Class('NSData').perform(SEL('dataWithBytes:length:'),
+    return Class('NSData').performSync(SEL('dataWithBytes:length:'),
         args: [bytes, lengthInBytes], decodeRetVal: false);
   }
 }

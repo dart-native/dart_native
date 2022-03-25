@@ -175,7 +175,7 @@ Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
   print('fooWithOptions result:$options');
 
   Class('NSThread')
-      .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
+      .perform(SEL('currentThread'), onQueue: DispatchQueue.global())
       .then((currentThread) {
     print('currentThread: ${currentThread.description}');
   });

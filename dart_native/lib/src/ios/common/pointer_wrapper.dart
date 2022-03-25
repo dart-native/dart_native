@@ -9,11 +9,11 @@ class PointerWrapper extends NSObject {
   PointerWrapper(Pointer<Void> value)
       : super.fromPointer(_initWithPointer(value));
 
-  Pointer<Void> get value => perform(SEL('pointer'));
+  Pointer<Void> get value => performSync(SEL('pointer'));
 
   static Pointer<Void> _initWithPointer(Pointer<Void> pointer) {
     Pointer<Void> target = alloc(Class('DNPointerWrapper'));
     SEL sel = 'initWithPointer:'.toSEL();
-    return msgSend(target, sel, args: [pointer], decodeRetVal: false);
+    return msgSendSync(target, sel, args: [pointer], decodeRetVal: false);
   }
 }

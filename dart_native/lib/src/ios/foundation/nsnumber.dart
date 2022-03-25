@@ -16,7 +16,7 @@ class NSNumber extends NSValue {
     String typeName = value.runtimeType.toString();
     if (_numberCreationForBoxType.containsKey(typeName)) {
       String selName = 'numberWith${_numberCreationForBoxType[typeName]}:';
-      NSObject result = type(of: NSNumber).perform(SEL(selName), args: [value]);
+      NSObject result = type(of: NSNumber).performSync(SEL(selName), args: [value]);
       return result.pointer;
     } else {
       throw 'Unknown type for initializing NSNumber.';
