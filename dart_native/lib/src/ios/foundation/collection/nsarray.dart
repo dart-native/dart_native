@@ -55,7 +55,8 @@ Pointer<Void> _new(dynamic value) {
     for (var i = 0; i < boxValues.length; i++) {
       listPtr.elementAt(i).value = boxValues[i].pointer;
     }
-    NSObject result = Class('NSArray').performSync(SEL('arrayWithObjects:count:'),
+    NSObject result = Class('NSArray').performSync(
+        SEL('arrayWithObjects:count:'),
         args: [listPtr, boxValues.length]);
     calloc.free(listPtr);
     return result.pointer;

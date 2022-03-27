@@ -38,7 +38,8 @@ Pointer<Void> _new(dynamic value, String clsName) {
     if (value.isNotEmpty) {
       type = _getValueType(value[0]);
     }
-    return converter.callMethodSync('${type.arrayType}ListToArray', type.arraySignature,
+    return converter.callMethodSync(
+        '${type.arrayType}ListToArray', type.arraySignature,
         args: [list]);
   } else {
     throw 'Invalid param when initializing JArray.';

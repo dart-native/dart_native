@@ -344,7 +344,7 @@ Map<String, String> _nativeTypeNameMap = {
 
 /// Names of native types.
 ///
-/// The types in the list are not treated as NSObject when processing the 
+/// The types in the list are not treated as NSObject when processing the
 /// dart function signature.
 List<String> _nativeTypeNames = [
   'id',

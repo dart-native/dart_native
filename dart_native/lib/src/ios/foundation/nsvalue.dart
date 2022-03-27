@@ -77,7 +77,8 @@ class NSValue extends NSSubclass {
   static NSValue valueWithStruct<T extends NativeStruct>(T struct,
       {String? structAlias}) {
     String selName = 'valueWith${structAlias ?? struct.aliasForNSValue}:';
-    NSObject result = type(of: NSValue).performSync(SEL(selName), args: [struct]);
+    NSObject result =
+        type(of: NSValue).performSync(SEL(selName), args: [struct]);
     NSValue value = NSValue.fromPointer(result.pointer);
     value.raw = struct;
     return value;
@@ -200,5 +201,6 @@ extension CATransform3DAdditions on NSValue {
   }
 
   // ignore: non_constant_identifier_names
-  CATransform3D get CATransform3DValue => performSync(SEL('CATransform3DValue'));
+  CATransform3D get CATransform3DValue =>
+      performSync(SEL('CATransform3DValue'));
 }

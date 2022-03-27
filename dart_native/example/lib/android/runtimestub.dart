@@ -98,7 +98,8 @@ class RuntimeStub extends JObject {
   }
 
   int getInteger() {
-    return JInteger.fromPointer(callMethodSync("getInteger", "Ljava/lang/Integer;"))
+    return JInteger.fromPointer(
+            callMethodSync("getInteger", "Ljava/lang/Integer;"))
         .raw;
   }
 

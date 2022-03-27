@@ -18,7 +18,8 @@ class JMap<K, V> extends JSubclass<Map> {
 
   JMap.fromPointer(Pointer<Void> ptr, {String clsName = jMapCls})
       : super.fromPointer(ptr, clsName) {
-    Set keySet = JSet<K>.fromPointer(callMethodSync('keySet', 'Ljava/util/Set;')).raw;
+    Set keySet =
+        JSet<K>.fromPointer(callMethodSync('keySet', 'Ljava/util/Set;')).raw;
     Map temp = {};
     String itemType = '';
     for (var key in keySet) {

@@ -45,7 +45,8 @@ class NSError extends NSObject {
   NSObject get recoveryAttempter => performSync('recoveryAttempter'.toSEL());
 
   String get helpAnchor {
-    Pointer<Void> result = performSync('helpAnchor'.toSEL(), decodeRetVal: false);
+    Pointer<Void> result =
+        performSync('helpAnchor'.toSEL(), decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 

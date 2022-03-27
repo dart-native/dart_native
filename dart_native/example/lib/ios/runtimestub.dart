@@ -155,8 +155,8 @@ class RuntimeStub extends NSObject {
   }
 
   UIEdgeInsets? fooUIEdgeInsets(UIEdgeInsets insets) {
-    Pointer<Void> result =
-        performSync(SEL('fooUIEdgeInsets:'), args: [insets], decodeRetVal: false);
+    Pointer<Void> result = performSync(SEL('fooUIEdgeInsets:'),
+        args: [insets], decodeRetVal: false);
     return UIEdgeInsets.fromPointer(result);
   }
 
@@ -188,8 +188,8 @@ class RuntimeStub extends NSObject {
 
   List? fooNSMutableArray(List array) {
     NSMutableArray _array = NSMutableArray(array);
-    Pointer<Void> result =
-        performSync(SEL('fooNSMutableArray:'), args: [_array], decodeRetVal: false);
+    Pointer<Void> result = performSync(SEL('fooNSMutableArray:'),
+        args: [_array], decodeRetVal: false);
     return NSMutableArray.fromPointer(result).raw;
   }
 
@@ -257,8 +257,8 @@ class RuntimeStub extends NSObject {
 
   String? fooNSMutableString(String str) {
     NSMutableString _str = NSMutableString(str);
-    Pointer<Void> result =
-        performSync(SEL('fooNSMutableString:'), args: [_str], decodeRetVal: false);
+    Pointer<Void> result = performSync(SEL('fooNSMutableString:'),
+        args: [_str], decodeRetVal: false);
     return NSMutableString.fromPointer(result).raw;
   }
 
@@ -267,8 +267,8 @@ class RuntimeStub extends NSObject {
   }
 
   ItemIndex? fooWithOptions(ItemIndex options) {
-    Pointer<Void> result =
-        performSync(SEL('fooWithOptions:'), args: [options], decodeRetVal: false);
+    Pointer<Void> result = performSync(SEL('fooWithOptions:'),
+        args: [options], decodeRetVal: false);
     return result.address;
   }
 }

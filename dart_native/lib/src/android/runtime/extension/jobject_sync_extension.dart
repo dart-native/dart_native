@@ -64,7 +64,8 @@ extension JObjectSyncCallMethod on JObject {
   /// call native method which return void
   void callVoidMethodSync(String methodName,
       {List? args, List<String>? assignedSignature}) {
-    callMethodSync(methodName, 'V', args: args, assignedSignature: assignedSignature);
+    callMethodSync(methodName, 'V',
+        args: args, assignedSignature: assignedSignature);
   }
 
   /// call native method which return string

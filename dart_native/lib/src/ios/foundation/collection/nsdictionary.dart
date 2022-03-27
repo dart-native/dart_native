@@ -31,7 +31,8 @@ class NSDictionary extends NSSubclass<Map> {
   }
 
   List get allValues {
-    Pointer<Void> valuesPtr = performSync(SEL('allValues'), decodeRetVal: false);
+    Pointer<Void> valuesPtr =
+        performSync(SEL('allValues'), decodeRetVal: false);
     return NSArray.fromPointer(valuesPtr)
         .raw
         .map((e) => unboxingObjCType(e))
@@ -61,8 +62,9 @@ Pointer<Void> _new(dynamic value) {
   if (value is Map) {
     NSArray keys = value.keys.toList(growable: false).toNSArray();
     NSArray values = value.values.toList(growable: false).toNSArray();
-    NSObject result = Class('NSDictionary')
-        .performSync(SEL('dictionaryWithObjects:forKeys:'), args: [values, keys]);
+    NSObject result = Class('NSDictionary').performSync(
+        SEL('dictionaryWithObjects:forKeys:'),
+        args: [values, keys]);
     return result.pointer;
   } else {
     throw 'Invalid param when initializing NSDictionary.';
