@@ -6,6 +6,10 @@ import 'dart:ffi';
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 // You can uncomment this line when this package is ready.
+// import 'package:foundation/foundation.dart';
+// You can uncomment this line when this package is ready.
+// import 'package:appkit/appkit.dart';
+// You can uncomment this line when this package is ready.
 // import 'package:uikit/uikit.dart';
 
 typedef ItemIndex = NSOptions;
@@ -160,7 +164,7 @@ class RuntimeStub extends NSObject {
     return UIEdgeInsets.fromPointer(result);
   }
 
-  @NativeAvailable(ios: '11.0')
+  @NativeAvailable(ios: '11.0', macos: '10.15')
   NSDirectionalEdgeInsets? fooNSDirectionalEdgeInsets(
       NSDirectionalEdgeInsets insets) {
     Pointer<Void> result = performSync(SEL('fooNSDirectionalEdgeInsets:'),
