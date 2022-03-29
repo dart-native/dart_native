@@ -76,6 +76,7 @@ typedef CGFloat (^CGFloatRetBlock)(CGFloat a);
 - (void)fooStretBlock:(StretBlock)block;
 - (void)fooCompletion:(void(^)(void))block;
 - (void)fooCStringBlock:(CStringRetBlock)block;
+- (void)fooStringBlock:(StringRetBlock)block;
 - (void)fooNSDictionaryBlock:(NSDictionaryRetBlock)block;
 - (void)fooDelegate:(id<SampleDelegate>)delegate;
 - (void)fooStructDelegate:(id<SampleDelegate>)delegate;
