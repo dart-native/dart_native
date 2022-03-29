@@ -23,7 +23,11 @@ add_library( # Specifies the name of the library.
         src/main/jni/dn_method_call.cpp
         src/main/jni/dn_signature_helper.cpp
         src/main/jni/dn_callback.cpp
-        src/main/jni/dn_thread.cpp)
+        src/main/jni/dn_thread.cpp
+        src/main/jni/dn_lifecycle_manager.cc
+        src/main/jni/dn_method.cc
+        src/main/jni/dn_jni_helper.cc
+        src/main/jni/dn_dart_api.cc)
 
 find_library( # Sets the name of the path variable.
         log-lib

@@ -21,8 +21,6 @@ typedef void(*NativeMethodCallback)(void *targetPtr,
                                     char **argTypes,
                                     int argCount);
 
-typedef std::function<void()> Work;
-
 void doRegisterNativeCallback(void *dartObject,
                               jobject nativeProxyObject,
                               char *funName,
