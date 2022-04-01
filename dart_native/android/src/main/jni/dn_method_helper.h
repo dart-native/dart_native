@@ -11,18 +11,11 @@
 
 namespace dartnative {
 
-typedef void *CallNativeMethod(JNIEnv *, jobject, jmethodID, jvalue *);
-
-void *callNativeStringMethod(JNIEnv *env,
-                             jobject object,
-                             jmethodID methodId,
-                             jvalue *arguments);
-
-std::map<char, std::function<CallNativeMethod>> GetMethodCallerMap();
-
 jstring ConvertToJavaUtf16(JNIEnv *env, void *value);
 
 uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString);
+
+char *GenerateSignature(char **argumentTypes, int argumentCount, char *returnType);
 
 void FillArgs2JValues(void **arguments,
                       char **argumentTypes,

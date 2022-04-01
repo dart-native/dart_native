@@ -3,8 +3,7 @@
 #include <string>
 #include <semaphore.h>
 #include "dn_log.h"
-#include "dn_method_call.h"
-#include "dn_signature_helper.h"
+#include "dn_method_helper.h"
 #include "dn_callback.h"
 #include "jni_object_ref.h"
 #include "dn_method.h"
@@ -60,7 +59,7 @@ jobject _newObject(jclass cls,
                    jObjBucket);
 
   char *constructorSignature =
-      generateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
+      GenerateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
   jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
   jobject newObj = env->NewObjectA(cls, constructor, argValues);
 
