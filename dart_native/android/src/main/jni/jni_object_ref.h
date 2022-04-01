@@ -1,40 +1,110 @@
 //
 // Created by Hui on 6/9/21.
 //
-
-#ifndef DART_NATIVE_JNI_OBJECT_REF_H
-#define DART_NATIVE_JNI_OBJECT_REF_H
+#pragma once
 
 #include <jni.h>
+#include "dn_jni_helper.h"
+
+namespace dartnative {
+
+template<typename T>
+class JavaRef {
+ public:
+  explicit JavaRef(T obj) : obj_(obj) {}
+
+  JavaRef() = default;
+
+  ~JavaRef() = default;
+
+  T Object() const { return static_cast<T>(obj_); }
+
+  JNIEnv *SetNewLocalRef(JNIEnv *env, jobject obj) {
+    if (!env) {
+      env = AttachCurrentThread();
+    }
+    if (obj)
+      obj = env->NewLocalRef(obj);
+    if (obj_)
+      env->DeleteLocalRef(obj_);
+    obj_ = obj;
+    return env;
+  }
+
+  void SetNewGlobalRef(JNIEnv *env, jobject obj) {
+    if (!env) {
+      env = AttachCurrentThread();
+    }
+    if (obj)
+      obj = env->NewGlobalRef(obj);
+    if (obj_)
+      env->DeleteGlobalRef(obj_);
+    obj_ = obj;
+  }
+
+  void ResetLocalRef(JNIEnv *env) {
+    if (obj_) {
+      env->DeleteLocalRef(obj_);
+      obj_ = nullptr;
+    }
+  }
+
+  void ResetGlobalRef() {
+    if (obj_) {
+      AttachCurrentThread()->DeleteGlobalRef(obj_);
+      obj_ = nullptr;
+    }
+  }
+
+ protected:
+  jobject obj_ = nullptr;
+
+ private:
+  JavaRef(const JavaRef &) = delete;
+  JavaRef &operator=(const JavaRef &) = delete;
+};
+
+/**
+ * Local reference will auto delete in destructor
+ */
+template<typename T>
+class JavaLocalRef : public JavaRef<T> {
+ public:
+  JavaLocalRef() : env_(nullptr) {}
+
+  JavaLocalRef(T obj, JNIEnv *env) : JavaRef<T>(obj), env_(env) {}
+
+  ~JavaLocalRef() {
+    this->Reset();
+  }
+
+  JavaLocalRef<T> &operator=(const JavaLocalRef<T> &other) {
+    env_ = this->SetNewLocalRef(other.env_, other.obj_);
+    return *this;
+  }
+
+  void Reset() { this->ResetLocalRef(env_); }
+
+ private:
+  JNIEnv *env_;
+};
 
 /**
  * Global reference will auto delete in destructor
  */
 template<typename T>
-class JavaGlobalRef {
+class JavaGlobalRef : public JavaRef<T> {
  public:
-  explicit JavaGlobalRef(T t, JNIEnv *env) : env(env) {
-    this->obj = env->NewGlobalRef(t);
-  }
+  JavaGlobalRef(T obj, JNIEnv *env) { this->Reset(env, obj); }
 
-  JavaGlobalRef() = delete;
+  ~JavaGlobalRef() { this->Reset(); }
 
-  T Object() const { return static_cast<T>(obj); }
+  void Reset() { this->ResetGlobalRef(); }
 
-  ~JavaGlobalRef() { this->DeleteGlobalRef(); }
-
- protected:
-  jobject obj = nullptr;
-
- private:
-  JNIEnv *env;
-
-  void DeleteGlobalRef() {
-    if (this->obj) {
-      env->DeleteGlobalRef(this->obj);
-      this->obj = nullptr;
-    }
+  template<typename U>
+  void Reset(JNIEnv *env, U obj) {
+    this->SetNewGlobalRef(env, obj);
   }
 };
 
-#endif //DART_NATIVE_JNI_OBJECT_REF_H
+}

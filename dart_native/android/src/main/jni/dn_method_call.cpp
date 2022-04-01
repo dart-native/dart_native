@@ -4,6 +4,7 @@
 #include "dn_method_call.h"
 #include "dn_type_convert.h"
 #include "dn_log.h"
+#include "dn_callback.h"
 
 #define IS_32_BITS sizeof(void *) == 4
 
@@ -80,4 +81,43 @@ void *callNativeStringMethod(JNIEnv *env,
   auto javaString =
       (jstring) env->CallObjectMethodA(object, methodId, arguments);
   return ConvertToDartUtf16(env, javaString);
+}
+
+void FillArgs2JValues(void **arguments,
+                      char **argumentTypes,
+                      jvalue *argValues,
+                      int argumentCount,
+                      uint32_t stringTypeBitmask,
+                      JavaLocalRef<jobject> jObjBucket[]) {
+  if (argumentCount == 0) {
+    return;
+  }
+
+  JNIEnv *env = AttachCurrentThread();
+  for (jsize index(0); index < argumentCount; ++arguments, ++index) {
+    /// check basic map convert
+    auto map = GetTypeConvertMap();
+    auto it = map.find(*argumentTypes[index]);
+
+    if (it == map.end()) {
+      /// when argument type is string or stringTypeBitmask mark as string
+      if ((stringTypeBitmask >> index & 0x1) == 1) {
+        JavaLocalRef<jobject> argString(convertToJavaUtf16(env, *arguments), env);
+        jObjBucket[index] = argString;
+        argValues[index].l = jObjBucket[index].Object();
+      } else {
+        /// convert from object cache
+        /// check callback cache, if true using proxy object
+        jobject object = getNativeCallbackProxyObject(*arguments);
+        argValues[index].l =
+            object == nullptr ? static_cast<jobject>(*arguments) : object;
+      }
+    } else {
+      auto isTwoPointer = it->second(arguments, argValues, index);
+      /// In Dart use two pointer store value.
+      if (isTwoPointer) {
+        arguments++;
+      }
+    }
+  }
 }

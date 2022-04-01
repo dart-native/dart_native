@@ -18,4 +18,8 @@ bool Notify2Dart(Dart_Port send_port, const DartWorkFunction *work) {
   return result;
 }
 
+void NotifyJNIError() {
+
+}
+
 }

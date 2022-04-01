@@ -51,12 +51,14 @@ jobject _newObject(jclass cls,
                    int argumentCount,
                    uint32_t stringTypeBitmask) {
   auto *argValues = new jvalue[argumentCount];
+  JavaLocalRef<jobject> jObjBucket[argumentCount];
   JNIEnv *env = AttachCurrentThread();
   FillArgs2JValues(arguments,
                    argumentTypes,
                    argValues,
                    argumentCount,
-                   stringTypeBitmask);
+                   stringTypeBitmask,
+                   jObjBucket);
 
   char *constructorSignature =
       generateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));

@@ -9,4 +9,6 @@ typedef std::function<void()> DartWorkFunction;
 
 bool Notify2Dart(Dart_Port send_port, const DartWorkFunction *work);
 
+void NotifyJNIError();
+
 }

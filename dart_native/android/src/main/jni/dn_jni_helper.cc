@@ -1,9 +1,9 @@
 #include <thread>
 #include "dn_jni_helper.h"
 #include "dn_log.h"
-#include "jni_object_ref.h"
 #include "dn_type_convert.h"
 #include "dn_callback.h"
+#include "jni_object_ref.h"
 
 namespace dartnative {
 
@@ -101,54 +101,6 @@ jclass FindClass(const char *name, JNIEnv *env) {
     return findedClass;
   }
   return nativeClass;
-}
-
-void _deleteArgs(jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask) {
-  JNIEnv *env = AttachCurrentThread();
-  for (jsize index(0); index < argumentCount; ++index) {
-    /// release local reference of jstring
-    if ((stringTypeBitmask >> index & 0x1) == 1) {
-      env->DeleteLocalRef(argValues[index].l);
-    }
-  }
-  delete[] argValues;
-}
-
-/// todo(HUIZZ) release arguments
-void FillArgs2JValues(void **arguments,
-                      char **argumentTypes,
-                      jvalue *argValues,
-                      int argumentCount,
-                      uint32_t stringTypeBitmask) {
-  if (argumentCount == 0) {
-    return;
-  }
-
-  JNIEnv *env = AttachCurrentThread();
-  for (jsize index(0); index < argumentCount; ++arguments, ++index) {
-    /// check basic map convert
-    auto map = GetTypeConvertMap();
-    auto it = map.find(*argumentTypes[index]);
-
-    if (it == map.end()) {
-      /// when argument type is string or stringTypeBitmask mark as string
-      if ((stringTypeBitmask >> index & 0x1) == 1) {
-        argValues[index].l = convertToJavaUtf16(env, *arguments);
-      } else {
-        /// convert from object cache
-        /// check callback cache, if true using proxy object
-        jobject object = getNativeCallbackProxyObject(*arguments);
-        argValues[index].l =
-            object == nullptr ? static_cast<jobject>(*arguments) : object;
-      }
-    } else {
-      auto isTwoPointer = it->second(arguments, argValues, index);
-      /// In Dart use two pointer store value.
-      if (isTwoPointer) {
-        arguments++;
-      }
-    }
-  }
 }
 
 }

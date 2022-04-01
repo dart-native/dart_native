@@ -44,7 +44,8 @@ void *doInvokeNativeMethod(jobject object,
   auto cls = env->GetObjectClass(object);
 
   auto *argValues = new jvalue[argumentCount];
-  FillArgs2JValues(arguments, typePointers, argValues, argumentCount, stringTypeBitmask);
+  JavaLocalRef<jobject> jObjBucket[argumentCount];
+  FillArgs2JValues(arguments, typePointers, argValues, argumentCount, stringTypeBitmask, jObjBucket);
 
   char *methodSignature =
       generateSignature(typePointers, argumentCount, returnType);
@@ -68,7 +69,6 @@ void *doInvokeNativeMethod(jobject object,
         } else {
           typePointers[argumentCount] = (char *) "java.lang.Object";
           jobject gObj = env->NewGlobalRef(obj);
-//          _addGlobalObject(gObj);
           nativeInvokeResult = gObj;
 
           env->DeleteLocalRef(obj);
@@ -110,7 +110,6 @@ void *doInvokeNativeMethod(jobject object,
     }
   }
 
-//  _deleteArgs(argValues, argumentCount, stringTypeBitmask);
   free(methodName);
   free(returnType);
   free(arguments);

@@ -48,6 +48,7 @@ jstring convertToJavaUtf16(JNIEnv *env, void *value) {
   }
   auto *utf16 = (uint16_t *) value;
 
+  /// todo(HUIZZ) use uint64
   uint32_t length = 0;
   length += *utf16++ << 16;
   length += *utf16++;
