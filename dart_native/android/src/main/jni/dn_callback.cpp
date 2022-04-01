@@ -4,7 +4,6 @@
 #include <string>
 #include "dn_callback.h"
 #include "dn_log.h"
-#include "dn_type_convert.h"
 
 /// key is dart object pointer address, value is dart port
 static std::map<jlong, int64_t> dartPortCache;

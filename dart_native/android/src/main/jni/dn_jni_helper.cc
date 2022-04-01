@@ -1,7 +1,6 @@
 #include <thread>
 #include "dn_jni_helper.h"
 #include "dn_log.h"
-#include "dn_type_convert.h"
 #include "dn_callback.h"
 #include "jni_object_ref.h"
 

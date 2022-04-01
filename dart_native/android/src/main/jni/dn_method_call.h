@@ -1,8 +1,7 @@
 //
 // Created by Hui on 5/31/21.
 //
-#ifndef DART_NATIVE_DN_METHOD_CALL_H
-#define DART_NATIVE_DN_METHOD_CALL_H
+#pragma once
 
 #include <stdint.h>
 #include <jni.h>
@@ -10,12 +9,7 @@
 #include <string>
 #include "jni_object_ref.h"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-using namespace dartnative;
+namespace dartnative {
 
 typedef void *CallNativeMethod(JNIEnv *, jobject, jmethodID, jvalue *);
 
@@ -26,6 +20,10 @@ void *callNativeStringMethod(JNIEnv *env,
 
 std::map<char, std::function<CallNativeMethod>> GetMethodCallerMap();
 
+jstring ConvertToJavaUtf16(JNIEnv *env, void *value);
+
+uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString);
+
 void FillArgs2JValues(void **arguments,
                       char **argumentTypes,
                       jvalue *argValues,
@@ -33,7 +31,4 @@ void FillArgs2JValues(void **arguments,
                       uint32_t stringTypeBitmask,
                       JavaLocalRef<jobject> jObjBucket[]);
 
-#ifdef __cplusplus
 }
-#endif
-#endif //DART_NATIVE_DN_METHOD_CALL_H

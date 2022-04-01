@@ -6,7 +6,6 @@
 #include "dn_jni_helper.h"
 #include "dn_signature_helper.h"
 #include "dn_method_call.h"
-#include "dn_type_convert.h"
 #include "dn_dart_api.h"
 
 namespace dartnative {

@@ -2,7 +2,6 @@
 #include <map>
 #include <string>
 #include <semaphore.h>
-#include "dn_type_convert.h"
 #include "dn_log.h"
 #include "dn_method_call.h"
 #include "dn_signature_helper.h"
@@ -294,7 +293,7 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     DNDebug("Native callback to Dart return type is void");
   } else if (strcmp(returnType, "java.lang.String") == 0) {
     callbackResult =
-        convertToJavaUtf16(env, (char *) arguments[argumentCount]);
+        ConvertToJavaUtf16(env, (char *) arguments[argumentCount]);
   } else {
     callbackResult = (jobject) arguments[argumentCount];
   }
