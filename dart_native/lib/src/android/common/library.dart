@@ -1,5 +1,7 @@
 import 'dart:ffi';
 
+import 'package:flutter/services.dart';
+
 DynamicLibrary? _nativeDylib;
 DynamicLibrary get nativeDylib {
   if (_nativeDylib == null) {
@@ -18,8 +20,12 @@ final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData);
 
 final initDartAPISuccess = _dartAPIResult == 0;
 
-class Library {
-  static void setLibPath(String soPath) {
+void initSoPath(String? soPath) async {
+  if (soPath != null && soPath.isNotEmpty) {
     _libPath = soPath;
+    return;
   }
+
+  final dartNativeChannel = const MethodChannel("dart_native");
+  _libPath = await dartNativeChannel.invokeMethod("getDylibPath");
 }
