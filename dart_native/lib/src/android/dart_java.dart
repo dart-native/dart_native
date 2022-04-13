@@ -1,3 +1,5 @@
+import 'package:dart_native/src/android/common/library.dart';
+
 export 'runtime/jobject.dart';
 export 'runtime/extension/jobject_extension.dart';
 export 'runtime/extension/jobject_sync_extension.dart';
@@ -18,13 +20,6 @@ export 'foundation/wrapperclass/short.dart';
 export 'foundation/wrapperclass/boxing_unboxing.dart';
 export 'foundation/native_type.dart';
 
-import 'common/library.dart';
-
-class DartJava {
-  /// set so path
-  static void loadLibrary(String? soPath) {
-    if (soPath != null && soPath.isNotEmpty) {
-      Library.setLibPath(soPath);
-    }
-  }
+void dartNativeInitCustomSoPath({String? soPath}) async {
+  initSoPath(soPath);
 }

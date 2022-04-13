@@ -1,6 +1,0 @@
-framework module DartNative {
-  umbrella header "DartNative.h"
-
-  export *
-  module * { export * }
-}

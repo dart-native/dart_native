@@ -1,0 +1,71 @@
+import 'dart:ffi';
+
+import 'package:dart_native/src/darwin/foundation/internal/objc_type_box.dart';
+import 'package:dart_native/src/darwin/runtime.dart';
+import 'package:dart_native/src/darwin/runtime/internal/nssubclass.dart';
+import 'package:ffi/ffi.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
+
+/// Stands for `NSArray` in iOS and macOS.
+@native()
+class NSArray extends NSSubclass<List> {
+  NSArray(List value, {InitSubclass init = _new}) : super(value, init) {
+    value = List.of(value, growable: false);
+  }
+
+  NSArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
+    int count = performSync(SEL('count'));
+    List temp = List.filled(count, nil, growable: false);
+    for (var i = 0; i < count; i++) {
+      var e = objectAtIndex(i);
+      temp[i] = unboxingObjCType(e);
+    }
+    raw = temp;
+  }
+
+  int get count => performSync(SEL('count'));
+
+  dynamic objectAtIndex(int index) {
+    return performSync(SEL('objectAtIndex:'), args: [index]);
+  }
+}
+
+/// Stands for `NSMutableArray` in iOS and macOS.
+///
+/// Only for type casting. It's unmodifiable.
+@native()
+class NSMutableArray extends NSArray {
+  NSMutableArray(List value) : super(value, init: _mutableCopy) {
+    value = List.of(value, growable: true);
+  }
+
+  NSMutableArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+
+  static Pointer<Void> _mutableCopy(dynamic value) {
+    return NSObject.fromPointer(_new(value)).mutableCopy().pointer;
+  }
+}
+
+Pointer<Void> _new(dynamic value) {
+  if (value is List) {
+    List boxValues = value.map((e) {
+      return boxingObjCType(e);
+    }).toList();
+    Pointer<Pointer<Void>> listPtr = calloc(boxValues.length);
+    for (var i = 0; i < boxValues.length; i++) {
+      listPtr.elementAt(i).value = boxValues[i].pointer;
+    }
+    NSObject result = Class('NSArray').performSync(
+        SEL('arrayWithObjects:count:'),
+        args: [listPtr, boxValues.length]);
+    calloc.free(listPtr);
+    return result.pointer;
+  } else {
+    throw 'Invalid param when initializing NSArray.';
+  }
+}
+
+extension ConvertToNSArray on List {
+  NSArray toNSArray() => NSArray(this);
+  NSMutableArray toNSMutableArray() => NSMutableArray(this);
+}

@@ -1,0 +1,43 @@
+import 'dart:ffi';
+
+import 'package:dart_native/src/darwin/foundation/internal/native_struct.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
+
+/// Stands for `UIEdgeInsets` in iOS.
+@native()
+class UIEdgeInsets extends CGFloatx4Wrapper {
+  double get top => d1;
+  set top(double top) {
+    d1 = top;
+  }
+
+  double get left => d2;
+  set left(double left) {
+    d2 = left;
+  }
+
+  double get bottom => d3;
+  set bottom(double bottom) {
+    d3 = bottom;
+  }
+
+  double get right => d4;
+  set right(double right) {
+    d4 = right;
+  }
+
+  UIEdgeInsets(double top, double left, double bottom, double right)
+      : super(top, left, bottom, right);
+  UIEdgeInsets.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+}
+
+/// Stands for `NSEdgeInsets` in macOS.
+@native()
+class NSEdgeInsets extends UIEdgeInsets {
+  @override
+  String get aliasForNSValue => 'EdgeInsets';
+
+  NSEdgeInsets(double top, double left, double bottom, double right)
+      : super(top, left, bottom, right);
+  NSEdgeInsets.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
+}

@@ -17,15 +17,139 @@ using namespace dartnative;
 
 static JavaGlobalRef<jobject> *gInterfaceRegistry = nullptr;
 
+bool _clearJEnvException(JNIEnv* env) {
+  jthrowable exc = env->ExceptionOccurred();
+
+  if (exc) {
+    env->ExceptionDescribe();
+    env->ExceptionClear();
+
+    return true;
+  }
+
+  return false;
+}
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   DNDebug("JNI_OnLoad");
   /// cache the JavaVM pointer
+<<<<<<< HEAD
   InitWithJavaVM(pjvm);
   InitClazz();
+=======
+  gJvm = pjvm;
+  JNIEnv *env = _getEnv();
+
+  /// cache classLoader
+  auto plugin = env->FindClass("com/dartnative/dart_native/DartNativePlugin");
+  if (!plugin) {
+    _clearJEnvException(env);
+    DNError("JNI_OnLoad cannot find 'com/dartnative/dart_native/DartNativePlugin' class!");
+    return JNI_VERSION_1_6;
+  }
+
+  jclass pluginClass = env->GetObjectClass(plugin);
+  auto classLoaderClass = env->FindClass("java/lang/ClassLoader");
+  auto getClassLoaderMethod = env->GetMethodID(pluginClass, "getClassLoader",
+                                               "()Ljava/lang/ClassLoader;");
+  auto classLoader = env->CallObjectMethod(plugin, getClassLoaderMethod);
+  gClassLoader =
+      new JavaGlobalRef<jobject>(env->NewGlobalRef(classLoader), env);
+  gFindClassMethod = env->GetMethodID(classLoaderClass, "findClass",
+                                      "(Ljava/lang/String;)Ljava/lang/Class;");
+
+  /// cache string class
+  jclass strCls = env->FindClass("java/lang/String");
+  gStrCls =
+      new JavaGlobalRef<jclass>(static_cast<jclass>(env->NewGlobalRef(strCls)),
+                                env);
+
+  env->DeleteLocalRef(classLoader);
+  env->DeleteLocalRef(plugin);
+  env->DeleteLocalRef(pluginClass);
+  env->DeleteLocalRef(classLoaderClass);
+  env->DeleteLocalRef(strCls);
+
+  gTaskRunner = std::make_unique<TaskRunner>();
+>>>>>>> develop
   DNDebug("JNI_OnLoad finish");
   return JNI_VERSION_1_6;
 }
 
+<<<<<<< HEAD
+=======
+jclass _findClass(JNIEnv *env, const char *name) {
+  if (gClassLoader == nullptr || gFindClassMethod == nullptr) {
+    DNError("_findClass gClassLoader or gFindClassMethod is null!");
+    return nullptr;
+  }
+  jclass nativeClass = nullptr;
+  nativeClass = env->FindClass(name);
+  /// class loader not found class
+  if (_clearJEnvException(env)) {
+    jstring clsName = env->NewStringUTF(name);
+    auto findedClass =
+        static_cast<jclass>(env->CallObjectMethod(gClassLoader->Object(),
+                                                  gFindClassMethod,
+                                                  clsName));
+    env->DeleteLocalRef(clsName);
+    if (_clearJEnvException(env)) {
+      return nullptr;
+    }
+    return findedClass;
+  }
+  return nativeClass;
+}
+
+void
+_deleteArgs(jvalue *argValues, int argumentCount, uint32_t stringTypeBitmask) {
+  JNIEnv *env = _getEnv();
+  for (jsize index(0); index < argumentCount; ++index) {
+    /// release local reference of jstring
+    if ((stringTypeBitmask >> index & 0x1) == 1) {
+      env->DeleteLocalRef(argValues[index].l);
+    }
+  }
+  delete[] argValues;
+}
+
+/// fill all arguments to jvalues
+/// when argument is string the stringTypeBitmask's bit is 1
+void _fillArgs(void **arguments, char **argumentTypes,
+               jvalue *argValues, int argumentCount,
+               uint32_t stringTypeBitmask) {
+  if (argumentCount == 0) {
+    return;
+  }
+
+  JNIEnv *env = _getEnv();
+  for (jsize index(0); index < argumentCount; ++arguments, ++index) {
+    /// check basic map convert
+    auto map = GetTypeConvertMap();
+    auto it = map.find(*argumentTypes[index]);
+
+    if (it == map.end()) {
+      /// when argument type is string or stringTypeBitmask mark as string
+      if ((stringTypeBitmask >> index & 0x1) == 1) {
+        argValues[index].l = convertToJavaUtf16(env, *arguments);
+      } else {
+        /// convert from object cache
+        /// check callback cache, if true using proxy object
+        jobject object = getNativeCallbackProxyObject(*arguments);
+        argValues[index].l =
+            object == nullptr ? static_cast<jobject>(*arguments) : object;
+      }
+    } else {
+      auto isTwoPointer = it->second(arguments, argValues, index);
+      /// In Dart use two pointer store value.
+      if (isTwoPointer) {
+        arguments++;
+      }
+    }
+  }
+}
+
+>>>>>>> develop
 void *getClassName(void *objectPtr) {
   if (objectPtr == nullptr) {
     return nullptr;
@@ -58,13 +182,35 @@ jobject _newObject(jclass cls,
                    stringTypeBitmask,
                    jObjBucket);
 
+  if (_clearJEnvException(env)) {
+    DNError("_newObject error, _fillArgs error!");
+    return nullptr;
+  }
+
   char *constructorSignature =
       GenerateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
   jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
-  jobject newObj = env->NewObjectA(cls, constructor, argValues);
 
+<<<<<<< HEAD
 //  _deleteArgs(argValues, argumentCount, stringTypeBitmask);
+=======
+  if (!constructor) {
+    _clearJEnvException(env);
+    free(constructorSignature);
+    DNError("_newObject error, constructor method id is null!");
+    return nullptr;
+  }
+
+  jobject newObj = env->NewObjectA(cls, constructor, argValues);
+  _deleteArgs(argValues, argumentCount, stringTypeBitmask);
+>>>>>>> develop
   free(constructorSignature);
+
+  if (_clearJEnvException(env)) {
+    DNError("_newObject error, new object error!");
+    return nullptr;
+  }
+
   return newObj;
 }
 
@@ -74,13 +220,35 @@ void *createTargetObject(char *targetClassName,
                          char **argumentTypes,
                          int argumentCount,
                          uint32_t stringTypeBitmask) {
+<<<<<<< HEAD
   JNIEnv *env = AttachCurrentThread();
   jclass cls = FindClass(targetClassName, env);
+=======
+  JNIEnv *env = _getEnv();
+
+  if (!env) {
+    DNError("createTargetObject error, JNIEnv is null");
+    return nullptr;
+  }
+
+  jclass cls = _findClass(env, targetClassName);
+
+  if (!cls) {
+    DNError("createTargetObject error, findClass error");
+    return nullptr;
+  }
+
+>>>>>>> develop
   jobject newObj = _newObject(cls,
                               arguments,
                               argumentTypes,
                               argumentCount,
                               stringTypeBitmask);
+
+  if (!newObj) {
+    return nullptr;
+  }
+
   jobject gObj = env->NewGlobalRef(newObj);
 //  _addGlobalObject(gObj);
 
@@ -103,6 +271,7 @@ void *interfaceHostObjectWithName(char *name) {
     env->DeleteLocalRef(registryObj);
   }
 
+<<<<<<< HEAD
   auto getInterface =
       env->GetMethodID(registryClz, "getInterface", "(Ljava/lang/String;)Ljava/lang/Object;");
   auto interfaceName = env->NewStringUTF(name);
@@ -124,6 +293,115 @@ void *interfaceAllMetaData(char *name) {
   env->DeleteLocalRef(registryClz);
   return ConvertToDartUtf16(env, (jstring) signatures);
 }
+=======
+typedef void(*InvokeCallback)(void *result,
+                              char *method,
+                              char **typePointers,
+                              int argumentCount);
+
+void *_doInvokeMethod(jobject object,
+                      char *methodName,
+                      void **arguments,
+                      char **typePointers,
+                      int argumentCount,
+                      char *returnType,
+                      uint32_t stringTypeBitmask,
+                      void *callback,
+                      Dart_Port dartPort,
+                      TaskThread thread) {
+  void *nativeInvokeResult = nullptr;
+  JNIEnv *env = _getEnv();
+
+  if (!env) {
+    DNError("_doInvokeMethod error, JNIEnv is null");
+    return nullptr;
+  }
+
+  auto cls = env->GetObjectClass(object);
+
+  auto *argValues = new jvalue[argumentCount];
+  _fillArgs(arguments, typePointers, argValues, argumentCount, stringTypeBitmask);
+
+  if (_clearJEnvException(env)) {
+    DNError("_doInvokeMethod error, _fillArgs error!");
+    return nullptr;
+  }
+
+  char *methodSignature =
+      generateSignature(typePointers, argumentCount, returnType);
+  jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
+
+  if (!method) {
+    _clearJEnvException(env);
+    DNError("_doInvokeMethod error, method is null!");
+    return nullptr;
+  }
+
+  auto map = GetMethodCallerMap();
+  auto it = map.find(*returnType);
+  if (it == map.end()) {
+    if (strcmp(returnType, "Ljava/lang/String;") == 0) {
+      typePointers[argumentCount] = (char *) "java.lang.String";
+      nativeInvokeResult =
+          callNativeStringMethod(env, object, method, argValues);
+    } else {
+      jobject obj = env->CallObjectMethodA(object, method, argValues);
+      if (obj != nullptr) {
+        if (env->IsInstanceOf(obj, gStrCls->Object())) {
+          /// mark the last pointer as string
+          /// dart will check this pointer
+          typePointers[argumentCount] = (char *) "java.lang.String";
+          nativeInvokeResult = ConvertToDartUtf16(env, (jstring) obj);
+        } else {
+          typePointers[argumentCount] = (char *) "java.lang.Object";
+          jobject gObj = env->NewGlobalRef(obj);
+          _addGlobalObject(gObj);
+          nativeInvokeResult = gObj;
+
+          env->DeleteLocalRef(obj);
+        }
+      }
+    }
+  } else {
+    *typePointers[argumentCount] = it->first;
+    nativeInvokeResult = it->second(env, object, method, argValues);
+  }
+
+  if (_clearJEnvException(env)) {
+    DNError("_doInvokeMethod error, invoke native method error!");
+  }
+
+  if (callback != nullptr) {
+    if (thread == TaskThread::kFlutterUI) {
+      ((InvokeCallback) callback)(nativeInvokeResult,
+                                  methodName,
+                                  typePointers,
+                                  argumentCount);
+    } else {
+      sem_t sem;
+      bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+      const Work work =
+          [callback, nativeInvokeResult, methodName, typePointers, argumentCount, isSemInitSuccess, &sem] {
+            ((InvokeCallback) callback)(nativeInvokeResult,
+                                        methodName,
+                                        typePointers,
+                                        argumentCount);
+            if (isSemInitSuccess) {
+              sem_post(&sem);
+            }
+          };
+      const Work *work_ptr = new Work(work);
+      /// check run result
+      bool notifyResult = NotifyDart(dartPort, work_ptr);
+      if (notifyResult) {
+        if (isSemInitSuccess) {
+          sem_wait(&sem);
+          sem_destroy(&sem);
+        }
+      }
+    }
+  }
+>>>>>>> develop
 
 /// dart notify run callback function
 void ExecuteCallback(DartWorkFunction *work_ptr) {
@@ -142,10 +420,37 @@ void *invokeNativeMethod(void *objPtr,
                          uint32_t stringTypeBitmask,
                          void *callback,
                          Dart_Port dartPort,
+<<<<<<< HEAD
                          int thread,
                          bool isInterface) {
   dartnative::DNMethod
       method(objPtr, methodName, dataTypes, returnType, argumentCount, dartPort, callback);
+=======
+                         int thread) {
+  auto object = static_cast<jobject>(objPtr);
+  if (!_objectInReference(object) || objPtr == nullptr) {
+    /// maybe use cache pointer but jobject is release
+    DNError(
+        "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");
+    return nullptr;
+  }
+  auto type = TaskThread(thread);
+  auto invokeFunction = [=] {
+    return _doInvokeMethod(object,
+                           methodName,
+                           arguments,
+                           dataTypes,
+                           argumentCount,
+                           returnType,
+                           stringTypeBitmask,
+                           callback,
+                           dartPort,
+                           type);
+  };
+  if (type == TaskThread::kFlutterUI) {
+    return invokeFunction();
+  }
+>>>>>>> develop
 
   return method.InvokeNativeMethod(arguments, stringTypeBitmask, thread, isInterface);
 }

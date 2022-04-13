@@ -24,7 +24,7 @@ This package is the blue part(DartNative Bridge):
 
 ## Supported Platforms
 
-iOS & Android
+iOS & macOS & Android
 
 ## Usage
 
@@ -74,6 +74,8 @@ iOS & Android
       runApp(App());
     }
     ```
+
+*If you use dart_native on macOS, you must use `use_frameworks!` in your Podfile.*
 
 ## Features
 
