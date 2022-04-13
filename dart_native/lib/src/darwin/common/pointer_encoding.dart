@@ -11,7 +11,7 @@ import 'package:ffi/ffi.dart';
 // TODO: change encoding hard code string to const var.
 Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
   TypeEncodings.b: (Pointer ptr, dynamic object) {
-    ptr.cast<Bool>().value = object;
+    ptr.cast<Int8>().value = object;
   },
   TypeEncodings.sint8: (Pointer ptr, dynamic object) {
     // Type-encoding for BOOL is 'c' on macOS and 32-bit iOS simulators.
@@ -63,6 +63,10 @@ dynamic storeValueToPointer(
     if (object is NativeBox) {
       // unwrap from box.
       object = object.raw;
+    }
+    if (object is bool) {
+      // waiting for ffi bool type support.
+      object = object ? 1 : 0;
     }
     Function? strategy = _storeValueStrategyMap[encoding];
     if (strategy == null) {
