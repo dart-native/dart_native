@@ -9,4 +9,4 @@ rm -rf ../macOS/DartNative.xcframework
 cp -R build/DartNative.xcframework ./DartNative.xcframework
 # copy for macOS
 cd ../macos
-sh generate.sh
+sh generate_for_debug_and_release.sh
