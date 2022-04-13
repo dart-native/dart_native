@@ -6,7 +6,7 @@ import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
 
 /// Convert java object pointer to dart object which extends [JObject].
-typedef dynamic ConvertorToDartFromPointer(Pointer<Void> ptr);
+typedef ConvertorToDartFromPointer = dynamic Function(Pointer<Void> ptr);
 
 /// Use classname create a null pointer.
 JObject createNullJObj(String clsName) {
@@ -17,21 +17,19 @@ JObject createNullJObj(String clsName) {
 void bindLifeCycleWithNative(JObject? obj) {
   if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
     passJObjectToC!(obj, obj.pointer.cast<Void>());
-  } else {
-    print('pass object to native failed! address=${obj?.pointer}');
   }
 }
 
 /// When invoke with async method, dart can set run thread.
 enum Thread {
   /// Flutter UI thread.
-  FlutterUI,
+  flutterUI,
 
   /// Native main thread.
-  MainThread,
+  mainThread,
 
   /// Native sub thread.
-  SubThread
+  subThread
 }
 
 /// Class [JObject] is the root of the java class hierarchy in dart.
@@ -77,11 +75,9 @@ class JObject {
   ///
   /// When use native class, please use [@nativeJavaClass] annotation first.
   JObject({List? args, bool isInterface = false, String? className}) {
-    _cls = className != null
-        ? className
-        : getRegisterJavaClass(runtimeType.toString());
+    _cls = className ?? getRegisterJavaClass(runtimeType.toString());
     if (_cls == null) {
-      throw 'Java class name is null, you can specify the java class name in constructor' +
+      throw 'Java class name is null, you can specify the java class name in constructor'
           ' or use @nativeJavaClass annotation to specify the java class';
     }
     _ptr = newObject(_cls!, this, args: args, isInterface: isInterface);
@@ -96,11 +92,11 @@ class JObject {
   /// If java class is specified by [className], we will use it first.
   JObject.fromPointer(Pointer<Void> pointer, {String? className}) {
     if (pointer == nullptr && className == null) {
-      throw 'Java object pointer and classname are null.' +
+      throw 'Java object pointer and classname are null.'
           ' When java object pointer is nullptr, you must specify the java class name.';
     }
     _ptr = pointer;
-    _cls = className == null ? getJClassName(pointer) : className;
+    _cls = className ?? getJClassName(pointer);
     bindLifeCycleWithNative(this);
   }
 
@@ -148,11 +144,11 @@ class JObject {
   ///
   /// Same arguments as [invoke].
   /// Beside that arguments, invoke thread can be assigned by using [thread].
-  /// Default java thread [Thread.MainThread].
+  /// Default java thread [Thread.mainThread].
   Future<dynamic> invokeAsync(String methodName, String returnType,
       {List? args,
       List<String>? assignedSignature,
-      Thread thread = Thread.MainThread}) async {
+      Thread thread = Thread.mainThread}) async {
     return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
         assignedSignature: assignedSignature, thread: thread);
   }

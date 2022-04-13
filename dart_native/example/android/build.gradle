@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -12,8 +12,9 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
-        maven { url "https://storage.googleapis.com/download.flutter.io" }
+        mavenCentral()
+        // TODO: 升级新工程，先注释
+        // maven { url "https://storage.googleapis.com/download.flutter.io" }
     }
 }
 

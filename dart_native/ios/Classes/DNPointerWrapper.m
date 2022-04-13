@@ -6,6 +6,8 @@
 //
 
 #import "DNPointerWrapper.h"
+#import <malloc/malloc.h>
+#import "dart_api_dl.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -13,8 +15,12 @@
 
 @implementation DNPointerWrapper
 
-- (void)setPointer:(void *)pointer {
-    _pointer = pointer;
+- (instancetype)initWithPointer:(void *)pointer {
+    self = [super init];
+    if (self) {
+        _pointer = pointer;
+    }
+    return self;
 }
 
 - (void)dealloc {

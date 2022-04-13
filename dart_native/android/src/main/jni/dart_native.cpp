@@ -72,6 +72,19 @@ JNIEnv *_getEnv() {
   }
 }
 
+bool _clearJEnvException(JNIEnv* env) {
+  jthrowable exc = env->ExceptionOccurred();
+
+  if (exc) {
+    env->ExceptionDescribe();
+    env->ExceptionClear();
+
+    return true;
+  }
+
+  return false;
+}
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   DNDebug("JNI_OnLoad");
   /// cache the JavaVM pointer
@@ -80,6 +93,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
 
   /// cache classLoader
   auto plugin = env->FindClass("com/dartnative/dart_native/DartNativePlugin");
+  if (!plugin) {
+    _clearJEnvException(env);
+    DNError("JNI_OnLoad cannot find 'com/dartnative/dart_native/DartNativePlugin' class!");
+    return JNI_VERSION_1_6;
+  }
+
   jclass pluginClass = env->GetObjectClass(plugin);
   auto classLoaderClass = env->FindClass("java/lang/ClassLoader");
   auto getClassLoaderMethod = env->GetMethodID(pluginClass, "getClassLoader",
@@ -108,19 +127,23 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
 }
 
 jclass _findClass(JNIEnv *env, const char *name) {
+  if (gClassLoader == nullptr || gFindClassMethod == nullptr) {
+    DNError("_findClass gClassLoader or gFindClassMethod is null!");
+    return nullptr;
+  }
   jclass nativeClass = nullptr;
   nativeClass = env->FindClass(name);
-  jthrowable exception = env->ExceptionOccurred();
   /// class loader not found class
-  if (exception) {
-    env->ExceptionClear();
-    DNDebug("findClass exception");
+  if (_clearJEnvException(env)) {
     jstring clsName = env->NewStringUTF(name);
     auto findedClass =
         static_cast<jclass>(env->CallObjectMethod(gClassLoader->Object(),
                                                   gFindClassMethod,
                                                   clsName));
     env->DeleteLocalRef(clsName);
+    if (_clearJEnvException(env)) {
+      return nullptr;
+    }
     return findedClass;
   }
   return nativeClass;
@@ -204,13 +227,31 @@ jobject _newObject(jclass cls,
             argumentCount,
             stringTypeBitmask);
 
+  if (_clearJEnvException(env)) {
+    DNError("_newObject error, _fillArgs error!");
+    return nullptr;
+  }
+
   char *constructorSignature =
       generateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
   jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
-  jobject newObj = env->NewObjectA(cls, constructor, argValues);
 
+  if (!constructor) {
+    _clearJEnvException(env);
+    free(constructorSignature);
+    DNError("_newObject error, constructor method id is null!");
+    return nullptr;
+  }
+
+  jobject newObj = env->NewObjectA(cls, constructor, argValues);
   _deleteArgs(argValues, argumentCount, stringTypeBitmask);
   free(constructorSignature);
+
+  if (_clearJEnvException(env)) {
+    DNError("_newObject error, new object error!");
+    return nullptr;
+  }
+
   return newObj;
 }
 
@@ -221,12 +262,29 @@ void *createTargetObject(char *targetClassName,
                          int argumentCount,
                          uint32_t stringTypeBitmask) {
   JNIEnv *env = _getEnv();
+
+  if (!env) {
+    DNError("createTargetObject error, JNIEnv is null");
+    return nullptr;
+  }
+
   jclass cls = _findClass(env, targetClassName);
+
+  if (!cls) {
+    DNError("createTargetObject error, findClass error");
+    return nullptr;
+  }
+
   jobject newObj = _newObject(cls,
                               arguments,
                               argumentTypes,
                               argumentCount,
                               stringTypeBitmask);
+
+  if (!newObj) {
+    return nullptr;
+  }
+
   jobject gObj = env->NewGlobalRef(newObj);
   _addGlobalObject(gObj);
 
@@ -274,14 +332,31 @@ void *_doInvokeMethod(jobject object,
                       TaskThread thread) {
   void *nativeInvokeResult = nullptr;
   JNIEnv *env = _getEnv();
+
+  if (!env) {
+    DNError("_doInvokeMethod error, JNIEnv is null");
+    return nullptr;
+  }
+
   auto cls = env->GetObjectClass(object);
 
   auto *argValues = new jvalue[argumentCount];
   _fillArgs(arguments, typePointers, argValues, argumentCount, stringTypeBitmask);
 
+  if (_clearJEnvException(env)) {
+    DNError("_doInvokeMethod error, _fillArgs error!");
+    return nullptr;
+  }
+
   char *methodSignature =
       generateSignature(typePointers, argumentCount, returnType);
   jmethodID method = env->GetMethodID(cls, methodName, methodSignature);
+
+  if (!method) {
+    _clearJEnvException(env);
+    DNError("_doInvokeMethod error, method is null!");
+    return nullptr;
+  }
 
   auto map = GetMethodCallerMap();
   auto it = map.find(*returnType);
@@ -312,6 +387,11 @@ void *_doInvokeMethod(jobject object,
     *typePointers[argumentCount] = it->first;
     nativeInvokeResult = it->second(env, object, method, argValues);
   }
+
+  if (_clearJEnvException(env)) {
+    DNError("_doInvokeMethod error, invoke native method error!");
+  }
+
   if (callback != nullptr) {
     if (thread == TaskThread::kFlutterUI) {
       ((InvokeCallback) callback)(nativeInvokeResult,
@@ -364,7 +444,7 @@ void *invokeNativeMethod(void *objPtr,
                          Dart_Port dartPort,
                          int thread) {
   auto object = static_cast<jobject>(objPtr);
-  if (!_objectInReference(object)) {
+  if (!_objectInReference(object) || objPtr == nullptr) {
     /// maybe use cache pointer but jobject is release
     DNError(
         "invokeNativeMethod not find class, check pointer and jobject lifecycle is same");

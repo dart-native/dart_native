@@ -1,6 +1,6 @@
 name: dart_native
 description: Write native code using Dart. This package liberates you from native code and low performance channel.
-version: 0.5.0
+version: 0.6.0
 homepage: https://github.com/dart-native/dart_native
 
 environment:
@@ -17,7 +17,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner:
-
+  flutter_lints: ^1.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -34,6 +34,8 @@ flutter:
         package: com.dartnative.dart_native
         pluginClass: DartNativePlugin
       ios:
+        pluginClass: DartNativePlugin
+      macos:
         pluginClass: DartNativePlugin
 
   # To add assets to your plugin package, add an assets section, like this:

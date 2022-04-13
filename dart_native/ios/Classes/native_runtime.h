@@ -133,9 +133,12 @@ typedef NS_CLOSED_ENUM(NSUInteger, DNPassObjectResult) {
     DNPassObjectResultNeedless,
 };
 
-DN_EXTERN DNPassObjectResult PassObjectToCUseDynamicLinking(Dart_Handle h, void *pointer);
+/// Bind the lifetime of an Objective-C object to a dart object.
+/// @param h A dart object with identity.
+/// @param pointer pointer to an Objective-C object.
+DN_EXTERN DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer);
 
-DN_EXTERN void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
+DN_EXTERN bool NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
 
 DN_EXTERN void RegisterDeallocCallback(void (*callback)(intptr_t));
 

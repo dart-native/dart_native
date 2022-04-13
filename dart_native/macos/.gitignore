@@ -1,0 +1,8 @@
+# Reuse files on macOS
+Classes/*
+common/*
+libffi.xcframework/*
+
+# Exceptions for release files
+!Classes/DartNativePlugin.h
+!Classes/DartNativePlugin.m

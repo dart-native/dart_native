@@ -19,7 +19,7 @@
 #error
 #endif
 
-#pragma mark - Block Layout
+#pragma mark - Block Helper
 
 enum {
     BLOCK_HAS_COPY_DISPOSE =  (1 << 25),
@@ -29,56 +29,21 @@ enum {
     BLOCK_HAS_SIGNATURE =     (1 << 30),
 };
 
-typedef void(*DNBlockCopyFunction)(void *, const void *);
-typedef void(*DNBlockDisposeFunction)(const void *);
-typedef void(*DNBlockInvokeFunction)(void *, ...);
-
-struct _DNBlockDescriptor1 {
-    uintptr_t reserved;
-    uintptr_t size;
-};
-
-struct _DNBlockDescriptor2 {
-    // requires BLOCK_HAS_COPY_DISPOSE
-    DNBlockCopyFunction copy;
-    DNBlockDisposeFunction dispose;
-};
-
-struct _DNBlockDescriptor3 {
-    // requires BLOCK_HAS_SIGNATURE
-    const char *signature;
-};
-
-struct _DNBlockDescriptor {
-    struct _DNBlockDescriptor1 descriptor1;
-    struct _DNBlockDescriptor2 descriptor2;
-    struct _DNBlockDescriptor3 descriptor3;
-};
-
-struct _DNBlock {
-    void *isa;
-    volatile int32_t flags; // contains ref count
-    int32_t reserved;
-    DNBlockInvokeFunction invoke;
-    struct _DNBlockDescriptor *descriptor;
-    void *wrapper;
-};
-
-struct _DNBlockDescriptor3 * _dn_Block_descriptor_3(struct _DNBlock *aBlock) {
+DNBlockDescriptor3 *dn_Block_descriptor_3(DNBlock *aBlock) {
     if (!(aBlock->flags & BLOCK_HAS_SIGNATURE)) {
         return nil;
     }
     uint8_t *desc = (uint8_t *)aBlock->descriptor;
-    desc += sizeof(struct _DNBlockDescriptor1);
+    desc += sizeof(DNBlockDescriptor1);
     if (aBlock->flags & BLOCK_HAS_COPY_DISPOSE) {
-        desc += sizeof(struct _DNBlockDescriptor2);
+        desc += sizeof(DNBlockDescriptor2);
     }
-    return (struct _DNBlockDescriptor3 *)desc;
+    return (DNBlockDescriptor3 *)desc;
 }
 
 const char *DNBlockTypeEncodeString(id blockObj) {
-    struct _DNBlock *block = (__bridge void *)blockObj;
-    return _dn_Block_descriptor_3(block)->signature;
+    DNBlock *block = (__bridge void *)blockObj;
+    return dn_Block_descriptor_3(block)->signature;
 }
 
 static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
@@ -87,20 +52,22 @@ static NSString *trim(NSString *string) {
     return [string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
-void copy_helper(struct _DNBlock *dst, struct _DNBlock *src) {
+void copy_helper(DNBlock *dst, DNBlock *src) {
     // do not copy anything is this funcion! just retain if need.
     CFRetain(dst->wrapper);
 }
 
-void dispose_helper(struct _DNBlock *src) {
+void dispose_helper(DNBlock *src) {
     CFRelease(src->wrapper);
 }
+
+#pragma mark - Block Wrapper
 
 @interface DNBlockWrapper ()
 {
     ffi_cif _cif;
     ffi_closure *_closure;
-    struct _DNBlockDescriptor *_descriptor;
+    DNBlockDescriptor *_descriptor;
     void *_blockIMP;
 }
 
@@ -183,22 +150,22 @@ static atomic_uint_fast64_t _seq = 0;
         return;
     }
 
-    struct _DNBlockDescriptor descriptor = {
+    DNBlockDescriptor descriptor = {
         0,
-        sizeof(struct _DNBlock),
+        sizeof(DNBlock),
         (void (*)(void *dst, const void *src))copy_helper,
         (void (*)(const void *src))dispose_helper,
         typeString
     };
     
-    _descriptor = malloc(sizeof(struct _DNBlockDescriptor));
+    _descriptor = malloc(sizeof(DNBlockDescriptor));
     if (!_descriptor) {
         DN_ERROR(DNCreateBlockError, @"malloc _DNBlockDescriptor failed.")
         return;
     }
-    memcpy(_descriptor, &descriptor, sizeof(struct _DNBlockDescriptor));
+    memcpy(_descriptor, &descriptor, sizeof(DNBlockDescriptor));
 
-    struct _DNBlock simulateBlock = {
+    DNBlock simulateBlock = {
         &_NSConcreteStackBlock,
         flags,
         0,

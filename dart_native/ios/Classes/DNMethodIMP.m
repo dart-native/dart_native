@@ -28,7 +28,10 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic) char *typeEncoding;
-@property (nonatomic, readwrite) NativeMethodCallback callback;
+// Every dart port has its own callback.
+@property (nonatomic) NSMutableDictionary<NSNumber *, NSNumber *> *internalCallbackForDartPort;
+// GCD queue for accessing callbackForDartPort
+@property (nonatomic) dispatch_queue_t portsQueue;
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSMethodSignature *signature;
 @property (nonatomic, getter=hasStret, readwrite) BOOL stret;
@@ -39,6 +42,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncoding
                             callback:(NativeMethodCallback)callback
+                            dartPort:(Dart_Port)dartPort
                                error:(out NSError **)error {
     self = [super init];
     if (self) {
@@ -51,7 +55,9 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
             return self;
         }
         strlcpy(_typeEncoding, typeEncoding, length);
-        _callback = callback;
+        _internalCallbackForDartPort = [NSMutableDictionary dictionary];
+        _portsQueue = dispatch_queue_create("com.dartnative.methodimp", DISPATCH_QUEUE_CONCURRENT);
+        [self addCallback:callback forDartPort:dartPort];
         _signature = [NSMethodSignature signatureWithObjCTypes:_typeEncoding];
     }
     return self;
@@ -78,6 +84,26 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         }
     }
     return _methodIMP;
+}
+
+- (NSDictionary<NSNumber *, NSNumber *> *)callbackForDartPort {
+    __block NSMutableDictionary<NSNumber *, NSNumber *> *temp;
+    dispatch_sync(self.portsQueue, ^{
+        temp = [self.internalCallbackForDartPort copy];
+    });
+    return temp;
+}
+
+- (void)addCallback:(NativeMethodCallback)callback forDartPort:(Dart_Port)port {
+    dispatch_barrier_async(self.portsQueue, ^{
+        self.internalCallbackForDartPort[@(port)] = @((intptr_t)callback);
+    });
+}
+
+- (void)removeCallbackForDartPort:(Dart_Port)port {
+    dispatch_barrier_async(self.portsQueue, ^{
+        [self.internalCallbackForDartPort removeObjectForKey:@(port)];
+    });
 }
 
 - (int)prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str {
@@ -129,7 +155,7 @@ static void DNHandleReturnValue(void *origRet, DNMethodIMP *methodIMP, DNInvocat
 
 static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
     DNMethodIMP *methodIMP = (__bridge DNMethodIMP *)userdata;
-    if (!methodIMP.callback) {
+    if (methodIMP.callbackForDartPort.count == 0) {
         return;
     }
     

@@ -6,17 +6,17 @@ import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `List` in Android.
-const String cls_list = 'java/util/List';
-const String cls_array_list = 'java/util/ArrayList';
+const String jListCls = 'java/util/List';
+const String jArrayListCls = 'java/util/ArrayList';
 
-@native(javaClass: cls_list)
+@native(javaClass: jListCls)
 class JList<E> extends JSubclass<List> {
-  JList(List value, {String clsName = cls_list, InitSubclass init = _new})
+  JList(List value, {String clsName = jListCls, InitSubclass init = _new})
       : super(value, _new, clsName) {
     value = List.of(value, growable: false);
   }
 
-  JList.fromPointer(Pointer<Void> ptr, {String clsName = cls_list})
+  JList.fromPointer(Pointer<Void> ptr, {String clsName = jListCls})
       : super.fromPointer(ptr, clsName) {
     int count = invokeInt('size');
     List temp = List.filled(count, [], growable: false);
@@ -41,19 +41,19 @@ class JList<E> extends JSubclass<List> {
   }
 }
 
-@native(javaClass: cls_array_list)
+@native(javaClass: jArrayListCls)
 class JArrayList<E> extends JList {
-  JArrayList(List value) : super(value, clsName: cls_array_list);
+  JArrayList(List value) : super(value, clsName: jArrayListCls);
 
   JArrayList.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: cls_array_list);
+      : super.fromPointer(ptr, clsName: jArrayListCls);
 }
 
 /// New native 'ArrayList'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is List) {
     ///'List' default implementation 'ArrayList'.
-    if (clsName == cls_list) clsName = cls_array_list;
+    if (clsName == jListCls) clsName = jArrayListCls;
 
     JObject nativeList = JObject(className: clsName);
 

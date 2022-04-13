@@ -1,3 +1,8 @@
+## 0.6.0
+
+* [Feature] Support macOS.
+* [Feature] Optimize the way you initialize the path to the so file on Android.
+
 ## 0.5.0
 
 * [Feature] Add annotation for Android: `@native(javaClass:)`

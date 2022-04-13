@@ -2,7 +2,7 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 
-typedef Pointer<Void> InitSubclass(dynamic value, String clsName);
+typedef InitSubclass = Pointer<Void> Function(dynamic value, String clsName);
 
 /// Dart Wrapper for subclass of JObject. For example: JString, JArray, Integer, etc.
 class JSubclass<T> extends JObject {
@@ -13,6 +13,7 @@ class JSubclass<T> extends JObject {
   JSubclass.fromPointer(Pointer<Void> ptr, String clsName)
       : super.fromPointer(ptr, className: clsName);
 
+  @override
   bool operator ==(other) {
     if (other == nil) {
       return false;

@@ -4,7 +4,7 @@ import 'dart:isolate';
 import 'library.dart';
 
 class CallBackManager {
-  Map<Pointer<Void>, Map<String, Function>> _callbackManager = {};
+  final Map<Pointer<Void>, Map<String, Function>> _callbackManager = {};
 
   static final CallBackManager _instance = CallBackManager._internal();
   CallBackManager._internal();
