@@ -7,7 +7,6 @@ import 'dn_unit_test.dart';
 
 @nativeRoot
 void main() {
-  DartNative.init();
   runDartNativeExample();
   runApp(const DartNativeApp());
 }
