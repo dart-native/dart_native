@@ -23,14 +23,17 @@ class _DartNativeAppState extends State<DartNativeApp> {
     super.initState();
     initPlatformState();
   }
-
+  String _text = 'Using DartNative';
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    final unitTest = DNUnitTest();
+    
     /// run all test case
-    await unitTest.runAllUnitTests();
-    var map = {};
-    map[null] = 1;
+    try {
+      final unitTest = DNUnitTest();
+      await unitTest.runAllUnitTests();
+    } catch (e) {
+      _text = e.toString();
+    }
   }
 
   @override
@@ -40,8 +43,8 @@ class _DartNativeAppState extends State<DartNativeApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: const Center(
-          child: Text('Using DartNative\n'),
+        body: Center(
+          child: Text(_text),
         ),
       ),
     );

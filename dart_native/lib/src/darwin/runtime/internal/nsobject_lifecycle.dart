@@ -13,7 +13,7 @@ void bindLifecycleForObject(NSObject obj) {
   }
 
   if (!initDartAPISuccess) {
-    throw 'dfailed to initialize dart API!';
+    throw 'failed to initialize dart API!';
   }
   // passObjectToC returns DNPassObjectResult.
   int result = bindObjcLifecycleToDart(obj, obj.pointer);

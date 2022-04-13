@@ -14,14 +14,15 @@ Write native code using Dart. This package liberates you from undercompetent cha
   s.author           = { 'DartNative' => 'yulingtianxia@gmail.com' }
   s.source           = { :path => '.' }
   
-  # Debug
+  # iOS Debug
   # s.ios.source_files = 'Classes/**/*', 'common/**/*'
   # s.ios.vendored_frameworks = 'libffi.xcframework'
 
-  # Release
+  # iOS Release
   s.ios.source_files = 'Classes/DartNativePlugin.*'
   s.ios.vendored_frameworks = 'DartNative.xcframework'
 
+  # macOS: MUST use `use_frameworks!` in Podfile
   s.osx.source_files = 'Classes/**/*', 'common/**/*'
   s.osx.vendored_frameworks = 'libffi.xcframework'
   

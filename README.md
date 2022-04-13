@@ -75,6 +75,8 @@ iOS & macOS & Android
     }
     ```
 
+*If you use dart_native on macOS, you must use `use_frameworks!` in your Podfile.*
+
 ## Features
 
 ### Dynamic synchronous & asynchronous channeling
