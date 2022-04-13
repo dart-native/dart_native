@@ -23,6 +23,6 @@ void initSoPath(String? soPath) async {
     return;
   }
 
-  final dartNativeChannel = const MethodChannel("dart_native");
+  const dartNativeChannel = MethodChannel("dart_native");
   _libPath = await dartNativeChannel.invokeMethod("getDylibPath");
 }
