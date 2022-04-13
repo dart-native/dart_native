@@ -1,3 +1,7 @@
+## 0.6.1
+
+* [Fix] Dart version compatibility.
+
 ## 0.6.0
 
 * [Feature] Support macOS.
