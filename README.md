@@ -24,7 +24,7 @@ This package is the blue part(DartNative Bridge):
 
 ## Supported Platforms
 
-iOS & Android
+iOS & macOS & Android
 
 ## Usage
 
