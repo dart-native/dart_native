@@ -2,6 +2,7 @@
 # This ensures that a certain set of CMake features is available to
 # your build.
 cmake_minimum_required(VERSION 3.4.1)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../android/src/libs/${ANDROID_ABI})
 

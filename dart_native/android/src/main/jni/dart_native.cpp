@@ -93,6 +93,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
 
   /// cache classLoader
   auto plugin = env->FindClass("com/dartnative/dart_native/DartNativePlugin");
+  if (!plugin) {
+    _clearJEnvException(env);
+    DNError("JNI_OnLoad cannot find 'com/dartnative/dart_native/DartNativePlugin' class!");
+    return JNI_VERSION_1_6;
+  }
+
   jclass pluginClass = env->GetObjectClass(plugin);
   auto classLoaderClass = env->FindClass("java/lang/ClassLoader");
   auto getClassLoaderMethod = env->GetMethodID(pluginClass, "getClassLoader",
@@ -121,6 +127,10 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
 }
 
 jclass _findClass(JNIEnv *env, const char *name) {
+  if (gClassLoader == nullptr || gFindClassMethod == nullptr) {
+    DNError("_findClass gClassLoader or gFindClassMethod is null!");
+    return nullptr;
+  }
   jclass nativeClass = nullptr;
   nativeClass = env->FindClass(name);
   /// class loader not found class
@@ -228,6 +238,7 @@ jobject _newObject(jclass cls,
 
   if (!constructor) {
     _clearJEnvException(env);
+    free(constructorSignature);
     DNError("_newObject error, constructor method id is null!");
     return nullptr;
   }
