@@ -1,3 +1,7 @@
+## 0.6.2
+
+* [Fix] Exceptions on macOS.
+
 ## 0.6.1
 
 * [Fix] Dart version compatibility.
