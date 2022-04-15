@@ -21,20 +21,13 @@ Write native code using Dart. This package liberates you from undercompetent cha
   # iOS Release
   s.ios.source_files = 'Classes/DartNativePlugin.*'
   s.ios.vendored_frameworks = 'DartNative.xcframework'
-
-  # macOS: MUST use `use_frameworks!` in Podfile
-  s.osx.source_files = 'Classes/**/*', 'common/**/*'
-  s.osx.vendored_frameworks = 'libffi.xcframework'
   
   s.public_header_files = 'Classes/DartNativePlugin.h'
   s.ios.dependency 'Flutter'
-  s.osx.dependency 'FlutterMacOS'
 
   s.ios.deployment_target = '8.0'
-  s.osx.deployment_target = '10.11'
   s.libraries = 'c++'
   
   # Flutter.framework does not contain a i386 slice.
   s.ios.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386 arm64' }
-  s.osx.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 end
