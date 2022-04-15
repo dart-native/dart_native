@@ -18,7 +18,7 @@ This package is the blue part(DartNative Bridge):
 
 | DartNative Version | Flutter Requirements | Codegen Version |
 | --- | --- | --- |
-| 0.4.x - 0.5.x | Flutter 2.2.0 (Dart 2.13.0) | 2.x |
+| 0.4.x - 0.6.x | Flutter 2.2.0 (Dart 2.13.0) | 2.x |
 | 0.3.x | Flutter 1.20.0 (Dart 2.9.1) | 1.2.x |
 | 0.2.x | Flutter 1.12.13 (Dart 2.7) | 1.x |
 
