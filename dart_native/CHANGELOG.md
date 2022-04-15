@@ -1,3 +1,7 @@
+## 0.6.3
+
+* [Fix] Split podspec files for iOS and macOS.
+
 ## 0.6.2
 
 * [Fix] Exceptions on macOS.
