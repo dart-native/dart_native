@@ -1,3 +1,7 @@
+## 0.6.4
+
+* [Fix] Failed to load dynamic library on Android.
+
 ## 0.6.3
 
 * [Fix] Split podspec files for iOS and macOS.
