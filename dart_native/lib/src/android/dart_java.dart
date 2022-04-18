@@ -20,6 +20,6 @@ export 'foundation/wrapperclass/short.dart';
 export 'foundation/wrapperclass/boxing_unboxing.dart';
 export 'foundation/native_type.dart';
 
-void dartNativeInitCustomSoPath({String? soPath}) async {
-  initSoPath(soPath);
+Future<void> dartNativeInitCustomSoPath({String? soPath}) async {
+  await initSoPath(soPath);
 }
