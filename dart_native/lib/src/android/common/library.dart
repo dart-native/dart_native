@@ -17,7 +17,7 @@ final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData);
 
 final initDartAPISuccess = _dartAPIResult == 0;
 
-void initSoPath(String? soPath) async {
+Future<void> initSoPath(String? soPath) async {
   if (soPath != null && soPath.isNotEmpty) {
     _libPath = soPath;
     return;
