@@ -1,3 +1,7 @@
+## 0.6.5
+
+* [Fix] Fix utf16 issue on iOS.
+
 ## 0.6.4
 
 * [Fix] Failed to load dynamic library on Android.
