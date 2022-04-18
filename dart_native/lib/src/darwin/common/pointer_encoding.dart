@@ -284,7 +284,7 @@ String? structNameForEncoding(String encoding) {
 }
 
 String loadStringFromPointer(Pointer<Void> ptr) {
-  final dataPtr = ptr.cast<Int16>();
+  final dataPtr = ptr.cast<Uint16>();
   // get data length
   const lengthDataSize = 4;
   final lengthData = dataPtr.asTypedList(lengthDataSize);
@@ -293,7 +293,7 @@ String loadStringFromPointer(Pointer<Void> ptr) {
       lengthData[2] << 16 |
       lengthData[3];
   // get utf16 data
-  Int16List data = dataPtr.elementAt(lengthDataSize).asTypedList(length);
+  Uint16List data = dataPtr.elementAt(lengthDataSize).asTypedList(length);
   String result = String.fromCharCodes(data);
   // malloc dataPtr on native side, should free the memory.
   calloc.free(dataPtr);
