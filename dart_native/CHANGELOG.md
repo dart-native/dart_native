@@ -1,3 +1,7 @@
+## 0.6.6
+
+* [Fix] Dependency verison compatible.
+
 ## 0.6.5
 
 * [Fix] Fix utf16 issue on iOS.

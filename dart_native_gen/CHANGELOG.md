@@ -1,3 +1,5 @@
+## [0.3.1] - Dependency verison compatible.
+
 ## [0.3.0] - Support className for Java.
 
 ## [0.2.0] - Upgrade to Flutter 2.
