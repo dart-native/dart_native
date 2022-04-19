@@ -35,8 +35,8 @@ void *GetClassName(void *objectPtr) {
   jmethodID getName = env->GetMethodID(cls.Object(), "getName", "()Ljava/lang/String;");
   auto object = static_cast<jobject>(objectPtr);
   JavaLocalRef<jclass> objCls(env->GetObjectClass(object), env);
-  auto jstr = (jstring) env->CallObjectMethod(objCls.Object(), getName);
-  uint16_t *clsName = ConvertToDartUtf16(env, jstr);
+  JavaLocalRef<jstring> jstr((jstring) env->CallObjectMethod(objCls.Object(), getName), env);
+  uint16_t *clsName = JavaStringToDartString(env, jstr.Object());
 
   return clsName;
 }
@@ -111,9 +111,10 @@ void *InterfaceAllMetaData(char *name) {
                        "getMethodsSignature",
                        "(Ljava/lang/String;)Ljava/lang/String;");
   JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
-  auto signatures =
-      env->CallObjectMethod(gInterfaceRegistry->Object(), getSignatures, interfaceName.Object());
-  return ConvertToDartUtf16(env, (jstring) signatures);
+  JavaLocalRef<jstring> signatures((jstring) env->CallObjectMethod(gInterfaceRegistry->Object(),
+                                                                   getSignatures,
+                                                                   interfaceName.Object()), env);
+  return JavaStringToDartString(env, signatures.Object());
 }
 
 /// dart notify run callback function
@@ -238,8 +239,8 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     JavaLocalRef<jobject> argument(env->GetObjectArrayElement(argumentsArray, i), env);
     dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString.Object(), 0);
     if (strcmp(dataTypes[i], "java.lang.String") == 0) {
-      /// argument will delete in ConvertToDartUtf16
-      arguments[i] = ConvertToDartUtf16(env, (jstring) argument.Object());
+      /// argument will delete in JavaStringToDartString
+      arguments[i] = JavaStringToDartString(env, (jstring) argument.Object());
     } else {
       jobject gObj = env->NewGlobalRef(argument.Object());
       arguments[i] = gObj;
@@ -297,7 +298,7 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     DNDebug("Native callback to Dart return type is void");
   } else if (strcmp(returnType, "java.lang.String") == 0) {
     callbackResult =
-        ConvertToJavaUtf16(env, (char *) arguments[argumentCount]);
+        DartStringToJavaString(env, (char *) arguments[argumentCount]);
   } else {
     callbackResult = (jobject) arguments[argumentCount];
   }

@@ -48,7 +48,7 @@ jvalue *ConvertArgs2JValues(void **arguments,
       default:
         /// when argument type is string or stringTypeBitmask mark as string
         if ((stringTypeBitmask >> index & 0x1) == 1) {
-          JavaLocalRef<jobject> argString(ConvertToJavaUtf16(env, *arguments), env);
+          JavaLocalRef<jobject> argString(DartStringToJavaString(env, *arguments), env);
           jObjBucket[index] = argString;
           argValues[index].l = jObjBucket[index].Object();
         } else {
@@ -64,7 +64,7 @@ jvalue *ConvertArgs2JValues(void **arguments,
   return argValues;
 }
 
-jstring ConvertToJavaUtf16(JNIEnv *env, void *value) {
+jstring DartStringToJavaString(JNIEnv *env, void *value) {
   if (value == nullptr) {
     return nullptr;
   }
@@ -82,7 +82,7 @@ jstring ConvertToJavaUtf16(JNIEnv *env, void *value) {
 }
 
 /// nativeString not null
-uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString) {
+uint16_t *JavaStringToDartString(JNIEnv *env, jstring nativeString) {
   if (nativeString == nullptr) {
     return nullptr;
   }
@@ -97,7 +97,6 @@ uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString) {
     indexStart = 1;
     if (strLength <= 0) {
       env->ReleaseStringChars(nativeString, jc);
-      env->DeleteLocalRef(nativeString);
       return nullptr;
     }
   }
@@ -115,7 +114,6 @@ uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString) {
   utf16Str[strLength + 2] = '\0';
 
   env->ReleaseStringChars(nativeString, jc);
-  env->DeleteLocalRef(nativeString);
   return utf16Str;
 }
 
@@ -204,22 +202,20 @@ void *DoInvokeNativeMethod(jobject object,
     default:
       if (strcmp(returnType, "Ljava/lang/String;") == 0) {
         typePointers[argumentCount] = (char *) "java.lang.String";
-        auto javaString = (jstring) env->CallObjectMethodA(object, method, argValues);
-        nativeInvokeResult = ConvertToDartUtf16(env, javaString);
+        JavaLocalRef<jstring> javaString((jstring) env->CallObjectMethodA(object, method, argValues), env);
+        nativeInvokeResult = JavaStringToDartString(env, javaString.Object());
       } else {
-        jobject obj = env->CallObjectMethodA(object, method, argValues);
-        if (obj != nullptr) {
-          if (env->IsInstanceOf(obj, GetStringClazz())) {
+        JavaLocalRef<jobject> obj(env->CallObjectMethodA(object, method, argValues), env);
+        if (!obj.IsNull()) {
+          if (env->IsInstanceOf(obj.Object(), GetStringClazz())) {
             /// mark the last pointer as string
             /// dart will check this pointer
             typePointers[argumentCount] = (char *) "java.lang.String";
-            nativeInvokeResult = ConvertToDartUtf16(env, (jstring) obj);
+            nativeInvokeResult = JavaStringToDartString(env, (jstring) obj.Object());
           } else {
             typePointers[argumentCount] = (char *) "java.lang.Object";
-            jobject gObj = env->NewGlobalRef(obj);
+            jobject gObj = env->NewGlobalRef(obj.Object());
             nativeInvokeResult = gObj;
-
-            env->DeleteLocalRef(obj);
           }
         }
       }

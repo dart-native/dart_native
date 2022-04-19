@@ -24,9 +24,9 @@ typedef void(*InvokeCallback)(void *result,
                               char **typePointers,
                               int argumentCount);
 
-jstring ConvertToJavaUtf16(JNIEnv *env, void *value);
+jstring DartStringToJavaString(JNIEnv *env, void *value);
 
-uint16_t *ConvertToDartUtf16(JNIEnv *env, jstring nativeString);
+uint16_t *JavaStringToDartString(JNIEnv *env, jstring nativeString);
 
 char *GenerateSignature(char **argumentTypes, int argumentCount, char *returnType);
 
