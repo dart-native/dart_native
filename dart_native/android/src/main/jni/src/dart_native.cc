@@ -9,8 +9,27 @@
 
 using namespace dartnative;
 
-static JavaGlobalRef<jobject> *gInterfaceRegistry = nullptr;
+static JavaGlobalRef<jobject> *g_interface_registry = nullptr;
+static jmethodID g_get_interface = nullptr;
+static jmethodID g_get_signature = nullptr;
 static std::unique_ptr<TaskRunner> g_task_runner = nullptr;
+
+void InitInterface() {
+  auto env = AttachCurrentThread();
+  auto registryClz =
+      FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
+  auto instanceID =
+      env->GetStaticMethodID(registryClz.Object(),
+                             "getInstance",
+                             "()Lcom/dartnative/dart_native/InterfaceRegistry;");
+  JavaGlobalRef<jobject>
+      registryObj(env->CallStaticObjectMethod(registryClz.Object(), instanceID), env);
+  g_interface_registry = new JavaGlobalRef<jobject>(registryObj.Object(), env);
+  g_get_interface = env->GetMethodID(registryClz.Object(),"getInterface",
+                                     "(Ljava/lang/String;)Ljava/lang/Object;");
+  g_get_signature = env->GetMethodID(registryClz.Object(), "getMethodsSignature",
+                                     "(Ljava/lang/String;)Ljava/lang/String;");
+}
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   /// Init Java VM.
@@ -22,10 +41,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   /// Init task runner.
   g_task_runner = std::make_unique<TaskRunner>();
 
+  /// Init interface.
+  InitInterface();
+
   return JNI_VERSION_1_6;
 }
 
-/// init dart extensions
 intptr_t InitDartApiDL(void *data) {
   return Dart_InitializeApiDL(data);
 }
@@ -36,7 +57,6 @@ static void RunFinalizer(void *isolate_callback_data,
   ReleaseJObject(static_cast<jobject>(peer));
 }
 
-/// retain native object
 void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr) {
   if (Dart_IsError_DL(h)) {
     DNError("Dart_IsError_DL");
@@ -62,7 +82,6 @@ void *GetClassName(void *objectPtr) {
   return clsName;
 }
 
-/// create target object
 void *CreateTargetObject(char *targetClassName,
                          void **arguments,
                          char **argumentTypes,
@@ -75,7 +94,6 @@ void *CreateTargetObject(char *targetClassName,
   return gObj;
 }
 
-/// invoke native method
 void *InvokeNativeMethod(void *objPtr,
                          char *methodName,
                          void **arguments,
@@ -148,39 +166,41 @@ void ExecuteCallback(WorkFunction *work_ptr) {
 
 void *InterfaceHostObjectWithName(char *name) {
   auto env = AttachCurrentThread();
-  auto registryClz =
-      FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
-  if (gInterfaceRegistry == nullptr) {
-    auto instanceID =
-        env->GetStaticMethodID(registryClz.Object(),
-                               "getInstance",
-                               "()Lcom/dartnative/dart_native/InterfaceRegistry;");
-    JavaGlobalRef<jobject>
-        registryObj(env->CallStaticObjectMethod(registryClz.Object(), instanceID), env);
-    gInterfaceRegistry = new JavaGlobalRef<jobject>(registryObj.Object(), env);
+  if (env == nullptr) {
+    return nullptr;
   }
 
-  auto getInterface =
-      env->GetMethodID(registryClz.Object(),
-                       "getInterface",
-                       "(Ljava/lang/String;)Ljava/lang/Object;");
+  if (g_interface_registry == nullptr || g_get_interface == nullptr) {
+    return nullptr;
+  }
+
   JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
+  if (interfaceName.IsNull()) {
+    return nullptr;
+  }
+
   auto interface =
-      env->CallObjectMethod(gInterfaceRegistry->Object(), getInterface, interfaceName.Object());
+      env->CallObjectMethod(g_interface_registry->Object(), g_get_interface, interfaceName.Object());
   return interface;
 }
 
 void *InterfaceAllMetaData(char *name) {
   auto env = AttachCurrentThread();
-  auto registryClz =
-      FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
-  auto getSignatures =
-      env->GetMethodID(registryClz.Object(),
-                       "getMethodsSignature",
-                       "(Ljava/lang/String;)Ljava/lang/String;");
+  if (env == nullptr) {
+    return nullptr;
+  }
+
+  if (g_interface_registry == nullptr || g_get_signature == nullptr) {
+    return nullptr;
+  }
+
   JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
-  JavaLocalRef<jstring> signatures((jstring) env->CallObjectMethod(gInterfaceRegistry->Object(),
-                                                                   getSignatures,
+  if (interfaceName.IsNull()) {
+    return nullptr;
+  }
+
+  JavaLocalRef<jstring> signatures((jstring) env->CallObjectMethod(g_interface_registry->Object(),
+                                                                   g_get_signature,
                                                                    interfaceName.Object()), env);
   return JavaStringToDartString(env, signatures.Object());
 }

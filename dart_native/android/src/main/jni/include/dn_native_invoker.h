@@ -22,10 +22,10 @@ typedef void(*InvokeCallback)(void *result, char *method, char **typePointers, i
 JavaLocalRef<jclass> FindClass(const char *name, JNIEnv *env = nullptr);
 
 JavaLocalRef<jobject> NewObject(jclass cls,
-                  void **arguments,
-                  char **argumentTypes,
-                  int argumentCount,
-                  uint32_t stringTypeBitmask);
+                                void **arguments,
+                                char **argumentTypes,
+                                int argumentCount,
+                                uint32_t stringTypeBitmask);
 
 jvalue *ConvertArgs2JValues(void **arguments,
                             char **argumentTypes,
