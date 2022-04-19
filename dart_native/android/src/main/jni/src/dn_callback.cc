@@ -5,6 +5,8 @@
 #include "dn_callback.h"
 #include "dn_log.h"
 
+namespace dartnative {
+
 /// key is dart object pointer address, value is dart port
 static std::map<jlong, int64_t> dartPortCache;
 /// key is dart object pointer, value is native proxy object
@@ -89,4 +91,4 @@ bool IsCurrentThread(jlong dartObjectAddress, std::__thread_id currentThread) {
   }
   return threadIdCache[dartObjectAddress] == currentThread;
 }
-
+}

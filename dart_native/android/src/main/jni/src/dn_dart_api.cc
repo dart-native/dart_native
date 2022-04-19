@@ -4,7 +4,7 @@
 namespace dartnative {
 
 /// notify dart run callback function
-bool Notify2Dart(Dart_Port send_port, const DartWorkFunction *work) {
+bool Notify2Dart(Dart_Port send_port, const WorkFunction *work) {
   const auto work_addr = reinterpret_cast<intptr_t>(work);
 
   Dart_CObject dart_object;
@@ -16,10 +16,6 @@ bool Notify2Dart(Dart_Port send_port, const DartWorkFunction *work) {
     DNError("Native callback to Dart failed! Invalid port or isolate died");
   }
   return result;
-}
-
-void NotifyJNIError() {
-
 }
 
 }

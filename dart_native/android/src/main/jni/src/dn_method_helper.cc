@@ -234,7 +234,7 @@ void *DoInvokeNativeMethod(jobject object,
     } else {
       sem_t sem;
       bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
-      const DartWorkFunction work =
+      const WorkFunction work =
           [callback, nativeInvokeResult, methodName, typePointers, argumentCount, isSemInitSuccess, &sem] {
             ((InvokeCallback) callback)(nativeInvokeResult,
                                         methodName,
@@ -244,7 +244,7 @@ void *DoInvokeNativeMethod(jobject object,
               sem_post(&sem);
             }
           };
-      const DartWorkFunction *work_ptr = new DartWorkFunction(work);
+      const WorkFunction *work_ptr = new WorkFunction(work);
       /// check run result
       bool notifyResult = Notify2Dart(dartPort, work_ptr);
       if (notifyResult) {

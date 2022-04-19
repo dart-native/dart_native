@@ -5,10 +5,7 @@
 #include <android/looper.h>
 #include <array>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+namespace dartnative {
 
 /**
  * @brief When invoke with async method, dart can set run thread.
@@ -38,10 +35,7 @@ class TaskRunner {
   void ScheduleTaskOnMainThread(std::function<void()> invoke);
   void ScheduleTaskOnSubThread(std::function<void()> invoke);
 
-  ALooper* main_looper_ = nullptr;
+  ALooper *main_looper_ = nullptr;
   std::array<int, 2> fd_;
 };
-#ifdef __cplusplus
 }
-#endif
-

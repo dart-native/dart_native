@@ -1,8 +1,5 @@
-#include "dart_native.h"
-#include <jni.h>
-#include <map>
-#include <string>
 #include <semaphore.h>
+#include "dart_native.h"
 #include "dn_thread.h"
 #include "dn_log.h"
 #include "dn_method_helper.h"
@@ -10,7 +7,6 @@
 #include "jni_object_ref.h"
 #include "dn_jni_helper.h"
 #include "dn_lifecycle_manager.h"
-#include "dn_dart_api.h"
 
 using namespace dartnative;
 
@@ -124,8 +120,8 @@ void *InterfaceAllMetaData(char *name) {
 }
 
 /// dart notify run callback function
-void ExecuteCallback(DartWorkFunction *work_ptr) {
-  const DartWorkFunction work = *work_ptr;
+void ExecuteCallback(WorkFunction *work_ptr) {
+  const WorkFunction work = *work_ptr;
   work();
   delete work_ptr;
 }
@@ -283,7 +279,7 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     DNDebug("callback with different thread");
     sem_t sem;
     bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
-    const DartWorkFunction work =
+    const WorkFunction work =
         [target, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess, methodCallback]() {
           if (methodCallback != nullptr && target != nullptr) {
             methodCallback(target, funName, arguments, dataTypes, argumentCount);
@@ -295,7 +291,7 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
           }
         };
 
-    const DartWorkFunction *work_ptr = new DartWorkFunction(work);
+    const WorkFunction *work_ptr = new WorkFunction(work);
     /// check run result
     bool notifyResult = Notify2Dart(port, work_ptr);
     if (notifyResult) {

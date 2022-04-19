@@ -1,14 +1,11 @@
 #pragma once
-
-#include <dart_api_dl.h>
 #include <functional>
+#include "dart_api_dl.h"
 
 namespace dartnative {
 
-typedef std::function<void()> DartWorkFunction;
+typedef std::function<void()> WorkFunction;
 
-bool Notify2Dart(Dart_Port send_port, const DartWorkFunction *work);
-
-void NotifyJNIError();
+bool Notify2Dart(Dart_Port send_port, const WorkFunction *work);
 
 }

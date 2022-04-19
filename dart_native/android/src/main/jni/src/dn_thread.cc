@@ -6,8 +6,10 @@
 #import "dn_thread.h"
 #import "dn_log.h"
 
+namespace dartnative {
+
 /// this will be called on main thread
-static int LooperCallback(int fd, int events, void* data) {
+static int LooperCallback(int fd, int events, void *data) {
   std::function<void()> *invoke = nullptr;
   if (read(fd, &invoke, sizeof(invoke)) != -1) {
     std::unique_ptr<std::function<void()>> pl{invoke};
@@ -44,15 +46,12 @@ TaskRunner::~TaskRunner() {
 
 void TaskRunner::ScheduleInvokeTask(TaskThread type, std::function<void()> invoke) {
   switch (type) {
-    case TaskThread::kNativeMain:
-      ScheduleTaskOnMainThread(std::move(invoke));
+    case TaskThread::kNativeMain:ScheduleTaskOnMainThread(std::move(invoke));
       break;
-    case TaskThread::kSub:
-      ScheduleTaskOnSubThread(std::move(invoke));
+    case TaskThread::kSub:ScheduleTaskOnSubThread(std::move(invoke));
       break;
     case TaskThread::kFlutterUI:
-    default:
-      break;
+    default:break;
   }
 }
 
@@ -79,4 +78,5 @@ bool TaskRunner::IsMainThread() const {
     return false;
   }
   return current_looper == main_looper_;
+}
 }
