@@ -54,7 +54,7 @@ jobject _newObject(jclass cls,
       ConvertArgs2JValues(arguments, argumentTypes, argumentCount, stringTypeBitmask, jObjBucket);
 
   char *constructorSignature =
-      GenerateSignature(argumentTypes, argumentCount, reinterpret_cast<char *>('V'));
+      GenerateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
   jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
   jobject newObj = env->NewObjectA(cls, constructor, values);
 
@@ -215,7 +215,7 @@ void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr) {
   Dart_NewWeakPersistentHandle_DL(h, objPtr, size, RunFinalizer);
 }
 
-JNIEXPORT jobject JNICALL
+extern "C" JNIEXPORT jobject JNICALL
 Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
                                                                         jclass clazz,
                                                                         jlong dartObjectAddress,
