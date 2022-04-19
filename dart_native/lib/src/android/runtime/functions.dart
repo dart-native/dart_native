@@ -31,7 +31,7 @@ final Pointer<Void> Function(
                     Pointer<Pointer<Void>> argsPtrs,
                     Pointer<Pointer<Utf8>> typePtrs,
                     Int32 argCount,
-                    Uint32 stringTypeBitmask)>>('createTargetObject')
+                    Uint32 stringTypeBitmask)>>('CreateTargetObject')
         .asFunction();
 
 /// 调用native方法
@@ -70,7 +70,7 @@ final Pointer<Void> Function(
                     Pointer<NativeFunction<InvokeCallback>>,
                     Int64 dartPort,
                     Int32 thread,
-                    Bool isInterface)>>('invokeNativeMethod')
+                    Bool isInterface)>>('InvokeNativeMethod')
         .asFunction();
 
 ///
@@ -94,11 +94,11 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<Utf8> clsName,
                     Pointer<Utf8> funName,
                     Pointer<NativeFunction<MethodNativeCallback>> function,
-                    Int64 dartPort)>>('registerNativeCallback')
+                    Int64 dartPort)>>('RegisterNativeCallback')
         .asFunction();
 
 /// Get java class name from native.
 final Pointer<Void> Function(Pointer<Void>)? getJavaClassName = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function(Pointer<Void>)>>(
-        'getClassName')
+        'GetClassName')
     .asFunction();

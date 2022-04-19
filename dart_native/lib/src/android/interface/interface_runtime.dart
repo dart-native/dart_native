@@ -65,12 +65,12 @@ class InterfaceRuntimeJava extends InterfaceRuntime {
 final Pointer<Void> Function(Pointer<Utf8>) _interfaceHostObjectWithName =
     nativeDylib
         .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
-            'interfaceHostObjectWithName')
+            'InterfaceHostObjectWithName')
         .asFunction();
 
 final Pointer<Void> Function(Pointer<Utf8>) _interfaceAllMetaData = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
-        'interfaceAllMetaData')
+        'InterfaceAllMetaData')
     .asFunction();
 
 Map<String, String> _mapForInterfaceMetaData(String interfaceName) {

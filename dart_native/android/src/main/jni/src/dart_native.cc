@@ -1,32 +1,36 @@
+#include "dart_native.h"
 #include <jni.h>
 #include <map>
 #include <string>
 #include <semaphore.h>
+#include "dn_thread.h"
 #include "dn_log.h"
 #include "dn_method_helper.h"
 #include "dn_callback.h"
 #include "jni_object_ref.h"
-#include "dn_method.h"
 #include "dn_jni_helper.h"
 #include "dn_lifecycle_manager.h"
 #include "dn_dart_api.h"
 
-extern "C" {
-
 using namespace dartnative;
 
 static JavaGlobalRef<jobject> *gInterfaceRegistry = nullptr;
+static std::unique_ptr<TaskRunner> g_task_runner = nullptr;
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
-  DNDebug("JNI_OnLoad");
-  /// cache the JavaVM pointer
+  /// Init Java VM.
   InitWithJavaVM(pjvm);
+
+  /// Init used class.
   InitClazz();
-  DNDebug("JNI_OnLoad finish");
+
+  /// Init task runner.
+  g_task_runner = std::make_unique<TaskRunner>();
+
   return JNI_VERSION_1_6;
 }
 
-void *getClassName(void *objectPtr) {
+void *GetClassName(void *objectPtr) {
   if (objectPtr == nullptr) {
     return nullptr;
   }
@@ -48,28 +52,23 @@ jobject _newObject(jclass cls,
                    char **argumentTypes,
                    int argumentCount,
                    uint32_t stringTypeBitmask) {
-  auto *argValues = new jvalue[argumentCount];
   JavaLocalRef<jobject> jObjBucket[argumentCount];
   JNIEnv *env = AttachCurrentThread();
-  FillArgs2JValues(arguments,
-                   argumentTypes,
-                   argValues,
-                   argumentCount,
-                   stringTypeBitmask,
-                   jObjBucket);
+  auto values =
+      ConvertArgs2JValues(arguments, argumentTypes, argumentCount, stringTypeBitmask, jObjBucket);
 
   char *constructorSignature =
-      GenerateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
+      GenerateSignature(argumentTypes, argumentCount, reinterpret_cast<char *>('V'));
   jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
-  jobject newObj = env->NewObjectA(cls, constructor, argValues);
+  jobject newObj = env->NewObjectA(cls, constructor, values);
 
-//  _deleteArgs(argValues, argumentCount, stringTypeBitmask);
   free(constructorSignature);
+  delete[]values;
   return newObj;
 }
 
 /// create target object
-void *createTargetObject(char *targetClassName,
+void *CreateTargetObject(char *targetClassName,
                          void **arguments,
                          char **argumentTypes,
                          int argumentCount,
@@ -82,14 +81,13 @@ void *createTargetObject(char *targetClassName,
                               argumentCount,
                               stringTypeBitmask);
   jobject gObj = env->NewGlobalRef(newObj);
-//  _addGlobalObject(gObj);
 
   env->DeleteLocalRef(newObj);
   env->DeleteLocalRef(cls);
   return gObj;
 }
 
-void *interfaceHostObjectWithName(char *name) {
+void *InterfaceHostObjectWithName(char *name) {
   auto env = AttachCurrentThread();
   auto registryClz =
       FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
@@ -112,7 +110,7 @@ void *interfaceHostObjectWithName(char *name) {
   return interface;
 }
 
-void *interfaceAllMetaData(char *name) {
+void *InterfaceAllMetaData(char *name) {
   auto env = AttachCurrentThread();
   auto registryClz =
       FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
@@ -133,7 +131,7 @@ void ExecuteCallback(DartWorkFunction *work_ptr) {
 }
 
 /// invoke native method
-void *invokeNativeMethod(void *objPtr,
+void *InvokeNativeMethod(void *objPtr,
                          char *methodName,
                          void **arguments,
                          char **dataTypes,
@@ -144,14 +142,34 @@ void *invokeNativeMethod(void *objPtr,
                          Dart_Port dartPort,
                          int thread,
                          bool isInterface) {
-  dartnative::DNMethod
-      method(objPtr, methodName, dataTypes, returnType, argumentCount, dartPort, callback);
+  auto object = static_cast<jobject>(objPtr);
+  /// interface skip object check
+  if (!isInterface && !ObjectInReference(object)) {
+    /// maybe use cache pointer but jobject is release
+    DNError(
+        "InvokeNativeMethod not find class, check pointer and jobject lifecycle is same");
+    return nullptr;
+  }
+  auto type = TaskThread(thread);
+  auto invokeFunction = [=] {
+    return DoInvokeNativeMethod(object, methodName, arguments, dataTypes, argumentCount, returnType,
+                                stringTypeBitmask, callback, dartPort, type);
+  };
+  if (type == TaskThread::kFlutterUI) {
+    return invokeFunction();
+  }
 
-  return method.InvokeNativeMethod(arguments, stringTypeBitmask, thread, isInterface);
+  if (g_task_runner == nullptr) {
+    DNError("InvokeNativeMethod error");
+    return nullptr;
+  }
+
+  g_task_runner->ScheduleInvokeTask(type, invokeFunction);
+  return nullptr;
 }
 
 /// register listener object by using java dynamic proxy
-void registerNativeCallback(void *dartObject,
+void RegisterNativeCallback(void *dartObject,
                             char *clsName,
                             char *funName,
                             void *callback,
@@ -307,5 +325,4 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
   delete[] dataTypes;
 
   return callbackResult;
-}
 }
