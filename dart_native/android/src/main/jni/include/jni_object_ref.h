@@ -4,7 +4,7 @@
 #pragma once
 
 #include <jni.h>
-#include "dn_jni_helper.h"
+#include "dn_jni_env.h"
 
 namespace dartnative {
 
@@ -18,6 +18,8 @@ class JavaRef {
   ~JavaRef() = default;
 
   T Object() const { return static_cast<T>(obj_); }
+
+  bool IsNull() const { return obj_ == nullptr; }
 
   JNIEnv *SetNewLocalRef(JNIEnv *env, jobject obj) {
     if (!env) {
@@ -72,7 +74,13 @@ class JavaLocalRef : public JavaRef<T> {
  public:
   JavaLocalRef() : env_(nullptr) {}
 
-  JavaLocalRef(T obj, JNIEnv *env) : JavaRef<T>(obj), env_(env) {}
+  /// Non-explicit copy constructor, to allow JavaLocalRef to be returned
+  /// by value as this is the normal usage pattern.
+  JavaLocalRef(const JavaLocalRef<T>& other) : env_(other.env_) {
+    this->SetNewLocalRef(env_, other.obj_);
+  }
+
+  explicit JavaLocalRef(T obj, JNIEnv *env) : JavaRef<T>(obj), env_(env) {}
 
   ~JavaLocalRef() {
     this->Reset();

@@ -6,6 +6,7 @@
 #include "dn_method_helper.h"
 #include "dn_log.h"
 #include "dn_callback.h"
+#include "dn_jni_helper.h"
 
 namespace dartnative {
 

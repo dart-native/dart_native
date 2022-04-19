@@ -32,14 +32,12 @@ void *GetClassName(void *objectPtr) {
   }
   auto env = AttachCurrentThread();
   auto cls = FindClass("java/lang/Class", env);
-  jmethodID getName = env->GetMethodID(cls, "getName", "()Ljava/lang/String;");
+  jmethodID getName = env->GetMethodID(cls.Object(), "getName", "()Ljava/lang/String;");
   auto object = static_cast<jobject>(objectPtr);
-  auto objCls = env->GetObjectClass(object);
-  auto jstr = (jstring) env->CallObjectMethod(objCls, getName);
+  JavaLocalRef<jclass> objCls(env->GetObjectClass(object), env);
+  auto jstr = (jstring) env->CallObjectMethod(objCls.Object(), getName);
   uint16_t *clsName = ConvertToDartUtf16(env, jstr);
 
-  env->DeleteLocalRef(cls);
-  env->DeleteLocalRef(objCls);
   return clsName;
 }
 
@@ -70,16 +68,13 @@ void *CreateTargetObject(char *targetClassName,
                          int argumentCount,
                          uint32_t stringTypeBitmask) {
   JNIEnv *env = AttachCurrentThread();
-  jclass cls = FindClass(targetClassName, env);
-  jobject newObj = _newObject(cls,
-                              arguments,
-                              argumentTypes,
-                              argumentCount,
-                              stringTypeBitmask);
-  jobject gObj = env->NewGlobalRef(newObj);
-
-  env->DeleteLocalRef(newObj);
-  env->DeleteLocalRef(cls);
+  auto cls = FindClass(targetClassName, env);
+  JavaLocalRef<jobject> newObj(_newObject(cls.Object(),
+                                          arguments,
+                                          argumentTypes,
+                                          argumentCount,
+                                          stringTypeBitmask), env);
+  jobject gObj = env->NewGlobalRef(newObj.Object());
   return gObj;
 }
 
@@ -89,20 +84,21 @@ void *InterfaceHostObjectWithName(char *name) {
       FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
   if (gInterfaceRegistry == nullptr) {
     auto instanceID =
-        env->GetStaticMethodID(registryClz,
+        env->GetStaticMethodID(registryClz.Object(),
                                "getInstance",
                                "()Lcom/dartnative/dart_native/InterfaceRegistry;");
-    auto registryObj = env->CallStaticObjectMethod(registryClz, instanceID);
-    gInterfaceRegistry = new JavaGlobalRef<jobject>(registryObj, env);
-    env->DeleteLocalRef(registryObj);
+    JavaGlobalRef<jobject>
+        registryObj(env->CallStaticObjectMethod(registryClz.Object(), instanceID), env);
+    gInterfaceRegistry = new JavaGlobalRef<jobject>(registryObj.Object(), env);
   }
 
   auto getInterface =
-      env->GetMethodID(registryClz, "getInterface", "(Ljava/lang/String;)Ljava/lang/Object;");
-  auto interfaceName = env->NewStringUTF(name);
-  auto interface = env->CallObjectMethod(gInterfaceRegistry->Object(), getInterface, interfaceName);
-  env->DeleteLocalRef(interfaceName);
-  env->DeleteLocalRef(registryClz);
+      env->GetMethodID(registryClz.Object(),
+                       "getInterface",
+                       "(Ljava/lang/String;)Ljava/lang/Object;");
+  JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
+  auto interface =
+      env->CallObjectMethod(gInterfaceRegistry->Object(), getInterface, interfaceName.Object());
   return interface;
 }
 
@@ -111,11 +107,12 @@ void *InterfaceAllMetaData(char *name) {
   auto registryClz =
       FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
   auto getSignatures =
-      env->GetMethodID(registryClz, "getMethodsSignature", "(Ljava/lang/String;)Ljava/lang/String;");
-  auto interfaceName = env->NewStringUTF(name);
-  auto signatures = env->CallObjectMethod(gInterfaceRegistry->Object(), getSignatures, interfaceName);
-  env->DeleteLocalRef(interfaceName);
-  env->DeleteLocalRef(registryClz);
+      env->GetMethodID(registryClz.Object(),
+                       "getMethodsSignature",
+                       "(Ljava/lang/String;)Ljava/lang/String;");
+  JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
+  auto signatures =
+      env->CallObjectMethod(gInterfaceRegistry->Object(), getSignatures, interfaceName.Object());
   return ConvertToDartUtf16(env, (jstring) signatures);
 }
 
@@ -171,26 +168,23 @@ void RegisterNativeCallback(void *dartObject,
                             void *callback,
                             Dart_Port dartPort) {
   JNIEnv *env = AttachCurrentThread();
-  jclass callbackManager =
+  auto callbackManager =
       FindClass("com/dartnative/dart_native/CallbackManager", env);
-  jmethodID registerCallback = env->GetStaticMethodID(callbackManager,
+  jmethodID registerCallback = env->GetStaticMethodID(callbackManager.Object(),
                                                       "registerCallback",
                                                       "(JLjava/lang/String;)Ljava/lang/Object;");
 
   auto dartObjectAddress = (jlong) dartObject;
   /// create interface object using java dynamic proxy
-  jstring newClsName = env->NewStringUTF(clsName);
-  jobject proxyObject = env->CallStaticObjectMethod(callbackManager,
-                                                    registerCallback,
-                                                    dartObjectAddress,
-                                                    newClsName);
-  env->DeleteLocalRef(newClsName);
-  jobject gProxyObj = env->NewGlobalRef(proxyObject);
+  JavaLocalRef<jstring> newClsName(env->NewStringUTF(clsName), env);
+  JavaLocalRef<jobject> proxyObject(env->CallStaticObjectMethod(callbackManager.Object(),
+                                                                registerCallback,
+                                                                dartObjectAddress,
+                                                                newClsName.Object()), env);
+  jobject gProxyObj = env->NewGlobalRef(proxyObject.Object());
 
   /// save object into cache
   doRegisterNativeCallback(dartObject, gProxyObj, funName, callback, dartPort);
-  env->DeleteLocalRef(callbackManager);
-  env->DeleteLocalRef(proxyObject);
 }
 
 /// init dart extensions
@@ -239,20 +233,17 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
 
   /// store argument to pointer
   for (int i = 0; i < argumentCount; ++i) {
-    auto argTypeString = (jstring) env->GetObjectArrayElement(argumentTypes, i);
-    auto argument = env->GetObjectArrayElement(argumentsArray, i);
-    dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString, 0);
+    JavaLocalRef<jstring>
+        argTypeString((jstring) env->GetObjectArrayElement(argumentTypes, i), env);
+    JavaLocalRef<jobject> argument(env->GetObjectArrayElement(argumentsArray, i), env);
+    dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString.Object(), 0);
     if (strcmp(dataTypes[i], "java.lang.String") == 0) {
       /// argument will delete in ConvertToDartUtf16
-      arguments[i] = ConvertToDartUtf16(env, (jstring) argument);
+      arguments[i] = ConvertToDartUtf16(env, (jstring) argument.Object());
     } else {
-      jobject gObj = env->NewGlobalRef(argument);
-//      _addGlobalObject(gObj);
+      jobject gObj = env->NewGlobalRef(argument.Object());
       arguments[i] = gObj;
-      env->DeleteLocalRef(argument);
     }
-
-    env->DeleteLocalRef(argTypeString);
   }
 
   /// when return void, jstring which from native is null.

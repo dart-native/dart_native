@@ -1,12 +1,7 @@
 #pragma once
-
-#include <jni.h>
+#include "jni_object_ref.h"
 
 namespace dartnative {
-
-void InitWithJavaVM(JavaVM *vm);
-
-JNIEnv *AttachCurrentThread();
 
 void InitClazz();
 
@@ -16,6 +11,6 @@ jclass GetStringClazz();
 
 jmethodID GetFindClassMethod();
 
-jclass FindClass(const char *name, JNIEnv *env = nullptr);
+JavaLocalRef<jclass> FindClass(const char *name, JNIEnv *env = nullptr);
 
 }
