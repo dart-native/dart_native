@@ -1,4 +1,6 @@
-## [0.3.1] - Dependency verison compatible.
+## [0.3.2] - Dependency verison compatible.
+
+## [0.3.1] - Fix the generated import code.
 
 ## [0.3.0] - Support className for Java.
 
