@@ -3,12 +3,51 @@
 //
 #include <semaphore.h>
 #include <dn_dart_api.h>
-#include "dn_method_helper.h"
+#include "dn_native_invoker.h"
 #include "dn_log.h"
 #include "dn_callback.h"
-#include "dn_jni_helper.h"
+#include "dn_jni_utils.h"
 
 namespace dartnative {
+
+JavaLocalRef<jclass> FindClass(const char *name, JNIEnv *env) {
+  if (env == nullptr) {
+    env = AttachCurrentThread();
+  }
+  JavaLocalRef<jclass> nativeClass(env->FindClass(name), env);
+  jthrowable exception = env->ExceptionOccurred();
+  /// class loader not found class
+  if (exception) {
+    env->ExceptionClear();
+    JavaLocalRef<jstring> clsName(env->NewStringUTF(name), env);
+    JavaLocalRef<jclass>
+        findedClass(static_cast<jclass>(env->CallObjectMethod(GetClassLoaderObj(),
+                                                              GetFindClassMethod(),
+                                                              clsName.Object())), env);
+    return findedClass;
+  }
+  return nativeClass;
+}
+
+JavaLocalRef<jobject> NewObject(jclass cls,
+                                void **arguments,
+                                char **argumentTypes,
+                                int argumentCount,
+                                uint32_t stringTypeBitmask) {
+  JavaLocalRef<jobject> jObjBucket[argumentCount];
+  JNIEnv *env = AttachCurrentThread();
+  auto values =
+      ConvertArgs2JValues(arguments, argumentTypes, argumentCount, stringTypeBitmask, jObjBucket);
+
+  char *constructorSignature =
+      GenerateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
+  jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
+  JavaLocalRef<jobject> newObj(env->NewObjectA(cls, constructor, values), env);
+
+  free(constructorSignature);
+  delete[]values;
+  return newObj;
+}
 
 #define SET_ARG_VALUE(argValues, arguments, jtype, ctype, indexType, index) \
     argValues[index].indexType = (jtype) * (ctype *)(arguments); \
@@ -62,80 +101,6 @@ jvalue *ConvertArgs2JValues(void **arguments,
     }
   }
   return argValues;
-}
-
-jstring DartStringToJavaString(JNIEnv *env, void *value) {
-  if (value == nullptr) {
-    return nullptr;
-  }
-  auto *utf16 = (uint16_t *) value;
-
-  /// todo(HUIZZ) use uint64
-  uint32_t length = 0;
-  length += *utf16++ << 16;
-  length += *utf16++;
-
-  auto nativeString = env->NewString(utf16, length);
-  free(value);
-
-  return nativeString;
-}
-
-/// nativeString not null
-uint16_t *JavaStringToDartString(JNIEnv *env, jstring nativeString) {
-  if (nativeString == nullptr) {
-    return nullptr;
-  }
-  const jchar *jc = env->GetStringChars(nativeString, nullptr);
-  jsize strLength = env->GetStringLength(nativeString);
-
-  /// check bom
-  bool hasBom = jc[0] == 0xFEFF || jc[0] == 0xFFFE; // skip bom
-  int indexStart = 0;
-  if (hasBom) {
-    strLength--;
-    indexStart = 1;
-    if (strLength <= 0) {
-      env->ReleaseStringChars(nativeString, jc);
-      return nullptr;
-    }
-  }
-
-  /// do convert
-  auto *utf16Str =
-      static_cast<uint16_t *>(malloc(sizeof(uint16_t) * (strLength + 3)));
-  /// save u16list length
-  utf16Str[0] = strLength >> 16 & 0xFFFF;
-  utf16Str[1] = strLength & 0xFFFF;
-  int u16Index = 2;
-  for (int i = indexStart; i < strLength; i++) {
-    utf16Str[u16Index++] = jc[i];
-  }
-  utf16Str[strLength + 2] = '\0';
-
-  env->ReleaseStringChars(nativeString, jc);
-  return utf16Str;
-}
-
-/// Returns a malloc pointer to the result.
-char *GenerateSignature(char **argumentTypes, int argumentCount, char *returnType) {
-  /// include "(" ")" length
-  size_t signatureLength = strlen(returnType) + 2;
-  /// all argument type length
-  for (int i = 0; i < argumentCount; i++) {
-    signatureLength += strlen(argumentTypes[i]);
-  }
-
-  char *signature = (char *) malloc(signatureLength * sizeof(char));
-  strcpy(signature, "(");
-  int offset = 1;
-  for (int i = 0; i < argumentCount; offset += strlen(argumentTypes[i]), i++) {
-    strcpy(signature + offset, argumentTypes[i]);
-  }
-  strcpy(signature + offset, ")");
-  strcpy(signature + offset + 1, returnType);
-
-  return signature;
 }
 
 void *DoInvokeNativeMethod(jobject object,

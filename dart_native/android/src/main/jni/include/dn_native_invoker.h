@@ -13,22 +13,19 @@
 
 namespace dartnative {
 
-typedef void(*NativeMethodCallback)(void *targetPtr,
-                                    char *funNamePtr,
-                                    void **args,
-                                    char **argTypes,
-                                    int argCount);
+typedef void(*NativeMethodCallback)(void *targetPtr, char *funNamePtr, void **args,
+                                    char **argTypes, int argCount);
 
-typedef void(*InvokeCallback)(void *result,
-                              char *method,
-                              char **typePointers,
-                              int argumentCount);
+typedef void(*InvokeCallback)(void *result, char *method, char **typePointers, int argumentCount);
 
-jstring DartStringToJavaString(JNIEnv *env, void *value);
 
-uint16_t *JavaStringToDartString(JNIEnv *env, jstring nativeString);
+JavaLocalRef<jclass> FindClass(const char *name, JNIEnv *env = nullptr);
 
-char *GenerateSignature(char **argumentTypes, int argumentCount, char *returnType);
+JavaLocalRef<jobject> NewObject(jclass cls,
+                  void **arguments,
+                  char **argumentTypes,
+                  int argumentCount,
+                  uint32_t stringTypeBitmask);
 
 jvalue *ConvertArgs2JValues(void **arguments,
                             char **argumentTypes,
@@ -47,5 +44,4 @@ void *DoInvokeNativeMethod(jobject object,
                            void *callback,
                            Dart_Port dartPort,
                            TaskThread thread);
-
 }

@@ -2,6 +2,10 @@
 // Created by Hui on 6/1/21.
 //
 #include <string>
+#include <semaphore.h>
+#include "jni_object_ref.h"
+#include "dn_jni_utils.h"
+#include "dn_dart_api.h"
 #include "dn_callback.h"
 #include "dn_log.h"
 
@@ -90,5 +94,110 @@ bool IsCurrentThread(jlong dartObjectAddress, std::__thread_id currentThread) {
     return false;
   }
   return threadIdCache[dartObjectAddress] == currentThread;
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *env,
+                                                                        jclass clazz,
+                                                                        jlong dartObjectAddress,
+                                                                        jstring functionName,
+                                                                        jint argumentCount,
+                                                                        jobjectArray argumentTypes,
+                                                                        jobjectArray argumentsArray,
+                                                                        jstring returnTypeStr) {
+  Dart_Port port = getCallbackDartPort(dartObjectAddress);
+  if (port == 0) {
+    DNError("not register this dart port!");
+    return nullptr;
+  }
+
+  char *funName = functionName == nullptr ? nullptr
+                                          : (char *) env->GetStringUTFChars(
+          functionName,
+          nullptr);
+  char **dataTypes = new char *[argumentCount + 1];
+  void **arguments = new void *[argumentCount + 1];
+
+  /// store argument to pointer
+  for (int i = 0; i < argumentCount; ++i) {
+    JavaLocalRef<jstring>
+        argTypeString((jstring) env->GetObjectArrayElement(argumentTypes, i), env);
+    JavaLocalRef<jobject> argument(env->GetObjectArrayElement(argumentsArray, i), env);
+    dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString.Object(), 0);
+    if (strcmp(dataTypes[i], "java.lang.String") == 0) {
+      /// argument will delete in JavaStringToDartString
+      arguments[i] = JavaStringToDartString(env, (jstring) argument.Object());
+    } else {
+      jobject gObj = env->NewGlobalRef(argument.Object());
+      arguments[i] = gObj;
+    }
+  }
+
+  /// when return void, jstring which from native is null.
+  char *returnType = returnTypeStr == nullptr ? nullptr
+                                              : (char *) env->GetStringUTFChars(
+          returnTypeStr,
+          nullptr);
+  /// the last pointer is return type
+  dataTypes[argumentCount] = returnType;
+
+  NativeMethodCallback
+      methodCallback = getCallbackMethod(dartObjectAddress, funName);
+  void *target = (void *) dartObjectAddress;
+  jobject callbackResult = nullptr;
+
+  if (IsCurrentThread(dartObjectAddress, std::this_thread::get_id())) {
+    DNDebug("callback with same thread");
+    if (methodCallback != nullptr && target != nullptr) {
+      methodCallback(target, funName, arguments, dataTypes, argumentCount);
+    } else {
+      arguments[argumentCount] = nullptr;
+    }
+  } else {
+    DNDebug("callback with different thread");
+    sem_t sem;
+    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+    const WorkFunction work =
+        [target, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess, methodCallback]() {
+          if (methodCallback != nullptr && target != nullptr) {
+            methodCallback(target, funName, arguments, dataTypes, argumentCount);
+          } else {
+            arguments[argumentCount] = nullptr;
+          }
+          if (isSemInitSuccess) {
+            sem_post(&sem);
+          }
+        };
+
+    const WorkFunction *work_ptr = new WorkFunction(work);
+    /// check run result
+    bool notifyResult = Notify2Dart(port, work_ptr);
+    if (notifyResult) {
+      if (isSemInitSuccess) {
+        sem_wait(&sem);
+        sem_destroy(&sem);
+      }
+    }
+  }
+
+  if (returnType == nullptr || strcmp(returnType, "void") == 0) {
+    DNDebug("Native callback to Dart return type is void");
+  } else if (strcmp(returnType, "java.lang.String") == 0) {
+    callbackResult =
+        DartStringToJavaString(env, (char *) arguments[argumentCount]);
+  } else {
+    callbackResult = (jobject) arguments[argumentCount];
+  }
+
+  if (returnTypeStr != nullptr) {
+    env->ReleaseStringUTFChars(returnTypeStr, returnType);
+  }
+  if (functionName != nullptr) {
+    env->ReleaseStringUTFChars(functionName, funName);
+  }
+  delete[] arguments;
+  delete[] dataTypes;
+
+  return callbackResult;
 }
 }

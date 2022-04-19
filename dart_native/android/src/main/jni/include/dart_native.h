@@ -10,6 +10,17 @@
 #define DN_EXTERN extern __attribute__((visibility("default")))
 #endif
 
+/** init dart extension */
+DN_EXTERN intptr_t InitDartApiDL(void *data);
+
+/** bind lifecycle */
+DN_EXTERN void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr);
+
+/** invoke native */
+
+/// Get java object class name.
+/// @param objectPtr java object pointer
+/// @return utf16 data of class name
 DN_EXTERN void *GetClassName(void *objectPtr);
 
 DN_EXTERN void *CreateTargetObject(char *targetClassName,
@@ -30,18 +41,16 @@ DN_EXTERN void *InvokeNativeMethod(void *objPtr,
                                    int thread,
                                    bool isInterface);
 
-DN_EXTERN void *InterfaceHostObjectWithName(char *name);
-
-DN_EXTERN void *InterfaceAllMetaData(char *name);
-
-DN_EXTERN void ExecuteCallback(dartnative::WorkFunction *work_ptr);
-
+/** callback */
 DN_EXTERN void RegisterNativeCallback(void *dartObject,
                                       char *clsName,
                                       char *funName,
                                       void *callback,
                                       Dart_Port dartPort);
 
-DN_EXTERN intptr_t InitDartApiDL(void *data);
+DN_EXTERN void ExecuteCallback(dartnative::WorkFunction *work_ptr);
 
-DN_EXTERN void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr);
+/** interface */
+DN_EXTERN void *InterfaceHostObjectWithName(char *name);
+
+DN_EXTERN void *InterfaceAllMetaData(char *name);

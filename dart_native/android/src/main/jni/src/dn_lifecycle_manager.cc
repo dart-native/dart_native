@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include "dn_lifecycle_manager.h"
 #include "dn_log.h"
-#include "dn_jni_helper.h"
+#include "dn_jni_utils.h"
 
 namespace dartnative {
 
