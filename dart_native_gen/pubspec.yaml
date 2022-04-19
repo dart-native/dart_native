@@ -1,6 +1,6 @@
 name: dart_native_gen
 description: Automatic type conversion solution for dart_native based on source_gen through annotation.
-version: 0.3.0
+version: 0.3.1
 homepage: https://github.com/dart-native/dart_native/
 
 environment:
@@ -11,7 +11,8 @@ dependencies:
     sdk: flutter
   source_gen: ^1.0.2
   build: ^2.0.2
-  analyzer: ^1.7.1
+  analyzer: '>=1.7.1 <4.0.0'
+  json_serializable: 6.1.5
 
 dev_dependencies:
   flutter_test:
