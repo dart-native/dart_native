@@ -4,7 +4,8 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:ffi/ffi.dart';
 
-jniInvoke(Function function, Pointer<Pointer<Void>> argsPtrPtr,
+// jni invoke dart function
+jniInvokeDart(Function function, Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr, int argCount) {
   List args = [];
   for (var i = 0; i < argCount; i++) {
@@ -23,6 +24,12 @@ jniInvoke(Function function, Pointer<Pointer<Void>> argsPtrPtr,
   }
 
   dynamic result = Function.apply(function, args);
+
+  if (result is Future<Null>) {
+    argsPtrPtr.elementAt(argCount).value = nullptr.cast();
+    return;
+  }
+
   if (result != null) {
     if (result is String) {
       argsPtrPtr.elementAt(argCount).value = toUtf16(result).cast();

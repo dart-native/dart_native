@@ -211,6 +211,10 @@ jobject InvokeDartFunction(bool is_same_thread,
     }
   }
 
+  if(arguments[argumentCount] == nullptr) {
+    return nullptr;
+  }
+
   if (return_type == nullptr || strcmp(return_type, "void") == 0) {
     return nullptr;
   } else if (strcmp(return_type, "java.lang.String") == 0) {

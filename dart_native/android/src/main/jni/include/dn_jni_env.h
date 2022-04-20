@@ -10,4 +10,8 @@ void InitWithJavaVM(JavaVM *vm);
 
 JNIEnv *AttachCurrentThread();
 
+bool HasException(JNIEnv* env);
+
+bool ClearException(JNIEnv* env);
+
 }

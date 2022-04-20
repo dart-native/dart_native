@@ -216,6 +216,7 @@ void InterfaceRegisterDartInterface(char *interface, char *method,
   auto interface_str = std::string(interface);
   auto method_cache = dart_interface_method_cache[interface_str];
   method_cache[std::string(method)] = (NativeMethodCallback) callback;
+  dart_interface_method_cache[interface_str] = method_cache;
   dart_interface_thread_cache[interface_str] = {dartPort, std::this_thread::get_id()};
 }
 

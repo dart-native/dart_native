@@ -39,4 +39,16 @@ JNIEnv *AttachCurrentThread() {
   }
 }
 
+bool HasException(JNIEnv* env) {
+  return env->ExceptionCheck() != JNI_FALSE;
+}
+
+bool ClearException(JNIEnv* env) {
+  if (!HasException(env))
+    return false;
+  env->ExceptionDescribe();
+  env->ExceptionClear();
+  return true;
+}
+
 }

@@ -148,5 +148,5 @@ void _invokeDart(
     argsPtrPtr.elementAt(argCount).value = nullptr.cast();
     return;
   }
-  jniInvoke(function, argsPtrPtr, argTypesPtrPtr, argCount);
+  jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount);
 }
