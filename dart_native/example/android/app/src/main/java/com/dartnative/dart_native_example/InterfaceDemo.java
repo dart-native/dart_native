@@ -2,15 +2,17 @@ package com.dartnative.dart_native_example;
 
 import android.util.Log;
 
+import com.dartnative.dart_native.DartNativeInterface;
 import com.dartnative.dart_native.annotation.InterfaceEntry;
 import com.dartnative.dart_native.annotation.InterfaceMethod;
 
 @InterfaceEntry(name = "MyFirstInterface")
-public class InterfaceDemo {
+public class InterfaceDemo extends DartNativeInterface {
 
     @InterfaceMethod(name = "hello")
     public String hello(String str) {
         Log.d("InterfaceDemo", "str " + str);
+        invokeMethod("totalCost", new Object[]{10.0, 10});
         return "hello " + str;
     }
 

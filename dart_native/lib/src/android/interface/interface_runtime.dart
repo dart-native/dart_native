@@ -2,9 +2,14 @@ import 'dart:ffi';
 
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
+import 'package:dart_native/src/android/runtime/call_back.dart';
+import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native/src/common/interface_runtime.dart';
 import 'package:ffi/ffi.dart';
+
+/// The mappings of interface method handler
+Map<String, Map<String, Function?>> _methodHandlerCache = {};
 
 class InterfaceRuntimeJava extends InterfaceRuntime {
   @override
@@ -58,7 +63,19 @@ class InterfaceRuntimeJava extends InterfaceRuntime {
   @override
   void setMethodCallHandler(
       String interfaceName, String method, Function? function) {
-    // TODO: implement setMethodCallHandler
+    Map<String, Function?>? methodsMap = _methodHandlerCache[interfaceName];
+    if (methodsMap == null) {
+      methodsMap = {method: function};
+    } else {
+      methodsMap[method] = function;
+    }
+    _methodHandlerCache[interfaceName] = methodsMap;
+    final namePtr = interfaceName.toNativeUtf8();
+    final methodPtr = method.toNativeUtf8();
+    _registerDartInterface(
+        namePtr, methodPtr, _interfaceInvokeDart, nativePort);
+    calloc.free(namePtr);
+    calloc.free(methodPtr);
   }
 }
 
@@ -72,6 +89,18 @@ final Pointer<Void> Function(Pointer<Utf8>) _interfaceAllMetaData = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function(Pointer<Utf8>)>>(
         'InterfaceAllMetaData')
     .asFunction();
+
+final void Function(Pointer<Utf8>, Pointer<Utf8>,
+        Pointer<NativeFunction<MethodNativeCallback>>, int)
+    _registerDartInterface = nativeDylib
+        .lookup<
+            NativeFunction<
+                Void Function(
+                    Pointer<Utf8>,
+                    Pointer<Utf8>,
+                    Pointer<NativeFunction<MethodNativeCallback>>,
+                    Int64)>>('InterfaceRegisterDartInterface')
+        .asFunction();
 
 Map<String, String> _mapForInterfaceMetaData(String interfaceName) {
   final namePtr = interfaceName.toNativeUtf8();
@@ -100,4 +129,24 @@ Map<String, String> _mapForInterfaceMetaData(String interfaceName) {
   }
 
   return signatureMap;
+}
+
+Pointer<NativeFunction<MethodNativeCallback>> _interfaceInvokeDart =
+    Pointer.fromFunction(_invokeDart);
+
+void _invokeDart(
+    Pointer<Void> targetPtr,
+    Pointer<Utf8> funNamePtr,
+    Pointer<Pointer<Void>> argsPtrPtr,
+    Pointer<Pointer<Utf8>> argTypesPtrPtr,
+    int argCount) {
+  String interfaceName = targetPtr.cast<Utf8>().toDartString();
+  String functionName = funNamePtr.cast<Utf8>().toDartString();
+  Map<String, Function?>? method = _methodHandlerCache[interfaceName];
+  Function? function = method?[functionName];
+  if (function == null) {
+    argsPtrPtr.elementAt(argCount).value = nullptr.cast();
+    return;
+  }
+  jniInvoke(function, argsPtrPtr, argTypesPtrPtr, argCount);
 }

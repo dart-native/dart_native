@@ -1,7 +1,24 @@
 import 'dart:ffi';
-import 'dart:isolate';
 
-import 'library.dart';
+import 'package:dart_native/src/android/common/library.dart';
+import 'package:dart_native/src/android/runtime/call_back.dart';
+import 'package:dart_native/src/android/runtime/functions.dart';
+import 'package:dart_native/src/android/runtime/jobject.dart';
+import 'package:ffi/ffi.dart';
+
+void registerCallback(dynamic target, Function function, String functionName) {
+  if (target is! JObject) {
+    return;
+  }
+  Pointer<Void> targetPtr = target.pointer.cast<Void>();
+  Pointer<Utf8> targetName = target.className!.toNativeUtf8();
+  Pointer<Utf8> funNamePtr = functionName.toNativeUtf8();
+  CallBackManager.instance.registerCallBack(targetPtr, functionName, function);
+  registerNativeCallback!(
+      targetPtr, targetName, funNamePtr, _callbackPtr, nativePort);
+  calloc.free(targetName);
+  calloc.free(funNamePtr);
+}
 
 class CallBackManager {
   final Map<Pointer<Void>, Map<String, Function>> _callbackManager = {};
@@ -32,15 +49,21 @@ class CallBackManager {
   }
 }
 
-final interactiveCppRequests = ReceivePort()..listen(requestExecuteCallback);
-final int nativePort = interactiveCppRequests.sendPort.nativePort;
-final executeCallback = nativeDylib.lookupFunction<Void Function(Pointer<Work>),
-    void Function(Pointer<Work>)>('ExecuteCallback');
+Pointer<NativeFunction<MethodNativeCallback>> _callbackPtr =
+    Pointer.fromFunction(_syncCallback);
 
-class Work extends Opaque {}
-
-void requestExecuteCallback(dynamic message) {
-  final int workAddress = message;
-  final work = Pointer<Work>.fromAddress(workAddress);
-  executeCallback(work);
+void _syncCallback(
+    Pointer<Void> targetPtr,
+    Pointer<Utf8> funNamePtr,
+    Pointer<Pointer<Void>> argsPtrPtr,
+    Pointer<Pointer<Utf8>> argTypesPtrPtr,
+    int argCount) {
+  String functionName = funNamePtr.cast<Utf8>().toDartString();
+  Function? function = CallBackManager.instance
+      .getCallbackFunctionOnTarget(targetPtr, functionName);
+  if (function == null) {
+    argsPtrPtr.elementAt(argCount).value = nullptr.cast();
+    return;
+  }
+  jniInvoke(function, argsPtrPtr, argTypesPtrPtr, argCount);
 }

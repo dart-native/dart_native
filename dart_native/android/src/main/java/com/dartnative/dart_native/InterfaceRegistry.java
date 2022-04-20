@@ -29,20 +29,10 @@ public class InterfaceRegistry {
 
     public void registerInterface(@NonNull Object module) {
         InterfaceEntry interfaceEntry = module.getClass().getAnnotation(InterfaceEntry.class);
-        if (interfaceEntry == null) {
+        if (interfaceEntry == null || interfaceEntry.name().isEmpty()) {
             return;
         }
         synchronized (registryLock) {
-            if (interfaceEntry.names().length > 0) {
-                for (String name : interfaceEntry.names()) {
-                    mInterfaceMap.put(name, module);
-                }
-                return;
-            }
-
-            if (interfaceEntry.name().isEmpty()) {
-                return;
-            }
             mInterfaceMap.put(interfaceEntry.name(), module);
         }
     }

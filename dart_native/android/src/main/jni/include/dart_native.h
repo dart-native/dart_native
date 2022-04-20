@@ -54,3 +54,6 @@ DN_EXTERN void ExecuteCallback(dartnative::WorkFunction *work_ptr);
 DN_EXTERN void *InterfaceHostObjectWithName(char *name);
 
 DN_EXTERN void *InterfaceAllMetaData(char *name);
+
+DN_EXTERN void InterfaceRegisterDartInterface(char *interface, char *method,
+                                              void *callback, Dart_Port dartPort);

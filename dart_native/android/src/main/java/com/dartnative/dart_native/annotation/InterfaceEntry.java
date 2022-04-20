@@ -9,7 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(TYPE)
 public @interface InterfaceEntry {
-    String name();
-
-    String [] names() default {};
+    String name() default "";
 }

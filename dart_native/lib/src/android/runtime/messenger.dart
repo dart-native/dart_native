@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ffi';
 
-import 'package:dart_native/src/android/common/callback_manager.dart';
+import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/dart_java.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';

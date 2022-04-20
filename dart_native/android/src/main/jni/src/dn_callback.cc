@@ -144,23 +144,54 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
   NativeMethodCallback
       methodCallback = getCallbackMethod(dartObjectAddress, funName);
   void *target = (void *) dartObjectAddress;
-  jobject callbackResult = nullptr;
+  jobject callbackResult =
+      InvokeDartFunction(IsCurrentThread(dartObjectAddress, std::this_thread::get_id()),
+                         methodCallback,
+                         target,
+                         funName,
+                         arguments,
+                         dataTypes,
+                         argumentCount,
+                         returnType,
+                         port,
+                         env);
 
-  if (IsCurrentThread(dartObjectAddress, std::this_thread::get_id())) {
-    DNDebug("callback with same thread");
-    if (methodCallback != nullptr && target != nullptr) {
-      methodCallback(target, funName, arguments, dataTypes, argumentCount);
+  if (returnTypeStr != nullptr) {
+    env->ReleaseStringUTFChars(returnTypeStr, returnType);
+  }
+  if (functionName != nullptr) {
+    env->ReleaseStringUTFChars(functionName, funName);
+  }
+  delete[] arguments;
+  delete[] dataTypes;
+
+  return callbackResult;
+}
+
+jobject InvokeDartFunction(bool is_same_thread,
+                           NativeMethodCallback method_callback,
+                           void *target,
+                           char *funName,
+                           void **arguments,
+                           char **dataTypes,
+                           int argumentCount,
+                           char *return_type,
+                           Dart_Port port,
+                           JNIEnv *env) {
+  jobject callbackResult = nullptr;
+  if (is_same_thread) {
+    if (method_callback != nullptr && target != nullptr) {
+      method_callback(target, funName, arguments, dataTypes, argumentCount);
     } else {
       arguments[argumentCount] = nullptr;
     }
   } else {
-    DNDebug("callback with different thread");
     sem_t sem;
     bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
     const WorkFunction work =
-        [target, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess, methodCallback]() {
-          if (methodCallback != nullptr && target != nullptr) {
-            methodCallback(target, funName, arguments, dataTypes, argumentCount);
+        [target, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess, method_callback]() {
+          if (method_callback != nullptr && target != nullptr) {
+            method_callback(target, funName, arguments, dataTypes, argumentCount);
           } else {
             arguments[argumentCount] = nullptr;
           }
@@ -180,24 +211,14 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     }
   }
 
-  if (returnType == nullptr || strcmp(returnType, "void") == 0) {
-    DNDebug("Native callback to Dart return type is void");
-  } else if (strcmp(returnType, "java.lang.String") == 0) {
+  if (return_type == nullptr || strcmp(return_type, "void") == 0) {
+    return nullptr;
+  } else if (strcmp(return_type, "java.lang.String") == 0) {
     callbackResult =
         DartStringToJavaString(env, (char *) arguments[argumentCount]);
   } else {
     callbackResult = (jobject) arguments[argumentCount];
   }
-
-  if (returnTypeStr != nullptr) {
-    env->ReleaseStringUTFChars(returnTypeStr, returnType);
-  }
-  if (functionName != nullptr) {
-    env->ReleaseStringUTFChars(functionName, funName);
-  }
-  delete[] arguments;
-  delete[] dataTypes;
-
   return callbackResult;
 }
 }
