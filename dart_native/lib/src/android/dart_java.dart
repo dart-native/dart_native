@@ -20,6 +20,6 @@ export 'foundation/wrapperclass/boxing_unboxing.dart';
 export 'foundation/native_type.dart';
 export 'common/callback_manager.dart';
 
-void dartNativeInitCustomSoPath({String? soPath}) async {
-  initSoPath(soPath);
+Future<void> dartNativeInitCustomSoPath({String? soPath}) async {
+  await initSoPath(soPath);
 }

@@ -31,7 +31,7 @@ void requestExecuteCallback(dynamic message) {
   executeCallback(work);
 }
 
-void initSoPath(String? soPath) async {
+Future<void> initSoPath(String? soPath) async {
   if (soPath != null && soPath.isNotEmpty) {
     _libPath = soPath;
     return;

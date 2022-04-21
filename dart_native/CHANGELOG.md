@@ -1,3 +1,15 @@
+## 0.6.6
+
+* [Fix] Dependency verison compatible.
+
+## 0.6.5
+
+* [Fix] Fix utf16 issue on iOS.
+
+## 0.6.4
+
+* [Fix] Failed to load dynamic library on Android.
+
 ## 0.6.3
 
 * [Fix] Split podspec files for iOS and macOS.
