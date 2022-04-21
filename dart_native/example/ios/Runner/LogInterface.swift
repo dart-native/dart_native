@@ -32,7 +32,7 @@ class LogInterface: NSObject, SwiftInterfaceEntry {
         ]
     }
     
-    // Step 5: Implement Swift method for interface method "combineString"
+    // Step 5: Implement Swift method for interface method "log"
     func log(_ level: UInt, message: String) {
         if let level = DDLogLevel(rawValue: level) {
             switch level {
