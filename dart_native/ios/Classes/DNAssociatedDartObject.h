@@ -18,9 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithHost:(NSObject *)host
                   storageKey:(const void *)storageKey;
-+ (instancetype)attachHost:(NSObject *)host
-                  dartPort:(Dart_Port)dartPort
-                storageKey:(const void *)storageKey;
++ (nullable instancetype)attachHost:(NSObject *)host
+                           dartPort:(Dart_Port)dartPort
+                         storageKey:(const void *)storageKey;
 + (instancetype)objectForHost:(NSObject *)host
                    storageKey:(const void *)storageKey;
 

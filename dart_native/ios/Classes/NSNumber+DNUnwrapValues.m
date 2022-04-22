@@ -119,7 +119,7 @@ static NSDictionary<NSNumber *, DNBufferGetAction> *gArgumentTypeGetStrategy;
         return action(buffer);
     } else {
         DN_ERROR(error, DNUnwrapValueError, @"Invalid Number: Type '%s' is not supported.", encoding)
-        return nil;
+        return @0;
     }
 }
 
