@@ -46,7 +46,7 @@ static void RunFinalizer(void *isolate_callback_data,
 
 void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr) {
   if (Dart_IsError_DL(h)) {
-    DNError("Dart_IsError_DL");
+    DNError("PassObjectToCUseDynamicLinking error!");
     return;
   }
   RetainJObject(static_cast<jobject>(objPtr));
@@ -58,14 +58,32 @@ void *GetClassName(void *objectPtr) {
   if (objectPtr == nullptr) {
     return nullptr;
   }
+
   auto env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("GetClassName error, no JNIEnv provided!");
+    return nullptr;
+  }
+
   auto cls = FindClass("java/lang/Class", env);
+  if (cls.IsNull()) {
+    return nullptr;
+  }
+
   jmethodID getName = env->GetMethodID(cls.Object(), "getName", "()Ljava/lang/String;");
+  if (getName == nullptr) {
+    DNError("GetClassName error, could not locate getName method!");
+    return nullptr;
+  }
+
   auto object = static_cast<jobject>(objectPtr);
   JavaLocalRef<jclass> objCls(env->GetObjectClass(object), env);
   JavaLocalRef<jstring> jstr((jstring) env->CallObjectMethod(objCls.Object(), getName), env);
+  if (ClearException(env)) {
+    DNError("GetClassName error, invoke get class name error!");
+    return nullptr;
+  }
   uint16_t *clsName = JavaStringToDartString(env, jstr.Object());
-
   return clsName;
 }
 
@@ -75,8 +93,22 @@ void *CreateTargetObject(char *targetClassName,
                          int argumentCount,
                          uint32_t stringTypeBitmask) {
   JNIEnv *env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("CreateTargetObject error, no JNIEnv provided!");
+    return nullptr;
+  }
+
   auto cls = FindClass(targetClassName, env);
+  if (cls.IsNull()) {
+    return nullptr;
+  }
+
   auto newObj = NewObject(cls.Object(), arguments, argumentTypes, argumentCount, stringTypeBitmask);
+  if (newObj.IsNull()) {
+    DNError("CreateTargetObject error, new object get null!");
+    return nullptr;
+  }
+
   jobject gObj = env->NewGlobalRef(newObj.Object());
   return gObj;
 }
@@ -96,8 +128,7 @@ void *InvokeNativeMethod(void *objPtr,
   /// interface skip object check
   if (!isInterface && !ObjectInReference(object)) {
     /// maybe use cache pointer but jobject is release
-    DNError(
-        "InvokeNativeMethod not find class, check pointer and jobject lifecycle is same");
+    DNError("InvokeNativeMethod not find class, check pointer and jobject lifecycle is same");
     return nullptr;
   }
   auto type = TaskThread(thread);
@@ -110,7 +141,7 @@ void *InvokeNativeMethod(void *objPtr,
   }
 
   if (g_task_runner == nullptr) {
-    DNError("InvokeNativeMethod error");
+    DNError("InvokeNativeMethod error, g_task_runner is not initialized!");
     return nullptr;
   }
 
@@ -154,6 +185,7 @@ void ExecuteCallback(WorkFunction *work_ptr) {
 void *InterfaceHostObjectWithName(char *name) {
   auto env = AttachCurrentThread();
   if (env == nullptr) {
+    DNError("InterfaceHostObjectWithName error, no JNIEnv provided!");
     return nullptr;
   }
 
@@ -163,6 +195,7 @@ void *InterfaceHostObjectWithName(char *name) {
 void *InterfaceAllMetaData(char *name) {
   auto env = AttachCurrentThread();
   if (env == nullptr) {
+    DNError("InterfaceAllMetaData error, no JNIEnv provided!");
     return nullptr;
   }
 

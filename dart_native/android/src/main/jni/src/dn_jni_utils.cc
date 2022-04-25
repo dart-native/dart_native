@@ -13,41 +13,46 @@ void InitClazz(JNIEnv * env) {
   /// cache classLoader
   JavaLocalRef<jclass> plugin(env->FindClass("com/dartnative/dart_native/DartNativePlugin"), env);
   if (plugin.IsNull()) {
-    DNError("Could not locate DartNativePlugin class");
+    DNError("Could not locate DartNativePlugin class!");
     return;
   }
 
   JavaLocalRef<jclass> pluginClass(env->GetObjectClass(plugin.Object()), env);
   JavaLocalRef<jclass> classLoaderClass(env->FindClass("java/lang/ClassLoader"), env);
   if (classLoaderClass.IsNull()) {
-    DNError("Could not locate ClassLoader class");
+    DNError("Could not locate ClassLoader class!");
     return;
   }
 
   auto getClassLoaderMethod = env->GetMethodID(pluginClass.Object(), "getClassLoader",
                                                "()Ljava/lang/ClassLoader;");
   if (getClassLoaderMethod == nullptr) {
-    DNError("Could not locate getClassLoader method");
+    DNError("Could not locate getClassLoader method!");
     return;
   }
 
   JavaLocalRef<jobject>
       classLoader(env->CallObjectMethod(plugin.Object(), getClassLoaderMethod), env);
-  g_class_loader =
-      new JavaGlobalRef<jobject>(env->NewGlobalRef(classLoader.Object()), env);
-  if (g_class_loader->IsNull()) {
-    DNError("Could not init g_class_loader");
+  if (classLoader.IsNull()) {
+    DNError("Could not init classLoader!");
     return;
   }
+
+  g_class_loader =
+      new JavaGlobalRef<jobject>(env->NewGlobalRef(classLoader.Object()), env);
   g_find_class_method = env->GetMethodID(classLoaderClass.Object(), "findClass",
                                          "(Ljava/lang/String;)Ljava/lang/Class;");
   if (g_find_class_method == nullptr) {
-    DNError("Could not locate findClass method");
+    DNError("Could not locate findClass method!");
     return;
   }
 
   /// cache string class
   JavaLocalRef<jclass> strCls(env->FindClass("java/lang/String"), env);
+  if (strCls.IsNull()) {
+    DNError("Could not locate java/lang/String class!");
+    return;
+  }
   g_str_clazz =
       new JavaGlobalRef<jclass>(strCls.Object(), env);
 }

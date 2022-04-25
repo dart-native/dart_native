@@ -2,12 +2,12 @@
 // Created by hui on 2022/4/25.
 //
 #include <unordered_map>
-
 #include "dn_jni_utils.h"
 #include "dn_callback.h"
 #include "dn_interface.h"
 #include "dn_jni_env.h"
 #include "dn_native_invoker.h"
+#include "dn_log.h"
 
 namespace dartnative {
 
@@ -22,11 +22,19 @@ static std::unordered_map<std::string, std::unordered_map<std::string, NativeMet
 
 void Send2JavaErrorMessage(const std::string &error, jint response_id, JNIEnv *env) {
   JavaLocalRef<jstring> error_message(env->NewStringUTF(error.c_str()), env);
+  if (!g_interface_registry || g_interface_registry->IsNull() || !g_handle_response) {
+    DNError(
+        "Send2JavaErrorMessage error interface registry object or g_handle_response method id is null!");
+    return;
+  }
   env->CallVoidMethod(g_interface_registry->Object(),
                       g_handle_response,
                       response_id,
                       nullptr,
                       error_message.Object());
+  if (ClearException(env)) {
+    DNError("Send2JavaErrorMessage error, call handleInterfaceResponse error!");
+  }
 }
 
 static void InterfaceNativeInvokeDart(JNIEnv *env,
@@ -83,7 +91,18 @@ static void InterfaceNativeInvokeDart(JNIEnv *env,
                          thread_info.dart_port,
                          env);
 
-  env->CallVoidMethod(g_interface_registry->Object(), g_handle_response, response_id, callbackResult, nullptr);
+  if (g_interface_registry && !g_interface_registry->IsNull() && g_handle_response) {
+    env->CallVoidMethod(g_interface_registry->Object(),
+                        g_handle_response,
+                        response_id,
+                        callbackResult,
+                        nullptr);
+    if (ClearException(env)) {
+      DNError("Call handleInterfaceResponse error!");
+    }
+  } else {
+    DNError("Call handleInterfaceResponse error interface registry object or method id is null!");
+  }
 
   if (method_char != nullptr) {
     env->ReleaseStringUTFChars(method, method_char);
@@ -91,14 +110,18 @@ static void InterfaceNativeInvokeDart(JNIEnv *env,
   if (interface_char != nullptr) {
     env->ReleaseStringUTFChars(interface_name, interface_char);
   }
+
   delete[] argument_array;
   delete[] type_array;
-
 }
 
 void InitInterface(JNIEnv *env) {
   auto registryClz =
       FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
+  if (registryClz.IsNull()) {
+    DNError("InitInterface error, registryClz is null!");
+    return;
+  }
 
   static const JNINativeMethod interface_jni_methods[] = {
       {
@@ -108,31 +131,59 @@ void InitInterface(JNIEnv *env) {
       }
   };
   if (env->RegisterNatives(registryClz.Object(), interface_jni_methods, 1) < 0) {
+    DNError("InitInterface error, registerNatives error!");
     return;
   }
-  auto instanceID =
+
+  auto instance_id =
       env->GetStaticMethodID(registryClz.Object(),
                              "getInstance",
                              "()Lcom/dartnative/dart_native/InterfaceRegistry;");
+  if (instance_id == nullptr) {
+    DNError("Could not locate InterfaceRegistry#getInstance method!");
+    return;
+  }
+
   JavaGlobalRef<jobject>
-      registryObj(env->CallStaticObjectMethod(registryClz.Object(), instanceID), env);
+      registryObj(env->CallStaticObjectMethod(registryClz.Object(), instance_id), env);
+  if (registryObj.IsNull()) {
+    DNError("Could not init registryObj!");
+    return;
+  }
+
   g_interface_registry = new JavaGlobalRef<jobject>(registryObj.Object(), env);
+
   g_get_interface = env->GetMethodID(registryClz.Object(), "getInterface",
                                      "(Ljava/lang/String;)Ljava/lang/Object;");
+  if (g_get_interface == nullptr) {
+    DNError("Could not locate InterfaceRegistry#getInterface method!");
+    return;
+  }
+
   g_get_signature = env->GetMethodID(registryClz.Object(), "getMethodsSignature",
                                      "(Ljava/lang/String;)Ljava/lang/String;");
+  if (g_get_signature == nullptr) {
+    DNError("Could not locate InterfaceRegistry#getMethodsSignature method!");
+    return;
+  }
+
   g_handle_response = env->GetMethodID(registryClz.Object(), "handleInterfaceResponse",
                                        "(ILjava/lang/Object;Ljava/lang/String;)V");
-  return;
+  if (g_handle_response == nullptr) {
+    DNError("Could not locate InterfaceRegistry#handleInterfaceResponse method!");
+    return;
+  }
 }
 
 void *InterfaceWithName(char *name, JNIEnv *env) {
-  if (g_interface_registry == nullptr || g_get_interface == nullptr) {
+  if (!g_interface_registry || g_interface_registry->IsNull() || !g_get_interface) {
+    DNError("InterfaceWithName error, g_interface_registry or g_get_interface is null!");
     return nullptr;
   }
 
   JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
   if (interfaceName.IsNull()) {
+    DNError("InterfaceWithName error, interfaceName is null!");
     return nullptr;
   }
 
@@ -140,22 +191,32 @@ void *InterfaceWithName(char *name, JNIEnv *env) {
       env->CallObjectMethod(g_interface_registry->Object(),
                             g_get_interface,
                             interfaceName.Object());
+  if (ClearException(env)) {
+    DNError("InterfaceWithName error, get native interface object error!");
+    return nullptr;
+  }
   return interface;
 }
 
 void *InterfaceMetaData(char *name, JNIEnv *env) {
-  if (g_interface_registry == nullptr || g_get_signature == nullptr) {
+  if (!g_interface_registry || g_interface_registry->IsNull() || !g_get_interface) {
+    DNError("InterfaceMetaData error, g_interface_registry or g_get_interface is null!");
     return nullptr;
   }
 
   JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
   if (interfaceName.IsNull()) {
+    DNError("InterfaceMetaData error, interfaceName is null!");
     return nullptr;
   }
 
   JavaLocalRef<jstring> signatures((jstring) env->CallObjectMethod(g_interface_registry->Object(),
                                                                    g_get_signature,
                                                                    interfaceName.Object()), env);
+  if (ClearException(env)) {
+    DNError("InterfaceMetaData error, get interface signature error!");
+    return nullptr;
+  }
   return JavaStringToDartString(env, signatures.Object());
 }
 

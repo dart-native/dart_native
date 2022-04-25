@@ -15,15 +15,18 @@ JavaLocalRef<jclass> FindClass(const char *name, JNIEnv *env) {
     env = AttachCurrentThread();
   }
   JavaLocalRef<jclass> nativeClass(env->FindClass(name), env);
-  jthrowable exception = env->ExceptionOccurred();
   /// class loader not found class
-  if (exception) {
-    env->ExceptionClear();
+  if (ClearException(env)) {
     JavaLocalRef<jstring> clsName(env->NewStringUTF(name), env);
     JavaLocalRef<jclass>
         findedClass(static_cast<jclass>(env->CallObjectMethod(GetClassLoaderObj(),
                                                               GetFindClassMethod(),
                                                               clsName.Object())), env);
+    if (ClearException(env)) {
+      DNError("Find class error, can not find %s", name);
+      JavaLocalRef<jclass> nullClz(nullptr, env);
+      return nullClz;
+    }
     return findedClass;
   }
   return nativeClass;
@@ -42,10 +45,23 @@ JavaLocalRef<jobject> NewObject(jclass cls,
   char *constructorSignature =
       GenerateSignature(argumentTypes, argumentCount, const_cast<char *>("V"));
   jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
+  if (constructor == nullptr) {
+    DNError("NewObject error, could not locate init method, signature: %s!", constructorSignature);
+    JavaLocalRef<jobject> nullObj(nullptr, env);
+    return nullObj;
+  }
+
   JavaLocalRef<jobject> newObj(env->NewObjectA(cls, constructor, values), env);
+  if (ClearException(env)) {
+    free(constructorSignature);
+    delete[] values;
+    DNError("NewObject error, call new object error!");
+    JavaLocalRef<jobject> nullObj(nullptr, env);
+    return nullObj;
+  }
 
   free(constructorSignature);
-  delete[]values;
+  delete[] values;
   return newObj;
 }
 
@@ -115,7 +131,22 @@ void *DoInvokeNativeMethod(jobject object,
                            TaskThread thread) {
   void *nativeInvokeResult = nullptr;
   JNIEnv *env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("DoInvokeNativeMethod error, no JNIEnv provided!");
+    free(methodName);
+    free(returnType);
+    free(arguments);
+    return nullptr;
+  }
+
   JavaLocalRef<jclass> cls(env->GetObjectClass(object), env);
+  if (cls.IsNull()) {
+    DNError("DoInvokeNativeMethod error, could not get class!");
+    free(methodName);
+    free(returnType);
+    free(arguments);
+    return nullptr;
+  }
 
   JavaLocalRef<jobject> jObjBucket[argumentCount];
   auto *argValues = ConvertArgs2JValues(arguments,
@@ -127,6 +158,16 @@ void *DoInvokeNativeMethod(jobject object,
   char *methodSignature =
       GenerateSignature(typePointers, argumentCount, returnType);
   jmethodID method = env->GetMethodID(cls.Object(), methodName, methodSignature);
+  if (method == nullptr) {
+    DNError("DoInvokeNativeMethod error, method is null, signature is %s#%s!",
+            methodName, methodSignature);
+    free(methodName);
+    free(returnType);
+    free(arguments);
+    free(methodSignature);
+    delete[] argValues;
+    return nullptr;
+  }
   /// Save return type, dart will use this pointer.
   typePointers[argumentCount] = returnType;
 
@@ -187,6 +228,16 @@ void *DoInvokeNativeMethod(jobject object,
       break;
   }
 
+  if (ClearException(env)) {
+    DNError("DoInvokeNativeMethod error, call native method error!");
+    free(methodName);
+    free(returnType);
+    free(arguments);
+    free(methodSignature);
+    delete[] argValues;
+    return nullptr;
+  }
+
   if (callback != nullptr) {
     if (thread == TaskThread::kFlutterUI) {
       ((InvokeCallback) callback)(nativeInvokeResult,
@@ -222,7 +273,7 @@ void *DoInvokeNativeMethod(jobject object,
   free(returnType);
   free(arguments);
   free(methodSignature);
-  delete[]argValues;
+  delete[] argValues;
   return nativeInvokeResult;
 }
 

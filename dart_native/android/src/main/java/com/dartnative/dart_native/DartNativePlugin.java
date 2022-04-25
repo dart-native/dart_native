@@ -74,7 +74,7 @@ public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
       }
       System.loadLibrary("dart_native");
     } catch (Exception e) {
-      Log.d(TAG, "loadLibrary error " + e.getMessage());
+      Log.e(TAG, "loadLibrary error " + e.getMessage());
     }
   }
 
