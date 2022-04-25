@@ -9,13 +9,7 @@ static jmethodID g_find_class_method = nullptr;
 /// for invoke result compare
 static JavaGlobalRef<jclass> *g_str_clazz = nullptr;
 
-void InitClazz() {
-  auto env = AttachCurrentThread();
-  if (env == nullptr) {
-    DNError("No JNIEnv provided");
-    return;
-  }
-
+void InitClazz(JNIEnv * env) {
   /// cache classLoader
   JavaLocalRef<jclass> plugin(env->FindClass("com/dartnative/dart_native/DartNativePlugin"), env);
   if (plugin.IsNull()) {

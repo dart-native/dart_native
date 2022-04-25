@@ -13,9 +13,6 @@
 
 namespace dartnative {
 
-typedef void(*NativeMethodCallback)(void *targetPtr, char *funNamePtr, void **args,
-                                    char **argTypes, int argCount);
-
 typedef void(*InvokeCallback)(void *result, char *method, char **typePointers, int argumentCount);
 
 

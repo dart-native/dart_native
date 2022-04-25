@@ -3,7 +3,7 @@
 
 namespace dartnative {
 
-void InitClazz();
+void InitClazz(JNIEnv *env);
 
 jobject GetClassLoaderObj();
 

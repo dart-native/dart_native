@@ -4,6 +4,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -49,14 +51,31 @@ public class DartNativePlugin implements FlutterPlugin, MethodCallHandler {
     }
   }
 
+  @Deprecated
   public static void setSoPath(String soPath) {
-    Log.d(TAG, "so path : " + soPath);
-    if (!TextUtils.isEmpty(soPath)) {
-      sSoPath = soPath;
-      System.load(soPath);
-      return;
+    loadLibrary(soPath);
+  }
+
+  public static void loadSo() {
+    loadLibrary(null);
+  }
+
+  public static void loadSoWithCustomPath(String soPath) {
+    loadLibrary(soPath);
+  }
+
+  private static void loadLibrary(@Nullable String soPath) {
+    try {
+      Log.d(TAG, "loadLibrary : " + soPath);
+      if (!TextUtils.isEmpty(soPath)) {
+        sSoPath = soPath;
+        System.load(soPath);
+        return;
+      }
+      System.loadLibrary("dart_native");
+    } catch (Exception e) {
+      Log.d(TAG, "loadLibrary error " + e.getMessage());
     }
-    System.loadLibrary("dart_native");
   }
 
   @Override

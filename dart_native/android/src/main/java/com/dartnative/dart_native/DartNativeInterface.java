@@ -1,17 +1,35 @@
 package com.dartnative.dart_native;
 
+import androidx.annotation.Nullable;
+
 import com.dartnative.dart_native.annotation.InterfaceEntry;
 
 public class DartNativeInterface {
 
-    public Object invokeMethod(String method, Object[] arguments) {
+    public interface DartNativeResult {
+        void onResult(@Nullable Object result);
+
+        void error(@Nullable String errorMessage);
+    }
+
+    public void invokeMethod(String method, Object[] arguments) {
+        invokeMethod(method, arguments, null);
+    }
+
+    public void invokeMethod(String method, Object[] arguments, @Nullable DartNativeResult result) {
         InterfaceEntry interfaceEntry = getClass().getAnnotation(InterfaceEntry.class);
         if (interfaceEntry == null || interfaceEntry.name().isEmpty()) {
-            return null;
+            if (result != null) {
+                result.error("Interface is not register!");
+            }
+            return;
         }
 
         if (method == null || method.isEmpty()) {
-            return null;
+            if (result != null) {
+                result.error("Method name is empty!");
+            }
+            return;
         }
 
         int argumentCount = arguments == null ? 0 : arguments.length;
@@ -20,8 +38,6 @@ public class DartNativeInterface {
             argumentTypes[i] = arguments[i] != null ? arguments[i].getClass().getName() : null;
         }
 
-        return nativeInvokeMethod(interfaceEntry.name(), method, arguments, argumentTypes, argumentCount);
+        InterfaceRegistry.getInstance().sendMessage(interfaceEntry.name(), method, arguments, argumentTypes, argumentCount, result);
     }
-
-    private native Object nativeInvokeMethod(String interfaceName, String method, Object[] arguments, String[] argumentTypes, int argumentCount);
 }

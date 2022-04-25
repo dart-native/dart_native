@@ -12,9 +12,13 @@ import java.util.Map;
 
 public class InterfaceRegistry {
     private volatile static InterfaceRegistry registry;
+
     private final Map<String, Object> mInterfaceMap = new HashMap<>();
     private final HashMap<Class, String> mMethodSigMap = new HashMap<>();
-    private final Object registryLock = new Object();
+
+    @NonNull
+    private final Map<Integer, DartNativeInterface.DartNativeResult> pendingReplies = new HashMap<>();
+    private int nextReplyId = 1;
 
     public static InterfaceRegistry getInstance() {
         if (registry == null) {
@@ -32,17 +36,24 @@ public class InterfaceRegistry {
         if (interfaceEntry == null || interfaceEntry.name().isEmpty()) {
             return;
         }
-        synchronized (registryLock) {
-            mInterfaceMap.put(interfaceEntry.name(), module);
+        mInterfaceMap.put(interfaceEntry.name(), module);
+    }
+
+    public void sendMessage(String interfaceName, String method, Object[] arguments, String[] argumentTypes,
+                            int argumentCount, @Nullable DartNativeInterface.DartNativeResult result) {
+        int replyId = nextReplyId++;
+        if (result != null) {
+            pendingReplies.put(replyId, result);
+        } else {
+            replyId = -1;
         }
+        nativeInvokeMethod(interfaceName, method, arguments, argumentTypes, argumentCount, replyId);
     }
 
     @Nullable
     public Object getInterface(String interfaceName) {
         Object dnInterface;
-        synchronized (registryLock) {
-            dnInterface = mInterfaceMap.get(interfaceName);
-        }
+        dnInterface = mInterfaceMap.get(interfaceName);
         return dnInterface;
     }
 
@@ -81,4 +92,21 @@ public class InterfaceRegistry {
         mMethodSigMap.put(clazz, sigMap.toString());
         return sigMap.toString();
     }
+
+    void handleInterfaceResponse(int replyId, @Nullable Object object, @Nullable String errorMessage) {
+        DartNativeInterface.DartNativeResult result = pendingReplies.remove(replyId);
+        if (result == null) {
+            return;
+        }
+
+        if (errorMessage != null) {
+            result.error(errorMessage);
+            return;
+        }
+
+        result.onResult(object);
+    }
+
+    private native void nativeInvokeMethod(String interfaceName, String method, Object[] arguments, String[] argumentTypes,
+                                           int argumentCount, int replyId);
 }

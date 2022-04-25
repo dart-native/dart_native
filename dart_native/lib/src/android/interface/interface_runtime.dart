@@ -148,5 +148,10 @@ void _invokeDart(
     argsPtrPtr.elementAt(argCount).value = nullptr.cast();
     return;
   }
-  jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount);
+  String typeString = function.runtimeType.toString();
+  List<String> functionSignature = typeString.split(' => ');
+  bool shouldReturnAsync = functionSignature.length == 2 &&
+      functionSignature[1].startsWith('Future');
+  jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount,
+      shouldReturnAsync: shouldReturnAsync);
 }
