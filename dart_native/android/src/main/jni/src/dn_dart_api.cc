@@ -3,7 +3,6 @@
 
 namespace dartnative {
 
-/// notify dart run callback function
 bool Notify2Dart(Dart_Port send_port, const WorkFunction *work) {
   const auto work_addr = reinterpret_cast<intptr_t>(work);
 

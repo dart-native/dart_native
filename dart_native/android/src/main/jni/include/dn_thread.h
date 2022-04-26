@@ -22,6 +22,10 @@ enum TaskThread {
   kSub
 };
 
+void InitTaskRunner();
+
+void ScheduleInvokeTask(TaskThread type, std::function<void()> invoke);
+
 class TaskRunner {
  public:
   TaskRunner();

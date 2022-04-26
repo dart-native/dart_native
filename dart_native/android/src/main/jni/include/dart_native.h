@@ -17,10 +17,6 @@ DN_EXTERN intptr_t InitDartApiDL(void *data);
 DN_EXTERN void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr);
 
 /** invoke native */
-
-/// Get java object class name.
-/// @param objectPtr java object pointer
-/// @return utf16 data of class name
 DN_EXTERN void *GetClassName(void *objectPtr);
 
 DN_EXTERN void *CreateTargetObject(char *targetClassName,

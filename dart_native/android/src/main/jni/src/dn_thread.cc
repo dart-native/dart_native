@@ -8,6 +8,19 @@
 
 namespace dartnative {
 
+static std::unique_ptr<TaskRunner> g_task_runner = nullptr;
+
+void InitTaskRunner() {
+  g_task_runner = std::make_unique<TaskRunner>();
+}
+
+void ScheduleInvokeTask(TaskThread type, std::function<void()> invoke) {
+  if (g_task_runner == nullptr) {
+    return;
+  }
+  g_task_runner->ScheduleInvokeTask(type, invoke);
+}
+
 /// this will be called on main thread
 static int LooperCallback(int fd, int events, void *data) {
   std::function<void()> *invoke = nullptr;

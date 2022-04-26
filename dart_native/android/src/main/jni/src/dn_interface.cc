@@ -37,14 +37,17 @@ void Send2JavaErrorMessage(const std::string &error, jint response_id, JNIEnv *e
   }
 }
 
-static void InterfaceNativeInvokeDart(JNIEnv *env,
-                                      jobject obj,
-                                      jstring interface_name,
-                                      jstring method,
-                                      jobjectArray arguments,
-                                      jobjectArray argument_types,
-                                      jint argument_count,
-                                      jint response_id) {
+static void InvokeDart(jstring interface_name,
+                       jstring method,
+                       jobjectArray arguments,
+                       jobjectArray argument_types,
+                       jint argument_count,
+                       jint response_id) {
+  auto env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("InterfaceNativeInvokeDart error, no JNIEnv provided!");
+    return;
+  }
   const char *interface_char = env->GetStringUTFChars(interface_name, NULL);
   const char *method_char = env->GetStringUTFChars(method, NULL);
   auto method_map = dart_interface_method_cache[std::string(interface_char)];
@@ -80,7 +83,7 @@ static void InterfaceNativeInvokeDart(JNIEnv *env,
   auto thread_info = dart_interface_thread_cache[interface_char];
 
   jobject callbackResult =
-      InvokeDartFunction(thread_info.thread_id == std::this_thread::get_id(),
+      InvokeDartFunction(false,
                          dart_function,
                          (void *) interface_char,
                          (char *) method_char,
@@ -113,6 +116,32 @@ static void InterfaceNativeInvokeDart(JNIEnv *env,
 
   delete[] argument_array;
   delete[] type_array;
+
+  env->DeleteGlobalRef(interface_name);
+  env->DeleteGlobalRef(method);
+  env->DeleteGlobalRef(arguments);
+  env->DeleteGlobalRef(argument_types);
+}
+
+static void InterfaceNativeInvokeDart(JNIEnv *env,
+                                      jobject obj,
+                                      jstring interface_name,
+                                      jstring method,
+                                      jobjectArray arguments,
+                                      jobjectArray argument_types,
+                                      jint argument_count,
+                                      jint response_id) {
+  auto interface_name_global = (jstring) env->NewGlobalRef(interface_name);
+  auto method_global = (jstring) env->NewGlobalRef(method);
+  auto arguments_global = (jobjectArray) env->NewGlobalRef(arguments);
+  auto argument_types_global = (jobjectArray) env->NewGlobalRef(argument_types);
+  // Run in subthread.
+  ScheduleInvokeTask(TaskThread::kSub,
+                     [interface_name_global, method_global, arguments_global, argument_types_global, argument_count, response_id]() {
+                       InvokeDart(interface_name_global, method_global,
+                                  arguments_global, argument_types_global, argument_count,
+                                  response_id);
+                     });
 }
 
 void InitInterface(JNIEnv *env) {
@@ -144,7 +173,7 @@ void InitInterface(JNIEnv *env) {
     return;
   }
 
-  JavaGlobalRef<jobject>
+  JavaLocalRef<jobject>
       registryObj(env->CallStaticObjectMethod(registryClz.Object(), instance_id), env);
   if (registryObj.IsNull()) {
     DNError("Could not init registryObj!");
@@ -220,8 +249,7 @@ void *InterfaceMetaData(char *name, JNIEnv *env) {
   return JavaStringToDartString(env, signatures.Object());
 }
 
-void RegisterDartInterface(char *interface, char *method,
-                           void *callback, Dart_Port dartPort) {
+void RegisterDartInterface(char *interface, char *method, void *callback, Dart_Port dartPort) {
   auto interface_str = std::string(interface);
   auto method_cache = dart_interface_method_cache[interface_str];
   method_cache[std::string(method)] = (NativeMethodCallback) callback;

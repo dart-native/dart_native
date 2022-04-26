@@ -10,15 +10,13 @@
 
 using namespace dartnative;
 
-static std::unique_ptr<TaskRunner> g_task_runner = nullptr;
-
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   /// Init Java VM.
   InitWithJavaVM(pjvm);
 
   auto env = AttachCurrentThread();
   if (env == nullptr) {
-    DNError("No JNIEnv provided!");
+    DNError("JNI_OnLoad error, no JNIEnv provided!");
     return JNI_VERSION_1_6;
   }
 
@@ -26,7 +24,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
   InitClazz(env);
 
   /// Init task runner.
-  g_task_runner = std::make_unique<TaskRunner>();
+  InitTaskRunner();
 
   /// Init interface.
   InitInterface(env);
@@ -140,12 +138,7 @@ void *InvokeNativeMethod(void *objPtr,
     return invokeFunction();
   }
 
-  if (g_task_runner == nullptr) {
-    DNError("InvokeNativeMethod error, g_task_runner is not initialized!");
-    return nullptr;
-  }
-
-  g_task_runner->ScheduleInvokeTask(type, invokeFunction);
+  ScheduleInvokeTask(type, invokeFunction);
   return nullptr;
 }
 

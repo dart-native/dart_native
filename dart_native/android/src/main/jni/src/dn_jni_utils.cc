@@ -39,7 +39,7 @@ void InitClazz(JNIEnv * env) {
   }
 
   g_class_loader =
-      new JavaGlobalRef<jobject>(env->NewGlobalRef(classLoader.Object()), env);
+      new JavaGlobalRef<jobject>(classLoader.Object(), env);
   g_find_class_method = env->GetMethodID(classLoaderClass.Object(), "findClass",
                                          "(Ljava/lang/String;)Ljava/lang/Class;");
   if (g_find_class_method == nullptr) {

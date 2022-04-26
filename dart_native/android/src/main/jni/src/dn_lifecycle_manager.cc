@@ -37,7 +37,7 @@ void ReleaseJObject(jobject globalObject) {
   std::lock_guard<std::mutex> lockGuard(global_reference_mtx);
   auto it = object_global_reference.find(globalObject);
   if (it == object_global_reference.end()) {
-    DNError("ReleaseJObject error not contain this object!!!");
+    DNError("ReleaseJObject error not contain this object!");
     return;
   }
   /// release reference--

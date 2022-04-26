@@ -47,6 +47,8 @@ JavaLocalRef<jobject> NewObject(jclass cls,
   jmethodID constructor = env->GetMethodID(cls, "<init>", constructorSignature);
   if (constructor == nullptr) {
     DNError("NewObject error, could not locate init method, signature: %s!", constructorSignature);
+    free(constructorSignature);
+    delete[] values;
     JavaLocalRef<jobject> nullObj(nullptr, env);
     return nullObj;
   }
