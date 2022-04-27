@@ -3,6 +3,7 @@
 //
 #include <string>
 #include <semaphore.h>
+#include "dn_native_invoker.h"
 #include "jni_object_ref.h"
 #include "dn_jni_utils.h"
 #include "dn_dart_api.h"
@@ -111,118 +112,47 @@ Java_com_dartnative_dart_1native_CallbackInvocationHandler_hookCallback(JNIEnv *
     return nullptr;
   }
 
-  char *funName = functionName == nullptr ? nullptr
-                                          : (char *) env->GetStringUTFChars(
-          functionName,
-          nullptr);
-  char **dataTypes = new char *[argumentCount + 1];
-  void **arguments = new void *[argumentCount + 1];
-
-  /// store argument to pointer
-  for (int i = 0; i < argumentCount; ++i) {
-    JavaLocalRef<jstring>
-        argTypeString((jstring) env->GetObjectArrayElement(argumentTypes, i), env);
-    JavaLocalRef<jobject> argument(env->GetObjectArrayElement(argumentsArray, i), env);
-    dataTypes[i] = (char *) env->GetStringUTFChars(argTypeString.Object(), 0);
-    if (strcmp(dataTypes[i], "java.lang.String") == 0) {
-      /// argument will delete in JavaStringToDartString
-      arguments[i] = JavaStringToDartString(env, (jstring) argument.Object());
-    } else {
-      jobject gObj = env->NewGlobalRef(argument.Object());
-      arguments[i] = gObj;
-    }
-  }
-
-  /// when return void, jstring which from native is null.
-  char *returnType = returnTypeStr == nullptr ? nullptr
-                                              : (char *) env->GetStringUTFChars(
-          returnTypeStr,
-          nullptr);
-  /// the last pointer is return type
-  dataTypes[argumentCount] = returnType;
+  char *funName =
+      functionName == nullptr ? nullptr : (char *) env->GetStringUTFChars(functionName, nullptr);
+  // When return void, jstring which from native is null.
+  char *returnType =
+      returnTypeStr == nullptr ? nullptr : (char *) env->GetStringUTFChars(returnTypeStr, nullptr);
 
   NativeMethodCallback
       methodCallback = getCallbackMethod(dartObjectAddress, funName);
   void *target = (void *) dartObjectAddress;
-  jobject callbackResult =
+  // release jstring
+  auto clear_fun = [=](jobject) {
+    auto clear_env = AttachCurrentThread();
+    if (clear_env == nullptr) {
+      DNError("Clear_env error, clear_env no JNIEnv provided!");
+      return;
+    }
+
+    if (returnTypeStr != nullptr) {
+      clear_env->ReleaseStringUTFChars(returnTypeStr, returnType);
+    }
+
+    if (functionName != nullptr) {
+      clear_env->ReleaseStringUTFChars(functionName, funName);
+    }
+  };
+
+  auto callbackResult =
       InvokeDartFunction(IsCurrentThread(dartObjectAddress, std::this_thread::get_id()),
+                         0,
                          methodCallback,
                          target,
                          funName,
-                         arguments,
-                         dataTypes,
+                         argumentsArray,
+                         argumentsArray,
                          argumentCount,
                          returnType,
                          port,
-                         env);
-
-  if (returnTypeStr != nullptr) {
-    env->ReleaseStringUTFChars(returnTypeStr, returnType);
-  }
-  if (functionName != nullptr) {
-    env->ReleaseStringUTFChars(functionName, funName);
-  }
-  delete[] arguments;
-  delete[] dataTypes;
+                         env,
+                         clear_fun);
 
   return callbackResult;
 }
 
-jobject InvokeDartFunction(bool is_same_thread,
-                           NativeMethodCallback method_callback,
-                           void *target,
-                           char *funName,
-                           void **arguments,
-                           char **dataTypes,
-                           int argumentCount,
-                           char *return_type,
-                           Dart_Port port,
-                           JNIEnv *env) {
-  jobject callbackResult = nullptr;
-  if (is_same_thread) {
-    if (method_callback != nullptr && target != nullptr) {
-      method_callback(target, funName, arguments, dataTypes, argumentCount);
-    } else {
-      arguments[argumentCount] = nullptr;
-    }
-  } else {
-    sem_t sem;
-    bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
-    const WorkFunction work =
-        [target, dataTypes, arguments, argumentCount, funName, &sem, isSemInitSuccess, method_callback]() {
-          if (method_callback != nullptr && target != nullptr) {
-            method_callback(target, funName, arguments, dataTypes, argumentCount);
-          } else {
-            arguments[argumentCount] = nullptr;
-          }
-          if (isSemInitSuccess) {
-            sem_post(&sem);
-          }
-        };
-
-    const WorkFunction *work_ptr = new WorkFunction(work);
-    /// check run result
-    bool notifyResult = Notify2Dart(port, work_ptr);
-    if (notifyResult) {
-      if (isSemInitSuccess) {
-        sem_wait(&sem);
-        sem_destroy(&sem);
-      }
-    }
-  }
-
-  if(arguments[argumentCount] == nullptr) {
-    return nullptr;
-  }
-
-  if (return_type == nullptr || strcmp(return_type, "void") == 0) {
-    return nullptr;
-  } else if (strcmp(return_type, "java.lang.String") == 0) {
-    callbackResult =
-        DartStringToJavaString(env, (char *) arguments[argumentCount]);
-  } else {
-    callbackResult = (jobject) arguments[argumentCount];
-  }
-  return callbackResult;
-}
 }

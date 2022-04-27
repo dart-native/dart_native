@@ -196,6 +196,6 @@ void *InterfaceAllMetaData(char *name) {
 }
 
 void InterfaceRegisterDartInterface(char *interface, char *method,
-                                    void *callback, Dart_Port dartPort) {
-  RegisterDartInterface(interface, method, callback, dartPort);
+                                    void *callback, Dart_Port dartPort, int32_t return_async) {
+  RegisterDartInterface(interface, method, callback, dartPort, return_async);
 }

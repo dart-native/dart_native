@@ -10,16 +10,12 @@
 
 namespace dartnative {
 
-struct DartThreadInfo {
-  Dart_Port dart_port;
-  std::__thread_id thread_id;
-};
-
 typedef void(*NativeMethodCallback)(void *targetPtr,
                                     char *funNamePtr,
                                     void **args,
                                     char **argTypes,
-                                    int argCount);
+                                    int argCount,
+                                    int return_async);
 
 void doRegisterNativeCallback(void *dartObject,
                               jobject nativeProxyObject,
@@ -35,16 +31,5 @@ NativeMethodCallback
 getCallbackMethod(jlong dartObjectAddress, char *functionName);
 
 bool IsCurrentThread(jlong dartObjectAddress, std::__thread_id currentThread);
-
-jobject InvokeDartFunction(bool is_same_thread,
-                           NativeMethodCallback method_callback,
-                           void *target,
-                           char *funName,
-                           void **arguments,
-                           char **dataTypes,
-                           int argumentCount,
-                           char *return_type,
-                           Dart_Port port,
-                           JNIEnv *env);
 
 }

@@ -12,6 +12,8 @@ import 'package:ffi/ffi.dart';
 Map<String, Map<String, Function?>> _methodHandlerCache = {};
 
 class InterfaceRuntimeJava extends InterfaceRuntime {
+  final isInitSuccess = initDartAPISuccess;
+
   @override
   Future<T> invokeMethod<T>(Pointer<Void> nativeObjectPointer, String method,
       {List? args}) {
@@ -72,8 +74,12 @@ class InterfaceRuntimeJava extends InterfaceRuntime {
     _methodHandlerCache[interfaceName] = methodsMap;
     final namePtr = interfaceName.toNativeUtf8();
     final methodPtr = method.toNativeUtf8();
-    _registerDartInterface(
-        namePtr, methodPtr, _interfaceInvokeDart, nativePort);
+    String typeString = function.runtimeType.toString();
+    List<String> functionSignature = typeString.split(' => ');
+    bool shouldReturnAsync = functionSignature.length == 2 &&
+        functionSignature[1].startsWith('Future');
+    _registerDartInterface(namePtr, methodPtr, _interfaceInvokeDart, nativePort,
+        shouldReturnAsync ? 1 : 0);
     calloc.free(namePtr);
     calloc.free(methodPtr);
   }
@@ -91,7 +97,7 @@ final Pointer<Void> Function(Pointer<Utf8>) _interfaceAllMetaData = nativeDylib
     .asFunction();
 
 final void Function(Pointer<Utf8>, Pointer<Utf8>,
-        Pointer<NativeFunction<MethodNativeCallback>>, int)
+        Pointer<NativeFunction<MethodNativeCallback>>, int, int)
     _registerDartInterface = nativeDylib
         .lookup<
             NativeFunction<
@@ -99,7 +105,8 @@ final void Function(Pointer<Utf8>, Pointer<Utf8>,
                     Pointer<Utf8>,
                     Pointer<Utf8>,
                     Pointer<NativeFunction<MethodNativeCallback>>,
-                    Int64)>>('InterfaceRegisterDartInterface')
+                    Int64,
+                    Int32)>>('InterfaceRegisterDartInterface')
         .asFunction();
 
 Map<String, String> _mapForInterfaceMetaData(String interfaceName) {
@@ -139,7 +146,8 @@ void _invokeDart(
     Pointer<Utf8> funNamePtr,
     Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
-    int argCount) {
+    int argCount,
+    int shouldReturnAsync) {
   String interfaceName = targetPtr.cast<Utf8>().toDartString();
   String functionName = funNamePtr.cast<Utf8>().toDartString();
   Map<String, Function?>? method = _methodHandlerCache[interfaceName];
@@ -148,10 +156,6 @@ void _invokeDart(
     argsPtrPtr.elementAt(argCount).value = nullptr.cast();
     return;
   }
-  String typeString = function.runtimeType.toString();
-  List<String> functionSignature = typeString.split(' => ');
-  bool shouldReturnAsync = functionSignature.length == 2 &&
-      functionSignature[1].startsWith('Future');
   jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount,
-      shouldReturnAsync: shouldReturnAsync);
+      shouldReturnAsync: shouldReturnAsync == 1);
 }

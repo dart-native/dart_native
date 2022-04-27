@@ -11,6 +11,7 @@ void *InterfaceWithName(char *name, JNIEnv *env);
 
 void *InterfaceMetaData(char *name, JNIEnv *env);
 
-void RegisterDartInterface(char *interface, char *method, void *callback, Dart_Port dartPort);
+void RegisterDartInterface(char *interface, char *method, void *callback, Dart_Port dartPort,
+                           int32_t return_async);
 
 }

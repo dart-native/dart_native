@@ -57,7 +57,8 @@ void _syncCallback(
     Pointer<Utf8> funNamePtr,
     Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
-    int argCount) {
+    int argCount,
+    int shouldReturnAsync) {
   String functionName = funNamePtr.cast<Utf8>().toDartString();
   Function? function = CallBackManager.instance
       .getCallbackFunctionOnTarget(targetPtr, functionName);

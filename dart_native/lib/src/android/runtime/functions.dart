@@ -8,7 +8,8 @@ typedef MethodNativeCallback = Void Function(
     Pointer<Utf8> funNamePtr,
     Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
-    Int32 argCount);
+    Int32 argCount,
+    Int32 shouldReturnAsync);
 
 typedef InvokeCallback = Void Function(Pointer<Void> result,
     Pointer<Utf8> method, Pointer<Pointer<Utf8>> typePointers, Int32 argCount);

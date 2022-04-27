@@ -10,6 +10,7 @@
 #include "dart_api.h"
 #include "jni_object_ref.h"
 #include "dn_thread.h"
+#include "dn_callback.h"
 
 namespace dartnative {
 
@@ -41,4 +42,20 @@ void *DoInvokeNativeMethod(jobject object,
                            void *callback,
                            Dart_Port dartPort,
                            TaskThread thread);
+
+jobject InvokeDartFunction(bool is_same_thread,
+                           int return_async,
+                           NativeMethodCallback method_callback,
+                           void *target,
+                           char *method_name,
+                           jobjectArray arguments,
+                           jobjectArray argument_types,
+                           int argumentCount,
+                           char *return_type,
+                           Dart_Port port,
+                           JNIEnv *env,
+                           std::function<void(jobject)> clear_fun);
+
+jobject ConvertDartValue2JavaValue(char *return_type, void *dart_value, JNIEnv *env = nullptr);
+
 }

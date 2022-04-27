@@ -36,6 +36,7 @@ jniInvokeDart(Function function, Pointer<Pointer<Void>> argsPtrPtr,
   _castToJavaObject(result, argsPtrPtr, argCount);
 }
 
+// Dart value convert to java value.
 _castToJavaObject(
     dynamic result, Pointer<Pointer<Void>> argsPtrPtr, int argCount) {
   if (result is Future<Null>) {

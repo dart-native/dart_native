@@ -279,4 +279,130 @@ void *DoInvokeNativeMethod(jobject object,
   return nativeInvokeResult;
 }
 
+jobject InvokeDartFunction(bool is_same_thread,
+                           int return_async,
+                           NativeMethodCallback method_callback,
+                           void *target,
+                           char *method_name,
+                           jobjectArray arguments,
+                           jobjectArray argument_types,
+                           int argument_count,
+                           char *return_type,
+                           Dart_Port port,
+                           JNIEnv *env,
+                           std::function<void(jobject)> clear_fun) {
+  bool isVoid = strcmp(return_type, "void") == 0;
+  char **type_array = new char *[argument_count + 1];
+  void **argument_array = new void *[argument_count + 1];
+
+  // Store argument and type to pointer.
+  for (int i = 0; i < argument_count; ++i) {
+    JavaLocalRef<jstring>
+        argTypeString((jstring) env->GetObjectArrayElement(argument_types, i), env);
+    JavaLocalRef<jobject> argument(env->GetObjectArrayElement(arguments, i), env);
+    type_array[i] = (char *) env->GetStringUTFChars(argTypeString.Object(), NULL);
+    if (strcmp(type_array[i], "java.lang.String") == 0) {
+      // Argument will delete in JavaStringToDartString。
+      argument_array[i] = JavaStringToDartString(env, (jstring) argument.Object());
+    } else {
+      jobject gObj = env->NewGlobalRef(argument.Object());
+      argument_array[i] = gObj;
+    }
+  }
+  // The last pointer is invoke result.
+  argument_array[argument_count] = nullptr;
+  // The last pointer is return type.
+  type_array[argument_count] = return_type;
+
+  // Call dart function is same thread as java side.
+  if (is_same_thread) {
+    if (method_callback != nullptr && target != nullptr) {
+      method_callback(target,
+                      method_name,
+                      argument_array,
+                      type_array,
+                      argument_count,
+                      return_async);
+    } else {
+      argument_array[argument_count] = nullptr;
+    }
+    auto ret = ConvertDartValue2JavaValue(return_type, argument_array[argument_count], env);
+    clear_fun(nullptr);
+    delete[] argument_array;
+    delete[] type_array;
+    return ret;
+  }
+
+  // Hooping between the dart and the java thread.
+  sem_t sem;
+  bool isSemInitSuccess = false;
+  if (!isVoid || !return_async) {
+    isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
+  }
+  const WorkFunction work = [=, &sem]() {
+    if (method_callback != nullptr && target != nullptr) {
+      method_callback(target,
+                      method_name,
+                      argument_array,
+                      type_array,
+                      argument_count,
+                      return_async);
+    } else {
+      argument_array[argument_count] = nullptr;
+    }
+    if (isSemInitSuccess) {
+      sem_post(&sem);
+      return;
+    }
+
+    // Invoke async dart function.
+    auto ret =
+        ConvertDartValue2JavaValue(type_array[argument_count], argument_array[argument_count]);
+    clear_fun(ret);
+    delete[] argument_array;
+    delete[] type_array;
+  };
+
+  const WorkFunction *work_ptr = new WorkFunction(work);
+  // Check notify result.
+  bool notifyResult = Notify2Dart(port, work_ptr);
+  if (notifyResult && isSemInitSuccess) {
+    sem_wait(&sem);
+    sem_destroy(&sem);
+    // Invoke dart function success.
+    auto ret =
+        ConvertDartValue2JavaValue(type_array[argument_count], argument_array[argument_count], env);
+    clear_fun(nullptr);
+    delete[] argument_array;
+    delete[] type_array;
+    return ret;
+  }
+
+  // If notify success, arrays will delete is work function.
+  if (!notifyResult) {
+    delete[] argument_array;
+    delete[] type_array;
+  }
+
+  return nullptr;
+}
+
+jobject ConvertDartValue2JavaValue(char *return_type, void *dart_value, JNIEnv *env) {
+  if (env == nullptr) {
+    env = AttachCurrentThread();
+  }
+
+  if (dart_value == nullptr || return_type == nullptr) {
+    return nullptr;
+  }
+
+  if (strcmp(return_type, "java.lang.String") == 0) {
+    if (env == nullptr) {
+      return nullptr;
+    }
+    return DartStringToJavaString(env, (char *) dart_value);
+  } else {
+    return (jobject) dart_value;
+  }
+}
 }
