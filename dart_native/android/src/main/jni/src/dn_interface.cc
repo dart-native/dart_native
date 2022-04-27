@@ -70,15 +70,14 @@ static void InvokeDart(jstring interface_name,
   }
 
   // release jstring and global reference
-  auto clear_fun = [=](jobject ret) {
+  auto invoke_finish = [=](jobject ret) {
     auto clear_env = AttachCurrentThread();
     if (clear_env == nullptr) {
       DNError("Clear_env error, clear_env no JNIEnv provided!");
       return;
     }
 
-    if (g_interface_registry && !g_interface_registry->IsNull()
-        && g_handle_response) {
+    if (g_interface_registry && !g_interface_registry->IsNull() && g_handle_response) {
       clear_env->CallVoidMethod(g_interface_registry->Object(),
                                 g_handle_response,
                                 response_id,
@@ -114,7 +113,7 @@ static void InvokeDart(jstring interface_name,
                      (char *) "java.lang.Object",
                      dart_function.dart_port,
                      env,
-                     clear_fun);
+                     invoke_finish);
 }
 
 static void InterfaceNativeInvokeDart(JNIEnv *env,
@@ -129,7 +128,7 @@ static void InterfaceNativeInvokeDart(JNIEnv *env,
   auto method_global = (jstring) env->NewGlobalRef(method);
   auto arguments_global = (jobjectArray) env->NewGlobalRef(arguments);
   auto argument_types_global = (jobjectArray) env->NewGlobalRef(argument_types);
-  // Run in subthread.
+  // Run in sub thread.
   ScheduleInvokeTask(TaskThread::kSub,
                      [interface_name_global, method_global, arguments_global, argument_types_global, argument_count, response_id]() {
                        InvokeDart(interface_name_global, method_global,

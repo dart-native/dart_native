@@ -80,6 +80,7 @@ void TaskRunner::ScheduleTaskOnMainThread(std::function<void()> invoke) {
   }
 }
 
+// todo(HUI): use message queue
 void TaskRunner::ScheduleTaskOnSubThread(std::function<void()> invoke) {
   std::thread subThread(invoke);
   subThread.detach();

@@ -147,7 +147,8 @@ void _invokeDart(
     Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
     int argCount,
-    int shouldReturnAsync) {
+    int shouldReturnAsync,
+    int responseId) {
   String interfaceName = targetPtr.cast<Utf8>().toDartString();
   String functionName = funNamePtr.cast<Utf8>().toDartString();
   Map<String, Function?>? method = _methodHandlerCache[interfaceName];
@@ -157,5 +158,6 @@ void _invokeDart(
     return;
   }
   jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount,
-      shouldReturnAsync: shouldReturnAsync == 1);
+      shouldReturnAsync: shouldReturnAsync == 1,
+      responseId: responseId);
 }

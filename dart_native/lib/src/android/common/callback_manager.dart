@@ -74,7 +74,8 @@ void _syncCallback(
     Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
     int argCount,
-    int shouldReturnAsync) {
+    int shouldReturnAsync,
+    int responseId) {
   String functionName = funNamePtr.cast<Utf8>().toDartString();
   Function? function = CallBackManager.instance
       .getCallbackFunctionOnTarget(targetPtr, functionName);
@@ -82,5 +83,6 @@ void _syncCallback(
     argsPtrPtr.elementAt(argCount).value = nullptr.cast();
     return;
   }
-  jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount);
+  jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount,
+      shouldReturnAsync: shouldReturnAsync == 1, responseId: responseId);
 }

@@ -3,6 +3,7 @@
 //
 #include <semaphore.h>
 #include <dn_dart_api.h>
+#include <unordered_map>
 #include "dn_native_invoker.h"
 #include "dn_log.h"
 #include "dn_callback.h"
@@ -279,6 +280,9 @@ void *DoInvokeNativeMethod(jobject object,
   return nativeInvokeResult;
 }
 
+static std::unordered_map<int64_t, std::function<void(jobject)>> async_callback_map;
+int64_t response_id = 0;
+
 jobject InvokeDartFunction(bool is_same_thread,
                            int return_async,
                            NativeMethodCallback method_callback,
@@ -290,7 +294,7 @@ jobject InvokeDartFunction(bool is_same_thread,
                            char *return_type,
                            Dart_Port port,
                            JNIEnv *env,
-                           std::function<void(jobject)> clear_fun) {
+                           std::function<void(jobject)> invoke_finish) {
   bool isVoid = strcmp(return_type, "void") == 0;
   char **type_array = new char *[argument_count + 1];
   void **argument_array = new void *[argument_count + 1];
@@ -322,12 +326,13 @@ jobject InvokeDartFunction(bool is_same_thread,
                       argument_array,
                       type_array,
                       argument_count,
-                      return_async);
+                      return_async,
+                      0);
     } else {
       argument_array[argument_count] = nullptr;
     }
     auto ret = ConvertDartValue2JavaValue(return_type, argument_array[argument_count], env);
-    clear_fun(nullptr);
+    invoke_finish(nullptr);
     delete[] argument_array;
     delete[] type_array;
     return ret;
@@ -336,29 +341,30 @@ jobject InvokeDartFunction(bool is_same_thread,
   // Hooping between the dart and the java thread.
   sem_t sem;
   bool isSemInitSuccess = false;
-  if (!isVoid || !return_async) {
+  if (!isVoid && !return_async) {
     isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
   }
   const WorkFunction work = [=, &sem]() {
     if (method_callback != nullptr && target != nullptr) {
+      int response = ++response_id;
+      async_callback_map[response] = invoke_finish;
       method_callback(target,
                       method_name,
                       argument_array,
                       type_array,
                       argument_count,
-                      return_async);
+                      return_async,
+                      response);
+
     } else {
       argument_array[argument_count] = nullptr;
     }
+
     if (isSemInitSuccess) {
       sem_post(&sem);
       return;
     }
 
-    // Invoke async dart function.
-    auto ret =
-        ConvertDartValue2JavaValue(type_array[argument_count], argument_array[argument_count]);
-    clear_fun(ret);
     delete[] argument_array;
     delete[] type_array;
   };
@@ -372,7 +378,7 @@ jobject InvokeDartFunction(bool is_same_thread,
     // Invoke dart function success.
     auto ret =
         ConvertDartValue2JavaValue(type_array[argument_count], argument_array[argument_count], env);
-    clear_fun(ret);
+    invoke_finish(ret);
     delete[] argument_array;
     delete[] type_array;
     return ret;
@@ -404,5 +410,16 @@ jobject ConvertDartValue2JavaValue(char *return_type, void *dart_value, JNIEnv *
   } else {
     return (jobject) dart_value;
   }
+}
+
+void DartAsyncResult(int64_t response, void *result, char *type, JNIEnv *env) {
+  auto invoker = async_callback_map[response];
+  if (invoker == nullptr) {
+    DNError("AsyncResult error, not register invoker!");
+    return;
+  }
+
+  auto ret = ConvertDartValue2JavaValue(type, result, env);
+  invoker(ret);
 }
 }

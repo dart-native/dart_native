@@ -10,11 +10,22 @@ typedef MethodNativeCallback = Void Function(
     Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr,
     Int32 argCount,
-    Int32 shouldReturnAsync);
+    Int32 shouldReturnAsync,
+    Int64 responseId);
 
 // use in async invoke
 typedef InvokeCallback = Void Function(Pointer<Void> result,
     Pointer<Utf8> method, Pointer<Pointer<Utf8>> typePointers, Int32 argCount);
+
+// notify c++ async invoke result
+final void Function(
+    int responseId,
+    Pointer<Void> reslut,
+    Pointer<Utf8>
+        reslutType) asyncInvokeResult = nativeDylib
+    .lookup<NativeFunction<Void Function(Int64, Pointer<Void>, Pointer<Utf8>)>>(
+        'AsyncInvokeResult')
+    .asFunction();
 
 // create java object
 final Pointer<Void> Function(

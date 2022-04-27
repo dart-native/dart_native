@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:isolate';
 
+import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:flutter/services.dart';
 
 DynamicLibrary? _nativeDylib;

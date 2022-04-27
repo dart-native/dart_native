@@ -57,7 +57,7 @@ static jobject HookNativeCallback(JNIEnv *env,
       return_type_str == nullptr ? nullptr : (char *) env->GetStringUTFChars(return_type_str, nullptr);
 
   // release jstring
-  auto clear_fun = [=](jobject) {
+  auto invoke_finish = [=](jobject) {
     auto clear_env = AttachCurrentThread();
     if (clear_env == nullptr) {
       DNError("Clear_env error, clear_env no JNIEnv provided!");
@@ -85,7 +85,7 @@ static jobject HookNativeCallback(JNIEnv *env,
                          return_type,
                          callback_info.dart_port,
                          env,
-                         clear_fun);
+                         invoke_finish);
 
   return callback_result;
 }

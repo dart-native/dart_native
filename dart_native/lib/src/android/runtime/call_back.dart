@@ -2,12 +2,13 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
+import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:ffi/ffi.dart';
 
 // jni invoke dart function
 jniInvokeDart(Function function, Pointer<Pointer<Void>> argsPtrPtr,
     Pointer<Pointer<Utf8>> argTypesPtrPtr, int argCount,
-    {bool shouldReturnAsync = false}) {
+    {bool shouldReturnAsync = false, int responseId = 0}) {
   List args = [];
   for (var i = 0; i < argCount; i++) {
     Pointer<Utf8> argTypePtr = argTypesPtrPtr.elementAt(i).value;
@@ -26,24 +27,35 @@ jniInvokeDart(Function function, Pointer<Pointer<Void>> argsPtrPtr,
 
   if (shouldReturnAsync) {
     Future future = Function.apply(function, args);
+    final String resultType =
+        argTypesPtrPtr.elementAt(argCount).value.toDartString();
     future.then((value) {
-      _castToJavaObject(value, argsPtrPtr, argCount);
+      if (responseId == 0) {
+        return;
+      }
+
+      if (value == null || value is Future<Null>) {
+        asyncInvokeResult(
+            responseId, nullptr.cast(), resultType.toNativeUtf8());
+        return;
+      }
+
+      if (value is String) {
+        asyncInvokeResult(responseId, toUtf16(value).cast(),
+            'java.lang.String'.toNativeUtf8());
+        return;
+      }
+
+      dynamic wrapperResult = boxingWrapperClass(value);
+      asyncInvokeResult(
+          responseId,
+          wrapperResult is JObject ? wrapperResult.pointer : wrapperResult,
+          resultType.toNativeUtf8());
     });
     return;
   }
 
   dynamic result = Function.apply(function, args);
-  _castToJavaObject(result, argsPtrPtr, argCount);
-}
-
-// Dart value convert to java value.
-_castToJavaObject(
-    dynamic result, Pointer<Pointer<Void>> argsPtrPtr, int argCount) {
-  if (result is Future<Null>) {
-    argsPtrPtr.elementAt(argCount).value = nullptr.cast();
-    return;
-  }
-
   if (result != null) {
     if (result is String) {
       argsPtrPtr.elementAt(argCount).value = toUtf16(result).cast();
@@ -55,6 +67,5 @@ _castToJavaObject(
         wrapperResult is JObject ? wrapperResult.pointer : wrapperResult;
     return;
   }
-
   argsPtrPtr.elementAt(argCount).value = nullptr.cast();
 }

@@ -199,3 +199,13 @@ void InterfaceRegisterDartInterface(char *interface, char *method,
                                     void *callback, Dart_Port dartPort, int32_t return_async) {
   RegisterDartInterface(interface, method, callback, dartPort, return_async);
 }
+
+void AsyncInvokeResult(int64_t response_id, void *result, char *result_type) {
+  auto env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("InterfaceAllMetaData error, no JNIEnv provided!");
+    return;
+  }
+
+  DartAsyncResult(response_id, result, result_type, env);
+}

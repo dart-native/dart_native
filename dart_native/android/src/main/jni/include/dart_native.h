@@ -49,7 +49,9 @@ DN_EXTERN void RegisterNativeCallback(void *dartObject,
  * */
 DN_EXTERN void UnregisterNativeCallback(void *dart_object);
 
-/** Work function will execute in dart thread */
+/**
+ * run workFunction in c++ side
+ * */
 DN_EXTERN void ExecuteCallback(dartnative::WorkFunction *work_ptr);
 
 /** interface */
@@ -60,3 +62,8 @@ DN_EXTERN void *InterfaceAllMetaData(char *name);
 DN_EXTERN void InterfaceRegisterDartInterface(char *interface, char *method,
                                               void *callback, Dart_Port dartPort,
                                               int32_t return_async);
+
+/**
+ * Dart async invoke result.
+ * */
+DN_EXTERN void AsyncInvokeResult(int64_t response_id, void *result, char *result_type);
