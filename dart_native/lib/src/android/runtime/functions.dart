@@ -87,7 +87,7 @@ final void Function(Pointer<Void>, Pointer<Utf8>, Pointer<Utf8>,
 // unregisterCallback in java side
 final void Function(Pointer<Void>) unregisterNativeCallback = nativeDylib
     .lookup<NativeFunction<Void Function(Pointer<Void> dartObject)>>(
-        'unregisterNativeCallback')
+        'UnregisterNativeCallback')
     .asFunction();
 
 // Get java class name from native.

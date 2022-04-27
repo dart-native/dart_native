@@ -81,10 +81,10 @@ public class RuntimeStub {
 
     public void setDelegateListener(SampleDelegate delegate) {
         Log.d(TAG, "invoke setDelegateListener");
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        new Handler(Looper.getMainLooper()).post(() -> {
             boolean isSuccess = delegate.callbackComplex(20, 100.0, "wwawawawawa");
             Log.d(TAG, "callback result " + isSuccess);
-        }, 2000);
+        });
     }
 
     public Integer getInteger() {

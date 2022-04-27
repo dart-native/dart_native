@@ -6,6 +6,8 @@ import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:ffi/ffi.dart';
 
+/// When callback finish, you need to invoke [unregisterCallback] function by hand.
+/// OtherWise it will casue memory leak.
 void registerCallback(dynamic target, Function function, String functionName) {
   if (target is! JObject) {
     return;
@@ -20,6 +22,7 @@ void registerCallback(dynamic target, Function function, String functionName) {
   calloc.free(funNamePtr);
 }
 
+/// Release callback in dart, c++ and java side.
 void unregisterCallback(dynamic target) {
   if (target is! JObject) {
     return;
