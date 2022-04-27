@@ -12,9 +12,13 @@
 
 namespace dartnative {
 
+// interface registry instance object.
 static JavaGlobalRef<jobject> *g_interface_registry = nullptr;
+// Get registered interface from java.
 static jmethodID g_get_interface = nullptr;
+// Get registered method signature from java.
 static jmethodID g_get_signature = nullptr;
+// Send result to java when java invoke dart function,
 static jmethodID g_handle_response = nullptr;
 
 struct DartInterfaceInfo {
@@ -23,6 +27,7 @@ struct DartInterfaceInfo {
   Dart_Port dart_port;
 };
 
+// Interface cache which registered in dart side.
 static std::unordered_map<std::string, std::unordered_map<std::string, DartInterfaceInfo>>
     dart_interface_method_cache;
 
@@ -83,8 +88,7 @@ static void InvokeDart(jstring interface_name,
         DNError("Call handleInterfaceResponse error!");
       }
     } else {
-      DNError(
-          "Call handleInterfaceResponse error interface registry object or method id is null!");
+      DNError("Call handleInterfaceResponse error interface registry object or method id is null!");
     }
 
     if (method_char != nullptr) {
@@ -138,6 +142,7 @@ void InitInterface(JNIEnv *env) {
   auto registryClz =
       FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
   if (registryClz.IsNull()) {
+    ClearException(env);
     DNError("InitInterface error, registryClz is null!");
     return;
   }
@@ -150,6 +155,7 @@ void InitInterface(JNIEnv *env) {
       }
   };
   if (env->RegisterNatives(registryClz.Object(), interface_jni_methods, 1) < 0) {
+    ClearException(env);
     DNError("InitInterface error, registerNatives error!");
     return;
   }
@@ -159,6 +165,7 @@ void InitInterface(JNIEnv *env) {
                              "getInstance",
                              "()Lcom/dartnative/dart_native/InterfaceRegistry;");
   if (instance_id == nullptr) {
+    ClearException(env);
     DNError("Could not locate InterfaceRegistry#getInstance method!");
     return;
   }
@@ -166,6 +173,7 @@ void InitInterface(JNIEnv *env) {
   JavaLocalRef<jobject>
       registryObj(env->CallStaticObjectMethod(registryClz.Object(), instance_id), env);
   if (registryObj.IsNull()) {
+    ClearException(env);
     DNError("Could not init registryObj!");
     return;
   }
@@ -175,6 +183,7 @@ void InitInterface(JNIEnv *env) {
   g_get_interface = env->GetMethodID(registryClz.Object(), "getInterface",
                                      "(Ljava/lang/String;)Ljava/lang/Object;");
   if (g_get_interface == nullptr) {
+    ClearException(env);
     DNError("Could not locate InterfaceRegistry#getInterface method!");
     return;
   }
@@ -182,6 +191,7 @@ void InitInterface(JNIEnv *env) {
   g_get_signature = env->GetMethodID(registryClz.Object(), "getMethodsSignature",
                                      "(Ljava/lang/String;)Ljava/lang/String;");
   if (g_get_signature == nullptr) {
+    ClearException(env);
     DNError("Could not locate InterfaceRegistry#getMethodsSignature method!");
     return;
   }
@@ -189,6 +199,7 @@ void InitInterface(JNIEnv *env) {
   g_handle_response = env->GetMethodID(registryClz.Object(), "handleInterfaceResponse",
                                        "(ILjava/lang/Object;Ljava/lang/String;)V");
   if (g_handle_response == nullptr) {
+    ClearException(env);
     DNError("Could not locate InterfaceRegistry#handleInterfaceResponse method!");
     return;
   }
@@ -202,6 +213,7 @@ void *InterfaceWithName(char *name, JNIEnv *env) {
 
   JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
   if (interfaceName.IsNull()) {
+    ClearException(env);
     DNError("InterfaceWithName error, interfaceName is null!");
     return nullptr;
   }
@@ -225,6 +237,7 @@ void *InterfaceMetaData(char *name, JNIEnv *env) {
 
   JavaLocalRef<jstring> interfaceName(env->NewStringUTF(name), env);
   if (interfaceName.IsNull()) {
+    ClearException(env);
     DNError("InterfaceMetaData error, interfaceName is null!");
     return nullptr;
   }

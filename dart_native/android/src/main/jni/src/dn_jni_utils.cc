@@ -13,6 +13,7 @@ void InitClazz(JNIEnv * env) {
   /// cache classLoader
   JavaLocalRef<jclass> plugin(env->FindClass("com/dartnative/dart_native/DartNativePlugin"), env);
   if (plugin.IsNull()) {
+    ClearException(env);
     DNError("Could not locate DartNativePlugin class!");
     return;
   }
@@ -20,6 +21,7 @@ void InitClazz(JNIEnv * env) {
   JavaLocalRef<jclass> pluginClass(env->GetObjectClass(plugin.Object()), env);
   JavaLocalRef<jclass> classLoaderClass(env->FindClass("java/lang/ClassLoader"), env);
   if (classLoaderClass.IsNull()) {
+    ClearException(env);
     DNError("Could not locate ClassLoader class!");
     return;
   }
@@ -27,6 +29,7 @@ void InitClazz(JNIEnv * env) {
   auto getClassLoaderMethod = env->GetMethodID(pluginClass.Object(), "getClassLoader",
                                                "()Ljava/lang/ClassLoader;");
   if (getClassLoaderMethod == nullptr) {
+    ClearException(env);
     DNError("Could not locate getClassLoader method!");
     return;
   }
@@ -34,6 +37,7 @@ void InitClazz(JNIEnv * env) {
   JavaLocalRef<jobject>
       classLoader(env->CallObjectMethod(plugin.Object(), getClassLoaderMethod), env);
   if (classLoader.IsNull()) {
+    ClearException(env);
     DNError("Could not init classLoader!");
     return;
   }
@@ -43,6 +47,7 @@ void InitClazz(JNIEnv * env) {
   g_find_class_method = env->GetMethodID(classLoaderClass.Object(), "findClass",
                                          "(Ljava/lang/String;)Ljava/lang/Class;");
   if (g_find_class_method == nullptr) {
+    ClearException(env);
     DNError("Could not locate findClass method!");
     return;
   }
@@ -50,6 +55,7 @@ void InitClazz(JNIEnv * env) {
   /// cache string class
   JavaLocalRef<jclass> strCls(env->FindClass("java/lang/String"), env);
   if (strCls.IsNull()) {
+    ClearException(env);
     DNError("Could not locate java/lang/String class!");
     return;
   }

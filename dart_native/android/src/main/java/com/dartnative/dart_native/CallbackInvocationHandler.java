@@ -35,5 +35,5 @@ public class CallbackInvocationHandler implements InvocationHandler {
         return hookCallback(dartObjectAddress, funName, argumentLength, paramsType, args, returnType);
     }
 
-    static native Object hookCallback(long dartObjectAddress, String funName, int argCount, String[] argTypes, Object[] args, String returnType);
+    private native Object hookCallback(long dartObjectAddress, String funName, int argCount, String[] argTypes, Object[] args, String returnType);
 }

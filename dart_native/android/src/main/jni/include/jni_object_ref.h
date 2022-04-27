@@ -103,7 +103,13 @@ class JavaLocalRef : public JavaRef<T> {
 template<typename T>
 class JavaGlobalRef : public JavaRef<T> {
  public:
-  JavaGlobalRef(T obj, JNIEnv *env) { this->Reset(env, obj); }
+  JavaGlobalRef() : env_(nullptr) {}
+
+  explicit JavaGlobalRef(T obj, JNIEnv *env) : env_(env) { this->Reset(env, obj); }
+
+  JavaGlobalRef(const JavaGlobalRef<T> &other) {
+    this->Reset(other.env_, other.Object());
+  }
 
   ~JavaGlobalRef() { this->Reset(); }
 
@@ -113,6 +119,14 @@ class JavaGlobalRef : public JavaRef<T> {
   void Reset(JNIEnv *env, U obj) {
     this->SetNewGlobalRef(env, obj);
   }
+
+  JavaGlobalRef &operator=(const JavaGlobalRef& ref) {
+    this->Reset(ref.env_, ref.Object());
+    return *this;
+  }
+
+ private:
+  JNIEnv *env_;
 };
 
 }

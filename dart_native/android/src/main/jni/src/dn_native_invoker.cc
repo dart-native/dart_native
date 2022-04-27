@@ -111,7 +111,7 @@ jvalue *ConvertArgs2JValues(void **arguments,
         } else {
           /// convert from object cache
           /// check callback cache, if true using proxy object
-          jobject object = getNativeCallbackProxyObject(*arguments);
+          jobject object = GetNativeCallbackProxyObject(*arguments);
           argValues[index].l =
               object == nullptr ? static_cast<jobject>(*arguments) : object;
         }
@@ -372,7 +372,7 @@ jobject InvokeDartFunction(bool is_same_thread,
     // Invoke dart function success.
     auto ret =
         ConvertDartValue2JavaValue(type_array[argument_count], argument_array[argument_count], env);
-    clear_fun(nullptr);
+    clear_fun(ret);
     delete[] argument_array;
     delete[] type_array;
     return ret;

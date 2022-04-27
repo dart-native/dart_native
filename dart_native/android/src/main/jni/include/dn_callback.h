@@ -17,19 +17,14 @@ typedef void(*NativeMethodCallback)(void *targetPtr,
                                     int argCount,
                                     int return_async);
 
-void doRegisterNativeCallback(void *dartObject,
-                              jobject nativeProxyObject,
-                              char *funName,
+void InitCallback(JNIEnv *env);
+
+void DoRegisterNativeCallback(void *dart_object,
+                              char *cls_name,
+                              char *fun_name,
                               void *callback,
-                              Dart_Port dartPort);
+                              Dart_Port dart_port,
+                              JNIEnv *env);
 
-jobject getNativeCallbackProxyObject(void *dartObject);
-
-Dart_Port getCallbackDartPort(jlong dartObjectAddress);
-
-NativeMethodCallback
-getCallbackMethod(jlong dartObjectAddress, char *functionName);
-
-bool IsCurrentThread(jlong dartObjectAddress, std::__thread_id currentThread);
-
+jobject GetNativeCallbackProxyObject(void *dart_object);
 }

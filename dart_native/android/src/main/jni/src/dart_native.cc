@@ -20,14 +20,17 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
     return JNI_VERSION_1_6;
   }
 
-  /// Init used class.
+  // Init used class.
   InitClazz(env);
 
-  /// Init task runner.
+  // Init task runner.
   InitTaskRunner();
 
-  /// Init interface.
+  // Init interface.
   InitInterface(env);
+
+  // Init callback.
+  InitCallback(env);
 
   return JNI_VERSION_1_6;
 }
@@ -149,23 +152,11 @@ void RegisterNativeCallback(void *dartObject,
                             void *callback,
                             Dart_Port dartPort) {
   JNIEnv *env = AttachCurrentThread();
-  auto callbackManager =
-      FindClass("com/dartnative/dart_native/CallbackManager", env);
-  jmethodID registerCallback = env->GetStaticMethodID(callbackManager.Object(),
-                                                      "registerCallback",
-                                                      "(JLjava/lang/String;)Ljava/lang/Object;");
-
-  auto dartObjectAddress = (jlong) dartObject;
-  /// create interface object using java dynamic proxy
-  JavaLocalRef<jstring> newClsName(env->NewStringUTF(clsName), env);
-  JavaLocalRef<jobject> proxyObject(env->CallStaticObjectMethod(callbackManager.Object(),
-                                                                registerCallback,
-                                                                dartObjectAddress,
-                                                                newClsName.Object()), env);
-  jobject gProxyObj = env->NewGlobalRef(proxyObject.Object());
-
-  /// save object into cache
-  doRegisterNativeCallback(dartObject, gProxyObj, funName, callback, dartPort);
+  if (env == nullptr) {
+    DNError("RegisterNativeCallback error, no JNIEnv provided!");
+    return;
+  }
+  DoRegisterNativeCallback(dartObject, clsName, funName, callback, dartPort, env);
 }
 
 /// dart notify run callback function
