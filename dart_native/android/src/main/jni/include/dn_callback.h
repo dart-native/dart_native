@@ -26,5 +26,8 @@ void DoRegisterNativeCallback(void *dart_object,
                               Dart_Port dart_port,
                               JNIEnv *env);
 
+void DoUnregisterNativeCallback(void *dart_object, JNIEnv *env);
+
 jobject GetNativeCallbackProxyObject(void *dart_object);
+
 }

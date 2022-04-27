@@ -46,6 +46,10 @@ void ReleaseJObject(jobject globalObject) {
   /// no dart object retained this native object
   if (it->second <= 0) {
     JNIEnv *env = AttachCurrentThread();
+    if (env == nullptr) {
+      DNError("ReleaseJObject error, no JNIEnv provided!");
+      return;
+    }
     object_global_reference.erase(it);
     env->DeleteGlobalRef(globalObject);
   }

@@ -44,6 +44,11 @@ DN_EXTERN void RegisterNativeCallback(void *dartObject,
                                       void *callback,
                                       Dart_Port dartPort);
 
+/**
+ * When using callback finish, callback must be unregistered by hand.
+ * */
+DN_EXTERN void UnregisterNativeCallback(void *dart_object);
+
 /** Work function will execute in dart thread */
 DN_EXTERN void ExecuteCallback(dartnative::WorkFunction *work_ptr);
 

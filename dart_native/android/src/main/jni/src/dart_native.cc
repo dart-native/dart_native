@@ -11,7 +11,7 @@
 using namespace dartnative;
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *pjvm, void *reserved) {
-  /// Init Java VM.
+  // Init Java VM.
   InitWithJavaVM(pjvm);
 
   auto env = AttachCurrentThread();
@@ -157,6 +157,15 @@ void RegisterNativeCallback(void *dartObject,
     return;
   }
   DoRegisterNativeCallback(dartObject, clsName, funName, callback, dartPort, env);
+}
+
+DN_EXTERN void UnregisterNativeCallback(void *dart_object) {
+  auto env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("UnRegisterNativeCallback error, no JNIEnv provided!");
+    return;
+  }
+  DoUnregisterNativeCallback(dart_object, env);
 }
 
 /// dart notify run callback function

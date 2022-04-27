@@ -16,7 +16,7 @@ JObject createNullJObj(String clsName) {
 /// Bind dart object lifecycle with native object.
 void bindLifeCycleWithNative(JObject? obj) {
   if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
-    passJObjectToC!(obj, obj.pointer.cast<Void>());
+    passJObjectToC(obj, obj.pointer.cast<Void>());
   }
 }
 

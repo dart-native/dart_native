@@ -14,7 +14,9 @@
 namespace dartnative {
 
 static JavaGlobalRef<jclass> *g_callback_manager_clz = nullptr;
+// Register dart callback, this method will return java dynamic proxy object.
 static jmethodID g_register_callback = nullptr;
+static jmethodID g_unregister_callback = nullptr;
 
 struct CallbackInfo {
   NativeMethodCallback method_callback;
@@ -106,6 +108,15 @@ void InitCallback(JNIEnv *env) {
     return;
   }
 
+  g_unregister_callback = env->GetStaticMethodID(g_callback_manager_clz->Object(),
+                                                 "unRegisterCallback",
+                                                 "(Ljava/lang/Object;)V");
+  if (g_unregister_callback == nullptr) {
+    ClearException(env);
+    DNError("Could not locate CallbackManager#unRegisterCallback method!");
+    return;
+  }
+
   auto invocation_handler = FindClass("com/dartnative/dart_native/CallbackInvocationHandler", env);
   if (invocation_handler.IsNull()) {
     ClearException(env);
@@ -132,22 +143,50 @@ void DoRegisterNativeCallback(void *dart_object,
                               void *callback,
                               Dart_Port dart_port,
                               JNIEnv *env) {
-  if (g_callback_manager_clz == nullptr || g_register_callback == nullptr) {
+  if (g_callback_manager_clz == nullptr || g_callback_manager_clz->IsNull()
+      || g_register_callback == nullptr) {
     DNError("DoRegisterNativeCallback error, g_callback_manager_clz or g_register_callback is null!");
     return;
   }
-  auto dartObjectAddress = (int64_t) dart_object;
+
+  if (cls_name == nullptr) {
+    DNError("DoRegisterNativeCallback error, class name is null!");
+    return;
+  }
+
+  auto dart_object_address = (int64_t) dart_object;
   // Creating interface object using java dynamic proxy.
-  JavaLocalRef<jstring> newClsName(env->NewStringUTF(cls_name), env);
-  JavaLocalRef<jobject> proxyObject(env->CallStaticObjectMethod(g_callback_manager_clz->Object(),
-                                                                g_register_callback,
-                                                                dart_port,
-                                                                newClsName.Object()), env);
-  auto callback_method_map = g_dart_callback_info_map[dartObjectAddress];
+  JavaLocalRef<jstring> new_cls_name(env->NewStringUTF(cls_name), env);
+  JavaLocalRef<jobject> proxy_object(env->CallStaticObjectMethod(g_callback_manager_clz->Object(),
+                                                                 g_register_callback,
+                                                                 dart_port,
+                                                                 new_cls_name.Object()), env);
+  if (ClearException(env) || proxy_object.IsNull()) {
+    DNError("DoRegisterNativeCallback error, register callback error!");
+    return;
+  }
+  auto callback_method_map = g_dart_callback_info_map[dart_object_address];
   callback_method_map[std::string(fun_name)] =
       {(NativeMethodCallback) callback, dart_port, std::this_thread::get_id()};
-  g_dart_callback_info_map[dartObjectAddress] = callback_method_map;
-  g_java_proxy_map[dartObjectAddress] = JavaGlobalRef<jobject>(proxyObject.Object(), env);
+  g_dart_callback_info_map[dart_object_address] = callback_method_map;
+  g_java_proxy_map[dart_object_address] = JavaGlobalRef<jobject>(proxy_object.Object(), env);
+}
+
+void DoUnregisterNativeCallback(void *dart_object, JNIEnv *env) {
+  if (g_callback_manager_clz == nullptr || g_callback_manager_clz->IsNull()
+      || g_unregister_callback == nullptr) {
+    DNError("DoUnregisterNativeCallback error, class or unregister method is null!");
+    return;
+  }
+
+  auto dart_object_address = (int64_t) dart_object;
+  g_dart_callback_info_map.erase(dart_object_address);
+  auto proxy = g_java_proxy_map[dart_object_address];
+  if (g_java_proxy_map.find(dart_object_address) != g_java_proxy_map.end() && !proxy.IsNull()) {
+    env->CallStaticVoidMethod(g_callback_manager_clz->Object(), g_unregister_callback,
+                              proxy.Object());
+  }
+  g_java_proxy_map.erase(dart_object_address);
 }
 
 jobject GetNativeCallbackProxyObject(void *dart_object) {
@@ -161,5 +200,4 @@ jobject GetNativeCallbackProxyObject(void *dart_object) {
 
   return g_java_proxy_map[(int64_t) dart_object].Object();
 }
-
 }

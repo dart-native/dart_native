@@ -14,10 +14,19 @@ void registerCallback(dynamic target, Function function, String functionName) {
   Pointer<Utf8> targetName = target.className!.toNativeUtf8();
   Pointer<Utf8> funNamePtr = functionName.toNativeUtf8();
   CallBackManager.instance.registerCallBack(targetPtr, functionName, function);
-  registerNativeCallback!(
+  registerNativeCallback(
       targetPtr, targetName, funNamePtr, _callbackPtr, nativePort);
   calloc.free(targetName);
   calloc.free(funNamePtr);
+}
+
+void unregisterCallback(dynamic target) {
+  if (target is! JObject) {
+    return;
+  }
+  Pointer<Void> targetPtr = target.pointer.cast<Void>();
+  CallBackManager.instance.unregisterCallback(targetPtr);
+  unregisterNativeCallback(targetPtr);
 }
 
 class CallBackManager {
@@ -37,6 +46,10 @@ class CallBackManager {
       methodsMap[functionName] = function;
     }
     _callbackManager[targetPtr] = methodsMap;
+  }
+
+  unregisterCallback(Pointer<Void> targetPtr) {
+    _callbackManager.remove(targetPtr);
   }
 
   Function? getCallbackFunctionOnTarget(

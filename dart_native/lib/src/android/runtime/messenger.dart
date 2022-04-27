@@ -12,10 +12,10 @@ Pointer<Void> _newNativeObject(String className, {List? args}) {
   Pointer<Utf8> classNamePtr = className.toNativeUtf8();
   if (args == null || args.isEmpty) {
     objectPtr =
-        nativeCreateObject!(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
+        nativeCreateObject(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
   } else {
     NativeArguments nativeArguments = _parseNativeArguments(args);
-    objectPtr = nativeCreateObject!(
+    objectPtr = nativeCreateObject(
         classNamePtr,
         nativeArguments.pointers,
         nativeArguments.typePointers,
@@ -42,7 +42,7 @@ Pointer<Void> newObject(String className, JObject object,
 }
 
 String getJClassName(Pointer<Void> pointer) {
-  final namePtr = getJavaClassName!(pointer);
+  final namePtr = getJavaClassName(pointer);
   final name = fromUtf16(namePtr);
   if (name == null) {
     throw 'getJClassName error, namePtr is nullptr';
@@ -111,7 +111,7 @@ dynamic _doInvoke(
   NativeArguments nativeArguments =
       _parseNativeArguments(args, argsSignature: assignedSignaturePtr);
 
-  Pointer<Void> invokeMethodRet = nativeInvoke!(
+  Pointer<Void> invokeMethodRet = nativeInvoke(
       objPtr,
       methodNamePtr,
       nativeArguments.pointers,
