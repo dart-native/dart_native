@@ -159,7 +159,7 @@ void DoRegisterNativeCallback(void *dart_object,
   JavaLocalRef<jstring> new_cls_name(env->NewStringUTF(cls_name), env);
   JavaLocalRef<jobject> proxy_object(env->CallStaticObjectMethod(g_callback_manager_clz->Object(),
                                                                  g_register_callback,
-                                                                 dart_port,
+                                                                 dart_object_address,
                                                                  new_cls_name.Object()), env);
   if (ClearException(env) || proxy_object.IsNull()) {
     DNError("DoRegisterNativeCallback error, register callback error!");

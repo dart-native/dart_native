@@ -14,8 +14,8 @@ public class CallbackManager {
     private static final String TAG = "CallbackManager";
     private static CallbackManager sCallbackManager;
 
-    private CallbackInvocationHandler mCallbackHandler = new CallbackInvocationHandler();
-    private HashMap<Object, Long> mObjectMap = new HashMap<>();
+    private final CallbackInvocationHandler mCallbackHandler = new CallbackInvocationHandler();
+    private final HashMap<Integer, Long> mObjectMap = new HashMap<>();
 
     static CallbackManager getInstance() {
         if (sCallbackManager == null) {
@@ -36,8 +36,7 @@ public class CallbackManager {
                     clz.getClassLoader(),
                     new Class[] { clz },
                     getInstance().mCallbackHandler);
-
-            getInstance().mObjectMap.put(proxyObject, dartAddr);
+            getInstance().mObjectMap.put(System.identityHashCode(proxyObject), dartAddr);
             return proxyObject;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -46,15 +45,14 @@ public class CallbackManager {
     }
 
     public static void unRegisterCallback(Object proxyObject) {
-        getInstance().mObjectMap.remove(proxyObject);
+        getInstance().mObjectMap.remove(System.identityHashCode(proxyObject));
     }
 
     long getRegisterDartAddr(Object proxyObject) {
         if (proxyObject == null) {
             return 0L;
         }
-
-        Long dartAddress = getInstance().mObjectMap.get(proxyObject);
+        Long dartAddress = getInstance().mObjectMap.get(System.identityHashCode(proxyObject));
         return dartAddress == null ? 0L : dartAddress;
     }
 
