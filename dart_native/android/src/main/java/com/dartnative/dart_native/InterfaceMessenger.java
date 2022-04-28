@@ -52,9 +52,7 @@ public class InterfaceMessenger {
 
     @Nullable
     public Object getInterface(String interfaceName) {
-        Object dnInterface;
-        dnInterface = mInterfaceMap.get(interfaceName);
-        return dnInterface;
+        return mInterfaceMap.get(interfaceName);
     }
 
     @Nullable

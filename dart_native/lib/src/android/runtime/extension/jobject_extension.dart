@@ -208,4 +208,14 @@ extension JObjectCallMethod on JObject {
     }
     return JHashMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
   }
+
+  /// async call native method which return DirectByteBuffer
+  Future<NativeByte?> callByteBufferMethod(String methodName,
+      {List? args,
+      List<String>? assignedSignature,
+      Thread thread = Thread.mainThread}) async {
+    return callMethod(methodName, 'Ljava/nio/ByteBuffer;',
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) => value);
+  }
 }

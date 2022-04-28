@@ -163,4 +163,11 @@ extension JObjectSyncCallMethod on JObject {
     }
     return JHashMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
   }
+
+  /// call native method which return DirectByteBuffer
+  NativeByte? callByteBufferMethodSync(String methodName,
+      {List? args, List<String>? assignedSignature}) {
+    return callMethodSync(methodName, 'Ljava/nio/ByteBuffer;',
+        args: args, assignedSignature: assignedSignature);
+  }
 }

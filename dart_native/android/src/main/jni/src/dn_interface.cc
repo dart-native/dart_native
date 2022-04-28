@@ -218,14 +218,14 @@ void *InterfaceWithName(char *name, JNIEnv *env) {
   }
 
   auto interface =
-      env->CallObjectMethod(g_interface_registry->Object(),
-                            g_get_interface,
-                            interfaceName.Object());
+      JavaLocalRef<jobject>(env->CallObjectMethod(g_interface_registry->Object(),
+                                                  g_get_interface,
+                                                  interfaceName.Object()), env);
   if (ClearException(env)) {
     DNError("InterfaceWithName error, get native interface object error!");
     return nullptr;
   }
-  return interface;
+  return env->NewGlobalRef(interface.Object());
 }
 
 void *InterfaceMetaData(char *name, JNIEnv *env) {

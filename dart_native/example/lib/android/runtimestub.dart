@@ -142,6 +142,6 @@ class RuntimeStub extends JObject {
   }
 
   NativeByte? getByteBuffer() {
-    return callMethodSync('getDirectByteBuffer', 'Ljava/nio/ByteBuffer;');
+    return callByteBufferMethodSync('getDirectByteBuffer');
   }
 }
