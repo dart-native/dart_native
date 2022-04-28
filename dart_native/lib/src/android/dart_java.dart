@@ -17,6 +17,7 @@ export 'foundation/wrapperclass/float.dart';
 export 'foundation/wrapperclass/long.dart';
 export 'foundation/wrapperclass/short.dart';
 export 'foundation/wrapperclass/boxing_unboxing.dart';
+export 'foundation/direct_byte_buffer.dart';
 export 'foundation/native_type.dart';
 export 'common/callback_manager.dart';
 

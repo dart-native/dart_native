@@ -209,3 +209,48 @@ void AsyncInvokeResult(int64_t response_id, void *result, char *result_type) {
 
   DartAsyncResult(response_id, result, result_type, env);
 }
+
+void *GetDirectByteBufferData(void *object) {
+  auto env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("GetDirectByteBufferData error, no JNIEnv provided!");
+    return nullptr;
+  }
+
+  void *buffer = env->GetDirectBufferAddress((jobject) object);
+  if (ClearException(env)) {
+    DNError("GetDirectByteBufferData error, GetDirectBufferAddress error!");
+    return nullptr;
+  }
+  return buffer;
+}
+
+int64_t GetDirectByteBufferSize(void *object) {
+  auto env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("GetDirectByteBufferData error, no JNIEnv provided!");
+    return 0;
+  }
+
+  int64_t size = env->GetDirectBufferCapacity((jobject) object);
+  if (ClearException(env)) {
+    DNError("GetDirectByteBufferData error, GetDirectBufferAddress error!");
+    return 0;
+  }
+  return size;
+}
+
+void *NewDirectByteBuffer(void *data, int64_t size) {
+  auto env = AttachCurrentThread();
+  if (env == nullptr) {
+    DNError("NewDirectByteBuffer error, no JNIEnv provided!");
+    return nullptr;
+  }
+
+  auto buffer = JavaLocalRef<jobject>(env->NewDirectByteBuffer(data, size), env);
+  if (ClearException(env)) {
+    DNError("NewDirectByteBuffer error, call NewDirectByteBuffer error!");
+    return nullptr;
+  }
+  return env->NewGlobalRef(buffer.Object());
+}

@@ -32,6 +32,13 @@ void requestExecuteCallback(dynamic message) {
   executeCallback(work);
 }
 
+/// Bind dart object lifecycle with native object.
+void bindLifeCycleWithJava(Pointer<Void>? obj) {
+  if (initDartAPISuccess && obj != null) {
+    passJObjectToC(obj, obj);
+  }
+}
+
 Future<void> initSoPath(String? soPath) async {
   if (soPath != null && soPath.isNotEmpty) {
     _libPath = soPath;

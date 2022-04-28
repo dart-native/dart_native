@@ -23,7 +23,7 @@ class NativeByte {
     if (Platform.isIOS || Platform.isMacOS) {
       raw = NSData(bytes, lengthInBytes);
     } else if (Platform.isAndroid) {
-      // TODO: support data on Android
+      raw = DirectByteBuffer(bytes, lengthInBytes);
     } else {
       throw 'Platform not supported: ${Platform.localeName}';
     }

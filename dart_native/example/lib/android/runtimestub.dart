@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:typed_data';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/entity.dart';
@@ -138,5 +139,9 @@ class RuntimeStub extends JObject {
 
   Map? getMap(Map map) {
     return callHashMapMethodSync("getMap", args: [JHashMap(map)]);
+  }
+
+  DirectByteBuffer getByteBuffer() {
+    return callMethodSync('getDirectByteBuffer', 'Ljava/nio/ByteBuffer;');
   }
 }

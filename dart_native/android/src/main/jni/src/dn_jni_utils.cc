@@ -6,10 +6,12 @@ namespace dartnative {
 
 static JavaGlobalRef<jobject> *g_class_loader = nullptr;
 static jmethodID g_find_class_method = nullptr;
-/// for invoke result compare
+// for invoke result compare
 static JavaGlobalRef<jclass> *g_str_clazz = nullptr;
+// for ByteBuffer invoke
+static JavaGlobalRef<jclass> *g_byte_buffer_clz = nullptr;
 
-void InitClazz(JNIEnv * env) {
+void InitClazz(JNIEnv *env) {
   /// cache classLoader
   JavaLocalRef<jclass> plugin(env->FindClass("com/dartnative/dart_native/DartNativePlugin"), env);
   if (plugin.IsNull()) {
@@ -42,8 +44,7 @@ void InitClazz(JNIEnv * env) {
     return;
   }
 
-  g_class_loader =
-      new JavaGlobalRef<jobject>(classLoader.Object(), env);
+  g_class_loader = new JavaGlobalRef<jobject>(classLoader.Object(), env);
   g_find_class_method = env->GetMethodID(classLoaderClass.Object(), "findClass",
                                          "(Ljava/lang/String;)Ljava/lang/Class;");
   if (g_find_class_method == nullptr) {
@@ -59,16 +60,36 @@ void InitClazz(JNIEnv * env) {
     DNError("Could not locate java/lang/String class!");
     return;
   }
-  g_str_clazz =
-      new JavaGlobalRef<jclass>(strCls.Object(), env);
+  g_str_clazz = new JavaGlobalRef<jclass>(strCls.Object(), env);
+
+  JavaLocalRef<jclass> byte_buffer_clz(env->FindClass("java/nio/DirectByteBuffer"), env);
+  if (byte_buffer_clz.IsNull()) {
+    ClearException(env);
+    DNError("Could not locate java/nio/DirectByteBuffer class!");
+    return;
+  }
+  g_byte_buffer_clz = new JavaGlobalRef<jclass>(byte_buffer_clz.Object(), env);
 }
 
 jobject GetClassLoaderObj() {
+  if (g_class_loader == nullptr) {
+    return nullptr;
+  }
   return g_class_loader->Object();
 }
 
 jclass GetStringClazz() {
+  if (g_str_clazz == nullptr) {
+    return nullptr;
+  }
   return g_str_clazz->Object();
+}
+
+jclass GetDirectByteBufferClazz() {
+  if (g_byte_buffer_clz == nullptr) {
+    return nullptr;
+  }
+  return g_byte_buffer_clz->Object();
 }
 
 jmethodID GetFindClassMethod() {

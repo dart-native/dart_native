@@ -3,6 +3,8 @@ package com.dartnative.dart_native_example;
 import android.os.Handler;
 import android.os.Looper;
 import io.flutter.Log;
+
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -188,5 +190,12 @@ public class RuntimeStub {
         backMap.put("1", 1.0f);
         backMap.put("2", 2.0f);
         return backMap;
+    }
+
+    public ByteBuffer getDirectByteBuffer() {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(20);
+        byteBuffer.put("getDirectByteBuffer".getBytes());
+        byteBuffer.rewind();
+        return byteBuffer;
     }
 }

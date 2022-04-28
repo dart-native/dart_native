@@ -113,8 +113,7 @@ jvalue *ConvertArgs2JValues(void **arguments,
           /// convert from object cache
           /// check callback cache, if true using proxy object
           jobject object = GetNativeCallbackProxyObject(*arguments);
-          argValues[index].l =
-              object == nullptr ? static_cast<jobject>(*arguments) : object;
+          argValues[index].l = object == nullptr ? static_cast<jobject>(*arguments) : object;
         }
         break;
     }
@@ -144,10 +143,24 @@ void *DoInvokeNativeMethod(jobject object,
 
   JavaLocalRef<jclass> cls(env->GetObjectClass(object), env);
   if (cls.IsNull()) {
+    ClearException(env);
     DNError("DoInvokeNativeMethod error, could not get class!");
     free(methodName);
     free(returnType);
     free(arguments);
+    return nullptr;
+  }
+
+  char *methodSignature = GenerateSignature(typePointers, argumentCount, returnType);
+  jmethodID method = env->GetMethodID(cls.Object(), methodName, methodSignature);
+  if (method == nullptr) {
+    ClearException(env);
+    DNError("DoInvokeNativeMethod error, method is null, signature is %s#%s!",
+            methodName, methodSignature);
+    free(methodName);
+    free(returnType);
+    free(arguments);
+    free(methodSignature);
     return nullptr;
   }
 
@@ -158,19 +171,6 @@ void *DoInvokeNativeMethod(jobject object,
                                         stringTypeBitmask,
                                         jObjBucket);
 
-  char *methodSignature =
-      GenerateSignature(typePointers, argumentCount, returnType);
-  jmethodID method = env->GetMethodID(cls.Object(), methodName, methodSignature);
-  if (method == nullptr) {
-    DNError("DoInvokeNativeMethod error, method is null, signature is %s#%s!",
-            methodName, methodSignature);
-    free(methodName);
-    free(returnType);
-    free(arguments);
-    free(methodSignature);
-    delete[] argValues;
-    return nullptr;
-  }
   /// Save return type, dart will use this pointer.
   typePointers[argumentCount] = returnType;
 
@@ -208,25 +208,24 @@ void *DoInvokeNativeMethod(jobject object,
       break;
     case 'V':env->CallVoidMethodA(object, method, argValues);
       break;
-    default:
-      if (strcmp(returnType, "Ljava/lang/String;") == 0) {
+    default:JavaLocalRef<jobject> ret(env->CallObjectMethodA(object, method, argValues), env);
+      if (env->IsInstanceOf(ret.Object(), GetDirectByteBufferClazz())) {
+        typePointers[argumentCount] = (char *) "java.nio.DirectByteBuffer";
+        jobject gObj = env->NewGlobalRef(ret.Object());
+        nativeInvokeResult = gObj;
+      } else if (env->IsInstanceOf(ret.Object(), GetStringClazz())) {
+        /// mark the last pointer as string
+        /// dart will check this pointer
         typePointers[argumentCount] = (char *) "java.lang.String";
-        JavaLocalRef<jstring> javaString((jstring) env->CallObjectMethodA(object, method, argValues), env);
-        nativeInvokeResult = JavaStringToDartString(env, javaString.Object());
+        nativeInvokeResult = JavaStringToDartString(env, (jstring) ret.Object());
       } else {
-        JavaLocalRef<jobject> obj(env->CallObjectMethodA(object, method, argValues), env);
-        if (!obj.IsNull()) {
-          if (env->IsInstanceOf(obj.Object(), GetStringClazz())) {
-            /// mark the last pointer as string
-            /// dart will check this pointer
-            typePointers[argumentCount] = (char *) "java.lang.String";
-            nativeInvokeResult = JavaStringToDartString(env, (jstring) obj.Object());
-          } else {
-            typePointers[argumentCount] = (char *) "java.lang.Object";
-            jobject gObj = env->NewGlobalRef(obj.Object());
-            nativeInvokeResult = gObj;
-          }
+        typePointers[argumentCount] = (char *) "java.lang.Object";
+        if (ret.IsNull()) {
+          nativeInvokeResult = nullptr;
+          break;
         }
+        jobject gObj = env->NewGlobalRef(ret.Object());
+        nativeInvokeResult = gObj;
       }
       break;
   }

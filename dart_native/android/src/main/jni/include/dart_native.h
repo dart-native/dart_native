@@ -67,3 +67,12 @@ DN_EXTERN void InterfaceRegisterDartInterface(char *interface, char *method,
  * Dart async invoke result.
  * */
 DN_EXTERN void AsyncInvokeResult(int64_t response_id, void *result, char *result_type);
+
+/**
+ * DirectByteBuffer
+ * */
+DN_EXTERN void *NewDirectByteBuffer(void *data, int64_t size);
+
+DN_EXTERN void *GetDirectByteBufferData(void *object);
+
+DN_EXTERN int64_t GetDirectByteBufferSize(void *object);

@@ -118,6 +118,10 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
     return fromUtf16(ptr);
   }
 
+  if (returnType == 'java.nio.DirectByteBuffer') {
+    return DirectByteBuffer.fromPointer(ptr);
+  }
+
   dynamic result;
   ByteBuffer buffer = Int64List.fromList([ptr.address]).buffer;
   ByteData data = ByteData.view(buffer);

@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/common/library.dart';
-import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
 
 /// Convert java object pointer to dart object which extends [JObject].
@@ -11,13 +10,6 @@ typedef ConvertorToDartFromPointer = dynamic Function(Pointer<Void> ptr);
 /// Use classname create a null pointer.
 JObject createNullJObj(String clsName) {
   return JObject.fromPointer(nullptr.cast(), className: clsName);
-}
-
-/// Bind dart object lifecycle with native object.
-void bindLifeCycleWithNative(JObject? obj) {
-  if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
-    passJObjectToC(obj, obj.pointer.cast<Void>());
-  }
 }
 
 /// When invoke with async method, dart can set run thread.
@@ -81,7 +73,7 @@ class JObject extends NativeObject {
           ' or use @nativeJavaClass annotation to specify the java class';
     }
     _ptr = newObject(_cls!, this, args: args, isInterface: isInterface);
-    bindLifeCycleWithNative(this);
+    bindLifeCycleWithJava(_ptr);
   }
 
   /// Wrapper java object pointer as dart object.
@@ -97,7 +89,7 @@ class JObject extends NativeObject {
     }
     _ptr = pointer;
     _cls = className ?? getJClassName(pointer);
-    bindLifeCycleWithNative(this);
+    bindLifeCycleWithJava(_ptr);
   }
 
   /// Sync call java native method, you can use [JObjectSyncCallMethod] extension method which is more simplify.

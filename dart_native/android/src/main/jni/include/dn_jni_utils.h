@@ -11,6 +11,8 @@ jclass GetStringClazz();
 
 jmethodID GetFindClassMethod();
 
+jclass GetDirectByteBufferClazz();
+
 jstring DartStringToJavaString(JNIEnv *env, void *value);
 
 /**
