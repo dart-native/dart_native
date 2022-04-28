@@ -13,7 +13,7 @@ import java.util.Map;
 public class InterfaceMessenger {
     private volatile static InterfaceMessenger registry;
 
-    private final Map<String, Object> mInterfaceMap = new HashMap<>();
+    private final Map<String, DartNativeInterface> mInterfaceMap = new HashMap<>();
     private final HashMap<String, String> mMethodSigMap = new HashMap<>();
 
     @NonNull
@@ -31,7 +31,7 @@ public class InterfaceMessenger {
         return registry;
     }
 
-    public void registerInterface(@NonNull Object module) {
+    public void registerInterface(@NonNull DartNativeInterface module) {
         InterfaceEntry interfaceEntry = module.getClass().getAnnotation(InterfaceEntry.class);
         if (interfaceEntry == null || interfaceEntry.name().isEmpty()) {
             return;
@@ -51,13 +51,13 @@ public class InterfaceMessenger {
     }
 
     @Nullable
-    public Object getInterface(String interfaceName) {
+    public DartNativeInterface getInterface(String interfaceName) {
         return mInterfaceMap.get(interfaceName);
     }
 
     @Nullable
     public String getMethodsSignature(String interfaceName) {
-        Object obj = mInterfaceMap.get(interfaceName);
+        DartNativeInterface obj = mInterfaceMap.get(interfaceName);
         if (obj == null) {
             return null;
         }

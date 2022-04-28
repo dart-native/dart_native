@@ -179,8 +179,9 @@ void InitInterface(JNIEnv *env) {
 
   g_interface_registry = new JavaGlobalRef<jobject>(registryObj.Object(), env);
 
-  g_get_interface = env->GetMethodID(messenger_clz.Object(), "getInterface",
-                                     "(Ljava/lang/String;)Ljava/lang/Object;");
+  g_get_interface = env->GetMethodID(messenger_clz.Object(),
+                                     "getInterface",
+                                     "(Ljava/lang/String;)Lcom/dartnative/dart_native/DartNativeInterface;");
   if (g_get_interface == nullptr) {
     ClearException(env);
     DNError("Could not locate InterfaceMessenger#getInterface method!");
