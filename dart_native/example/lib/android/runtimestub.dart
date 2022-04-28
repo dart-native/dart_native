@@ -141,7 +141,7 @@ class RuntimeStub extends JObject {
     return callHashMapMethodSync("getMap", args: [JHashMap(map)]);
   }
 
-  DirectByteBuffer getByteBuffer() {
+  NativeByte? getByteBuffer() {
     return callMethodSync('getDirectByteBuffer', 'Ljava/nio/ByteBuffer;');
   }
 }

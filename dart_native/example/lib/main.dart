@@ -71,16 +71,6 @@ class _DartNativeAppState extends State<DartNativeApp> {
     return interface.invokeMethodSync('getUTF8Data', args: [str]);
   }
 
-  void testCallback() {
-    interface.invokeMethodSync('testCallback', args: [
-      (bool success, String result) {
-        if (success) {
-          Log.i(result);
-        }
-      }
-    ]);
-  }
-
   Future<void> calculate() async {
     final aStr = _controllerA.text;
     final bStr = _controllerB.text;
@@ -94,7 +84,6 @@ class _DartNativeAppState extends State<DartNativeApp> {
     setState(() {
       result = r;
     });
-    testCallback();
   }
 
   @override

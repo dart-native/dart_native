@@ -4,6 +4,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -41,7 +43,16 @@ public class InterfaceDemo extends DartNativeInterface {
         return a + b;
     }
 
-    @InterfaceMethod(name = "log")
-    public void log(String str) {
+    @InterfaceMethod(name = "finalizer")
+    public void finalizer() {
+        // do nothing
+    }
+
+    @InterfaceMethod(name = "getUTF8Data")
+    public ByteBuffer getUTF8Data(String str) {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(str.getBytes().length);
+        byteBuffer.put(str.getBytes());
+        byteBuffer.rewind();
+        return byteBuffer;
     }
 }

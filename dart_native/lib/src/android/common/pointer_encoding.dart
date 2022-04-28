@@ -119,7 +119,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
   }
 
   if (returnType == 'java.nio.DirectByteBuffer') {
-    return DirectByteBuffer.fromPointer(ptr);
+    return NativeByte.fromRaw(DirectByteBuffer.fromPointer(ptr));
   }
 
   dynamic result;

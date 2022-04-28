@@ -162,7 +162,7 @@ testAndroid(RuntimeStub stub) async {
 
   final buffer = stub.getByteBuffer();
   print(
-      "get direct byte buffer result ${buffer.bytes.cast<Utf8>().toDartString(length: buffer.lengthInBytes)}");
+      "get direct byte buffer result ${buffer?.bytes.cast<Utf8>().toDartString(length: buffer.lengthInBytes)}");
 }
 
 int currentTimeMillis() {
