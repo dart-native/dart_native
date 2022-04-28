@@ -19,13 +19,9 @@ public class InterfaceDemo extends DartNativeInterface {
     @InterfaceMethod(name = "hello")
     public String hello(String str) {
         Log.d("InterfaceDemo", "str " + str);
-        invokeMethod("totalCost", new Object[]{10.0, 10, Arrays.asList("hello", "world")}, new DartNativeResult() {
+        invokeMethod("totalCost", new Object[]{0.123456789, 10, Arrays.asList("hello", "world")}, new DartNativeResult() {
             @Override
             public void onResult(@Nullable Object result) {
-                if (result == null) {
-                    Log.d("InterfaceDemo", "result is null");
-                    return;
-                }
                 Map retMap = (Map) result;
                 Log.d("InterfaceDemo", "map size " + retMap.size() + " " + retMap.toString());
             }

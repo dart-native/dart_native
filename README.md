@@ -112,7 +112,20 @@ Corresponding Objective-C code:
 Corresponding Java code:
 
 ```java
-TODO:
+invokeMethod("totalCost", new Object[]{0.123456789, 10, Arrays.asList("hello", "world")},
+             new DartNativeResult() {
+                @Override
+                public void onResult(@Nullable Object result) {
+                    Map retMap = (Map) result;
+                    // do something
+                }
+
+                @Override
+                public void error(@Nullable String errorMessage) {
+                    // do something
+                }
+              }
+);
 ```
 
 #### Dart Finalizer
