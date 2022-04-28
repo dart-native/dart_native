@@ -54,7 +54,7 @@ jobject InvokeDartFunction(bool is_same_thread,
                            char *return_type,
                            Dart_Port port,
                            JNIEnv *env,
-                           std::function<void(jobject)> invoke_finish);
+                           const std::function<void(jobject)>& async_callback);
 
 jobject ConvertDartValue2JavaValue(char *return_type, void *dart_value, JNIEnv *env = nullptr);
 

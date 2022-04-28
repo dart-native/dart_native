@@ -38,6 +38,6 @@ public class DartNativeInterface {
             argumentTypes[i] = arguments[i] != null ? arguments[i].getClass().getName() : null;
         }
 
-        InterfaceRegistry.getInstance().sendMessage(interfaceEntry.name(), method, arguments, argumentTypes, argumentCount, result);
+        InterfaceMessenger.getInstance().sendMessage(interfaceEntry.name(), method, arguments, argumentTypes, argumentCount, result);
     }
 }

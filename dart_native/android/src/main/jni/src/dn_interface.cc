@@ -70,7 +70,7 @@ static void InvokeDart(jstring interface_name,
   }
 
   // release jstring and global reference
-  auto invoke_finish = [=](jobject ret) {
+  auto async_callback = [=](jobject ret) {
     auto clear_env = AttachCurrentThread();
     if (clear_env == nullptr) {
       DNError("Clear_env error, clear_env no JNIEnv provided!");
@@ -113,7 +113,7 @@ static void InvokeDart(jstring interface_name,
                      (char *) "java.lang.Object",
                      dart_function.dart_port,
                      env,
-                     invoke_finish);
+                     async_callback);
 }
 
 static void InterfaceNativeInvokeDart(JNIEnv *env,
@@ -138,11 +138,11 @@ static void InterfaceNativeInvokeDart(JNIEnv *env,
 }
 
 void InitInterface(JNIEnv *env) {
-  auto registryClz =
-      FindClass("com/dartnative/dart_native/InterfaceRegistry", env);
-  if (registryClz.IsNull()) {
+  auto messenger_clz =
+      FindClass("com/dartnative/dart_native/InterfaceMessenger", env);
+  if (messenger_clz.IsNull()) {
     ClearException(env);
-    DNError("InitInterface error, registryClz is null!");
+    DNError("InitInterface error, messenger_clz is null!");
     return;
   }
 
@@ -153,24 +153,24 @@ void InitInterface(JNIEnv *env) {
           .fnPtr = (void *) InterfaceNativeInvokeDart
       }
   };
-  if (env->RegisterNatives(registryClz.Object(), interface_jni_methods, 1) < 0) {
+  if (env->RegisterNatives(messenger_clz.Object(), interface_jni_methods, 1) < 0) {
     ClearException(env);
     DNError("InitInterface error, registerNatives error!");
     return;
   }
 
   auto instance_id =
-      env->GetStaticMethodID(registryClz.Object(),
+      env->GetStaticMethodID(messenger_clz.Object(),
                              "getInstance",
-                             "()Lcom/dartnative/dart_native/InterfaceRegistry;");
+                             "()Lcom/dartnative/dart_native/InterfaceMessenger;");
   if (instance_id == nullptr) {
     ClearException(env);
-    DNError("Could not locate InterfaceRegistry#getInstance method!");
+    DNError("Could not locate InterfaceMessenger#getInstance method!");
     return;
   }
 
   JavaLocalRef<jobject>
-      registryObj(env->CallStaticObjectMethod(registryClz.Object(), instance_id), env);
+      registryObj(env->CallStaticObjectMethod(messenger_clz.Object(), instance_id), env);
   if (registryObj.IsNull()) {
     ClearException(env);
     DNError("Could not init registryObj!");
@@ -179,27 +179,27 @@ void InitInterface(JNIEnv *env) {
 
   g_interface_registry = new JavaGlobalRef<jobject>(registryObj.Object(), env);
 
-  g_get_interface = env->GetMethodID(registryClz.Object(), "getInterface",
+  g_get_interface = env->GetMethodID(messenger_clz.Object(), "getInterface",
                                      "(Ljava/lang/String;)Ljava/lang/Object;");
   if (g_get_interface == nullptr) {
     ClearException(env);
-    DNError("Could not locate InterfaceRegistry#getInterface method!");
+    DNError("Could not locate InterfaceMessenger#getInterface method!");
     return;
   }
 
-  g_get_signature = env->GetMethodID(registryClz.Object(), "getMethodsSignature",
+  g_get_signature = env->GetMethodID(messenger_clz.Object(), "getMethodsSignature",
                                      "(Ljava/lang/String;)Ljava/lang/String;");
   if (g_get_signature == nullptr) {
     ClearException(env);
-    DNError("Could not locate InterfaceRegistry#getMethodsSignature method!");
+    DNError("Could not locate InterfaceMessenger#getMethodsSignature method!");
     return;
   }
 
-  g_handle_response = env->GetMethodID(registryClz.Object(), "handleInterfaceResponse",
+  g_handle_response = env->GetMethodID(messenger_clz.Object(), "handleInterfaceResponse",
                                        "(ILjava/lang/Object;Ljava/lang/String;)V");
   if (g_handle_response == nullptr) {
     ClearException(env);
-    DNError("Could not locate InterfaceRegistry#handleInterfaceResponse method!");
+    DNError("Could not locate InterfaceMessenger#handleInterfaceResponse method!");
     return;
   }
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <semaphore.h>
 #include <unordered_map>
+#include <unistd.h>
 #include "dn_native_invoker.h"
 #include "jni_object_ref.h"
 #include "dn_jni_utils.h"
@@ -19,16 +20,30 @@ static jmethodID g_register_callback = nullptr;
 static jmethodID g_unregister_callback = nullptr;
 
 struct CallbackInfo {
-  NativeMethodCallback method_callback;
-  Dart_Port dart_port;
-  std::__thread_id thread_id;
+  NativeMethodCallback method_callback = nullptr;
+  Dart_Port dart_port = 0;
+  uint64_t thread_id = 0;
 };
 
 // Dart callback info cache.
 static std::unordered_map<int64_t, std::unordered_map<std::string, CallbackInfo>>
     g_dart_callback_info_map;
 // Java proxy object cache.
-static std::unordered_map<int64_t, JavaGlobalRef<jobject>> g_java_proxy_map;
+static std::unordered_map<int64_t, JavaGlobalRef <jobject>> g_java_proxy_map;
+std::mutex g_callback_map_mtx;
+
+std::unordered_map<std::string, CallbackInfo> GetDartRegisterCallback(jlong dart_object_address) {
+  std::lock_guard<std::mutex> lockGuard(g_callback_map_mtx);
+  return g_dart_callback_info_map[dart_object_address];
+}
+
+JavaGlobalRef<jobject> RemoveDartRegisterCallback(jlong dart_object_address) {
+  std::lock_guard<std::mutex> lockGuard(g_callback_map_mtx);
+  g_dart_callback_info_map.erase(dart_object_address);
+  auto proxy = g_java_proxy_map[dart_object_address];
+  g_java_proxy_map.erase(dart_object_address);
+  return proxy;
+}
 
 static jobject HookNativeCallback(JNIEnv *env,
                                   jobject obj,
@@ -38,7 +53,7 @@ static jobject HookNativeCallback(JNIEnv *env,
                                   jobjectArray argument_types,
                                   jobjectArray arguments_array,
                                   jstring return_type_str) {
-  auto callbacks = g_dart_callback_info_map[dart_object_address];
+  auto callbacks = GetDartRegisterCallback(dart_object_address);
   if (callbacks.empty()) {
     DNError("Invoke dart function error, not register this dart object!");
     return nullptr;
@@ -57,7 +72,7 @@ static jobject HookNativeCallback(JNIEnv *env,
       return_type_str == nullptr ? nullptr : (char *) env->GetStringUTFChars(return_type_str, nullptr);
 
   // release jstring
-  auto invoke_finish = [=](jobject) {
+  auto async_callback = [=](jobject) {
     auto clear_env = AttachCurrentThread();
     if (clear_env == nullptr) {
       DNError("Clear_env error, clear_env no JNIEnv provided!");
@@ -74,7 +89,7 @@ static jobject HookNativeCallback(JNIEnv *env,
   };
 
   auto callback_result =
-      InvokeDartFunction(callback_info.thread_id == std::this_thread::get_id(),
+      InvokeDartFunction(callback_info.thread_id == static_cast<uint64_t>(gettid()),
                          0,
                          callback_info.method_callback,
                          (void *) dart_object_address,
@@ -85,7 +100,7 @@ static jobject HookNativeCallback(JNIEnv *env,
                          return_type,
                          callback_info.dart_port,
                          env,
-                         invoke_finish);
+                         async_callback);
 
   return callback_result;
 }
@@ -165,39 +180,41 @@ void DoRegisterNativeCallback(void *dart_object,
     DNError("DoRegisterNativeCallback error, register callback error!");
     return;
   }
+  std::lock_guard<std::mutex> lockGuard(g_callback_map_mtx);
   auto callback_method_map = g_dart_callback_info_map[dart_object_address];
   callback_method_map[std::string(fun_name)] =
-      {(NativeMethodCallback) callback, dart_port, std::this_thread::get_id()};
+      {(NativeMethodCallback) callback, dart_port, static_cast<uint64_t>(gettid())};
   g_dart_callback_info_map[dart_object_address] = callback_method_map;
   g_java_proxy_map[dart_object_address] = JavaGlobalRef<jobject>(proxy_object.Object(), env);
 }
 
 void DoUnregisterNativeCallback(void *dart_object, JNIEnv *env) {
+  auto proxy = RemoveDartRegisterCallback((int64_t) dart_object);
+
   if (g_callback_manager_clz == nullptr || g_callback_manager_clz->IsNull()
       || g_unregister_callback == nullptr) {
     DNError("DoUnregisterNativeCallback error, class or unregister method is null!");
     return;
   }
-
-  auto dart_object_address = (int64_t) dart_object;
-  g_dart_callback_info_map.erase(dart_object_address);
-  auto proxy = g_java_proxy_map[dart_object_address];
-  if (g_java_proxy_map.find(dart_object_address) != g_java_proxy_map.end() && !proxy.IsNull()) {
+  if (!proxy.IsNull()) {
     env->CallStaticVoidMethod(g_callback_manager_clz->Object(), g_unregister_callback,
                               proxy.Object());
+    if (ClearException(env)) {
+      DNError("Unregister native callback error!");
+    }
   }
-  g_java_proxy_map.erase(dart_object_address);
 }
 
 jobject GetNativeCallbackProxyObject(void *dart_object) {
   if (dart_object == nullptr) {
     return nullptr;
   }
-
-  if (g_java_proxy_map.find((int64_t) dart_object) == g_java_proxy_map.end()) {
+  std::lock_guard<std::mutex> lockGuard(g_callback_map_mtx);
+  auto it = g_java_proxy_map.find((int64_t) dart_object);
+  if (it == g_java_proxy_map.end()) {
     return nullptr;
   }
 
-  return g_java_proxy_map[(int64_t) dart_object].Object();
+  return it->second.Object();
 }
 }

@@ -10,21 +10,21 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InterfaceRegistry {
-    private volatile static InterfaceRegistry registry;
+public class InterfaceMessenger {
+    private volatile static InterfaceMessenger registry;
 
     private final Map<String, Object> mInterfaceMap = new HashMap<>();
-    private final HashMap<Class, String> mMethodSigMap = new HashMap<>();
+    private final HashMap<String, String> mMethodSigMap = new HashMap<>();
 
     @NonNull
     private final Map<Integer, DartNativeInterface.DartNativeResult> pendingReplies = new HashMap<>();
     private int nextReplyId = 1;
 
-    public static InterfaceRegistry getInstance() {
+    public static InterfaceMessenger getInstance() {
         if (registry == null) {
-            synchronized (InterfaceRegistry.class) {
+            synchronized (InterfaceMessenger.class) {
                 if (registry == null) {
-                    registry = new InterfaceRegistry();
+                    registry = new InterfaceMessenger();
                 }
             }
         }
@@ -69,8 +69,8 @@ public class InterfaceRegistry {
             return null;
         }
 
-        if (mMethodSigMap.containsKey(clazz)) {
-            return mMethodSigMap.get(clazz);
+        if (mMethodSigMap.containsKey(interfaceName)) {
+            return mMethodSigMap.get(interfaceName);
         }
 
         HashMap<String, String> sigMap = new HashMap<>();
@@ -89,7 +89,7 @@ public class InterfaceRegistry {
         // mMethodSigMap value format like:
         // {buildSignature=buildSignature:Ljava/lang/String;'Ljava/lang/reflect/Method;}
         // It will decode in dart side.
-        mMethodSigMap.put(clazz, sigMap.toString());
+        mMethodSigMap.put(interfaceName, sigMap.toString());
         return sigMap.toString();
     }
 

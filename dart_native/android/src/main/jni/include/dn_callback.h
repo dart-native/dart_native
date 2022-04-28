@@ -16,7 +16,7 @@ typedef void(*NativeMethodCallback)(void *targetPtr,
                                     char **argTypes,
                                     int argCount,
                                     int return_async,
-                                    int response_id);
+                                    int64_t response_id);
 
 void InitCallback(JNIEnv *env);
 

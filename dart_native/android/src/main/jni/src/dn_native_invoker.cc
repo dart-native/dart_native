@@ -280,8 +280,31 @@ void *DoInvokeNativeMethod(jobject object,
   return nativeInvokeResult;
 }
 
-static std::unordered_map<int64_t, std::function<void(jobject)>> async_callback_map;
-int64_t response_id = 0;
+// When dart function is async invoke, save result callback.
+static std::unordered_map<int64_t, std::function<void(jobject)>> g_async_callback_map;
+// dart async invoke result response id
+int64_t g_response_id = 0;
+// g_async_callback_map lock
+std::mutex g_async_map_mtx;
+
+int64_t SetAsyncCallback(const std::function<void(jobject)>& callback) {
+  std::lock_guard<std::mutex> lockGuard(g_async_map_mtx);
+  g_response_id += 1;
+  g_async_callback_map[g_response_id] = callback;
+  return g_response_id;
+}
+
+std::function<void(jobject)> GetAsyncCallback(int64_t response) {
+  std::lock_guard<std::mutex> lockGuard(g_async_map_mtx);
+  auto it = g_async_callback_map.find(response);
+  if (it == g_async_callback_map.end()) {
+    return nullptr;
+  }
+
+  auto callback = it->second;
+  g_async_callback_map.erase(it);
+  return callback;
+}
 
 jobject InvokeDartFunction(bool is_same_thread,
                            int return_async,
@@ -294,7 +317,7 @@ jobject InvokeDartFunction(bool is_same_thread,
                            char *return_type,
                            Dart_Port port,
                            JNIEnv *env,
-                           std::function<void(jobject)> invoke_finish) {
+                           const std::function<void(jobject)>& async_callback) {
   bool isVoid = strcmp(return_type, "void") == 0;
   char **type_array = new char *[argument_count + 1];
   void **argument_array = new void *[argument_count + 1];
@@ -332,7 +355,7 @@ jobject InvokeDartFunction(bool is_same_thread,
       argument_array[argument_count] = nullptr;
     }
     auto ret = ConvertDartValue2JavaValue(return_type, argument_array[argument_count], env);
-    invoke_finish(nullptr);
+    async_callback(nullptr);
     delete[] argument_array;
     delete[] type_array;
     return ret;
@@ -346,8 +369,7 @@ jobject InvokeDartFunction(bool is_same_thread,
   }
   const WorkFunction work = [=, &sem]() {
     if (method_callback != nullptr && target != nullptr) {
-      int response = ++response_id;
-      async_callback_map[response] = invoke_finish;
+      int64_t response = SetAsyncCallback(async_callback);
       method_callback(target,
                       method_name,
                       argument_array,
@@ -378,7 +400,7 @@ jobject InvokeDartFunction(bool is_same_thread,
     // Invoke dart function success.
     auto ret =
         ConvertDartValue2JavaValue(type_array[argument_count], argument_array[argument_count], env);
-    invoke_finish(ret);
+    async_callback(ret);
     delete[] argument_array;
     delete[] type_array;
     return ret;
@@ -413,9 +435,9 @@ jobject ConvertDartValue2JavaValue(char *return_type, void *dart_value, JNIEnv *
 }
 
 void DartAsyncResult(int64_t response, void *result, char *type, JNIEnv *env) {
-  auto invoker = async_callback_map[response];
+  auto invoker = GetAsyncCallback(response);
   if (invoker == nullptr) {
-    DNError("AsyncResult error, not register invoker!");
+    DNError("AsyncResult error, not register async callback!");
     return;
   }
 
