@@ -18,13 +18,15 @@
 
 @implementation DNAssociatedDartObject
 
+static const char *_portsQueueLabel = "com.dartnative.associatedobject";
+
 - (instancetype)initWithHost:(NSObject *)host
                   storageKey:(nonnull const void *)storageKey {
     self = [super init];
     if (self) {
         _host = host;
         _internalDartPorts = [NSMutableSet set];
-        _portsQueue = dispatch_queue_create("com.dartnative.associatedobject", DISPATCH_QUEUE_CONCURRENT);
+        _portsQueue = dispatch_queue_create(_portsQueueLabel, DISPATCH_QUEUE_CONCURRENT);
         objc_setAssociatedObject(host, storageKey, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return self;
@@ -52,11 +54,17 @@
 }
 
 - (NSSet<NSNumber *> *)dartPorts {
-    __block NSSet<NSNumber *> *temp;
-    dispatch_sync(self.portsQueue, ^{
-        temp = [self.internalDartPorts copy];
-    });
-    return temp;
+    // Workaround for crash: BUG IN CLIENT OF LIBDISPATCH: dispatch_sync called on queue already owned by current thread
+    const char *currentLabel = dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL);
+    if (strcmp(currentLabel, _portsQueueLabel) == 0) {
+        return [self.internalDartPorts copy];
+    } else {
+        __block NSSet<NSNumber *> *temp;
+        dispatch_sync(self.portsQueue, ^{
+            temp = [self.internalDartPorts copy];
+        });
+        return temp;
+    }
 }
 
 - (void)addDartPort:(Dart_Port)port {
