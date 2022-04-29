@@ -1,3 +1,8 @@
+
+## 0.6.7
+
+* [Fix] Deadlocks on iOS.
+
 ## 0.6.6
 
 * [Fix] Dependency verison compatible.
