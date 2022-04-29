@@ -30,6 +30,6 @@ typedef NS_ERROR_ENUM(DNErrorDomain, DNErrorCode) {
     DNInterfaceError, // interface invoke fail.
 };
 
-DN_EXTERN NSError *DNErrorWithUnderlyingError(NSError *error, NSError *underlyingError);
+DN_EXTERN NSError *DNErrorWithUnderlyingError(NSError *_Nullable error, NSError *_Nullable underlyingError);
 
 NS_ASSUME_NONNULL_END

@@ -827,7 +827,7 @@ static NSMutableDictionary<NSNumber *, NSNumber *> *objectRefCount = [NSMutableD
 
 API_AVAILABLE(ios(10.0), macos(10.12))
 static os_unfair_lock _refCountUnfairLock = OS_UNFAIR_LOCK_INIT;
-static NSLock *_refCountLock = [[NSLock alloc] init];
+static NSRecursiveLock *_refCountLock = [[NSRecursiveLock alloc] init];
 
 static void _RunFinalizer(void *isolate_callback_data,
                          void *peer) {
@@ -841,12 +841,15 @@ static void _RunFinalizer(void *isolate_callback_data,
     objectRefCount[address] = nil;
 }
 
+/// RunFinalizer is a function that will be invoked sometime after the object is garbage collected, unless the handle has been deleted. It can be called by _BindObjcLifecycleToDart. See Dart_HandleFinalizer.
 static void RunFinalizer(void *isolate_callback_data,
                          void *peer) {
     if (@available(iOS 10.0, macOS 10.12, *)) {
-        os_unfair_lock_lock(&_refCountUnfairLock);
+        bool success = os_unfair_lock_trylock(&_refCountUnfairLock);
         _RunFinalizer(isolate_callback_data, peer);
-        os_unfair_lock_unlock(&_refCountUnfairLock);
+        if (success) {
+            os_unfair_lock_unlock(&_refCountUnfairLock);
+        }
     } else {
         [_refCountLock lock];
         _RunFinalizer(isolate_callback_data, peer);

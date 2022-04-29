@@ -184,9 +184,11 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
     structType->type = FFI_TYPE_STRUCT;
     
     const char *temp = [[[NSString stringWithUTF8String:str] substringWithRange:NSMakeRange(0, length)] UTF8String];
-    
+    if (!temp) {
+        return nil;
+    }
     // cut "struct="
-    while (temp && *temp && *temp != '=') {
+    while (*temp && *temp != '=') {
         temp++;
     }
     int elementCount = 0;

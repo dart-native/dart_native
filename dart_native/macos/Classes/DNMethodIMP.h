@@ -30,7 +30,7 @@ typedef void (*NativeMethodCallback)(void *_Nullable *_Null_unspecified args,
                                error:(NSError **)error;
 - (void)addCallback:(NativeMethodCallback)callback forDartPort:(Dart_Port)port;
 - (void)removeCallbackForDartPort:(Dart_Port)port;
-- (IMP)imp;
+- (nullable IMP)imp;
 
 @end
 

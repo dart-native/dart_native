@@ -184,7 +184,11 @@ BOOL native_add_method(id target, SEL selector, char *types, bool returnString, 
         if (error.code) {
             return NO;
         }
-        class_replaceMethod(cls, selector, [methodIMP imp], types);
+        IMP imp = [methodIMP imp];
+        if (!imp) {
+            return NO;
+        }
+        class_replaceMethod(cls, selector, imp, types);
         // DNMethodIMP always exists.
         objc_setAssociatedObject(cls, key, methodIMP, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         return YES;
@@ -258,19 +262,28 @@ uint16_t *UTF16DataFromNSString(NSString *retVal) {
 }
 
 void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
+    if (!args) {
+        return;
+    }
     for (NSUInteger i = offset; i < signature.numberOfArguments; i++) {
         const char *argType = [signature getArgumentTypeAtIndex:i];
         NSUInteger argsIndex = i - offset;
         if (argType[0] == '*') {
             // Copy CString to NSTaggedPointerString and transfer it's lifecycle to ARC. Orginal pointer will be freed after function returning.
-            const char *temp = [NSString stringWithUTF8String:(const char *)args[argsIndex]].UTF8String;
-            if (temp) {
-                args[argsIndex] = (void *)temp;
+            const char *arg = (const char *)args[argsIndex];
+            if (arg) {
+                const char *temp = [NSString stringWithUTF8String:arg].UTF8String;
+                if (temp) {
+                    args[argsIndex] = (void *)temp;
+                }
             }
         }
         if (argType[0] == '{') {
             // Already put struct in pointer on Dart side.
-            [invocation setArgument:args[argsIndex] atIndex:i];
+            void *arg = args[argsIndex];
+            if (arg) {
+                [invocation setArgument:arg atIndex:i];
+            }
         } else if (argType[0] == '@' &&
                    (stringTypeBitmask >> argsIndex & 0x1) == 1) {
             const unichar *data = ((const unichar **)args)[argsIndex];
@@ -541,14 +554,20 @@ const char *native_type_encoding(const char *str) {
 // Returns type encodings whose need to be freed.
 const char **native_types_encoding(const char *str, int *count, int startIndex) {
     int argCount = DNTypeCount(str) - startIndex;
+    if (argCount <= 0) {
+        return nil;
+    }
     const char **argTypes = (const char **)malloc(sizeof(char *) * argCount);
     if (argTypes == NULL) {
         return argTypes;
     }
     
     int i = -startIndex;
-    while(str && *str)
-    {
+    if (!str || !*str) {
+        free(argTypes);
+        return nil;
+    }
+    while (str && *str) {
         const char *next = DNSizeAndAlignment(str, NULL, NULL, NULL);
         if (i >= 0 && i < argCount) {
             const char *argType = native_type_encoding(str);
@@ -580,9 +599,12 @@ const char *native_struct_encoding(const char *encoding) {
     DNSizeAndAlignment(encoding, &size, &align, &length);
     NSString *str = [NSString stringWithUTF8String:encoding];
     const char *temp = [str substringWithRange:NSMakeRange(0, length)].UTF8String;
+    if (!temp) {
+        return nil;
+    }
     int structNameLength = 0;
     // cut "struct="
-    while (temp && *temp && *temp != '=') {
+    while (*temp && *temp != '=') {
         temp++;
         structNameLength++;
     }
@@ -805,7 +827,7 @@ static NSMutableDictionary<NSNumber *, NSNumber *> *objectRefCount = [NSMutableD
 
 API_AVAILABLE(ios(10.0), macos(10.12))
 static os_unfair_lock _refCountUnfairLock = OS_UNFAIR_LOCK_INIT;
-static NSLock *_refCountLock = [[NSLock alloc] init];
+static NSRecursiveLock *_refCountLock = [[NSRecursiveLock alloc] init];
 
 static void _RunFinalizer(void *isolate_callback_data,
                          void *peer) {
@@ -819,12 +841,15 @@ static void _RunFinalizer(void *isolate_callback_data,
     objectRefCount[address] = nil;
 }
 
+/// RunFinalizer is a function that will be invoked sometime after the object is garbage collected, unless the handle has been deleted. It can be called by _BindObjcLifecycleToDart. See Dart_HandleFinalizer.
 static void RunFinalizer(void *isolate_callback_data,
                          void *peer) {
     if (@available(iOS 10.0, macOS 10.12, *)) {
-        os_unfair_lock_lock(&_refCountUnfairLock);
+        bool success = os_unfair_lock_trylock(&_refCountUnfairLock);
         _RunFinalizer(isolate_callback_data, peer);
-        os_unfair_lock_unlock(&_refCountUnfairLock);
+        if (success) {
+            os_unfair_lock_unlock(&_refCountUnfairLock);
+        }
     } else {
         [_refCountLock lock];
         _RunFinalizer(isolate_callback_data, peer);
@@ -934,91 +959,101 @@ void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, D
 void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback resultCallback) {
     const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
     int count = 0;
-    const char **types = native_types_encoding(typeString, &count, 0);
     NSError *error = nil;
-    DNBlock *blockLayout = (DNBlock *)block;
-    DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)blockLayout->wrapper;
-    // When block returns result asynchronously, the last argument of block is the callback.
-    // types/values list in block: [returnValue, block(self), arguments...(optional), callback(optional)]
-    NSUInteger diff = wrapper.shouldReturnAsync ? 3 : 2;
-    if (count != arguments.count + diff) {
-        DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match!")
+    const char **types = native_types_encoding(typeString, &count, 0);
+    if (!types) {
+        DN_ERROR(&error, DNInterfaceError, @"Parse typeString failed: %s", typeString)
         if (resultCallback) {
             resultCallback(nil, error);
         }
         return;
     }
-    
-    NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
-    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    NSUInteger realArgsCount = arguments.count;
-    if (wrapper.shouldReturnAsync) {
-        realArgsCount++;
-    }
-    void **argsPtrPtr = (void **)alloca(realArgsCount * sizeof(void *));
-    for (int i = 0; i < arguments.count; i++) {
-        const char *type = types[i + 2];
-        id arg = arguments[i];
-        if (type == native_type_object) {
-            argsPtrPtr[i] = (__bridge void *)arguments[i];
-        } else if (type[0] == '{') {
-            // Ignore, not support yet.
-            free((void *)type);
-            DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
+    DNBlock *blockLayout = (DNBlock *)block;
+    DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)blockLayout->wrapper;
+    // When block returns result asynchronously, the last argument of block is the callback.
+    // types/values list in block: [returnValue, block(self), arguments...(optional), callback(optional)]
+    NSUInteger diff = wrapper.shouldReturnAsync ? 3 : 2;
+    do {
+        if (count != arguments.count + diff) {
+            DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match!")
             if (resultCallback) {
                 resultCallback(nil, error);
             }
-            return;
-        } else if ([arg isKindOfClass:NSNumber.class]) {
-            NSNumber *number = (NSNumber *)arg;
-            // first argument is block itself, skip it.
-            const char *encoding = [signature getArgumentTypeAtIndex:i + 1];
-            BOOL success = [number dn_fillBuffer:argsPtrPtr + i encoding:encoding error:&error];
-            if (!success) {
-                DN_ERROR(&error, DNInterfaceError, @"NSNumber convertion failed")
+            break;
+        }
+        
+        NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+        NSUInteger realArgsCount = arguments.count;
+        if (wrapper.shouldReturnAsync) {
+            realArgsCount++;
+        }
+        void **argsPtrPtr = (void **)alloca(realArgsCount * sizeof(void *));
+        for (int i = 0; i < arguments.count; i++) {
+            const char *type = types[i + 2];
+            id arg = arguments[i];
+            if (type == native_type_object) {
+                argsPtrPtr[i] = (__bridge void *)arguments[i];
+            } else if (type[0] == '{') {
+                // Ignore, not support yet.
+                free((void *)type);
+                DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
                 if (resultCallback) {
                     resultCallback(nil, error);
                 }
-                return;
+                break;
+            } else if ([arg isKindOfClass:NSNumber.class]) {
+                NSNumber *number = (NSNumber *)arg;
+                // first argument is block itself, skip it.
+                const char *encoding = [signature getArgumentTypeAtIndex:i + 1];
+                BOOL success = [number dn_fillBuffer:argsPtrPtr + i encoding:encoding error:&error];
+                if (!success) {
+                    DN_ERROR(&error, DNInterfaceError, @"NSNumber convertion failed")
+                    if (resultCallback) {
+                        resultCallback(nil, error);
+                    }
+                    break;
+                }
             }
         }
-    }
-    // block receives results from dart function asynchronously by appending another block to arguments as its callback.
-    if (wrapper.shouldReturnAsync) {
-        // dartBlock is passed to dart, ignore `error`.
-        void(^dartBlock)(id result) = ^(id result) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                resultCallback(result, nil);
-            });
-        };
-        // `dartBlock` will release when invocation dead.
-        // So we should retain it and release after it's invoked on dart side.
-        native_retain_object(dartBlock);
-        argsPtrPtr[realArgsCount - 1] = (__bridge void *)dartBlock;
-    }
-    _fillArgsToInvocation(signature, argsPtrPtr, invocation, 1, 0, nil);
-    [invocation invokeWithTarget:(__bridge id)block];
-    if (resultCallback && !wrapper.shouldReturnAsync) {
-        if (signature.methodReturnLength == 0) {
-            DN_ERROR(&error, DNInterfaceError, @"signature.methodReturnLength of block is zero")
-            resultCallback(nil, error);
-            return;
+        // block receives results from dart function asynchronously by appending another block to arguments as its callback.
+        if (wrapper.shouldReturnAsync) {
+            // dartBlock is passed to dart, ignore `error`.
+            void(^dartBlock)(id result) = ^(id result) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    resultCallback(result, nil);
+                });
+            };
+            // `dartBlock` will release when invocation dead.
+            // So we should retain it and release after it's invoked on dart side.
+            native_retain_object(dartBlock);
+            argsPtrPtr[realArgsCount - 1] = (__bridge void *)dartBlock;
         }
-        void *result = NULL;
-        const char *returnType = signature.methodReturnType;
-        if (*returnType == '{') {
-            DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
-            resultCallback(nil, error);
-            return;
+        _fillArgsToInvocation(signature, argsPtrPtr, invocation, 1, 0, nil);
+        [invocation invokeWithTarget:(__bridge id)block];
+        if (resultCallback && !wrapper.shouldReturnAsync) {
+            if (signature.methodReturnLength == 0) {
+                DN_ERROR(&error, DNInterfaceError, @"signature.methodReturnLength of block is zero")
+                resultCallback(nil, error);
+                break;
+            }
+            void *result = NULL;
+            const char *returnType = signature.methodReturnType;
+            if (*returnType == '{') {
+                DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
+                resultCallback(nil, error);
+                break;
+            }
+            if (*returnType == '@') {
+                [invocation getReturnValue:&result];
+                resultCallback((__bridge id)result, nil);
+            } else {
+                [invocation getReturnValue:&result];
+                // NSNumber
+                NSNumber *number = [NSNumber dn_numberWithBuffer:result encoding:returnType error:&error];
+                resultCallback(number, error);
+            }
         }
-        if (*returnType == '@') {
-            [invocation getReturnValue:&result];
-            resultCallback((__bridge id)result, nil);
-        } else {
-            [invocation getReturnValue:&result];
-            // NSNumber
-            NSNumber *number = [NSNumber dn_numberWithBuffer:result encoding:returnType error:&error];
-            resultCallback(number, error);
-        }
-    }
+    } while (0);
+    free(types);
 }

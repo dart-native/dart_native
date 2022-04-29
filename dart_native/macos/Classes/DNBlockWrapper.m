@@ -104,7 +104,7 @@ static atomic_uint_fast64_t _seq = 0;
             _returnAsync = returnAsync;
             _thread = NSThread.currentThread;
             _dartPort = dartPort;
-            [self initBlockWithError:error];
+            _block = [self initBlockWithError:error];
             atomic_fetch_add(&_seq, 1);
             _sequence = _seq;
         }
@@ -124,7 +124,7 @@ static atomic_uint_fast64_t _seq = 0;
     NotifyDeallocToDart((intptr_t)_sequence, _dartPort);
 }
 
-- (void)initBlockWithError:(out NSError **)error {
+- (id)initBlockWithError:(out NSError **)error {
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
     // Struct return value on x86(32&64) MUST be put into pointer.(On heap)
@@ -137,7 +137,7 @@ static atomic_uint_fast64_t _seq = 0;
                                             flags:flags];
     if (numberOfArguments == -1) { // Unknown encode.
         DN_ERROR(error, DNCreateBlockError, @"Prepare ffi_cif failed.");
-        return;
+        return nil;
     }
     self.numberOfArguments = numberOfArguments;
     if (self.hasStret) {
@@ -149,7 +149,7 @@ static atomic_uint_fast64_t _seq = 0;
     ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DNFFIBlockClosureFunc, (__bridge void *)(self), _blockIMP);
     if (status != FFI_OK) {
         DN_ERROR(error, DNCreateBlockError, @"ffi_prep_closure returned %d", (int)status);
-        return;
+        return nil;
     }
 
     DNBlockDescriptor descriptor = {
@@ -163,7 +163,7 @@ static atomic_uint_fast64_t _seq = 0;
     _descriptor = malloc(sizeof(DNBlockDescriptor));
     if (!_descriptor) {
         DN_ERROR(error, DNCreateBlockError, @"malloc _DNBlockDescriptor failed.")
-        return;
+        return nil;
     }
     memcpy(_descriptor, &descriptor, sizeof(DNBlockDescriptor));
 
@@ -176,12 +176,13 @@ static atomic_uint_fast64_t _seq = 0;
         (__bridge void *)self
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
-    _block = (__bridge id)Block_copy(&simulateBlock);
+    id block = (__bridge id)Block_copy(&simulateBlock);
     SEL selector = NSSelectorFromString(@"autorelease");
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    _block = [_block performSelector:selector];
+    block = [block performSelector:selector];
     #pragma clang diagnostic pop
+    return block;
 }
 
 - (intptr_t)blockAddress {
