@@ -104,7 +104,7 @@ static atomic_uint_fast64_t _seq = 0;
             _returnAsync = returnAsync;
             _thread = NSThread.currentThread;
             _dartPort = dartPort;
-            _block = [self initBlockWithError:error];
+            _block = [self createBlockWithError:error];
             atomic_fetch_add(&_seq, 1);
             _sequence = _seq;
         }
@@ -124,7 +124,7 @@ static atomic_uint_fast64_t _seq = 0;
     NotifyDeallocToDart((intptr_t)_sequence, _dartPort);
 }
 
-- (id)initBlockWithError:(out NSError **)error {
+- (id)createBlockWithError:(out NSError **)error {
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
     // Struct return value on x86(32&64) MUST be put into pointer.(On heap)

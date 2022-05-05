@@ -1,5 +1,4 @@
 import 'dart:ffi';
-import 'dart:typed_data';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/entity.dart';
