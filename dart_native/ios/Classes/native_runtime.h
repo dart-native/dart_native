@@ -8,7 +8,7 @@
 #import "DNMacro.h"
 #import <Foundation/Foundation.h>
 
-@class DNBlockWrapper;
+@class DNBlockCreator;
 @class DNMethodIMP;
 @class DNInvocation;
 
@@ -140,7 +140,7 @@ DN_EXTERN BOOL TestNotifyDart(Dart_Port send_port);
 #pragma mark - Async Block Callback
 
 DN_EXTERN void NotifyBlockInvokeToDart(DNInvocation *invocation,
-                                       DNBlockWrapper *wrapper,
+                                       DNBlockCreator *wrapper,
                                        int numberOfArguments);
 
 #pragma mark - Async Method Callback

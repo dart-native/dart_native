@@ -14,7 +14,8 @@
 #include <stdlib.h>
 #include <functional>
 
-#import "DNBlockWrapper.h"
+#import "DNBlockHelper.h"
+#import "DNBlockCreator.h"
 #import "DNFFIHelper.h"
 #import "DNMethodIMP.h"
 #import "DNObjectDealloc.h"
@@ -358,7 +359,7 @@ void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signatu
 
 void *native_block_create(char *types, void *function, BOOL shouldReturnAsync, Dart_Port dartPort) {
     NSError *error;
-    DNBlockWrapper *wrapper = [[DNBlockWrapper alloc] initWithTypeString:types
+    DNBlockCreator *creator = [[DNBlockCreator alloc] initWithTypeString:types
                                                                 function:(BlockFunctionPointer)function
                                                              returnAsync:shouldReturnAsync
                                                                 dartPort:dartPort
@@ -366,7 +367,11 @@ void *native_block_create(char *types, void *function, BOOL shouldReturnAsync, D
     if (error.code) {
         return nil;
     }
-    return (__bridge void *)wrapper;
+    id block = [creator blockWithError:&error];
+    if (error.code) {
+        return nil;
+    }
+    return (__bridge void *)block;
 }
 
 void *native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t stringTypeBitmask, const char **retType) {
@@ -731,7 +736,7 @@ static NSString * const DNBlockingUIExceptionReason = @"Calling dart function fr
 static NSExceptionName const DNBlockingUIException = @"BlockingUIException";
 
 void NotifyBlockInvokeToDart(DNInvocation *invocation,
-                             DNBlockWrapper *wrapper,
+                             DNBlockCreator *creator,
                              int numberOfArguments) {
     if (NSThread.isMainThread && DartNativeCanThrowException()) {
         @throw [NSException exceptionWithName:DNBlockingUIException
@@ -739,25 +744,25 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
                                      userInfo:nil];
     }
     BOOL isVoid = invocation.methodSignature.methodReturnType[0] == 'v';
-    BOOL shouldReturnAsync = wrapper.shouldReturnAsync;
+    BOOL shouldReturnAsync = creator.shouldReturnAsync;
     dispatch_semaphore_t sema;
     if (!isVoid || !shouldReturnAsync) {
         sema = dispatch_semaphore_create(0);
     }
     
-    BlockFunctionPointer function = wrapper.function;
+    BlockFunctionPointer function = creator.function;
     const Work work = [=]() {
         function(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
-                 wrapper.hasStret,
-                 wrapper.sequence);
+                 creator.hasStret,
+                 creator.sequence);
         if (!isVoid || !shouldReturnAsync) {
             dispatch_semaphore_signal(sema);
         }
     };
     const Work *work_ptr = new Work(work);
-    BOOL success = NotifyDart(wrapper.dartPort, work_ptr);
+    BOOL success = NotifyDart(creator.dartPort, work_ptr);
     if (success && (!isVoid || !shouldReturnAsync)) {
         dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     }
@@ -882,8 +887,8 @@ DNPassObjectResult _BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
     if (Dart_IsError_DL(h)) {
         return DNPassObjectResultFailed;
     }
-    // Only Block handles lifetime of BlockWrapper. So we can't transfer it to Dart.
-    if ([object isKindOfClass:DNBlockWrapper.class]) {
+    // Only Block handles lifetime of DNBlockHelper. So we can't transfer it to Dart.
+    if ([object isKindOfClass:DNBlockHelper.class]) {
         return DNPassObjectResultNeedless;
     }
     native_retain_object(object);
@@ -969,10 +974,10 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback
         return;
     }
     DNBlock *blockLayout = (DNBlock *)block;
-    DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)blockLayout->wrapper;
+    DNBlockCreator *creator = (__bridge DNBlockCreator *)blockLayout->creator;
     // When block returns result asynchronously, the last argument of block is the callback.
     // types/values list in block: [returnValue, block(self), arguments...(optional), callback(optional)]
-    NSUInteger diff = wrapper.shouldReturnAsync ? 3 : 2;
+    NSUInteger diff = creator.shouldReturnAsync ? 3 : 2;
     do {
         if (count != arguments.count + diff) {
             DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match!")
@@ -985,7 +990,7 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback
         NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
         NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
         NSUInteger realArgsCount = arguments.count;
-        if (wrapper.shouldReturnAsync) {
+        if (creator.shouldReturnAsync) {
             realArgsCount++;
         }
         void **argsPtrPtr = (void **)alloca(realArgsCount * sizeof(void *));
@@ -1017,7 +1022,7 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback
             }
         }
         // block receives results from dart function asynchronously by appending another block to arguments as its callback.
-        if (wrapper.shouldReturnAsync) {
+        if (creator.shouldReturnAsync) {
             // dartBlock is passed to dart, ignore `error`.
             void(^dartBlock)(id result) = ^(id result) {
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -1031,7 +1036,7 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback
         }
         _fillArgsToInvocation(signature, argsPtrPtr, invocation, 1, 0, nil);
         [invocation invokeWithTarget:(__bridge id)block];
-        if (resultCallback && !wrapper.shouldReturnAsync) {
+        if (resultCallback && !creator.shouldReturnAsync) {
             if (signature.methodReturnLength == 0) {
                 DN_ERROR(&error, DNInterfaceError, @"signature.methodReturnLength of block is zero")
                 resultCallback(nil, error);

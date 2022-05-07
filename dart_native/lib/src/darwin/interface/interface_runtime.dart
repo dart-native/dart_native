@@ -5,6 +5,7 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/common/interface_runtime.dart';
 import 'package:dart_native/src/darwin/common/callback_manager.dart';
 import 'package:dart_native/src/darwin/common/library.dart';
+import 'package:dart_native/src/darwin/runtime/internal/functions.dart';
 import 'package:dart_native/src/darwin/runtime/internal/nssubclass.dart';
 import 'package:ffi/ffi.dart';
 
@@ -97,6 +98,7 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
     registerDartInterface(namePtr, methodPtr, block.pointer, nativePort);
     calloc.free(namePtr);
     calloc.free(methodPtr);
+    Block_release(block.pointer);
   }
 }
 

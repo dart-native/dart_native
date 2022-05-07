@@ -1,8 +1,8 @@
 //
-//  DNBlockWrapper.h
+//  DNBlockCreator.h
 //  DartNative
 //
-//  Created by 杨萧玉 on 2019/10/18.
+//  Created by 杨萧玉 on 2022/5/5.
 //
 
 #import <Foundation/Foundation.h>
@@ -10,8 +10,8 @@
 #import "dart_api_dl.h"
 #import "native_runtime.h"
 
-#ifndef DNBlockWrapper_h
-#define DNBlockWrapper_h
+#ifndef DNBlockCreator_h
+#define DNBlockCreator_h
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,37 +49,34 @@ typedef struct DNBlock {
     int32_t reserved;
     DNBlockInvokeFunction invoke;
     DNBlockDescriptor *descriptor;
-    void *wrapper;
+    void *creator;
 } DNBlock;
 
-#pragma mark - Block Wrapper
+#pragma mark - Block Creator
 
 DN_EXTERN const char *DNBlockTypeEncodeString(id blockObj);
+DN_EXTERN const char *_Nonnull *_Nonnull DNBlockTypeEncodings(id blockObj);
+DN_EXTERN uint64_t DNBlockSequence(id blockObj);
+
 
 typedef void (*BlockFunctionPointer)(void *_Nullable *_Null_unspecified args, void *ret, int numberOfArguments, BOOL stret, int64_t seq);
 
-@interface DNBlockWrapper : NSObject
+@interface DNBlockCreator : NSObject
 
 @property (nonatomic, readonly) const char *_Nonnull *_Nonnull typeEncodings;
 @property (nonatomic, readonly) BlockFunctionPointer function;
 @property (nonatomic, readonly, getter=shouldReturnAsync) BOOL returnAsync;
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
 @property (nonatomic, readonly) NSMethodSignature *signature;
-@property (nonatomic, readonly) int64_t sequence;
+@property (nonatomic, readonly) uint64_t sequence;
 @property (nonatomic, readonly) Dart_Port dartPort;
-
-- (intptr_t)blockAddress;
 
 - (instancetype)initWithTypeString:(char *)typeString
                           function:(BlockFunctionPointer)function
                        returnAsync:(BOOL)returnAsync
                           dartPort:(Dart_Port)dartPort
                              error:(out NSError **)error;
-
-+ (void)invokeInterfaceBlock:(void *)block
-                   arguments:(NSArray *)arguments
-                      result:(nullable BlockResultCallback)resultCallback;
-+ (BOOL)testNotifyDart:(int64_t)port;
+- (id)blockWithError:(out NSError **)error;
 
 @end
 

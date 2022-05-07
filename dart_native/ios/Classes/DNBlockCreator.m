@@ -1,11 +1,11 @@
 //
-//  DNBlockWrapper.m
+//  DNBlockCreator.m
 //  DartNative
 //
-//  Created by 杨萧玉 on 2019/10/18.
+//  Created by 杨萧玉 on 2022/5/5.
 //
 
-#import "DNBlockWrapper.h"
+#import "DNBlockCreator.h"
 #import "ffi.h"
 #import "DNFFIHelper.h"
 #import "DNInvocation.h"
@@ -45,6 +45,18 @@ const char *DNBlockTypeEncodeString(id blockObj) {
     return dn_Block_descriptor_3(block)->signature;
 }
 
+const char *_Nonnull *_Nonnull DNBlockTypeEncodings(id blockObj) {
+    DNBlock *block = (__bridge void *)blockObj;
+    DNBlockCreator *creator = (__bridge DNBlockCreator *)(block->creator);
+    return creator.typeEncodings;
+}
+
+uint64_t DNBlockSequence(id blockObj) {
+    DNBlock *block = (__bridge void *)blockObj;
+    DNBlockCreator *creator = (__bridge DNBlockCreator *)(block->creator);
+    return creator.sequence;
+}
+
 static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
 static NSString *trim(NSString *string) {
@@ -53,39 +65,37 @@ static NSString *trim(NSString *string) {
 
 void copy_helper(DNBlock *dst, DNBlock *src) {
     // do not copy anything is this funcion! just retain if need.
-    CFRetain(dst->wrapper);
+    CFRetain(dst->creator);
 }
 
 void dispose_helper(DNBlock *src) {
-    CFRelease(src->wrapper);
+    CFRelease(src->creator);
 }
 
 #pragma mark - Block Wrapper
 
-@interface DNBlockWrapper ()
-{
+@interface DNBlockCreator () {
     ffi_cif _cif;
     ffi_closure *_closure;
     DNBlockDescriptor *_descriptor;
     void *_blockIMP;
 }
 
-@property (nonatomic, readwrite, weak) id block;
 @property (nonatomic) intptr_t blockAddress;
 @property (nonatomic) NSString *typeString;
 @property (nonatomic) NSUInteger numberOfArguments;
 @property (nonatomic, readwrite) const char **typeEncodings;
 @property (nonatomic, getter=hasStret, readwrite) BOOL stret;
 @property (nonatomic, readwrite) NSMethodSignature *signature;
+@property (nonatomic, readwrite) uint64_t sequence;
 @property (nonatomic, readwrite) BlockFunctionPointer function;
 @property (nonatomic, readwrite, getter=shouldReturnAsync) BOOL returnAsync;
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSThread *thread;
-@property (nonatomic, nullable) dispatch_queue_t queue;
 
 @end
 
-@implementation DNBlockWrapper
+@implementation DNBlockCreator
 
 static atomic_uint_fast64_t _seq = 0;
 
@@ -104,9 +114,6 @@ static atomic_uint_fast64_t _seq = 0;
             _returnAsync = returnAsync;
             _thread = NSThread.currentThread;
             _dartPort = dartPort;
-            _block = [self createBlockWithError:error];
-            atomic_fetch_add(&_seq, 1);
-            _sequence = _seq;
         }
     }
     return self;
@@ -124,7 +131,10 @@ static atomic_uint_fast64_t _seq = 0;
     NotifyDeallocToDart((intptr_t)_sequence, _dartPort);
 }
 
-- (id)createBlockWithError:(out NSError **)error {
+- (id)blockWithError:(out NSError **)error {
+    atomic_fetch_add(&_seq, 1);
+    self.sequence = _seq;
+    
     const char *typeString = self.typeString.UTF8String;
     int32_t flags = (BLOCK_HAS_COPY_DISPOSE | BLOCK_HAS_SIGNATURE);
     // Struct return value on x86(32&64) MUST be put into pointer.(On heap)
@@ -177,19 +187,7 @@ static atomic_uint_fast64_t _seq = 0;
     };
     _signature = [NSMethodSignature signatureWithObjCTypes:typeString];
     id block = (__bridge id)Block_copy(&simulateBlock);
-    SEL selector = NSSelectorFromString(@"autorelease");
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    block = [block performSelector:selector];
-    #pragma clang diagnostic pop
     return block;
-}
-
-- (intptr_t)blockAddress {
-    if (!_blockAddress) {
-        _blockAddress = (intptr_t)self.block;
-    }
-    return _blockAddress;
 }
 
 #pragma mark - Private Method
@@ -271,37 +269,27 @@ static atomic_uint_fast64_t _seq = 0;
     return [NSString stringWithFormat:@"%@%d%@", retEncodeStr, currentLength, encodeStr];
 }
 
-+ (void)invokeInterfaceBlock:(void *)block
-                   arguments:(NSArray *)arguments
-                      result:(BlockResultCallback)resultCallback {
-    DNInterfaceBlockInvoke(block, arguments, resultCallback);
-}
-
-+ (BOOL)testNotifyDart:(int64_t)port {
-    return TestNotifyDart(port);
-}
-
 @end
 
-static void DNHandleReturnValue(void *origRet, DNBlockWrapper *wrapper, DNInvocation *invocation) {
+static void DNHandleReturnValue(void *origRet, DNBlockCreator *creator, DNInvocation *invocation) {
     void *ret = invocation.realRetValue;
-    if (wrapper.hasStret) {
+    if (creator.hasStret) {
         // synchronize stret value from first argument. `origRet` is not the target.
         [invocation setReturnValue:*(void **)invocation.realArgs[0]];
         return;
-    } else if (wrapper.typeEncodings[0] == native_type_string) {
+    } else if (creator.typeEncodings[0] == native_type_string) {
         // type is native_type_object but result is a string
         NSString *string = NSStringFromUTF16Data(*(const unichar **)ret);
         if (string) {
             native_retain_object(string);
             [invocation setReturnValue:&string];
         }
-    } else if ([wrapper.typeString hasPrefix:@"{"]) {
+    } else if ([creator.typeString hasPrefix:@"{"]) {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
             [invocation setReturnValue:pointerWrapper.pointer];
         }
-    } else if ([wrapper.typeString hasPrefix:@"*"]) {
+    } else if ([creator.typeString hasPrefix:@"*"]) {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
             const char *origCString = (const char *)pointerWrapper.pointer;
@@ -313,16 +301,16 @@ static void DNHandleReturnValue(void *origRet, DNBlockWrapper *wrapper, DNInvoca
 }
 
 static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
-    DNBlockWrapper *wrapper = (__bridge DNBlockWrapper *)userdata;
+    DNBlockCreator *creator = (__bridge DNBlockCreator *)userdata;
     
-    if (!wrapper.function) {
+    if (!creator.function) {
         return;
     }
     
     void *userRet = ret;
     void **userArgs = args;
     // handle struct return: should pass pointer to struct
-    if (wrapper.hasStret) {
+    if (creator.hasStret) {
         // The first arg contains address of a pointer of returned struct.
         userRet = *((void **)args[0]);
         // Other args move backwards.
@@ -331,11 +319,11 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     *(void **)userRet = NULL;
     __block int64_t retObjectAddr = 0;
     // Use (numberOfArguments - 1) exclude block itself.
-    NSUInteger numberOfArguments = wrapper.numberOfArguments - 1;
+    NSUInteger numberOfArguments = creator.numberOfArguments - 1;
     
-    NSUInteger indexOffset = wrapper.hasStret ? 1 : 0;
-    for (NSUInteger i = 0; i < wrapper.signature.numberOfArguments; i++) {
-        const char *type = [wrapper.signature getArgumentTypeAtIndex:i];
+    NSUInteger indexOffset = creator.hasStret ? 1 : 0;
+    for (NSUInteger i = 0; i < creator.signature.numberOfArguments; i++) {
+        const char *type = [creator.signature getArgumentTypeAtIndex:i];
         // Struct
         if (type[0] == '{') {
             NSUInteger size;
@@ -350,8 +338,8 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
         }
     }
     
-    __block DNInvocation *invocation = [[DNInvocation alloc] initWithSignature:wrapper.signature
-                                                                      hasStret:wrapper.hasStret];
+    __block DNInvocation *invocation = [[DNInvocation alloc] initWithSignature:creator.signature
+                                                                      hasStret:creator.hasStret];
     invocation.args = userArgs;
     invocation.retValue = userRet;
     invocation.realArgs = args;
@@ -359,19 +347,19 @@ static void DNFFIBlockClosureFunc(ffi_cif *cif, void *ret, void **args, void *us
     
     int64_t retAddr = (int64_t)(invocation.realRetValue);
     
-    if (wrapper.thread == NSThread.currentThread) {
-        wrapper.function(args,
+    if (creator.thread == NSThread.currentThread) {
+        creator.function(args,
                          ret,
                          (int)numberOfArguments,
-                         wrapper.hasStret,
-                         wrapper.sequence);
+                         creator.hasStret,
+                         creator.sequence);
     } else {
         [invocation retainArguments];
-        NotifyBlockInvokeToDart(invocation, wrapper, (int)numberOfArguments);
+        NotifyBlockInvokeToDart(invocation, creator, (int)numberOfArguments);
     }
     retObjectAddr = (int64_t)*(void **)retAddr;
-    DNHandleReturnValue(ret, wrapper, invocation);
-    const char *type = wrapper.typeEncodings[0];
+    DNHandleReturnValue(ret, creator, invocation);
+    const char *type = creator.typeEncodings[0];
     if (type == native_type_object || type == native_type_block || type == native_type_string) {
         native_autorelease_object((__bridge id)*(void **)retAddr);
     }

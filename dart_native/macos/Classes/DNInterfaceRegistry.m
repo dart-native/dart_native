@@ -239,7 +239,7 @@ static dispatch_queue_t _methodCallBlockQueue;
         NSCAssert(NO, @"interface and method shouldn't be empty!");
         return;
     }
-    extern BOOL TestNotifyDart(int64_t port_id);
+    
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         __block NSDictionary<NSNumber *, id> *callForPortMap;
         dispatch_sync(self.methodCallBlockQueue, ^{
@@ -248,11 +248,11 @@ static dispatch_queue_t _methodCallBlockQueue;
         if (callForPortMap.count == 0) {
             NSCAssert(NO, @"Can't find method(%@) on interface(%@)!", method, interface);
         }
-        Class target = NSClassFromString(@"DNBlockWrapper");
+        Class target = NSClassFromString(@"DNBlockHelper");
         SEL invokeInterfaceSel = NSSelectorFromString(@"invokeInterfaceBlock:arguments:result:");
         SEL testNotifyDartSel = NSSelectorFromString(@"testNotifyDart:");
         if (!target || !invokeInterfaceSel) {
-            NSCAssert(NO, @"Can't load class DNBlockWrapper!");
+            NSCAssert(NO, @"Can't load class DNBlockHelper!");
             return;
         }
         [callForPortMap enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
