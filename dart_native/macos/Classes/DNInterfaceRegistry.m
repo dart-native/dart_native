@@ -97,6 +97,9 @@ static NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *interfa
             }
         }
     }
+    if (methods) {
+        free(methods);
+    }
 }
 
 + (BOOL)registerInterface:(NSString *)name forClass:(Class)cls {
