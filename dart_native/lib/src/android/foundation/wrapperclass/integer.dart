@@ -5,14 +5,14 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Integer` in Android.
-const String jIntegerCls = 'java/lang/Integer';
+const String _jIntegerCls = 'java/lang/Integer';
 
-@native(javaClass: jIntegerCls)
+@native(javaClass: _jIntegerCls)
 class JInteger extends JSubclass<int> {
-  JInteger(int value) : super(value, _new, jIntegerCls);
+  JInteger(int value) : super(value, _new, _jIntegerCls);
 
   JInteger.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, jIntegerCls) {
+      : super.fromPointer(ptr, _jIntegerCls) {
     raw = callIntMethodSync('intValue');
   }
 }

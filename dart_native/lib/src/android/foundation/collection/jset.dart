@@ -5,17 +5,17 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Set` in Android.
-const String jSetCls = 'java/util/Set';
-const String jHashSetCls = 'java/util/HashSet';
+const String _jSetCls = 'java/util/Set';
+const String _jHashSetCls = 'java/util/HashSet';
 
-@native(javaClass: jSetCls)
+@native(javaClass: _jSetCls)
 class JSet<E> extends JSubclass<Set> {
-  JSet(Set value, {String clsName = jSetCls, InitSubclass init = _new})
+  JSet(Set value, {String clsName = _jSetCls, InitSubclass init = _new})
       : super(value, _new, clsName) {
     value = Set.of(value);
   }
 
-  JSet.fromPointer(Pointer<Void> ptr, {String clsName = jSetCls})
+  JSet.fromPointer(Pointer<Void> ptr, {String clsName = _jSetCls})
       : super.fromPointer(ptr, clsName) {
     JObject converter =
         JObject(className: 'com/dartnative/dart_native/ArrayListConverter');
@@ -26,18 +26,18 @@ class JSet<E> extends JSubclass<Set> {
   }
 }
 
-@native(javaClass: jHashSetCls)
+@native(javaClass: _jHashSetCls)
 class JHashSet<E> extends JSet {
-  JHashSet(Set value) : super(value, clsName: jHashSetCls);
+  JHashSet(Set value) : super(value, clsName: _jHashSetCls);
 
   JHashSet.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: jHashSetCls);
+      : super.fromPointer(ptr, clsName: _jHashSetCls);
 }
 
 /// New native 'Set'.
 Pointer<Void> _new(dynamic value, String? clsName) {
   if (value is Set) {
-    if (clsName == jSetCls) clsName = jHashSetCls;
+    if (clsName == _jSetCls) clsName = _jHashSetCls;
 
     JObject nativeSet = JObject(className: clsName);
 

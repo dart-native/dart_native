@@ -123,7 +123,7 @@ extension JObjectCallMethod on JObject {
           'You should use @nativeJavaClass specify the java class.'
           'See more in https://github.com/dart-native/dart_native/tree/master#usage.\n'
           'Or you can just use call method to specify the return type,'
-          'like call("getString", "Ljava/lang/String;")';
+          'like callMethod("getString", "Ljava/lang/String;")';
     }
     final convertor = getRegisterPointerConvertor(type);
     return callMethod(methodName, sig,

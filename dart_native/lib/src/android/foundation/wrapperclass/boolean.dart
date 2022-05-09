@@ -5,14 +5,14 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Boolean` in Android.
-const String jBooleanCls = 'java/lang/Boolean';
+const String _jBooleanCls = 'java/lang/Boolean';
 
-@native(javaClass: jBooleanCls)
+@native(javaClass: _jBooleanCls)
 class JBoolean extends JSubclass<bool> {
-  JBoolean(bool value) : super(value, _new, jBooleanCls);
+  JBoolean(bool value) : super(value, _new, _jBooleanCls);
 
   JBoolean.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, jBooleanCls) {
+      : super.fromPointer(ptr, _jBooleanCls) {
     raw = callBoolMethodSync('booleanValue');
   }
 }

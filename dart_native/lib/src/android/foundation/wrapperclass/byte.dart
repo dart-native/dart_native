@@ -5,13 +5,13 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Byte` in Android.
-const String jByteCls = 'java/lang/Byte';
+const String _jByteCls = 'java/lang/Byte';
 
-@native(javaClass: jByteCls)
+@native(javaClass: _jByteCls)
 class JByte extends JSubclass<int> {
-  JByte(int value) : super(value, _new, jByteCls);
+  JByte(int value) : super(value, _new, _jByteCls);
 
-  JByte.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, jByteCls) {
+  JByte.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, _jByteCls) {
     raw = callByteMethodSync('byteValue');
   }
 }

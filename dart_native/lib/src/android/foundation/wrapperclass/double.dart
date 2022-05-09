@@ -5,13 +5,13 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Double` in Android.
-const String jDoubleCls = 'java/lang/Double';
+const String _jDoubleCls = 'java/lang/Double';
 
-@native(javaClass: jDoubleCls)
+@native(javaClass: _jDoubleCls)
 class JDouble extends JSubclass<double> {
-  JDouble(double value) : super(value, _new, jDoubleCls);
+  JDouble(double value) : super(value, _new, _jDoubleCls);
 
-  JDouble.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, jDoubleCls) {
+  JDouble.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, _jDoubleCls) {
     raw = callDoubleMethodSync('doubleValue');
   }
 }
