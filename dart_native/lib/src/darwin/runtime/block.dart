@@ -181,6 +181,8 @@ class Block extends id {
     }
     // free struct type memory (malloc on native side)
     structTypes.forEach(calloc.free);
+    // free typesPtrPtr (malloc on native side)
+    calloc.free(typesPtrPtr);
     return result;
   }
 }
@@ -236,8 +238,6 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     retainObject(result.pointer);
   }
 }
-
-int cc = 0;
 
 void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr, int argCount, int stret, int seq) {
