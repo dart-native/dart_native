@@ -15,6 +15,7 @@ enum ValueType {
   bool,
   v,
   string,
+  byteBuffer,
   cls,
   unknown
 }
@@ -29,6 +30,7 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
   ValueType.long: 'J'.toNativeUtf8(),
   ValueType.bool: 'Z'.toNativeUtf8(),
   ValueType.string: 'Ljava/lang/String;'.toNativeUtf8(),
+  ValueType.byteBuffer: 'Ljava/nio/ByteBuffer;'.toNativeUtf8(),
   ValueType.unknown: 'Lunknown;'.toNativeUtf8(),
 };
 
@@ -93,6 +95,12 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   if (object is JArray) {
     ptr.value = object.pointer.cast<Void>();
     typePtr.value = argSignature ?? object.arraySignature.toNativeUtf8();
+    return;
+  }
+
+  if (object is DirectByteBuffer) {
+    ptr.value = object.pointer;
+    typePtr.value = argSignature ?? _pointerForEncode[ValueType.byteBuffer]!;
     return;
   }
 

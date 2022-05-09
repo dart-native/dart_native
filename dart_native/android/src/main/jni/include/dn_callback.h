@@ -1,7 +1,6 @@
 //
 // Created by Hui on 6/1/21.
 //
-/// todo(huizz): use wrapper callback
 #pragma once
 #include <jni.h>
 #include <dart_api.h>

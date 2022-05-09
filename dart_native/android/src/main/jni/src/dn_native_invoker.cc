@@ -405,7 +405,7 @@ jobject InvokeDartFunction(bool is_same_thread,
     return ret;
   }
 
-  // If notify success, arrays will delete is work function.
+  // If notify success, arrays will delete in work function.
   if (!notifyResult) {
     delete[] argument_array;
     delete[] type_array;

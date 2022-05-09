@@ -62,7 +62,15 @@ static void InvokeDart(jstring interface_name,
   const char *interface_char = env->GetStringUTFChars(interface_name, NULL);
   const char *method_char = env->GetStringUTFChars(method, NULL);
   auto method_map = dart_interface_method_cache[std::string(interface_char)];
+  // check interface register in dart side
+  if (method_map.empty()) {
+    Send2JavaErrorMessage(std::string("Dart is not register interface: %s", interface_char),
+                          response_id, env);
+    return;
+  }
+
   auto dart_function = method_map[std::string(method_char)];
+  // check function register in dart side
   if (dart_function.method_callback == nullptr) {
     Send2JavaErrorMessage(std::string("Dart is not register function: %s", method_char),
                           response_id, env);
@@ -124,6 +132,7 @@ static void InterfaceNativeInvokeDart(JNIEnv *env,
                                       jobjectArray argument_types,
                                       jint argument_count,
                                       jint response_id) {
+  // thread hopping need java global reference
   auto interface_name_global = (jstring) env->NewGlobalRef(interface_name);
   auto method_global = (jstring) env->NewGlobalRef(method);
   auto arguments_global = (jobjectArray) env->NewGlobalRef(arguments);
