@@ -56,6 +56,7 @@ Pointer<Void> _new(dynamic value, Class isa) {
 }
 
 extension Utf16Buffer on List<int> {
+  /// Returns an [allocator]-allocated pointer to the result.
   Pointer<Uint16> toUtf16Buffer() {
     final count = length + 1;
     final Pointer<Uint16> result = calloc<Uint16>(count);

@@ -239,6 +239,7 @@ NSString *NSStringFromUTF16Data(const unichar *data) {
         length |= data[i];
     }
     NSString *result = [NSString stringWithCharacters:data + lengthDataSize length:(NSUInteger)length];
+    free((void *)data); // Malloc data on dart side, need free here.
     return result;
 }
 
@@ -290,7 +291,6 @@ void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocati
             const unichar *data = ((const unichar **)args)[argsIndex];
             NSString *realArg = NSStringFromUTF16Data(data);
             [stringTypeBucket addObject:realArg];
-            free((void *)data); // Malloc data on dart side, need free here.
             [invocation setArgument:&realArg atIndex:i];
         } else {
             [invocation setArgument:&args[argsIndex] atIndex:i];
@@ -751,7 +751,7 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
     }
     
     BlockFunctionPointer function = creator.function;
-    const Work work = [=]() {
+    const Work work = [function, numberOfArguments, isVoid, shouldReturnAsync, &sema, &creator, &invocation]() {
         function(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
@@ -787,7 +787,7 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
     NSSet<NSNumber *> *dartPorts = dealloc.dartPorts;
     for (NSNumber *port in dartPorts) {
         NativeMethodCallback callback = (NativeMethodCallback)callbackForDartPort[port].integerValue;
-        const Work work = [=]() {
+        const Work work = [callback, numberOfArguments, types, &group, &methodIMP, &invocation]() {
             callback(invocation.realArgs,
                      invocation.realRetValue,
                      numberOfArguments,
@@ -1030,9 +1030,8 @@ void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback
                 });
             };
             // `dartBlock` will release when invocation dead.
-            // So we should retain it and release after it's invoked on dart side.
-            native_retain_object(dartBlock);
-            argsPtrPtr[realArgsCount - 1] = (__bridge void *)dartBlock;
+            // So we should copy(retain) it and release after it's invoked on dart side.
+            argsPtrPtr[realArgsCount - 1] = Block_copy((__bridge void *)dartBlock);
         }
         _fillArgsToInvocation(signature, argsPtrPtr, invocation, 1, 0, nil);
         [invocation invokeWithTarget:(__bridge id)block];

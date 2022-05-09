@@ -202,6 +202,8 @@ class Block extends id {
     }
     // free struct type memory (malloc on native side)
     structTypes.forEach(calloc.free);
+    // free typesPtrPtr (malloc on native side)
+    calloc.free(typesPtrPtr);
     // release block after use (copy on native side).
     blockPointers.forEach(Block_release);
     return result;
