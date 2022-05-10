@@ -128,13 +128,22 @@ invokeMethod("totalCost", new Object[]{0.123456789, 10, Arrays.asList("hello", "
 );
 ```
 
-#### Dart Finalizer
-
-TODO:
-
-
-
 #### Types
+
+| Dart | Objective-C | Swift | Java | Kotlin |
+| --- | --- | --- | --- | --- |
+| null | nil | nil |  |  |
+| bool | BOOL | Bool |  |  |
+| int | NSInteger | Int |  |  |
+| double | double | Double |  |  |
+| String | NSString | String |  |  |
+| List | NSArray | Array |  |  |
+| Map | NSDictionary | Dictionary |  |  |
+| Set | NSSet | Set |  |  |
+| Function | Block | Closure | - | - |
+| Pointer | void * | UnsafeMutableRawPointer |  |  |
+| NativeByte | NSData | Data |  |  |
+| NativeObject | NSObject | NSObject |  |  |
 
 ### Advanced usage: Invoke methods dynamically
 
