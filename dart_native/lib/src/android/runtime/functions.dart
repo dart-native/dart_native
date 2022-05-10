@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:dart_native/src/android/common/library.dart';
 import 'package:ffi/ffi.dart';
 
-// use in dart callback and interface
+// use in native invoke dart function
 typedef MethodNativeCallback = Void Function(
     Pointer<Void> targetPtr,
     Pointer<Utf8> funNamePtr,
@@ -13,7 +13,7 @@ typedef MethodNativeCallback = Void Function(
     Int32 shouldReturnAsync,
     Int64 responseId);
 
-// use in async invoke
+// use in dart async invoke native
 typedef InvokeCallback = Void Function(Pointer<Void> result,
     Pointer<Utf8> method, Pointer<Pointer<Utf8>> typePointers, Int32 argCount);
 

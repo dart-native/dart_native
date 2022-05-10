@@ -82,7 +82,7 @@ extension JObjectSyncCallMethod on JObject {
       throw 'callObject error. \n'
           'Using callObject need specify the dart type.\n'
           'And this dart class need extend jobject. \n'
-          'For example: callObject<JInteger>("getTest");';
+          'For example: callObjectMethodSync<JInteger>("getTest");';
     }
     final sig = getRegisterJavaClassSignature(type);
     if (sig == null) {
@@ -91,18 +91,20 @@ extension JObjectSyncCallMethod on JObject {
           'You should use @nativeJavaClass specify the java class.'
           'See more in https://github.com/dart-native/dart_native/tree/master#usage.\n'
           'Or you can just use call method to specify the return type,'
-          'like callMethod("getString", "Ljava/lang/String;")';
+          'like callMethodSync("getString", "Ljava/lang/String;")';
     }
     final convertor = getRegisterPointerConvertor(type);
-    return convertor!(callMethodSync(methodName, sig,
-        args: args, assignedSignature: assignedSignature));
+    return convertor!((callMethodSync(methodName, sig,
+            args: args, assignedSignature: assignedSignature) as JObject)
+        .pointer);
   }
 
   /// call native method which return list
   List<E>? callListMethodSync<E>(String methodName,
       {List? args, List<String>? assignedSignature}) {
-    final ptr = callMethodSync(methodName, 'Ljava/util/List;',
-        args: args, assignedSignature: assignedSignature);
+    final ptr = (callMethodSync(methodName, 'Ljava/util/List;',
+            args: args, assignedSignature: assignedSignature) as JObject)
+        .pointer;
     if (ptr == nullptr) {
       return null;
     }
@@ -112,8 +114,9 @@ extension JObjectSyncCallMethod on JObject {
   /// call native method which return array list
   List<E>? callArrayListMethodSync<E>(String methodName,
       {List? args, List<String>? assignedSignature}) {
-    final ptr = callMethodSync(methodName, 'Ljava/util/ArrayList;',
-        args: args, assignedSignature: assignedSignature);
+    final ptr = (callMethodSync(methodName, 'Ljava/util/ArrayList;',
+            args: args, assignedSignature: assignedSignature) as JObject)
+        .pointer;
     if (ptr == nullptr) {
       return null;
     }
@@ -123,8 +126,9 @@ extension JObjectSyncCallMethod on JObject {
   /// call native method which return set
   Set<E>? callSetMethodSync<E>(String methodName,
       {List? args, List<String>? assignedSignature}) {
-    final ptr = callMethodSync(methodName, 'Ljava/util/Set;',
-        args: args, assignedSignature: assignedSignature);
+    final ptr = (callMethodSync(methodName, 'Ljava/util/Set;',
+            args: args, assignedSignature: assignedSignature) as JObject)
+        .pointer;
     if (ptr == nullptr) {
       return null;
     }
@@ -134,8 +138,9 @@ extension JObjectSyncCallMethod on JObject {
   /// call native method which return hash set
   Set<E>? callHashSetMethodSync<E>(String methodName,
       {List? args, List<String>? assignedSignature}) {
-    final ptr = callMethodSync(methodName, 'Ljava/util/HashSet;',
-        args: args, assignedSignature: assignedSignature);
+    final ptr = (callMethodSync(methodName, 'Ljava/util/HashSet;',
+            args: args, assignedSignature: assignedSignature) as JObject)
+        .pointer;
     if (ptr == nullptr) {
       return null;
     }
@@ -145,8 +150,9 @@ extension JObjectSyncCallMethod on JObject {
   /// call native method which return map
   Map<K, V>? callMapMethodSync<K, V>(String methodName,
       {List? args, List<String>? assignedSignature}) {
-    final ptr = callMethodSync(methodName, 'Ljava/util/Map;',
-        args: args, assignedSignature: assignedSignature);
+    final ptr = (callMethodSync(methodName, 'Ljava/util/Map;',
+            args: args, assignedSignature: assignedSignature) as JObject)
+        .pointer;
     if (ptr == nullptr) {
       return null;
     }
@@ -156,8 +162,9 @@ extension JObjectSyncCallMethod on JObject {
   /// call native method which return hash map
   Map<K, V>? callHashMapMethodSync<K, V>(String methodName,
       {List? args, List<String>? assignedSignature}) {
-    final ptr = callMethodSync(methodName, 'Ljava/util/HashMap;',
-        args: args, assignedSignature: assignedSignature);
+    final ptr = (callMethodSync(methodName, 'Ljava/util/HashMap;',
+            args: args, assignedSignature: assignedSignature) as JObject)
+        .pointer;
     if (ptr == nullptr) {
       return null;
     }

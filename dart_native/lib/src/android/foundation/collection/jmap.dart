@@ -18,8 +18,9 @@ class JMap<K, V> extends JSubclass<Map> {
 
   JMap.fromPointer(Pointer<Void> ptr, {String clsName = _jMapCls})
       : super.fromPointer(ptr, clsName) {
-    Set keySet =
-        JSet<K>.fromPointer(callMethodSync('keySet', 'Ljava/util/Set;')).raw;
+    Set keySet = JSet<K>.fromPointer(
+            (callMethodSync('keySet', 'Ljava/util/Set;') as JObject).pointer)
+        .raw;
     Map temp = {};
     String itemType = '';
     for (var key in keySet) {
@@ -28,17 +29,17 @@ class JMap<K, V> extends JSubclass<Map> {
           assignedSignature: ['Ljava/lang/Object;']);
       final valueConvertor = getRegisterPointerConvertor(V.toString());
       if (valueConvertor != null) {
-        temp[key] = valueConvertor(item);
+        temp[key] = valueConvertor((item as JObject).pointer);
+        continue;
+      }
+      if (item is String) {
+        temp[key] = unBoxingWrapperClass(item, 'java/lang/String');
         continue;
       }
       if (itemType == '') {
-        if (item is String) {
-          itemType = 'java/lang/String';
-        } else {
-          itemType = getJClassName(item);
-        }
+        itemType = (item as JObject).className!;
       }
-      temp[key] = unBoxingWrapperClass(item, itemType);
+      temp[key] = unBoxingWrapperClass((item as JObject).pointer, itemType);
     }
     raw = temp;
   }

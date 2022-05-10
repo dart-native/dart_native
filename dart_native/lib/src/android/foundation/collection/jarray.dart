@@ -23,9 +23,12 @@ class JArray<E> extends JSubclass<List> {
   JArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, _jArrayCls) {
     JObject converter =
         JObject(className: 'com/dartnative/dart_native/ArrayListConverter');
-    raw = JList<E>.fromPointer(converter.callMethodSync(
-        'arrayToList', 'Ljava/util/List;',
-        args: [JObject.fromPointer(ptr, className: 'java/lang/Object')])).raw;
+    raw = JList<E>.fromPointer((converter.callMethodSync(
+                'arrayToList', 'Ljava/util/List;', args: [
+      JObject.fromPointer(ptr, className: 'java/lang/Object')
+    ]) as JObject)
+            .pointer)
+        .raw;
   }
 }
 
@@ -38,9 +41,10 @@ Pointer<Void> _new(dynamic value, String clsName) {
     if (value.isNotEmpty) {
       type = _getValueType(value[0]);
     }
-    return converter.callMethodSync(
-        '${type.arrayType}ListToArray', type.arraySignature,
-        args: [list]);
+    return (converter.callMethodSync(
+            '${type.arrayType}ListToArray', type.arraySignature,
+            args: [list]) as JObject)
+        .pointer;
   } else {
     throw 'Invalid param when initializing JArray.';
   }

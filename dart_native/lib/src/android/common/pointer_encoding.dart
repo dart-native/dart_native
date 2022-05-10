@@ -1,7 +1,11 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
-import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/android/foundation/collection/jarray.dart';
+import 'package:dart_native/src/android/foundation/direct_byte_buffer.dart';
+import 'package:dart_native/src/android/foundation/native_type.dart';
+import 'package:dart_native/src/android/runtime/jobject.dart';
+import 'package:dart_native/src/common/native_byte.dart';
 import 'package:ffi/ffi.dart';
 
 enum ValueType {
@@ -169,7 +173,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
       result = data.getInt8(0);
       break;
     default:
-      result = ptr;
+      result = JObject.fromPointer(ptr);
       break;
   }
   return result;

@@ -125,7 +125,10 @@ class RuntimeStub extends JObject {
 
   List getByteArray(List list) {
     return JArray.fromPointer(
-        callMethodSync("getByteArray", "[B", args: [JArray(list)])).raw;
+            (callMethodSync("getByteArray", "[B", args: [JArray(list)])
+                    as JObject)
+                .pointer)
+        .raw;
   }
 
   Set? getIntSet(Set set) {
