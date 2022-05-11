@@ -72,6 +72,10 @@ InterfaceMethod(sum, addA:(int32_t)a withB:(int32_t)b) {
 Corresponding Java code:
 
 ```java
+
+// load libdart_native.so
+DartNativePlugin.loadSo();
+
 @InterfaceEntry(name = "MyFirstInterface")
 public class InterfaceDemo extends DartNativeInterface {
 
@@ -86,6 +90,12 @@ public class InterfaceDemo extends DartNativeInterface {
     }
 }
 ```
+
+NOTE: If your so path is custom, you need pass specific path.
+```Java
+DartNativePlugin.loadSoWithCustomPath("xxx/libdart_native.so");
+```
+And before using DartNative in dart, first invoke ```dartNativeInitCustomSoPath()```. It will get path from channel.
 
 #### Native calls Dart
 
@@ -130,20 +140,20 @@ invokeMethod("totalCost", new Object[]{0.123456789, 10, Arrays.asList("hello", "
 
 #### Data types support
 
-| Dart | Objective-C | Swift | Java | Kotlin |
-| --- | --- | --- | --- | --- |
-| null | nil | nil |  |  |
-| bool | BOOL | Bool |  |  |
-| int | NSInteger | Int |  |  |
-| double | double | Double |  |  |
-| String | NSString | String |  |  |
-| List | NSArray | Array |  |  |
-| Map | NSDictionary | Dictionary |  |  |
-| Set | NSSet | Set |  |  |
-| Function | Block | Closure | - | - |
-| Pointer | void * | UnsafeMutableRawPointer |  |  |
-| NativeByte | NSData | Data |  |  |
-| NativeObject | NSObject | NSObject |  |  |
+| Dart | Objective-C | Swift | Java |
+| --- | --- | --- | --- |
+| null | nil | nil | null |
+| bool | BOOL | Bool | bool |
+| int | NSInteger | Int |int  |
+| double | double | Double | double |
+| String | NSString | String | String |
+| List | NSArray | Array | List, ArrayList |
+| Map | NSDictionary | Dictionary | Map, HashMap |
+| Set | NSSet | Set | Set, HashSet |
+| Function | Block | Closure | - |
+| Pointer | void * | UnsafeMutableRawPointer | - |
+| NativeByte | NSData | Data | DirectByteBuffer |
+| NativeObject | NSObject | NSObject | Object |
 
 ### Advanced usage: Invoke methods dynamically
 

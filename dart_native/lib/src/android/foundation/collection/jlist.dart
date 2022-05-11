@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
-import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `List` in Android.
@@ -25,17 +24,17 @@ class JList<E> extends JSubclass<List> {
       dynamic item = callMethodSync('get', 'Ljava/lang/Object;', args: [i]);
       final convertor = getRegisterPointerConvertor(E.toString());
       if (convertor != null) {
-        temp[i] = convertor(item);
+        temp[i] = convertor((item as JObject).pointer);
+        continue;
+      }
+      if (item is String) {
+        temp[i] = unBoxingWrapperClass(item, 'java/lang/String');
         continue;
       }
       if (itemType == '') {
-        if (item is String) {
-          itemType = 'java/lang/String';
-        } else {
-          itemType = getJClassName(item);
-        }
+        itemType = (item as JObject).className!;
       }
-      temp[i] = unBoxingWrapperClass(item, itemType);
+      temp[i] = unBoxingWrapperClass((item as JObject).pointer, itemType);
     }
     raw = temp;
   }

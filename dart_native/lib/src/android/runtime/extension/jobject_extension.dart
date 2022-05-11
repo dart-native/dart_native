@@ -128,7 +128,7 @@ extension JObjectCallMethod on JObject {
     final convertor = getRegisterPointerConvertor(type);
     return callMethod(methodName, sig,
             args: args, assignedSignature: assignedSignature, thread: thread)
-        .then((value) => convertor!(value));
+        .then((value) => convertor!((value as JObject).pointer));
   }
 
   /// async call native method which return list
@@ -136,12 +136,15 @@ extension JObjectCallMethod on JObject {
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    final ptr = await callMethod(methodName, 'Ljava/util/List;',
-        args: args, assignedSignature: assignedSignature, thread: thread);
-    if (ptr == nullptr) {
-      return null;
-    }
-    return JList<E>.fromPointer(ptr).raw.cast<E>();
+    return callMethod(methodName, 'Ljava/util/List;',
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) {
+      final ptr = (value as JObject).pointer;
+      if (ptr == nullptr) {
+        return null;
+      }
+      return JList<E>.fromPointer(ptr).raw.cast<E>();
+    });
   }
 
   /// async call native method which return array list
@@ -149,12 +152,15 @@ extension JObjectCallMethod on JObject {
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    final ptr = await callMethod(methodName, 'Ljava/util/ArrayList;',
-        args: args, assignedSignature: assignedSignature, thread: thread);
-    if (ptr == nullptr) {
-      return null;
-    }
-    return JArrayList<E>.fromPointer(ptr).raw.cast<E>();
+    return callMethod(methodName, 'Ljava/util/ArrayList;',
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) {
+      final ptr = (value as JObject).pointer;
+      if (ptr == nullptr) {
+        return null;
+      }
+      return JArrayList<E>.fromPointer(ptr).raw.cast<E>();
+    });
   }
 
   /// async call native method which return set
@@ -162,12 +168,15 @@ extension JObjectCallMethod on JObject {
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    final ptr = await callMethod(methodName, 'Ljava/util/Set;',
-        args: args, assignedSignature: assignedSignature, thread: thread);
-    if (ptr == nullptr) {
-      return null;
-    }
-    return JSet<E>.fromPointer(ptr).raw.cast<E>();
+    return callMethod(methodName, 'Ljava/util/Set;',
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) {
+      final ptr = (value as JObject).pointer;
+      if (ptr == nullptr) {
+        return null;
+      }
+      return JSet<E>.fromPointer(ptr).raw.cast<E>();
+    });
   }
 
   /// async call native method which return hash set
@@ -175,12 +184,15 @@ extension JObjectCallMethod on JObject {
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    final ptr = await callMethod(methodName, 'Ljava/util/HashSet;',
-        args: args, assignedSignature: assignedSignature, thread: thread);
-    if (ptr == nullptr) {
-      return null;
-    }
-    return JHashSet<E>.fromPointer(ptr).raw.cast<E>();
+    return callMethod(methodName, 'Ljava/util/HashSet;',
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) {
+      final ptr = (value as JObject).pointer;
+      if (ptr == nullptr) {
+        return null;
+      }
+      return JHashSet<E>.fromPointer(ptr).raw.cast<E>();
+    });
   }
 
   /// async call native method which return map
@@ -188,12 +200,15 @@ extension JObjectCallMethod on JObject {
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    final ptr = await callMethod(methodName, 'Ljava/util/Map;',
-        args: args, assignedSignature: assignedSignature, thread: thread);
-    if (ptr == nullptr) {
-      return null;
-    }
-    return JMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
+    return callMethod(methodName, 'Ljava/util/Map;',
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) {
+      final ptr = (value as JObject).pointer;
+      if (ptr == nullptr) {
+        return null;
+      }
+      return JMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
+    });
   }
 
   /// async call native method which return hash map
@@ -201,12 +216,15 @@ extension JObjectCallMethod on JObject {
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    final ptr = await callMethod(methodName, 'Ljava/util/HashMap;',
-        args: args, assignedSignature: assignedSignature, thread: thread);
-    if (ptr == nullptr) {
-      return null;
-    }
-    return JHashMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
+    return callMethod(methodName, 'Ljava/util/HashMap;',
+            args: args, assignedSignature: assignedSignature, thread: thread)
+        .then((value) {
+      final ptr = (value as JObject).pointer;
+      if (ptr == nullptr) {
+        return null;
+      }
+      return JHashMap<K, V>.fromPointer(ptr).raw.cast<K, V>();
+    });
   }
 
   /// async call native method which return DirectByteBuffer

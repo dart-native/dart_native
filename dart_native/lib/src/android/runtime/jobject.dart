@@ -39,6 +39,7 @@ class JObject extends NativeObject {
   late String? _cls;
 
   String? get className {
+    _cls ??= getJClassName(pointer);
     return _cls;
   }
 
@@ -83,12 +84,11 @@ class JObject extends NativeObject {
   /// When java object pointer is not nullptr, we will get java class name from jni.
   /// If java class is specified by [className], we will use it first.
   JObject.fromPointer(Pointer<Void> pointer, {String? className}) {
-    if (pointer == nullptr && className == null) {
-      throw 'Java object pointer and classname are null.'
-          ' When java object pointer is nullptr, you must specify the java class name.';
+    if (pointer == nullptr) {
+      throw 'Java object pointer is null.';
     }
     _ptr = pointer;
-    _cls = className ?? getJClassName(pointer);
+    _cls = className;
     bindLifeCycleWithJava(_ptr);
   }
 

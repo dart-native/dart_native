@@ -7,9 +7,6 @@ import java.util.HashMap;
 
 import androidx.annotation.Nullable;
 
-/**
- * Created by huizzzhou on 2020/11/11.
- */
 public class CallbackManager {
     private static final String TAG = "CallbackManager";
     private static CallbackManager sCallbackManager;
