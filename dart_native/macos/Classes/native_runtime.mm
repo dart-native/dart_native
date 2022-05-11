@@ -81,6 +81,7 @@ bool objc_isTaggedPointer(const void *ptr) {
 }
 
 /// Returns true if the pointer points to readable and valid memory.
+/// NOTE: expensive function.
 /// @param pointer is the pointer to check
 bool native_isValidReadableMemory(const void *pointer) {
     // Check for read permissions
@@ -130,9 +131,16 @@ bool native_isValidPointer(const void *pointer) {
     if ((uintptr_t)pointer > MACH_VM_MAX_ADDRESS) {
         return false;
     }
-    // Check if the memory is valid and readable
-    if (!native_isValidReadableMemory(pointer)) {
-        return false;
+    if (DartNativeCanThrowException()) {
+        static NSString * const DNValidMemoryExceptionReason = @"Address(%p) is not readable.";
+        static NSExceptionName const DNValidMemoryException = @"ValidMemoryException";
+        // Check if the memory is valid and readable
+        if (!native_isValidReadableMemory(pointer)) {
+            @throw [NSException exceptionWithName:DNValidMemoryException
+                                           reason:[NSString stringWithFormat:DNValidMemoryExceptionReason, pointer]
+                                         userInfo:nil];
+            return false;
+        }
     }
     return true;
 }

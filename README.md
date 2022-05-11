@@ -128,7 +128,7 @@ invokeMethod("totalCost", new Object[]{0.123456789, 10, Arrays.asList("hello", "
 );
 ```
 
-#### Types
+#### Data types support
 
 | Dart | Objective-C | Swift | Java | Kotlin |
 | --- | --- | --- | --- | --- |
@@ -150,7 +150,6 @@ invokeMethod("totalCost", new Object[]{0.123456789, 10, Arrays.asList("hello", "
 - Step 1: Add ```dart_native``` to dependencies and ```build_runner``` to dev_dependencies.
 
 - Step 2: Generate Dart wrapper code with [@dartnative/codegen](https://www.npmjs.com/package/@dartnative/codegen) or write Dart code manually.
-
 
 - Step 3: Generate code for automatic type conversion using [dart_native_gen](https://pub.dev/packages/dart_native_gen) with the following steps (3.1-3.3):
 
