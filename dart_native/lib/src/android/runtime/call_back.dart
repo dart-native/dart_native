@@ -34,7 +34,7 @@ jniInvokeDart(Function function, Pointer<Pointer<Void>> argsPtrPtr,
         return;
       }
 
-      if (value == null || value is Future<Null>) {
+      if (value == null) {
         asyncInvokeResult(
             responseId, nullptr.cast(), resultType.toNativeUtf8());
         return;
