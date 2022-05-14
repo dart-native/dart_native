@@ -8,7 +8,7 @@ import 'package:ffi/ffi.dart';
 typedef DartFinalizerFunction = void Function();
 
 extension DartFinalizer on Object {
-  // TODO: Android
+  // TODO: check Android
   void addFinalizer(DartFinalizerFunction function) {
     Pointer<Void> key = calloc<Uint64>().cast();
     _finalizers[key] = function;

@@ -55,6 +55,32 @@ void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr) {
   Dart_NewWeakPersistentHandle_DL(h, objPtr, size, RunFinalizer);
 }
 
+/// Dart Finalizer
+typedef struct Finalizer {
+  void *callback;
+  void *key;
+  Dart_Port dartPort;
+} Finalizer;
+
+static void RunDartFinalizer(void *isolate_callback_data, void *peer) {
+  Finalizer *finalizer = (Finalizer *)peer;
+  void (*callback)(void *) = (void (*)(void *))finalizer->callback;
+  void *key = finalizer->key;
+  const WorkFunction work = [callback, key]() {
+    callback(key);
+  };
+  const WorkFunction *work_ptr = new WorkFunction(work);
+  BOOL success = Notify2Dart(finalizer->dartPort, work_ptr);
+  if (success) {
+    free(finalizer);
+  }
+}
+
+void RegisterDartFinalizer(Dart_Handle h, void *callback, void *key, Dart_Port dartPort) {
+  Finalizer *finalizer = new Finalizer({callback, key, dartPort});
+  Dart_NewWeakPersistentHandle_DL(h, finalizer, 8, RunDartFinalizer);
+}
+
 void *GetClassName(void *objectPtr) {
   if (objectPtr == nullptr) {
     return nullptr;
