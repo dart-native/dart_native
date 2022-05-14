@@ -158,6 +158,5 @@ void _invokeDart(
     return;
   }
   jniInvokeDart(function, argsPtrPtr, argTypesPtrPtr, argCount,
-      shouldReturnAsync: shouldReturnAsync == 1,
-      responseId: responseId);
+      shouldReturnAsync: shouldReturnAsync == 1, responseId: responseId);
 }

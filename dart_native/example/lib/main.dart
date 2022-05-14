@@ -44,7 +44,7 @@ class _DartNativeAppState extends State<DartNativeApp> {
       return {'totalCost: ${unitCost * count}': list};
     });
     result = helloWorld();
-    
+
     final data = getUTF8Data(result);
     // The number of bytes equals the length of uint8 list.
     final utf8Result =
@@ -53,6 +53,7 @@ class _DartNativeAppState extends State<DartNativeApp> {
     assert(utf8Result == result);
 
     final unitTest = DNUnitTest();
+
     /// Run all test cases.
     await unitTest.runAllUnitTests();
     // test finalizer
@@ -131,8 +132,4 @@ class _DartNativeAppState extends State<DartNativeApp> {
       ),
     );
   }
-}
-
-class DartLifecycleObject {
-
 }

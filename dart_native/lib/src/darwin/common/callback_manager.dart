@@ -38,7 +38,7 @@ class CallbackManager {
   }
 }
 
-final registerDeallocCallback = runtimeLib.lookupFunction<
+final registerDeallocCallback = nativeDylib.lookupFunction<
         Void Function(
             Pointer<NativeFunction<Void Function(IntPtr)>> functionPointer),
         void Function(
@@ -47,7 +47,7 @@ final registerDeallocCallback = runtimeLib.lookupFunction<
 
 final interactiveCppRequests = ReceivePort()..listen(requestExecuteCallback);
 final int nativePort = interactiveCppRequests.sendPort.nativePort;
-final executeCallback = runtimeLib.lookupFunction<Void Function(Pointer<Work>),
+final executeCallback = nativeDylib.lookupFunction<Void Function(Pointer<Work>),
     void Function(Pointer<Work>)>('ExecuteCallback');
 
 class Work extends Opaque {}

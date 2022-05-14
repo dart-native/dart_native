@@ -3,29 +3,29 @@ import 'dart:ffi';
 import 'package:dart_native/src/darwin/common/callback_manager.dart';
 import 'package:dart_native/src/darwin/runtime/internal/nsobject_lifecycle.dart';
 
-DynamicLibrary? _runtimeLib;
-DynamicLibrary get runtimeLib {
-  if (_runtimeLib != null) {
-    return _runtimeLib!;
+DynamicLibrary? _nativeDylib;
+DynamicLibrary get nativeDylib {
+  if (_nativeDylib != null) {
+    return _nativeDylib!;
   }
-
+  // Handle dynamic library lazy load
   try {
     // Release mode
-    _runtimeLib = DynamicLibrary.open('DartNative.framework/DartNative');
+    _nativeDylib = DynamicLibrary.open('DartNative.framework/DartNative');
   } catch (e) {
     try {
       // Debug mode and use_frameworks!
-      _runtimeLib = DynamicLibrary.open('dart_native.framework/dart_native');
+      _nativeDylib = DynamicLibrary.open('dart_native.framework/dart_native');
     } catch (e) {
       // Debug mode
-      _runtimeLib = nativeDylib;
+      _nativeDylib = _processDylib;
     }
   }
   registerDeallocCallback(nativeObjectDeallocPtr.cast());
-  return _runtimeLib!;
+  return _nativeDylib!;
 }
 
-final DynamicLibrary nativeDylib = DynamicLibrary.process();
+final DynamicLibrary _processDylib = DynamicLibrary.process();
 
 final initializeApi = nativeDylib.lookupFunction<IntPtr Function(Pointer<Void>),
     int Function(Pointer<Void>)>("InitDartApiDL");

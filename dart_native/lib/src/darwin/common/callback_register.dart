@@ -78,8 +78,8 @@ _callback(
     }
     if (realRetPtrPtr != nullptr) {
       final resultEncoding = typesPtrPtr.elementAt(0).value;
-      PointerWrapper? wrapper = storeValueToPointer(
-          result, realRetPtrPtr, resultEncoding);
+      PointerWrapper? wrapper =
+          storeValueToPointer(result, realRetPtrPtr, resultEncoding);
       if (wrapper != null) {
         storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);
         result = wrapper;

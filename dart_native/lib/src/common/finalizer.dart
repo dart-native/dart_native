@@ -4,7 +4,6 @@ import 'package:dart_native/src/common/native_dylib.dart';
 import 'package:dart_native/src/darwin/common/callback_manager.dart';
 import 'package:ffi/ffi.dart';
 
-
 typedef DartFinalizerFunction = void Function();
 
 extension DartFinalizer on Object {
@@ -28,7 +27,8 @@ Pointer<NativeFunction<Void Function(Pointer<Void>)>> _commonFinalizerPtr =
 
 Map<Pointer<Void>, DartFinalizerFunction> _finalizers = {};
 
-typedef _RegisterDartFinalizerC = Void Function(Handle, Pointer<Void>, Pointer<Void>, Int64);
+typedef _RegisterDartFinalizerC = Void Function(
+    Handle, Pointer<Void>, Pointer<Void>, Int64);
 typedef _RegisterDartFinalizerD = void Function(
     Object, Pointer<Void>, Pointer<Void>, int);
 final _RegisterDartFinalizerD _registerDartFinalizer = nativeDylib

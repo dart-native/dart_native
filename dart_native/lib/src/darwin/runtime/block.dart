@@ -13,21 +13,22 @@ import 'package:ffi/ffi.dart';
 
 typedef _DNBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
 typedef _DNBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
-final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
+final _DNBlockTypeEncodeStringD _blockTypeEncodeString = nativeDylib
     .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
         'DNBlockTypeEncodeString');
 
-typedef _DNBlockTypeEncodingsC = Pointer<Pointer<Utf8>> Function(Pointer<Void> block);
-typedef _DNBlockTypeEncodingsD = Pointer<Pointer<Utf8>> Function(Pointer<Void> block);
-final _DNBlockTypeEncodingsD _blockTypeEncodings = runtimeLib
-    .lookupFunction<_DNBlockTypeEncodingsC, _DNBlockTypeEncodingsD>(
+typedef _DNBlockTypeEncodingsC = Pointer<Pointer<Utf8>> Function(
+    Pointer<Void> block);
+typedef _DNBlockTypeEncodingsD = Pointer<Pointer<Utf8>> Function(
+    Pointer<Void> block);
+final _DNBlockTypeEncodingsD _blockTypeEncodings =
+    nativeDylib.lookupFunction<_DNBlockTypeEncodingsC, _DNBlockTypeEncodingsD>(
         'DNBlockTypeEncodings');
 
 typedef _DNBlockSequenceC = Uint64 Function(Pointer<Void> block);
 typedef _DNBlockSequenceD = int Function(Pointer<Void> block);
-final _DNBlockSequenceD _blockSequence = runtimeLib
-    .lookupFunction<_DNBlockSequenceC, _DNBlockSequenceD>(
-        'DNBlockSequence');
+final _DNBlockSequenceD _blockSequence = nativeDylib
+    .lookupFunction<_DNBlockSequenceC, _DNBlockSequenceD>('DNBlockSequence');
 
 /// Stands for `NSBlock` in iOS and macOS. [Block] can be used as an argument
 /// to a method and as a callback.
@@ -43,6 +44,7 @@ class Block extends id {
   List<String> types = [];
   int sequence = -1;
   Pointer<Pointer<Utf8>> typeEncodingsPtrPtr = nullptr;
+
   /// Creating a [Block] from a [Function].
   ///
   /// NOTE: The arguments of [function] should be wrapper class which can

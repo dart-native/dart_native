@@ -1,10 +1,10 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:dart_native/src/android/common/library.dart' as library_android show nativeDylib;
+import 'package:dart_native/src/android/common/library.dart' as library_android
+    show nativeDylib;
 import 'package:dart_native/src/darwin/common/library.dart' as library_darwin
-    show runtimeLib;
-
+    show nativeDylib;
 
 DynamicLibrary? _nativeDylib;
 DynamicLibrary get nativeDylib {
@@ -13,7 +13,7 @@ DynamicLibrary get nativeDylib {
   }
 
   if (Platform.isIOS || Platform.isMacOS) {
-    _nativeDylib = library_darwin.runtimeLib;
+    _nativeDylib = library_darwin.nativeDylib;
   } else if (Platform.isAndroid) {
     _nativeDylib = library_android.nativeDylib;
   } else {
