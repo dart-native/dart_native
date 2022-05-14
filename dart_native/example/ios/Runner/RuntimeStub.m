@@ -134,7 +134,7 @@
 
 - (CGRect)fooCGRect:(CGRect)rect {
     DDLogInfo(@"%s %f, %f, %f, %f", __FUNCTION__, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-    return (CGRect){1, 2, 3, 4};
+    return (CGRect){{1, 2}, {3, 4}};
 }
 
 - (NSRange)fooNSRange:(NSRange)range {

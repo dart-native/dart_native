@@ -29,7 +29,6 @@ id boxingObjCType(dynamic e) {
 }
 
 dynamic unboxingObjCType(dynamic e) {
-  // TODO: handle null
   if (e is id) {
     if (e.isKind(of: type(of: NSValue))) {
       return NSValue.fromPointer(e.pointer).raw;

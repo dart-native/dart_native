@@ -920,6 +920,31 @@ DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointer) {
     return result;
 }
 
+typedef struct Finalizer {
+    void *callback;
+    void *key;
+    Dart_Port dartPort;
+} Finalizer;
+
+static void RunDartFinalizer(void *isolate_callback_data, void *peer) {
+    Finalizer *finalizer = (Finalizer *)peer;
+    void (*callback)(void *) = (void(*)(void *))finalizer->callback;
+    void *key = finalizer->key;
+    const Work work = [callback, key]() {
+        callback(key);
+    };
+    const Work *work_ptr = new Work(work);
+    BOOL success = NotifyDart(finalizer->dartPort, work_ptr);
+    if (success) {
+        free(finalizer);
+    }
+}
+
+void RegisterDartFinalizer(Dart_Handle h, void *callback, void *key, Dart_Port dartPort) {
+    Finalizer *finalizer = new Finalizer({callback, key, dartPort});
+    Dart_NewWeakPersistentHandle_DL(h, finalizer, 8, RunDartFinalizer);
+}
+
 #pragma mark - Interface
 
 /// Each interface has an object on each thread. Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class, so we have to use objc runtime.

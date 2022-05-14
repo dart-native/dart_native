@@ -44,19 +44,21 @@ class _DartNativeAppState extends State<DartNativeApp> {
       return {'totalCost: ${unitCost * count}': list};
     });
     result = helloWorld();
+    
     final data = getUTF8Data(result);
     // The number of bytes equals the length of uint8 list.
     final utf8Result =
         data.bytes.cast<Utf8>().toDartString(length: data.lengthInBytes);
     // They should be equal.
     assert(utf8Result == result);
-    // ignore: unused_local_variable
-    final objectWillDie = DartLifecycleObject(); // test dart finalizer
 
     final unitTest = DNUnitTest();
-
     /// Run all test cases.
     await unitTest.runAllUnitTests();
+    // test finalizer
+    unitTest.addFinalizer(() {
+      print('The instance of \'unitTest\' has been destroyed!');
+    });
   }
 
   String helloWorld() {
@@ -132,8 +134,5 @@ class _DartNativeAppState extends State<DartNativeApp> {
 }
 
 class DartLifecycleObject {
-  late final dynamic finalizer;
-  DartLifecycleObject() {
-    finalizer = interface.invokeMethodSync('finalizer');
-  }
+
 }
