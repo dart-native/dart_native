@@ -64,16 +64,18 @@ static void InvokeDart(jstring interface_name,
   auto method_map = dart_interface_method_cache[std::string(interface_char)];
   // check interface register in dart side
   if (method_map.empty()) {
-    Send2JavaErrorMessage(std::string("Dart is not register interface: %s", interface_char),
-                          response_id, env);
+    std::string error_message("Dart is not register interface: ");
+    error_message.append(interface_char);
+    Send2JavaErrorMessage(error_message, response_id, env);
     return;
   }
 
   auto dart_function = method_map[std::string(method_char)];
   // check function register in dart side
   if (dart_function.method_callback == nullptr) {
-    Send2JavaErrorMessage(std::string("Dart is not register function: %s", method_char),
-                          response_id, env);
+    std::string error_message("Dart is not register function: ");
+    error_message.append(method_char);
+    Send2JavaErrorMessage(error_message, response_id, env);
     return;
   }
 
