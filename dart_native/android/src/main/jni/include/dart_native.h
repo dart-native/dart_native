@@ -16,6 +16,8 @@ DN_EXTERN intptr_t InitDartApiDL(void *data);
 /** bind lifecycle */
 DN_EXTERN void PassObjectToCUseDynamicLinking(Dart_Handle h, void *objPtr);
 
+DN_EXTERN void RegisterDartFinalizer(Dart_Handle h, void *callback, void *key, Dart_Port dartPort);
+
 /** invoke native */
 DN_EXTERN void *GetClassName(void *objectPtr);
 

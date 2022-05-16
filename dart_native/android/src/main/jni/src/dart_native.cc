@@ -70,7 +70,7 @@ static void RunDartFinalizer(void *isolate_callback_data, void *peer) {
     callback(key);
   };
   const WorkFunction *work_ptr = new WorkFunction(work);
-  BOOL success = Notify2Dart(finalizer->dartPort, work_ptr);
+  bool success = Notify2Dart(finalizer->dartPort, work_ptr);
   if (success) {
     free(finalizer);
   }
