@@ -3,7 +3,7 @@ import 'package:dart_native_example/ios/runtimestub.dart';
 
 extension RuntimeStubAsync on RuntimeStub {
   Future<String> fooNSStringAsync(String str) async {
-    return performAsync(SEL('fooNSString:'), args: [str]).then((value) {
+    return perform(SEL('fooNSString:'), args: [str]).then((value) {
       return NSString.fromPointer(value.pointer).raw;
     });
   }

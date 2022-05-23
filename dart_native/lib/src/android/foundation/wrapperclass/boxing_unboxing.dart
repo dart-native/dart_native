@@ -46,6 +46,7 @@ dynamic unBoxingWrapperClass(dynamic value, String valueType) {
       return JShort.fromPointer(value).raw;
     case 'java/util/List':
       return JList.fromPointer(value).raw;
+    case 'java/util/Arrays\$ArrayList':
     case 'java/util/ArrayList':
       return JArrayList.fromPointer(value).raw;
     case 'java/util/Set':
@@ -59,6 +60,6 @@ dynamic unBoxingWrapperClass(dynamic value, String valueType) {
     case 'java/lang/String':
       return value;
     default:
-      return jobjectInstanceFromPointer(valueType.replaceAll('.', '/'), value);
+      return jobjectInstanceFromPointer(valueType, value);
   }
 }

@@ -1,5 +1,7 @@
 import 'dart:ffi';
+import 'dart:isolate';
 
+import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:flutter/services.dart';
 
 DynamicLibrary? _nativeDylib;
@@ -16,6 +18,26 @@ final initializeApi = nativeDylib.lookupFunction<IntPtr Function(Pointer<Void>),
 final _dartAPIResult = initializeApi(NativeApi.initializeApiDLData);
 
 final initDartAPISuccess = _dartAPIResult == 0;
+
+final interactiveCppRequests = ReceivePort()..listen(requestExecuteCallback);
+final int nativePort = interactiveCppRequests.sendPort.nativePort;
+final executeCallback = nativeDylib.lookupFunction<Void Function(Pointer<Work>),
+    void Function(Pointer<Work>)>('ExecuteCallback');
+
+class Work extends Opaque {}
+
+void requestExecuteCallback(dynamic message) {
+  final int workAddress = message;
+  final work = Pointer<Work>.fromAddress(workAddress);
+  executeCallback(work);
+}
+
+/// Bind dart object lifecycle with native object.
+void bindLifeCycleWithJava(Pointer<Void>? obj) {
+  if (initDartAPISuccess && obj != null) {
+    passJObjectToC(obj, obj);
+  }
+}
 
 Future<void> initSoPath(String? soPath) async {
   if (soPath != null && soPath.isNotEmpty) {

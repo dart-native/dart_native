@@ -5,14 +5,14 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Float` in Android.
-const String jFloatCls = 'java/lang/Float';
+const String _jFloatCls = 'java/lang/Float';
 
-@native(javaClass: jFloatCls)
+@native(javaClass: _jFloatCls)
 class JFloat extends JSubclass<double> {
-  JFloat(double value) : super(value, _new, jFloatCls);
+  JFloat(double value) : super(value, _new, _jFloatCls);
 
-  JFloat.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, jFloatCls) {
-    raw = invokeFloat('floatValue');
+  JFloat.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, _jFloatCls) {
+    raw = callFloatMethodSync('floatValue');
   }
 }
 

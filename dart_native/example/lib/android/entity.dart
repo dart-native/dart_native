@@ -10,6 +10,6 @@ class Entity extends JObject {
   Entity.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr);
 
   int getCurrentTime() {
-    return invoke('getCurrentTime', "I", args: []);
+    return callMethodSync('getCurrentTime', "I", args: []);
   }
 }

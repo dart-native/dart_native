@@ -1,15 +1,28 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/src/common/native_byte.dart';
 import 'package:dart_native/src/darwin/common/pointer_wrapper.dart';
-import 'package:dart_native/src/darwin/dart_objc.dart';
+import 'package:dart_native/src/darwin/foundation/collection/nsarray.dart';
+import 'package:dart_native/src/darwin/foundation/collection/nsdictionary.dart';
+import 'package:dart_native/src/darwin/foundation/collection/nsset.dart';
 import 'package:dart_native/src/darwin/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/darwin/foundation/internal/native_box.dart';
 import 'package:dart_native/src/darwin/foundation/internal/native_struct.dart';
+import 'package:dart_native/src/darwin/foundation/nsnumber.dart';
+import 'package:dart_native/src/darwin/foundation/nsstring.dart';
+import 'package:dart_native/src/darwin/foundation/objc_basic_type.dart';
+import 'package:dart_native/src/darwin/runtime/block.dart';
+import 'package:dart_native/src/darwin/runtime/class.dart';
+import 'package:dart_native/src/darwin/runtime/id.dart';
+import 'package:dart_native/src/darwin/runtime/nsobject.dart';
+import 'package:dart_native/src/darwin/runtime/nsobject_ref.dart';
+import 'package:dart_native/src/darwin/runtime/protocol.dart';
+import 'package:dart_native/src/darwin/runtime/selector.dart';
+import 'package:dart_native/src/darwin/runtime/type_convertor.dart';
 import 'package:ffi/ffi.dart';
 
-// TODO: change encoding hard code string to const var.
-Map<Pointer<Utf8>, Function> _storeValueStrategyMap = {
+Map<Pointer<Utf8>, Function> _storeBasicValueStrategyMap = {
   TypeEncodings.b: (Pointer ptr, dynamic object) {
     ptr.cast<Int8>().value = object;
   },
@@ -68,11 +81,17 @@ dynamic storeValueToPointer(
       // waiting for ffi bool type support.
       object = object ? 1 : 0;
     }
-    Function? strategy = _storeValueStrategyMap[encoding];
-    if (strategy == null) {
-      throw '$object not match type $encoding!';
+    if (encoding == TypeEncodings.object) {
+      // should convert to NSNumber object
+      NSNumber number = NSNumber(object);
+      ptr.value = number.pointer;
     } else {
-      return strategy(ptr, object);
+      Function? strategy = _storeBasicValueStrategyMap[encoding];
+      if (strategy == null) {
+        throw '$object not match type $encoding!';
+      } else {
+        return strategy(ptr, object);
+      }
     }
   } else if (object is Pointer<Void> && !encoding.isNum) {
     ptr.value = object;
@@ -90,7 +109,7 @@ dynamic storeValueToPointer(
   } else if (object is String) {
     if (encoding.maybeCString) {
       return storeCStringToPointer(object, ptr);
-    } else if (encoding.maybeObject) {
+    } else if (encoding.maybeObject || encoding.isString) {
       storeStringToPointer(object, ptr);
     }
   } else if (object is List && encoding.maybeObject) {
@@ -107,6 +126,8 @@ dynamic storeValueToPointer(
   } else if (encoding.isStruct) {
     // ptr is struct pointer
     return storeStructToPointer(ptr, object);
+  } else if (object is NativeByte) {
+    ptr.value = object.raw.pointer;
   } else {
     throw '$object not match type $encoding!';
   }
@@ -275,6 +296,7 @@ String? structNameForEncoding(String encoding) {
   int index = encoding.indexOf('=');
   if (index != -1) {
     String result = encoding.substring(1, index);
+    // fix for `_NSRange`
     if (result.startsWith('_')) {
       result = result.substring(1);
     }
@@ -306,53 +328,10 @@ NativeStruct? loadStructFromPointer(Pointer<Void> ptr, String? encoding) {
   }
   String? structName = structNameForEncoding(encoding);
   if (structName != null) {
-    NativeStruct? result;
-    // struct
-    // TODO: using annotation
-    switch (structName) {
-      case 'CGSize':
-        result = CGSize.fromPointer(ptr);
-        break;
-      case 'NSSize':
-        result = NSSize.fromPointer(ptr);
-        break;
-      case 'CGPoint':
-        result = CGPoint.fromPointer(ptr);
-        break;
-      case 'NSPoint':
-        result = NSPoint.fromPointer(ptr);
-        break;
-      case 'CGVector':
-        result = CGVector.fromPointer(ptr);
-        break;
-      case 'CGRect':
-        result = CGRect.fromPointer(ptr);
-        break;
-      case 'NSRect':
-        result = NSRect.fromPointer(ptr);
-        break;
-      case 'NSRange':
-        result = NSRange.fromPointer(ptr);
-        break;
-      case 'UIOffset':
-        result = UIOffset.fromPointer(ptr);
-        break;
-      case 'UIEdgeInsets':
-        result = UIEdgeInsets.fromPointer(ptr);
-        break;
-      case 'NSEdgeInsets':
-        result = NSEdgeInsets.fromPointer(ptr);
-        break;
-      case 'NSDirectionalEdgeInsets':
-        result = NSDirectionalEdgeInsets.fromPointer(ptr);
-        break;
-      case 'CGAffineTransform':
-        result = CGAffineTransform.fromPointer(ptr);
-        break;
-      default:
-    }
-    if (result != null) {
-      return result;
+    // Structs registered by `@native()` can be created by `fromPointer` method.
+    ConvertorFromPointer? convertor = convertorForType(structName);
+    if (convertor != null) {
+      return convertor(ptr);
     }
   }
   return null;
@@ -367,7 +346,10 @@ Map<String, String> _nativeTypeNameMap = {
   'unsigned_long_long': 'unsigned long long',
 };
 
-// FIXME: this list shouldn't hardcode custom structs
+/// Names of native types.
+///
+/// The types in the list are not treated as NSObject when processing the
+/// dart function signature.
 List<String> _nativeTypeNames = [
   'id',
   'BOOL',
@@ -414,27 +396,58 @@ List<String> _nativeTypeNames = [
   'CGAffineTransform',
 ];
 
+/// Parse signature to list of types.
+///
+/// These contents will be ignored: generics, whitespaces, question marks for nullable.
+List<String> parseFunctionSignature(String signature) {
+  List<String> result = [];
+  String current = '';
+  int depth = 0;
+  for (var rune in signature.runes) {
+    // skip generic
+    if (rune == 60) {
+      // '<'
+      depth++;
+      continue;
+    } else if (rune == 62) {
+      // '>'
+      depth--;
+      continue;
+    } else if (depth > 0) {
+      // skip generic body
+      continue;
+    } else if (rune == 32 || rune == 63) {
+      // ' ' or '?'
+      // skip whitespace and nullable
+      continue;
+    } else if (rune == 44) {
+      // ','
+      result.add(current);
+      current = '';
+    } else {
+      // add char to current type
+      current += String.fromCharCode(rune);
+    }
+  }
+  // Add last
+  result.add(current);
+  return result;
+}
+
 List<String> dartTypeStringForFunction(Function function) {
   String typeString = function.runtimeType.toString();
   List<String> argsAndRet = typeString.split(' => ');
   List<String> result = [];
   if (argsAndRet.length == 2) {
     String args = argsAndRet.first;
-    String ret = argsAndRet.last.replaceAll('Null', 'void');
+    String ret = argsAndRet.last;
     if (args.length > 2) {
       args = args.substring(1, args.length - 1);
-      result = '$ret, $args'.split(', ');
+      result = parseFunctionSignature('$ret, $args');
     } else {
-      result = [ret];
+      result = parseFunctionSignature(ret);
     }
   }
-  // handle nullsafety, such as [NSString?]
-  result = result.map((e) {
-    if (e.endsWith("?")) {
-      e = e.substring(0, e.length - 1);
-    }
-    return e;
-  }).toList();
   return result;
 }
 
@@ -448,7 +461,12 @@ List<String> nativeTypeStringForDartTypes(List<String> types) {
     } else if (s.contains('Function')) {
       return 'block';
     } else if (!_nativeTypeNames.contains(s)) {
-      return 'NSObject';
+      if (s == 'String') {
+        // special logic for String, see objc function '_parseTypeNames:error:'
+        return 'String';
+      } else {
+        return 'NSObject';
+      }
     }
     return s;
   }).toList();

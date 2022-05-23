@@ -1,15 +1,11 @@
 package com.dartnative.dart_native;
 
-import android.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by huizzzhou on 3/26/21.
- */
 public class ArrayListConverter {
 
     /************************basic type list to array***************************************/

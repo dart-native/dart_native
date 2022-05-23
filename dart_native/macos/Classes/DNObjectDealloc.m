@@ -8,6 +8,10 @@
 #import "DNObjectDealloc.h"
 #import "native_runtime.h"
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 @interface DNObjectDealloc ()
 
 @property (nonatomic, readonly) intptr_t hostAddress;

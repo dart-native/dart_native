@@ -9,6 +9,10 @@
 #import <objc/runtime.h>
 #import "native_runtime.h"
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 @interface DNAssociatedDartObject ()
 
 @property (nonatomic) NSMutableSet<NSNumber *> *internalDartPorts;

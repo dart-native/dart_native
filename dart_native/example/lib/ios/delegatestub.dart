@@ -14,7 +14,7 @@ class DelegateStub extends NSObject with SampleDelegate {
   @override
   callback() {
     print('callback succeed!');
-    return NSObject();
+    return 'callback';
   }
 
   @override

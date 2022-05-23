@@ -2,63 +2,62 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
-import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `List` in Android.
-const String jListCls = 'java/util/List';
-const String jArrayListCls = 'java/util/ArrayList';
+const String _jListCls = 'java/util/List';
+const String _jArrayListCls = 'java/util/ArrayList';
 
-@native(javaClass: jListCls)
+@native(javaClass: _jListCls)
 class JList<E> extends JSubclass<List> {
-  JList(List value, {String clsName = jListCls, InitSubclass init = _new})
+  JList(List value, {String clsName = _jListCls, InitSubclass init = _new})
       : super(value, _new, clsName) {
     value = List.of(value, growable: false);
   }
 
-  JList.fromPointer(Pointer<Void> ptr, {String clsName = jListCls})
+  JList.fromPointer(Pointer<Void> ptr, {String clsName = _jListCls})
       : super.fromPointer(ptr, clsName) {
-    int count = invokeInt('size');
+    int count = callIntMethodSync('size');
     List temp = List.filled(count, [], growable: false);
     String itemType = '';
     for (var i = 0; i < count; i++) {
-      dynamic item = invoke('get', 'Ljava/lang/Object;', args: [i]);
+      dynamic item = callMethodSync('get', 'Ljava/lang/Object;', args: [i]);
       final convertor = getRegisterPointerConvertor(E.toString());
       if (convertor != null) {
-        temp[i] = convertor(item);
+        temp[i] = convertor((item as JObject).pointer);
+        continue;
+      }
+      if (item is String) {
+        temp[i] = unBoxingWrapperClass(item, 'java/lang/String');
         continue;
       }
       if (itemType == '') {
-        if (item is String) {
-          itemType = 'java/lang/String';
-        } else {
-          itemType = getJClassName(item);
-        }
+        itemType = (item as JObject).className!;
       }
-      temp[i] = unBoxingWrapperClass(item, itemType);
+      temp[i] = unBoxingWrapperClass((item as JObject).pointer, itemType);
     }
     raw = temp;
   }
 }
 
-@native(javaClass: jArrayListCls)
+@native(javaClass: _jArrayListCls)
 class JArrayList<E> extends JList {
-  JArrayList(List value) : super(value, clsName: jArrayListCls);
+  JArrayList(List value) : super(value, clsName: _jArrayListCls);
 
   JArrayList.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: jArrayListCls);
+      : super.fromPointer(ptr, clsName: _jArrayListCls);
 }
 
 /// New native 'ArrayList'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is List) {
     ///'List' default implementation 'ArrayList'.
-    if (clsName == jListCls) clsName = jArrayListCls;
+    if (clsName == _jListCls) clsName = _jArrayListCls;
 
     JObject nativeList = JObject(className: clsName);
 
     for (var i = 0; i < value.length; i++) {
-      nativeList.invokeBool('add',
+      nativeList.callBoolMethodSync('add',
           args: [boxingWrapperClass(value[i])],
           assignedSignature: ['Ljava/lang/Object;']);
     }

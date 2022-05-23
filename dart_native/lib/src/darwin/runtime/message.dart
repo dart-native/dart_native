@@ -89,11 +89,12 @@ dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
       signaturePtr.cast<Void>(), typeEncodingsPtrPtr, decodeRetVal ? 1 : 0);
 
   List<Pointer<Utf8>> structTypes = [];
+  List<Pointer<Void>> blockPointers = [];
   List<NSObjectRef> outRefArgs = [];
   int stringTypeBitmask = decodeRetVal ? 1 << 63 : 0;
-  Pointer<Pointer<Void>>? pointers;
+  Pointer<Pointer<Void>>? argsPtrPtr;
   if (args != null) {
-    pointers = calloc<Pointer<Void>>(argCount);
+    argsPtrPtr = calloc<Pointer<Void>>(argCount);
     for (var i = 0; i < argCount; i++) {
       var arg = args[i];
       if (arg == null) {
@@ -108,7 +109,11 @@ dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
       if (argTypePtr.isStruct) {
         structTypes.add(argTypePtr);
       }
-      storeValueToPointer(arg, pointers.elementAt(i), argTypePtr);
+      final argPtrPtr = argsPtrPtr.elementAt(i);
+      storeValueToPointer(arg, argPtrPtr, argTypePtr);
+      if (arg is Function && argTypePtr.maybeBlock) {
+        blockPointers.add(argPtrPtr.value);
+      }
     }
   }
 
@@ -125,14 +130,16 @@ dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
       target,
       selectorPtr,
       signaturePtr.cast<Void>(),
-      pointers,
+      argsPtrPtr,
       onQueue,
       callbackPtr,
       stringTypeBitmask,
       typeEncodingsPtrPtr);
-  if (pointers != null) {
-    calloc.free(pointers);
+  if (argsPtrPtr != null) {
+    calloc.free(argsPtrPtr);
   }
+
+  Block_release(callbackPtr);
 
   dynamic result;
 
@@ -159,6 +166,8 @@ dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
   }
   // free struct type memory (malloc on native side)
   structTypes.forEach(calloc.free);
+  // release block after use (copy on native side).
+  blockPointers.forEach(Block_release);
   calloc.free(typeEncodingsPtrPtr);
   return result;
 }
@@ -167,7 +176,7 @@ dynamic _msgSend<T>(Pointer<Void> target, SEL selector,
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types when [decodeRetVal] is `true`.
-T msgSend<T>(Pointer<Void> target, SEL selector,
+T msgSendSync<T>(Pointer<Void> target, SEL selector,
     {List? args, bool decodeRetVal = true}) {
   return _msgSend<T>(target, selector, args: args, decodeRetVal: decodeRetVal);
 }
@@ -178,11 +187,11 @@ T msgSend<T>(Pointer<Void> target, SEL selector,
 ///
 /// The message will consist of a [selector] and zero or more [args].
 /// Return value will be converted to Dart types.
-Future<dynamic> msgSendAsync(Pointer<Void> target, SEL selector,
+Future<T> msgSend<T>(Pointer<Void> target, SEL selector,
     {List? args, DispatchQueue? onQueue}) async {
   // Send message to global queue by default.
   onQueue ??= DispatchQueue.global();
-  final completer = Completer<dynamic>();
+  final completer = Completer<T>();
   _msgSend(target, selector, args: args, onQueue: onQueue,
       callback: (dynamic result) {
     completer.complete(result);

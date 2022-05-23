@@ -5,6 +5,7 @@ import 'package:dart_native/src/darwin/common/pointer_encoding.dart';
 import 'package:dart_native/src/darwin/common/pointer_wrapper.dart';
 import 'package:dart_native/src/darwin/foundation/internal/type_encodings.dart';
 import 'package:dart_native/src/darwin/runtime/id.dart';
+import 'package:dart_native/src/darwin/runtime/internal/functions.dart';
 import 'package:dart_native/src/darwin/runtime/internal/native_runtime.dart';
 import 'package:dart_native/src/darwin/runtime/selector.dart';
 import 'package:ffi/ffi.dart';
@@ -15,8 +16,11 @@ bool registerMethodCallback(
   Pointer<Void> selectorPtr = selector.toPointer();
   CallbackManager.shared
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
-  int result =
-      nativeAddMethod(targetPtr, selectorPtr, types, _callbackPtr, nativePort);
+  List<String> dartTypes = dartTypeStringForFunction(function);
+  List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
+  bool returnString = nativeTypes.first == 'String';
+  int result = nativeAddMethod(
+      targetPtr, selectorPtr, types, returnString, _callbackPtr, nativePort);
   return result != 0;
 }
 
@@ -73,16 +77,23 @@ _callback(
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
-      PointerWrapper? wrapper = storeValueToPointer(
-          result, realRetPtrPtr, typesPtrPtr.elementAt(0).value);
+      final resultEncoding = typesPtrPtr.elementAt(0).value;
+      PointerWrapper? wrapper =
+          storeValueToPointer(result, realRetPtrPtr, resultEncoding);
       if (wrapper != null) {
         storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);
         result = wrapper;
       }
+      if (result is id) {
+        retainObject(result.pointer);
+      } else if (result is List || result is Map || result is Set) {
+        // retain lifecycle for async invocation. release on objc when invocation finished.
+        retainObject(retPtrPtr.value);
+      } else if (result is Function && resultEncoding.maybeBlock) {
+        // release block after use (copy on native side)
+        Block_release(realRetPtrPtr.value);
+      }
     }
-  }
-  if (result is id) {
-    retainObject(result.pointer);
   }
 }
 

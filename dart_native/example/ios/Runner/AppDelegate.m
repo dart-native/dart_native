@@ -7,8 +7,8 @@
 @import CocoaLumberjack;
 #endif
 
-#if __has_include(<dart_native/native_runtime.h>)
-#import <dart_native/native_runtime.h>
+#if __has_include(<dart_native/DNInterfaceRegistry.h>)
+#import <dart_native/DNInterfaceRegistry.h>
 #else
 @import dart_native;
 #endif
@@ -19,16 +19,15 @@
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    void DartNativeSetThrowException(bool canThrow);
 #if DEBUG
-    DartNativeSetThrowException(true);
+    DNInterfaceRegistry.exceptionEnabled = YES;
 #else
-    DartNativeSetThrowException(false);
+    DNInterfaceRegistry.exceptionEnabled = NO;
 #endif
     FlutterViewController *controller = (FlutterViewController*)self.window.rootViewController;
 
     FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:@"sample.dartnative.com"
-                                                                       binaryMessenger:controller.binaryMessenger];
+                                                                binaryMessenger:controller.binaryMessenger];
     RuntimeSon *son = [RuntimeSon new];
     [channel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
         if ([call.method isEqualToString:@"fooString"]) {

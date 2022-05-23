@@ -14,7 +14,7 @@ class NSArray extends NSSubclass<List> {
   }
 
   NSArray.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr) {
-    int count = perform(SEL('count'));
+    int count = performSync(SEL('count'));
     List temp = List.filled(count, nil, growable: false);
     for (var i = 0; i < count; i++) {
       var e = objectAtIndex(i);
@@ -23,10 +23,10 @@ class NSArray extends NSSubclass<List> {
     raw = temp;
   }
 
-  int get count => perform(SEL('count'));
+  int get count => performSync(SEL('count'));
 
   dynamic objectAtIndex(int index) {
-    return perform(SEL('objectAtIndex:'), args: [index]);
+    return performSync(SEL('objectAtIndex:'), args: [index]);
   }
 }
 
@@ -55,7 +55,8 @@ Pointer<Void> _new(dynamic value) {
     for (var i = 0; i < boxValues.length; i++) {
       listPtr.elementAt(i).value = boxValues[i].pointer;
     }
-    NSObject result = Class('NSArray').perform(SEL('arrayWithObjects:count:'),
+    NSObject result = Class('NSArray').performSync(
+        SEL('arrayWithObjects:count:'),
         args: [listPtr, boxValues.length]);
     calloc.free(listPtr);
     return result.pointer;

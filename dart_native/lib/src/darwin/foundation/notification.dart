@@ -19,7 +19,7 @@ class NSNotificationCenter extends NSObject {
   static NSNotificationCenter get defaultCenter {
     if (_defaultCenter == null) {
       NSObject result =
-          Class('NSNotificationCenter').perform(SEL('defaultCenter'));
+          Class('NSNotificationCenter').performSync(SEL('defaultCenter'));
       _defaultCenter = NSNotificationCenter.fromPointer(result.pointer);
     }
     return _defaultCenter!;
@@ -34,7 +34,7 @@ class NSNotificationCenter extends NSObject {
     if (selector == null) {
       throw 'Selector($selector) already exists when register notification!';
     }
-    perform(SEL('addObserver:selector:name:object:'),
+    performSync(SEL('addObserver:selector:name:object:'),
         args: [observer, selector, name, object]);
   }
 }

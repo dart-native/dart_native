@@ -25,7 +25,7 @@ NSString * _Nullable DNTypeEncodeWithTypeName(NSString *typeName);
 
 @interface DNFFIHelper : NSObject
 
-- (ffi_type *)ffiTypeForStructEncode:(const char *)str;
+- (ffi_type *_Nullable)ffiTypeForStructEncode:(const char *)str;
 - (ffi_type *_Nullable)ffiTypeForEncode:(const char *)str;
 
 - (ffi_type *_Nonnull*_Nullable)argsWithEncodeString:(const char *)str getCount:(int *)outCount;

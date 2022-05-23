@@ -1,7 +1,5 @@
 package com.dartnative.dart_native;
 
-import android.util.Log;
-
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -10,8 +8,6 @@ import java.util.HashMap;
  * Created by huizzzhou on 2020/11/11.
  */
 public class CallbackInvocationHandler implements InvocationHandler {
-    private static final String TAG = "CallbackHandler";
-
     private static final HashMap<String, String> sBasicTypeConvert = new HashMap<String, String>() {{
         put("int", "java.lang.Integer");
         put("float", "java.lang.Float");
@@ -25,7 +21,6 @@ public class CallbackInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Log.d(TAG, "invoke method: " + method.getName());
         int argumentLength = args == null ? 0 : args.length;
         String[] paramsType = new String[argumentLength];
         for (int i = 0; i < argumentLength; i++) {
@@ -40,5 +35,5 @@ public class CallbackInvocationHandler implements InvocationHandler {
         return hookCallback(dartObjectAddress, funName, argumentLength, paramsType, args, returnType);
     }
 
-    static native Object hookCallback(long dartObjectAddress, String funName, int argCount, String[] argTypes, Object[] args, String returnType);
+    private native Object hookCallback(long dartObjectAddress, String funName, int argCount, String[] argTypes, Object[] args, String returnType);
 }

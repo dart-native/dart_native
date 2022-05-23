@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/darwin/foundation/internal/native_struct.dart';
+import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `NSRange` in iOS and macOS.
+@native()
 class NSRange extends NSUIntegerx2Wrapper {
   @override
   String get aliasForNSValue => 'Range';

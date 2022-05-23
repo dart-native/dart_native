@@ -1,0 +1,2 @@
+-keep class com.dartnative.dart_native.* {*;}
+-keep public class * extends com.dartnative.dart_native.DartNativeInterface { public *; }

@@ -6,25 +6,16 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/../android/src/libs/${ANDROID_ABI})
 
+file(GLOB_RECURSE JNI_SRC src/main/jni/src/**)
+file(GLOB_RECURSE DART_SRC ../ios/common/include/dart_api_dl.c)
+include_directories(src/main/jni src/main/jni/include ../ios/common/include)
+
 # Specifies a library name, specifies whether the library is STATIC or
 # SHARED, and provides relative paths to the source code. You can
 # define multiple libraries by adding multiple add_library() commands,
 # and CMake builds them for you. When you build your app, Gradle
 # automatically packages shared libraries with your APK.
-add_library( # Specifies the name of the library.
-        dart_native
-
-        # Sets the library as a shared library.
-        SHARED
-
-        # Provides a relative path to your source file(s).
-        ../ios/common/include/dart_api_dl.c
-        src/main/jni/dart_native.cpp
-        src/main/jni/dn_type_convert.cpp
-        src/main/jni/dn_method_call.cpp
-        src/main/jni/dn_signature_helper.cpp
-        src/main/jni/dn_callback.cpp
-        src/main/jni/dn_thread.cpp)
+add_library(dart_native SHARED ${DART_SRC} ${JNI_SRC})
 
 find_library( # Sets the name of the path variable.
         log-lib
@@ -39,5 +30,3 @@ target_link_libraries( # Specifies the target library.
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})
-
-include_directories(../ios/common/include)

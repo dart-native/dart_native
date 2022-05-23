@@ -11,6 +11,11 @@ class AppDelegate: FlutterAppDelegate {
         fileLogger.rollingFrequency = 60 * 60 * 24 // 24 hour rolling
         fileLogger.logFileManager.maximumNumberOfLogFiles = 7
         DDLog.add(fileLogger)
+        #if DEBUG
+        InterfaceRegistry.isExceptionEnabled = true
+        #else
+        InterfaceRegistry.isExceptionEnabled = false
+        #endif
     }
     
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

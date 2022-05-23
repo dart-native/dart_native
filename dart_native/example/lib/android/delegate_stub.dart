@@ -35,6 +35,7 @@ class DelegateStub extends JObject with SampleDelegate {
   @override
   bool callbackComplex(int i, double d, String s) {
     print("callbackComplex from native $i $d $s");
+    unregisterCallback(this);
     return true;
   }
 }

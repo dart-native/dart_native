@@ -7,3 +7,4 @@ export 'runtime/nsobject.dart';
 export 'runtime/nsobject_protocol.dart';
 export 'runtime/nsobject_ref.dart';
 export 'runtime/message.dart';
+export 'runtime/type_convertor.dart';

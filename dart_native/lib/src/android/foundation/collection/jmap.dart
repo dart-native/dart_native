@@ -2,64 +2,65 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/runtime/jsubclass.dart';
-import 'package:dart_native/src/android/runtime/messenger.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Map` in Android.
-const String jMapCls = 'java/util/Map';
-const String jHashMapCls = 'java/util/HashMap';
+const String _jMapCls = 'java/util/Map';
+const String _jHashMapCls = 'java/util/HashMap';
 
-@native(javaClass: jMapCls)
+@native(javaClass: _jMapCls)
 class JMap<K, V> extends JSubclass<Map> {
-  JMap(Map value, {String clsName = jMapCls, InitSubclass init = _new})
+  JMap(Map value, {String clsName = _jMapCls, InitSubclass init = _new})
       : super(value, _new, clsName) {
     value = Map.of(value);
   }
 
-  JMap.fromPointer(Pointer<Void> ptr, {String clsName = jMapCls})
+  JMap.fromPointer(Pointer<Void> ptr, {String clsName = _jMapCls})
       : super.fromPointer(ptr, clsName) {
-    Set keySet = JSet<K>.fromPointer(invoke('keySet', 'Ljava/util/Set;')).raw;
+    Set keySet = JSet<K>.fromPointer(
+            (callMethodSync('keySet', 'Ljava/util/Set;') as JObject).pointer)
+        .raw;
     Map temp = {};
     String itemType = '';
     for (var key in keySet) {
-      dynamic item = invoke('get', 'Ljava/lang/Object;',
+      dynamic item = callMethodSync('get', 'Ljava/lang/Object;',
           args: [boxingWrapperClass(key)],
           assignedSignature: ['Ljava/lang/Object;']);
       final valueConvertor = getRegisterPointerConvertor(V.toString());
       if (valueConvertor != null) {
-        temp[key] = valueConvertor(item);
+        temp[key] = valueConvertor((item as JObject).pointer);
+        continue;
+      }
+      if (item is String) {
+        temp[key] = unBoxingWrapperClass(item, 'java/lang/String');
         continue;
       }
       if (itemType == '') {
-        if (item is String) {
-          itemType = 'java/lang/String';
-        } else {
-          itemType = getJClassName(item);
-        }
+        itemType = (item as JObject).className!;
       }
-      temp[key] = unBoxingWrapperClass(item, itemType);
+      temp[key] = unBoxingWrapperClass((item as JObject).pointer, itemType);
     }
     raw = temp;
   }
 }
 
-@native(javaClass: jHashMapCls)
+@native(javaClass: _jHashMapCls)
 class JHashMap<K, V> extends JMap {
-  JHashMap(Map value) : super(value, clsName: jHashMapCls);
+  JHashMap(Map value) : super(value, clsName: _jHashMapCls);
 
   JHashMap.fromPointer(Pointer<Void> ptr)
-      : super.fromPointer(ptr, clsName: jHashMapCls);
+      : super.fromPointer(ptr, clsName: _jHashMapCls);
 }
 
 /// New native 'HashMap'.
 Pointer<Void> _new(dynamic value, String clsName) {
   if (value is Map) {
     ///'Map' default implementation 'HashMap'.
-    if (clsName == jMapCls) clsName = jHashMapCls;
+    if (clsName == _jMapCls) clsName = _jHashMapCls;
 
     JObject nativeMap = JObject(className: clsName);
     value.forEach((key, value) {
-      nativeMap.invoke('put', 'Ljava/lang/Object;',
+      nativeMap.callMethodSync('put', 'Ljava/lang/Object;',
           args: [boxingWrapperClass(key), boxingWrapperClass(value)],
           assignedSignature: ['Ljava/lang/Object;', 'Ljava/lang/Object;']);
     });

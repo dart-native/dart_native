@@ -134,7 +134,7 @@
 
 - (CGRect)fooCGRect:(CGRect)rect {
     DDLogInfo(@"%s %f, %f, %f, %f", __FUNCTION__, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-    return (CGRect){1, 2, 3, 4};
+    return (CGRect){{1, 2}, {3, 4}};
 }
 
 - (NSRange)fooNSRange:(NSRange)range {
@@ -228,7 +228,7 @@ API_AVAILABLE(ios(11.0)){
 }
 
 - (void)fooCompletion:(void (^)(void))block {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         if (block) {
             block();
             DDLogInfo(@"%s", __FUNCTION__);
@@ -246,6 +246,16 @@ API_AVAILABLE(ios(11.0)){
     });
 }
 
+- (void)fooStringBlock:(StringRetBlock)block {
+    NSString *arg = @"hello";
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (block) {
+            NSString *result = block(arg);
+            DDLogInfo(@"%s result: %@", __FUNCTION__, result);
+        }
+    });
+}
+
 - (void)fooNSDictionaryBlock:(NSDictionary *(^)(NSDictionary *dict))block {
     NSDictionary *arg = @{@1: @2};
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
@@ -259,7 +269,7 @@ API_AVAILABLE(ios(11.0)){
 - (void)fooDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
-        NSObject *result = [delegate callback];
+        NSString *result = [delegate callback];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, result);
     });
 }
@@ -277,7 +287,7 @@ API_AVAILABLE(ios(11.0)){
 }
 
 - (NSString *)fooNSString:(NSString *)str {
-//    DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
+    DDLogInfo(@"%s arg: %@", __FUNCTION__, str);
     return @"test nsstring";
 }
 

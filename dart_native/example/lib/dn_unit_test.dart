@@ -16,10 +16,6 @@ class DNUnitTest {
     _unitTest = Platform.isAndroid ? DNAndroidUnitTest() : DNAppleUnitTest();
   }
 
-  String fooString(String str) {
-    return _unitTest.fooString(str);
-  }
-
   /// Run all test case.
   Future<void> runAllUnitTests() async {
     return _unitTest.runAllUnitTests();
@@ -30,6 +26,5 @@ class DNUnitTest {
 /// Base class for all platform.
 ///
 abstract class DNUnitTestBase {
-  String fooString(String str);
   void runAllUnitTests();
 }

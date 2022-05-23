@@ -1,7 +1,11 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
-import 'package:dart_native/dart_native.dart';
+import 'package:dart_native/src/android/foundation/collection/jarray.dart';
+import 'package:dart_native/src/android/foundation/direct_byte_buffer.dart';
+import 'package:dart_native/src/android/foundation/native_type.dart';
+import 'package:dart_native/src/android/runtime/jobject.dart';
+import 'package:dart_native/src/common/native_byte.dart';
 import 'package:ffi/ffi.dart';
 
 enum ValueType {
@@ -15,6 +19,7 @@ enum ValueType {
   bool,
   v,
   string,
+  byteBuffer,
   cls,
   unknown
 }
@@ -29,6 +34,7 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
   ValueType.long: 'J'.toNativeUtf8(),
   ValueType.bool: 'Z'.toNativeUtf8(),
   ValueType.string: 'Ljava/lang/String;'.toNativeUtf8(),
+  ValueType.byteBuffer: 'Ljava/nio/ByteBuffer;'.toNativeUtf8(),
   ValueType.unknown: 'Lunknown;'.toNativeUtf8(),
 };
 
@@ -96,6 +102,12 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
     return;
   }
 
+  if (object is DirectByteBuffer) {
+    ptr.value = object.pointer;
+    typePtr.value = argSignature ?? _pointerForEncode[ValueType.byteBuffer]!;
+    return;
+  }
+
   if (object is JObject) {
     ptr.value = object.pointer;
     typePtr.value = argSignature ?? 'L${object.className};'.toNativeUtf8();
@@ -116,6 +128,10 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
 
   if (returnType == 'java.lang.String' || returnType == 'Ljava/lang/String;') {
     return fromUtf16(ptr);
+  }
+
+  if (returnType == 'java.nio.DirectByteBuffer') {
+    return NativeByte.fromRaw(DirectByteBuffer.fromPointer(ptr));
   }
 
   dynamic result;
@@ -157,7 +173,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
       result = data.getInt8(0);
       break;
     default:
-      result = ptr;
+      result = JObject.fromPointer(ptr);
       break;
   }
   return result;
