@@ -8,7 +8,11 @@
 #import "NSObject+DartHandleExternalSize.h"
 #import <objc/runtime.h>
 #import <malloc/malloc.h>
-#import "DNBlockWrapper.h"
+#import "DNBlockCreator.h"
+
+#if !__has_feature(objc_arc)
+#error
+#endif
 
 static NSString *const MallocBlockClassName = @"__NSMallocBlock";
 

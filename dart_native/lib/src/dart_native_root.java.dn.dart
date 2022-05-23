@@ -15,32 +15,16 @@ void runJavaDartNative() {
   }
   _hadRanDartNative = true;
 
+  registerJavaTypeConvertor('JArray', 'java/lang/Object', (ptr) {
+    return JArray.fromPointer(ptr);
+  });
+
   registerJavaTypeConvertor('JSet', 'java/util/Set', (ptr) {
     return JSet.fromPointer(ptr);
   });
 
   registerJavaTypeConvertor('JHashSet', 'java/util/HashSet', (ptr) {
     return JHashSet.fromPointer(ptr);
-  });
-
-  registerJavaTypeConvertor('JInteger', 'java/lang/Integer', (ptr) {
-    return JInteger.fromPointer(ptr);
-  });
-
-  registerJavaTypeConvertor('JArray', 'java/lang/Object', (ptr) {
-    return JArray.fromPointer(ptr);
-  });
-
-  registerJavaTypeConvertor('JList', 'java/util/List', (ptr) {
-    return JList.fromPointer(ptr);
-  });
-
-  registerJavaTypeConvertor('JArrayList', 'java/util/ArrayList', (ptr) {
-    return JArrayList.fromPointer(ptr);
-  });
-
-  registerJavaTypeConvertor('JFloat', 'java/lang/Float', (ptr) {
-    return JFloat.fromPointer(ptr);
   });
 
   registerJavaTypeConvertor('JMap', 'java/util/Map', (ptr) {
@@ -51,8 +35,24 @@ void runJavaDartNative() {
     return JHashMap.fromPointer(ptr);
   });
 
+  registerJavaTypeConvertor('JList', 'java/util/List', (ptr) {
+    return JList.fromPointer(ptr);
+  });
+
+  registerJavaTypeConvertor('JArrayList', 'java/util/ArrayList', (ptr) {
+    return JArrayList.fromPointer(ptr);
+  });
+
   registerJavaTypeConvertor('JLong', 'java/lang/Long', (ptr) {
     return JLong.fromPointer(ptr);
+  });
+
+  registerJavaTypeConvertor('JFloat', 'java/lang/Float', (ptr) {
+    return JFloat.fromPointer(ptr);
+  });
+
+  registerJavaTypeConvertor('JInteger', 'java/lang/Integer', (ptr) {
+    return JInteger.fromPointer(ptr);
   });
 
   registerJavaTypeConvertor('JShort', 'java/lang/Short', (ptr) {

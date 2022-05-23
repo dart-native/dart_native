@@ -13,9 +13,22 @@ import 'package:ffi/ffi.dart';
 
 typedef _DNBlockTypeEncodeStringC = Pointer<Utf8> Function(Pointer<Void> block);
 typedef _DNBlockTypeEncodeStringD = Pointer<Utf8> Function(Pointer<Void> block);
-final _DNBlockTypeEncodeStringD _blockTypeEncodeString = runtimeLib
+final _DNBlockTypeEncodeStringD _blockTypeEncodeString = nativeDylib
     .lookupFunction<_DNBlockTypeEncodeStringC, _DNBlockTypeEncodeStringD>(
         'DNBlockTypeEncodeString');
+
+typedef _DNBlockTypeEncodingsC = Pointer<Pointer<Utf8>> Function(
+    Pointer<Void> block);
+typedef _DNBlockTypeEncodingsD = Pointer<Pointer<Utf8>> Function(
+    Pointer<Void> block);
+final _DNBlockTypeEncodingsD _blockTypeEncodings =
+    nativeDylib.lookupFunction<_DNBlockTypeEncodingsC, _DNBlockTypeEncodingsD>(
+        'DNBlockTypeEncodings');
+
+typedef _DNBlockSequenceC = Uint64 Function(Pointer<Void> block);
+typedef _DNBlockSequenceD = int Function(Pointer<Void> block);
+final _DNBlockSequenceD _blockSequence = nativeDylib
+    .lookupFunction<_DNBlockSequenceC, _DNBlockSequenceD>('DNBlockSequence');
 
 /// Stands for `NSBlock` in iOS and macOS. [Block] can be used as an argument
 /// to a method and as a callback.
@@ -27,33 +40,39 @@ final Block nilBlock = Block.fromPointer(nullptr);
 
 class Block extends id {
   Function? function;
-  NSObject? _wrapper; // Block hold wrapper
+  bool shouldReturnAsync = false;
   List<String> types = [];
   int sequence = -1;
+  Pointer<Pointer<Utf8>> typeEncodingsPtrPtr = nullptr;
 
   /// Creating a [Block] from a [Function].
   ///
   /// NOTE: The arguments of [function] should be wrapper class which can
   /// represent native type, such as [unsigned_int] or custom wrapper class with
   /// the same name.
+  /// When you create a [Block], you release it using [Block_release] after use.
   factory Block(Function function) {
     List<String> dartTypes = dartTypeStringForFunction(function);
+    bool shouldReturnAsync = dartTypes.first.startsWith('Future');
+    // block receives results from dart function asynchronously by appending a callback function to arguments.
+    if (shouldReturnAsync) {
+      dartTypes.add('Function');
+    }
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
-    Pointer<Void> blockWrapperPtr =
-        blockCreate(typeStringPtr, _callbackPtr, nativePort);
-    assert(blockWrapperPtr != nullptr);
-    if (blockWrapperPtr == nullptr) {
+    Pointer<Void> blockPtr =
+        blockCreate(typeStringPtr, _callbackPtr, shouldReturnAsync, nativePort);
+    assert(blockPtr != nullptr);
+    if (blockPtr == nullptr) {
       return nilBlock;
     }
-    NSObject blockWrapper = NSObject.fromPointer(blockWrapperPtr);
-    int blockAddr = blockWrapper.perform(SEL('blockAddress'));
-    int sequence = blockWrapper.perform(SEL('sequence'));
-    Block result = Block.fromPointer(Pointer.fromAddress(blockAddr));
+    int sequence = _blockSequence(blockPtr);
+    Block result = Block.fromPointer(blockPtr);
     calloc.free(typeStringPtr);
     result.types = dartTypes;
-    result._wrapper = blockWrapper;
     result.function = function;
+    result.shouldReturnAsync = shouldReturnAsync;
+    result.typeEncodingsPtrPtr = _blockTypeEncodings(blockPtr);
     result.sequence = sequence;
     if (blockForSequence[sequence] != null) {
       throw 'Already exists a block on sequence $sequence';
@@ -85,7 +104,7 @@ class Block extends id {
       throw 'Block created by Dart';
       //return null;
     }
-    return isa!.perform(SEL('superclass'));
+    return isa!.performSync(SEL('superclass'));
   }
 
   @override
@@ -118,7 +137,6 @@ class Block extends id {
     Block result = Block.fromPointer(newPtr);
     // Block created by function.
     if (function != null) {
-      result._wrapper = _wrapper;
       result.function = function;
       result.types = types;
     }
@@ -141,11 +159,12 @@ class Block extends id {
     calloc.free(countPtr);
     // typesPtrPtr contains return type and block itself.
     if (count != (args?.length ?? 0) + 2) {
-      throw 'Args Count NOT match';
+      throw 'The number of arguments for methods dart and objc does not match';
     }
     int stringTypeBitmask = 0;
     Pointer<Pointer<Void>> argsPtrPtr = nullptr.cast();
     List<Pointer<Utf8>> structTypes = [];
+    List<Pointer<Void>> blockPointers = [];
     if (args != null) {
       argsPtrPtr = calloc<Pointer<Void>>(args.length);
       for (var i = 0; i < args.length; i++) {
@@ -158,7 +177,11 @@ class Block extends id {
         if (argTypePtr.isStruct) {
           structTypes.add(argTypePtr);
         }
-        storeValueToPointer(arg, argsPtrPtr.elementAt(i), argTypePtr);
+        final argPtrPtr = argsPtrPtr.elementAt(i);
+        storeValueToPointer(arg, argPtrPtr, argTypePtr);
+        if (arg is Function && argTypePtr.maybeBlock) {
+          blockPointers.add(argPtrPtr.value);
+        }
       }
     }
 
@@ -181,6 +204,10 @@ class Block extends id {
     }
     // free struct type memory (malloc on native side)
     structTypes.forEach(calloc.free);
+    // free typesPtrPtr (malloc on native side)
+    calloc.free(typesPtrPtr);
+    // release block after use (copy on native side).
+    blockPointers.forEach(Block_release);
     return result;
   }
 }
@@ -198,8 +225,7 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     throw 'Can\'t find block by sequence $seq';
   }
   List args = [];
-  Pointer pointer = block._wrapper!.perform(SEL('typeEncodings'));
-  Pointer<Pointer<Utf8>> typesPtrPtr = pointer.cast();
+  Pointer<Pointer<Utf8>> typesPtrPtr = block.typeEncodingsPtrPtr;
   for (var i = 0; i < argCount; i++) {
     // Get block args encoding. First is return type.
     Pointer<Utf8> argTypePtr = typesPtrPtr.elementAt(i + 1).value;
@@ -215,8 +241,21 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
     }
   }
 
-  dynamic result = Function.apply(block.function!, args);
-
+  dynamic result;
+  if (block.shouldReturnAsync) {
+    Future future =
+        Function.apply(block.function!, args.sublist(0, args.length - 1));
+    Block resultCallback = args.last;
+    future.then((value) {
+      resultCallback.invoke([value]);
+      // resultCallback is retained on objc side, we should release it after invoking.
+      Block_release(resultCallback.pointer);
+    });
+    return;
+  } else {
+    result = Function.apply(block.function!, args);
+  }
+  // sync result
   if (result != null) {
     Pointer<Utf8> resultTypePtr = typesPtrPtr.elementAt(0).value;
     Pointer<Pointer<Void>> realRetPtrPtr = retPtrPtr;
@@ -224,20 +263,25 @@ _callback(Pointer<Pointer<Pointer<Void>>> argsPtrPtrPtr,
       realRetPtrPtr = argsPtrPtrPtr.elementAt(0).value;
     }
     if (realRetPtrPtr != nullptr) {
+      final resultEncoding = typesPtrPtr.elementAt(0).value;
       PointerWrapper? wrapper =
           storeValueToPointer(result, realRetPtrPtr, resultTypePtr);
       if (wrapper != null) {
         storeValueToPointer(wrapper, retPtrPtr, TypeEncodings.object);
         result = wrapper;
       }
+      if (result is id) {
+        retainObject(result.pointer);
+      } else if (result is List || result is Map || result is Set) {
+        // retain lifecycle for async invocation. release on objc when invocation finished.
+        retainObject(retPtrPtr.value);
+      } else if (result is Function && resultEncoding.maybeBlock) {
+        // release block after use (copy on native side)
+        Block_release(realRetPtrPtr.value);
+      }
     }
   }
-  if (result is id) {
-    retainObject(result.pointer);
-  }
 }
-
-int cc = 0;
 
 void _syncCallback(Pointer<Pointer<Pointer<Void>>> argsPtrPtr,
     Pointer<Pointer<Void>> retPtr, int argCount, int stret, int seq) {

@@ -37,7 +37,7 @@ abstract class NSObjectProtocol {
   String get debugDescription;
 
   /// Sends a specified message to the receiver and returns the result of the message.
-  T perform<T>(SEL selector, {List args});
+  T performSync<T>(SEL selector, {List args});
 
   /// Returns a Boolean value that indicates whether the receiver does not descend froms NSObject.
   bool isProxy();
@@ -46,11 +46,11 @@ abstract class NSObjectProtocol {
 /// Returns the class object for the receiver’s class.
 Class type({required dynamic of}) {
   if (of is NSObjectProtocol) {
-    return of.perform(SEL('class'));
+    return of.performSync(SEL('class'));
   } else if (of is Type) {
     return Class(of.toString());
   } else if (of is Pointer) {
-    return NSObject.fromPointer(of.cast<Void>()).perform(SEL('class'));
+    return NSObject.fromPointer(of.cast<Void>()).performSync(SEL('class'));
   } else {
     return Class(of.runtimeType.toString());
   }

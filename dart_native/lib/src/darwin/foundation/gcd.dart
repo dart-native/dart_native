@@ -12,14 +12,14 @@ import 'package:dart_native/src/darwin/common/library.dart';
 /// that have higher service classes.
 class DispatchQoS {
   final int _class;
-  static final DispatchQoS background = DispatchQoS._internal(0x09);
-  static final DispatchQoS utility = DispatchQoS._internal(0x11);
-  static final DispatchQoS useDefault = DispatchQoS._internal(0x15);
-  static final DispatchQoS userInitiated = DispatchQoS._internal(0x19);
-  static final DispatchQoS userInteractive = DispatchQoS._internal(0x21);
-  static final DispatchQoS unspecified = DispatchQoS._internal(0x00);
+  static const DispatchQoS background = DispatchQoS._internal(0x09);
+  static const DispatchQoS utility = DispatchQoS._internal(0x11);
+  static const DispatchQoS useDefault = DispatchQoS._internal(0x15);
+  static const DispatchQoS userInitiated = DispatchQoS._internal(0x19);
+  static const DispatchQoS userInteractive = DispatchQoS._internal(0x21);
+  static const DispatchQoS unspecified = DispatchQoS._internal(0x00);
 
-  DispatchQoS._internal(this._class);
+  const DispatchQoS._internal(this._class);
 }
 
 // ignore: non_constant_identifier_names
@@ -51,8 +51,7 @@ class DispatchQueue {
   late Pointer<Void> _queue;
   Pointer<Void> get pointer => _queue;
 
-  DispatchQueue.global({DispatchQoS? qos}) {
-    qos ??= DispatchQoS.useDefault;
+  DispatchQueue.global({DispatchQoS qos = DispatchQoS.useDefault}) {
     _queue = dispatch_get_global_queue(qos._class, 0);
   }
 

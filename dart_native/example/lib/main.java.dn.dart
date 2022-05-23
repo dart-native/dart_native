@@ -6,8 +6,8 @@
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native_example/android/delegate_stub.dart';
-import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
+import 'package:dart_native_example/android/runtimestub.dart';
 
 void runJavaDartNativeExample() {
   runDartNative();
@@ -19,12 +19,12 @@ void runJavaDartNativeExample() {
   });
 
   registerJavaTypeConvertor(
-      'RuntimeStub', 'com/dartnative/dart_native_example/RuntimeStub', (ptr) {
-    return RuntimeStub.fromPointer(ptr);
+      'Entity', 'com/dartnative/dart_native_example/Entity', (ptr) {
+    return Entity.fromPointer(ptr);
   });
 
   registerJavaTypeConvertor(
-      'Entity', 'com/dartnative/dart_native_example/Entity', (ptr) {
-    return Entity.fromPointer(ptr);
+      'RuntimeStub', 'com/dartnative/dart_native_example/RuntimeStub', (ptr) {
+    return RuntimeStub.fromPointer(ptr);
   });
 }

@@ -7,45 +7,46 @@ import 'package:dart_native_gen/dart_native_gen.dart';
 @native()
 class NSError extends NSObject {
   String get domain {
-    Pointer<Void> result = perform('domain'.toSEL(), decodeRetVal: false);
+    Pointer<Void> result = performSync('domain'.toSEL(), decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 
-  int get code => perform('code'.toSEL());
+  int get code => performSync('code'.toSEL());
 
   Map get userInfo {
-    Pointer<Void> result = perform('userInfo'.toSEL(), decodeRetVal: false);
+    Pointer<Void> result = performSync('userInfo'.toSEL(), decodeRetVal: false);
     return NSDictionary.fromPointer(result).raw;
   }
 
   String get localizedDescription {
     Pointer<Void> result =
-        perform('localizedDescription'.toSEL(), decodeRetVal: false);
+        performSync('localizedDescription'.toSEL(), decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 
   String get localizedFailureReason {
     Pointer<Void> result =
-        perform('localizedFailureReason'.toSEL(), decodeRetVal: false);
+        performSync('localizedFailureReason'.toSEL(), decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 
   String get localizedRecoverySuggestion {
     Pointer<Void> result =
-        perform('localizedRecoverySuggestion'.toSEL(), decodeRetVal: false);
+        performSync('localizedRecoverySuggestion'.toSEL(), decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 
   List get localizedRecoveryOptions {
     Pointer<Void> result =
-        perform('localizedRecoveryOptions'.toSEL(), decodeRetVal: false);
+        performSync('localizedRecoveryOptions'.toSEL(), decodeRetVal: false);
     return NSArray.fromPointer(result).raw;
   }
 
-  NSObject get recoveryAttempter => perform('recoveryAttempter'.toSEL());
+  NSObject get recoveryAttempter => performSync('recoveryAttempter'.toSEL());
 
   String get helpAnchor {
-    Pointer<Void> result = perform('helpAnchor'.toSEL(), decodeRetVal: false);
+    Pointer<Void> result =
+        performSync('helpAnchor'.toSEL(), decodeRetVal: false);
     return NSString.fromPointer(result).raw;
   }
 
@@ -56,7 +57,7 @@ class NSError extends NSObject {
 
   static NSError errorWithDomainCodeUserInfo(String domain, int code,
       {Map? userInfo}) {
-    Pointer<Void> result = Class('NSError').perform(
+    Pointer<Void> result = Class('NSError').performSync(
         'errorWithDomain:code:userInfo:'.toSEL(),
         args: [domain, code, userInfo],
         decodeRetVal: false);
@@ -65,13 +66,13 @@ class NSError extends NSObject {
 
   static setUserInfoValueProviderForDomain(
       String errorDomain, Function provider) {
-    Class('NSError').perform(
+    Class('NSError').performSync(
         'setUserInfoValueProviderForDomain:provider:'.toSEL(),
         args: [errorDomain, provider]);
   }
 
   static Block userInfoValueProviderForDomain(String errorDomain) {
-    return Class('NSError').perform(
+    return Class('NSError').performSync(
         'userInfoValueProviderForDomain:provider:'.toSEL(),
         args: [errorDomain]);
   }
@@ -80,7 +81,7 @@ class NSError extends NSObject {
       String domain, int code, Map? userInfo) {
     Pointer<Void> target = alloc(Class('NSError'));
     SEL sel = 'initWithDomain:code:userInfo:'.toSEL();
-    return msgSend(target, sel,
+    return msgSendSync(target, sel,
         args: [domain, code, userInfo], decodeRetVal: false);
   }
 }

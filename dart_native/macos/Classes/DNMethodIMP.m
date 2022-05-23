@@ -35,6 +35,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 @property (nonatomic) DNFFIHelper *helper;
 @property (nonatomic) NSMethodSignature *signature;
 @property (nonatomic, getter=hasStret, readwrite) BOOL stret;
+@property (nonatomic, getter=isReturnString, readwrite) BOOL returnString;
 
 @end
 
@@ -42,16 +43,18 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncoding
                             callback:(NativeMethodCallback)callback
+                        returnString:(BOOL)returnString
                             dartPort:(Dart_Port)dartPort
                                error:(out NSError **)error {
     self = [super init];
     if (self) {
+        _returnString = returnString;
         _helper = [DNFFIHelper new];
         size_t length = strlen(typeEncoding) + 1;
         size_t size = sizeof(char) * length;
         _typeEncoding = malloc(size);
         if (_typeEncoding == NULL) {
-            DN_ERROR(DNCreateTypeEncodingError, @"malloc for type encoding fail: %s", typeEncoding);
+            DN_ERROR(error, DNCreateTypeEncodingError, @"malloc for type encoding fail: %s", typeEncoding);
             return self;
         }
         strlcpy(_typeEncoding, typeEncoding, length);
@@ -137,6 +140,13 @@ static void DNHandleReturnValue(void *origRet, DNMethodIMP *methodIMP, DNInvocat
         // synchronize stret value from first argument. `origRet` is not the target.
         [invocation setReturnValue:*(void **)invocation.realArgs[0]];
         return;
+    } else if (methodIMP.isReturnString) {
+        // type is native_type_object but result is a string
+        NSString *string = NSStringFromUTF16Data(*(const unichar **)ret);
+        native_retain_object(string);
+        if (string) {
+            [invocation setReturnValue:&string];
+        }
     } else if (methodIMP.typeEncoding[0] == '{') {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
@@ -213,8 +223,8 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     
     retObjectAddr = (int64_t)*(void **)retAddr;
     DNHandleReturnValue(ret, methodIMP, invocation);
-    if (strcmp(types[0], "object") == 0) {
-        native_release_object((__bridge id)*(void **)retAddr);
+    if (types[0] == native_type_object) {
+        native_autorelease_object((__bridge id)*(void **)retAddr);
     }
     free(types);
 }

@@ -2,7 +2,6 @@ import 'dart:ffi';
 
 import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/android/common/library.dart';
-import 'package:dart_native/src/android/runtime/functions.dart';
 import 'package:dart_native/src/android/runtime/messenger.dart';
 
 /// Convert java object pointer to dart object which extends [JObject].
@@ -11,13 +10,6 @@ typedef ConvertorToDartFromPointer = dynamic Function(Pointer<Void> ptr);
 /// Use classname create a null pointer.
 JObject createNullJObj(String clsName) {
   return JObject.fromPointer(nullptr.cast(), className: clsName);
-}
-
-/// Bind dart object lifecycle with native object.
-void bindLifeCycleWithNative(JObject? obj) {
-  if (initDartAPISuccess && obj != null && obj.pointer != nullptr) {
-    passJObjectToC!(obj, obj.pointer.cast<Void>());
-  }
 }
 
 /// When invoke with async method, dart can set run thread.
@@ -34,8 +26,8 @@ enum Thread {
 
 /// Class [JObject] is the root of the java class hierarchy in dart.
 /// Every dart class need has [JObject] as a superclass. All objects,
-/// including arrays, invoke all native method use [invoke] from this.
-class JObject {
+/// including arrays, invoke all native method use [callMethodSync] from this.
+class JObject extends NativeObject {
   /// Java object pointer.
   late Pointer<Void> _ptr;
 
@@ -47,6 +39,7 @@ class JObject {
   late String? _cls;
 
   String? get className {
+    _cls ??= getJClassName(pointer);
     return _cls;
   }
 
@@ -81,7 +74,7 @@ class JObject {
           ' or use @nativeJavaClass annotation to specify the java class';
     }
     _ptr = newObject(_cls!, this, args: args, isInterface: isInterface);
-    bindLifeCycleWithNative(this);
+    bindLifeCycleWithJava(_ptr);
   }
 
   /// Wrapper java object pointer as dart object.
@@ -91,16 +84,15 @@ class JObject {
   /// When java object pointer is not nullptr, we will get java class name from jni.
   /// If java class is specified by [className], we will use it first.
   JObject.fromPointer(Pointer<Void> pointer, {String? className}) {
-    if (pointer == nullptr && className == null) {
-      throw 'Java object pointer and classname are null.'
-          ' When java object pointer is nullptr, you must specify the java class name.';
+    if (pointer == nullptr) {
+      throw 'Java object pointer is null.';
     }
     _ptr = pointer;
-    _cls = className ?? getJClassName(pointer);
-    bindLifeCycleWithNative(this);
+    _cls = className;
+    bindLifeCycleWithJava(_ptr);
   }
 
-  /// Invoke java method, you can use [JObjectInvoke] extension method which is more simplify.
+  /// Sync call java native method, you can use [JObjectSyncCallMethod] extension method which is more simplify.
   ///
   /// [returnType] java method return type, same as JNI signature.
   /// If java method return int, return type is 'I'. Full jni signature below here.
@@ -134,22 +126,22 @@ class JObject {
   /// In java ArrayList: boolean add(Object object);
   /// dart:
   /// JObject(className: 'java/util/ArrayList').invokeBool('add', args: [JInteger(10)], assignedSignature: ['Ljava/lang/Object;'])
-  dynamic invoke(String methodName, String returnType,
+  dynamic callMethodSync(String methodName, String returnType,
       {List? args, List<String>? assignedSignature}) {
-    return invokeMethod(_ptr.cast<Void>(), methodName, args, returnType,
-        assignedSignature: assignedSignature);
+    return invokeSync(_ptr.cast<Void>(), methodName, returnType,
+        args: args, assignedSignature: assignedSignature);
   }
 
-  /// Async invoke java method, you can use [JObjectAsyncInvoke] extension method which is more simplify.
+  /// Async call java method, you can use [JObjectCallMethod] extension method which is more simplify.
   ///
-  /// Same arguments as [invoke].
+  /// Same arguments as [callMethodSync].
   /// Beside that arguments, invoke thread can be assigned by using [thread].
   /// Default java thread [Thread.mainThread].
-  Future<dynamic> invokeAsync(String methodName, String returnType,
+  Future<dynamic> callMethod(String methodName, String returnType,
       {List? args,
       List<String>? assignedSignature,
       Thread thread = Thread.mainThread}) async {
-    return invokeMethodAsync(_ptr.cast<Void>(), methodName, args, returnType,
-        assignedSignature: assignedSignature, thread: thread);
+    return invoke(_ptr.cast<Void>(), methodName, returnType,
+        args: args, assignedSignature: assignedSignature, thread: thread);
   }
 }

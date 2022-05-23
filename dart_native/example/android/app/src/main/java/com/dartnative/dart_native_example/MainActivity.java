@@ -1,6 +1,7 @@
 package com.dartnative.dart_native_example;
 
 import com.dartnative.dart_native.DartNativePlugin;
+import com.dartnative.dart_native.InterfaceMessenger;
 
 import androidx.annotation.NonNull;
 import io.flutter.Log;
@@ -17,7 +18,7 @@ public class MainActivity extends FlutterActivity {
   private final String CHANNEL_NAME = "sample.dartnative.com";
 
   static {
-    DartNativePlugin.setSoPath("");
+    DartNativePlugin.loadSo();
   }
 
   @Override
@@ -35,6 +36,8 @@ public class MainActivity extends FlutterActivity {
         }
       }
     });
+    InterfaceMessenger.getInstance().registerInterface(new InterfaceDemo());
+    InterfaceMessenger.getInstance().registerInterface(new LogInterface());
   }
 
   public int getInt(int i){

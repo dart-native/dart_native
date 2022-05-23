@@ -6,7 +6,7 @@ import 'package:ffi/ffi.dart';
 typedef MethodSignature = Pointer<Void> Function(
     Pointer<Void> instance, Pointer<Void> selector);
 final MethodSignature nativeMethodSignature =
-    runtimeLib.lookupFunction<MethodSignature, MethodSignature>(
+    nativeDylib.lookupFunction<MethodSignature, MethodSignature>(
         'native_method_signature');
 
 typedef SignatureEncodingListC = Void Function(Pointer<Void> signature,
@@ -14,28 +14,30 @@ typedef SignatureEncodingListC = Void Function(Pointer<Void> signature,
 typedef SignatureEncodingListD = void Function(Pointer<Void> signature,
     Pointer<Pointer<Utf8>> typeEncodings, int decodeRetVal);
 final SignatureEncodingListD nativeSignatureEncodingList =
-    runtimeLib.lookupFunction<SignatureEncodingListC, SignatureEncodingListD>(
+    nativeDylib.lookupFunction<SignatureEncodingListC, SignatureEncodingListD>(
         'native_signature_encoding_list');
 
 typedef AddMethodC = Int32 Function(
     Pointer<Void> target,
     Pointer<Void> selector,
     Pointer<Utf8> types,
+    Bool returnString,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback,
     Int64 dartPort);
 typedef AddMethodD = int Function(
     Pointer<Void> target,
     Pointer<Void> selector,
     Pointer<Utf8> types,
+    bool returnString,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback,
     int dartPort);
 final AddMethodD nativeAddMethod =
-    runtimeLib.lookupFunction<AddMethodC, AddMethodD>('native_add_method');
+    nativeDylib.lookupFunction<AddMethodC, AddMethodD>('native_add_method');
 
 typedef ProtocolMethodTypes = Pointer<Utf8> Function(
     Pointer<Void> protocol, Pointer<Void> selector);
 final ProtocolMethodTypes nativeProtocolMethodTypes =
-    runtimeLib.lookupFunction<ProtocolMethodTypes, ProtocolMethodTypes>(
+    nativeDylib.lookupFunction<ProtocolMethodTypes, ProtocolMethodTypes>(
         'native_protocol_method_types');
 
 typedef GetClassC = Pointer<Void> Function(
@@ -43,7 +45,7 @@ typedef GetClassC = Pointer<Void> Function(
 typedef GetClassD = Pointer<Void> Function(
     Pointer<Utf8> className, Pointer<Void> baseClass);
 final GetClassD nativeGetClass =
-    runtimeLib.lookupFunction<GetClassC, GetClassD>('native_get_class');
+    nativeDylib.lookupFunction<GetClassC, GetClassD>('native_get_class');
 
 /// When [queue] is not `nullptr`, method will be invoked asynchronously.
 /// [callback] is ignored when queue equals to `nullptr`.
@@ -69,7 +71,7 @@ typedef InvokeMethodD = Pointer<Void> Function(
   int stringTypeBitmask,
   Pointer<Pointer<Utf8>> retType,
 );
-final InvokeMethodD nativeInvokeMethod = runtimeLib
+final InvokeMethodD nativeInvokeMethod = nativeDylib
     .lookupFunction<InvokeMethodC, InvokeMethodD>('native_instance_invoke');
 
 typedef MethodIMPCallbackC = Void Function(
@@ -81,19 +83,19 @@ typedef MethodIMPCallbackC = Void Function(
 
 typedef AllTypeEncodings = Pointer<Pointer<Utf8>> Function();
 final AllTypeEncodings nativeAllTypeEncodings =
-    runtimeLib.lookupFunction<AllTypeEncodings, AllTypeEncodings>(
+    nativeDylib.lookupFunction<AllTypeEncodings, AllTypeEncodings>(
         'native_all_type_encodings');
 
 typedef TypeEncodingC = Pointer<Utf8> Function(Pointer<Utf8> str);
 typedef TypeEncodingD = Pointer<Utf8> Function(Pointer<Utf8> str);
-final TypeEncodingD nativeTypeEncoding = runtimeLib
+final TypeEncodingD nativeTypeEncoding = nativeDylib
     .lookupFunction<TypeEncodingC, TypeEncodingD>('native_type_encoding');
 
 typedef TypesEncodingC = Pointer<Pointer<Utf8>> Function(
     Pointer<Utf8> str, Pointer<Int32> count, Int32 startIndex);
 typedef TypesEncodingD = Pointer<Pointer<Utf8>> Function(
     Pointer<Utf8> str, Pointer<Int32> count, int startIndex);
-final TypesEncodingD nativeTypesEncoding = runtimeLib
+final TypesEncodingD nativeTypesEncoding = nativeDylib
     .lookupFunction<TypesEncodingC, TypesEncodingD>('native_types_encoding');
 
 typedef BlockCallbackC = Void Function(
@@ -102,11 +104,17 @@ typedef BlockCallbackC = Void Function(
     Int32 argCount,
     Int32 stret,
     Int64 seq);
-typedef BlockCreateC = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
-    Pointer<NativeFunction<BlockCallbackC>> callback, Int64 dartPort);
-typedef BlockCreateD = Pointer<Void> Function(Pointer<Utf8> typeEncodings,
-    Pointer<NativeFunction<BlockCallbackC>> callback, int dartPort);
-final BlockCreateD blockCreate = runtimeLib
+typedef BlockCreateC = Pointer<Void> Function(
+    Pointer<Utf8> typeEncodings,
+    Pointer<NativeFunction<BlockCallbackC>> callback,
+    Bool shouldReturnAsync,
+    Int64 dartPort);
+typedef BlockCreateD = Pointer<Void> Function(
+    Pointer<Utf8> typeEncodings,
+    Pointer<NativeFunction<BlockCallbackC>> callback,
+    bool shouldReturnAsync,
+    int dartPort);
+final BlockCreateD blockCreate = nativeDylib
     .lookupFunction<BlockCreateC, BlockCreateD>('native_block_create');
 
 typedef BlockInvokeC = Pointer<Void> Function(
@@ -123,7 +131,7 @@ typedef BlockInvokeD = Pointer<Void> Function(
   int stringTypeBitmask,
   Pointer<Pointer<Utf8>> retType,
 );
-final BlockInvokeD blockInvoke = runtimeLib
+final BlockInvokeD blockInvoke = nativeDylib
     .lookupFunction<BlockInvokeC, BlockInvokeD>('native_block_invoke');
 
 final void Function(Pointer<Void>) retainObject = nativeDylib
@@ -139,5 +147,5 @@ final ConvertNSStringToUTF16 convertNSStringToUTF16 =
 
 final int Function(Object, Pointer<Void>) bindObjcLifecycleToDart = nativeDylib
     .lookup<NativeFunction<Int32 Function(Handle, Pointer<Void>)>>(
-        "BindObjcLifecycleToDart")
+        'BindObjcLifecycleToDart')
     .asFunction();

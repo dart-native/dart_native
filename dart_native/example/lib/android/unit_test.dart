@@ -6,15 +6,11 @@ import 'package:dart_native_example/android/runtimestub_async.dart';
 
 import 'delegate_stub.dart';
 import 'package:dart_native_example/dn_unit_test.dart';
+import 'package:ffi/ffi.dart';
 
 /// Android unit test implementation.
 class DNAndroidUnitTest with DNUnitTestBase {
   final stub = RuntimeStub();
-
-  @override
-  String fooString(String str) {
-    return stub.getString(str) ?? "";
-  }
 
   @override
   Future<void> runAllUnitTests() async {
@@ -163,6 +159,10 @@ testAndroid(RuntimeStub stub) async {
 
   print(
       "getStringAsync ${await stub.getStringAsync('This is a long string: sdlfdksjflksndhiofuu2893873(*（%￥#@）*&……￥撒肥料开发时傅雷家书那份会计师东方丽景三等奖')}");
+
+  final buffer = stub.getByteBuffer();
+  print(
+      "get direct byte buffer result ${buffer?.bytes.cast<Utf8>().toDartString(length: buffer.lengthInBytes)}");
 }
 
 int currentTimeMillis() {

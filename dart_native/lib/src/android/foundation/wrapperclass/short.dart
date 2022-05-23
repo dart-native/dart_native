@@ -5,14 +5,14 @@ import 'package:dart_native/src/android/runtime/jsubclass.dart';
 import 'package:dart_native_gen/dart_native_gen.dart';
 
 /// Stands for `Short` in Android.
-const String jShortCls = 'java/lang/Short';
+const String _jShortCls = 'java/lang/Short';
 
-@native(javaClass: jShortCls)
+@native(javaClass: _jShortCls)
 class JShort extends JSubclass<int> {
-  JShort(int value) : super(value, _new, jShortCls);
+  JShort(int value) : super(value, _new, _jShortCls);
 
-  JShort.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, jShortCls) {
-    raw = invokeShort('shortValue');
+  JShort.fromPointer(Pointer<Void> ptr) : super.fromPointer(ptr, _jShortCls) {
+    raw = callShortMethodSync('shortValue');
   }
 }
 

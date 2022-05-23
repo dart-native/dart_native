@@ -17,11 +17,6 @@ class DNAppleUnitTest with DNUnitTestBase {
   final delegate = DelegateStub();
 
   @override
-  String fooString(String str) {
-    return stub.fooNSString(str) ?? '';
-  }
-
-  @override
   Future<void> runAllUnitTests() async {
     await testMacOSAndIOS(stub, delegate);
   }
@@ -146,6 +141,11 @@ Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
     return const CString('test return cstring');
   });
 
+  stub.fooStringBlock((String? a) {
+    print('hello block string! $a');
+    return 'test return string';
+  });
+
   stub.fooNSDictionaryBlock((NSDictionary? dict) {
     print('hello block nsdictionary! $dict');
     return dict;
@@ -175,7 +175,7 @@ Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
   print('fooWithOptions result:$options');
 
   Class('NSThread')
-      .performAsync(SEL('currentThread'), onQueue: DispatchQueue.global())
+      .perform(SEL('currentThread'), onQueue: DispatchQueue.global())
       .then((currentThread) {
     print('currentThread: ${currentThread.description}');
   });
@@ -201,10 +201,8 @@ Future<void> testMacOSAndIOS(RuntimeStub stub, DelegateStub delegate) async {
 void _checkTimer(String isolateID) async {
   RuntimeStub stub = RuntimeStub();
   DelegateStub delegate = DelegateStub();
-  Timer.periodic(const Duration(seconds: 1), (Timer t) {
-    stub.fooCompletion(() {
-      print('hello completion block on $isolateID!');
-    });
-    stub.fooDelegate(delegate);
+  stub.fooCompletion(() {
+    print('hello completion block on $isolateID!');
   });
+  stub.fooDelegate(delegate);
 }

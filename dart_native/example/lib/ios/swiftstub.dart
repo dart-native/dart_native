@@ -11,31 +11,31 @@ class SwiftStub extends NSObject {
 
   static get instance {
     Pointer<Void> resultPtr =
-        Class(_objcClassName).perform(SEL('instance'), decodeRetVal: false);
+        Class(_objcClassName).performSync(SEL('instance'), decodeRetVal: false);
     return SwiftStub.fromPointer(resultPtr);
   }
 
   get sideLength {
-    return perform(SEL('sideLength'));
+    return performSync(SEL('sideLength'));
   }
 
   set sideLength(newValue) {
-    perform(SEL('setSideLength:'), args: [newValue]);
+    performSync(SEL('setSideLength:'), args: [newValue]);
   }
 
   get perimeter {
-    return perform(SEL('perimeter'));
+    return performSync(SEL('perimeter'));
   }
 
   set perimeter(newValue) {
-    perform(SEL('setPerimeter:'), args: [newValue]);
+    performSync(SEL('setPerimeter:'), args: [newValue]);
   }
 
   String fooString(String hello) {
-    return SwiftStub.instance.perform(SEL('fooString:'), args: ['Hello']);
+    return SwiftStub.instance.performSync(SEL('fooString:'), args: ['Hello']);
   }
 
   void fooClosure(Function callback) {
-    SwiftStub.instance.perform(SEL('fooClosure:'), args: [callback]);
+    SwiftStub.instance.performSync(SEL('fooClosure:'), args: [callback]);
   }
 }

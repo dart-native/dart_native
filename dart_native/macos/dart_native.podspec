@@ -17,9 +17,12 @@ Write native code using Dart. This package liberates you from undercompetent cha
   # macOS: MUST use `use_frameworks!` in Podfile
   s.osx.source_files = 'Classes/**/*', 'common/**/*'
   s.osx.vendored_frameworks = 'libffi.xcframework'
+
+  s.public_header_files = 'Classes/DartNativePlugin.h', 'Classes/DNInterfaceRegistry.h'
   
-  s.public_header_files = 'Classes/DartNativePlugin.h'
+  s.swift_version = '5.5'
   s.osx.dependency 'FlutterMacOS'
+  s.dependency 'ClassWrittenInSwift', '~> 0.0.4'
 
   s.osx.deployment_target = '10.11'
   s.libraries = 'c++'

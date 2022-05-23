@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ffi';
 
-import 'package:dart_native/src/android/common/callback_manager.dart';
+import 'package:dart_native/src/android/common/library.dart';
 import 'package:dart_native/src/android/common/pointer_encoding.dart';
 import 'package:dart_native/src/android/dart_java.dart';
 import 'package:dart_native/src/android/runtime/functions.dart';
@@ -12,10 +12,10 @@ Pointer<Void> _newNativeObject(String className, {List? args}) {
   Pointer<Utf8> classNamePtr = className.toNativeUtf8();
   if (args == null || args.isEmpty) {
     objectPtr =
-        nativeCreateObject!(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
+        nativeCreateObject(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
   } else {
     NativeArguments nativeArguments = _parseNativeArguments(args);
-    objectPtr = nativeCreateObject!(
+    objectPtr = nativeCreateObject(
         classNamePtr,
         nativeArguments.pointers,
         nativeArguments.typePointers,
@@ -42,7 +42,7 @@ Pointer<Void> newObject(String className, JObject object,
 }
 
 String getJClassName(Pointer<Void> pointer) {
-  final namePtr = getJavaClassName!(pointer);
+  final namePtr = getJavaClassName(pointer);
   final name = fromUtf16(namePtr);
   if (name == null) {
     throw 'getJClassName error, namePtr is nullptr';
@@ -76,11 +76,12 @@ void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
   calloc.free(typePtrs);
 }
 
-dynamic _invokeMethod(
+dynamic _doInvoke(
     Pointer<Void> objPtr, String methodName, List? args, String returnType,
     {List<String>? assignedSignature,
     Thread thread = Thread.flutterUI,
-    _AsyncMessageCallback? callback}) {
+    _AsyncMessageCallback? callback,
+    bool isInterface = false}) {
   if (objPtr == nullptr) {
     throw 'InvokeMethod error native object pointer is nullptr.';
   }
@@ -110,7 +111,7 @@ dynamic _invokeMethod(
   NativeArguments nativeArguments =
       _parseNativeArguments(args, argsSignature: assignedSignaturePtr);
 
-  Pointer<Void> invokeMethodRet = nativeInvoke!(
+  Pointer<Void> invokeMethodRet = nativeInvoke(
       objPtr,
       methodNamePtr,
       nativeArguments.pointers,
@@ -120,7 +121,8 @@ dynamic _invokeMethod(
       nativeArguments.stringTypeBitmask,
       callbackPtr,
       nativePort,
-      thread.index);
+      thread.index,
+      isInterface);
 
   dynamic result;
   if (callback == null) {
@@ -138,23 +140,24 @@ dynamic _invokeMethod(
   return result;
 }
 
-dynamic invokeMethod(
-    Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<String>? assignedSignature}) {
-  return _invokeMethod(objPtr, methodName, args, returnType,
-      assignedSignature: assignedSignature);
+dynamic invokeSync(Pointer<Void> objPtr, String methodName, String returnType,
+    {List? args, List<String>? assignedSignature, bool isInterface = false}) {
+  return _doInvoke(objPtr, methodName, args, returnType,
+      assignedSignature: assignedSignature, isInterface: isInterface);
 }
 
-Future<dynamic> invokeMethodAsync(
-    Pointer<Void> objPtr, String methodName, List? args, String returnType,
-    {List<String>? assignedSignature,
-    Thread thread = Thread.mainThread}) async {
+Future<dynamic> invoke(
+    Pointer<Void> objPtr, String methodName, String returnType,
+    {List? args,
+    List<String>? assignedSignature,
+    Thread thread = Thread.mainThread,
+    bool isInterface = false}) async {
   final completer = Completer<dynamic>();
-  _invokeMethod(objPtr, methodName, args, returnType,
+  _doInvoke(objPtr, methodName, args, returnType,
       assignedSignature: assignedSignature,
       thread: thread, callback: (dynamic result) {
     completer.complete(result);
-  });
+  }, isInterface: isInterface);
   return completer.future;
 }
 

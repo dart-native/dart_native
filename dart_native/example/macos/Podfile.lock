@@ -1,18 +1,21 @@
 PODS:
-  - CocoaLumberjack (3.7.2):
-    - CocoaLumberjack/Core (= 3.7.2)
-  - CocoaLumberjack/Core (3.7.2)
+  - ClassWrittenInSwift (0.0.4)
+  - CocoaLumberjack/Core (3.7.4)
+  - CocoaLumberjack/Swift (3.7.4):
+    - CocoaLumberjack/Core
   - dart_native (0.0.1):
+    - ClassWrittenInSwift (~> 0.0.4)
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
 
 DEPENDENCIES:
-  - CocoaLumberjack
+  - CocoaLumberjack/Swift
   - dart_native (from `Flutter/ephemeral/.symlinks/plugins/dart_native/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
 
 SPEC REPOS:
   trunk:
+    - ClassWrittenInSwift
     - CocoaLumberjack
 
 EXTERNAL SOURCES:
@@ -22,10 +25,11 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
 
 SPEC CHECKSUMS:
-  CocoaLumberjack: b7e05132ff94f6ae4dfa9d5bce9141893a21d9da
-  dart_native: e90a7b5d5af3d8dc5346a8bb53e818463d808786
+  ClassWrittenInSwift: de0543e7c1a836e190af74fddff84ad9b2f3d18c
+  CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
+  dart_native: 1d89c58404bf2295b0725d24af16a907b1322fdd
   FlutterMacOS: 57701585bf7de1b3fc2bb61f6378d73bbdea8424
 
-PODFILE CHECKSUM: 5b0f1e9d54a0a5d6244086680a1ae1cea26ead2c
+PODFILE CHECKSUM: 6134e1091881200875eedf81c63588922d4384ec
 
 COCOAPODS: 1.11.2
