@@ -1,4 +1,9 @@
 
+## 0.7.0
+
+* [Feature] Support DartNative Interface.
+* [Feature] Support Finalizer.
+
 ## 0.6.7
 
 * [Fix] Deadlocks on iOS.
