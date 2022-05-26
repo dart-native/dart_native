@@ -1,5 +1,5 @@
 package com.dartnative.dart_native;
 
-public interface Promise {
+public interface FunctionHandler {
     Object invoke(Object... arguments);
 }

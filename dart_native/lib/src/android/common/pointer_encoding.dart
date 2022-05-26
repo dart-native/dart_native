@@ -37,7 +37,8 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
   ValueType.bool: 'Z'.toNativeUtf8(),
   ValueType.string: 'Ljava/lang/String;'.toNativeUtf8(),
   ValueType.byteBuffer: 'Ljava/nio/ByteBuffer;'.toNativeUtf8(),
-  ValueType.function: 'Lcom/dartnative/dart_native/Promise;'.toNativeUtf8(),
+  ValueType.function:
+      'Lcom/dartnative/dart_native/FunctionHandler;'.toNativeUtf8(),
   ValueType.unknown: 'Lunknown;'.toNativeUtf8(),
 };
 
@@ -125,7 +126,8 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
 
   if (object is Function) {
     final functionHandler = JObject(
-        className: 'com/dartnative/dart_native/Promise', isInterface: true);
+        className: 'com/dartnative/dart_native/FunctionHandler',
+        isInterface: true);
     registerCallback(functionHandler, object, 'invoke');
     ptr.value = functionHandler.pointer;
     typePtr.value = argSignature ?? _pointerForEncode[ValueType.function]!;

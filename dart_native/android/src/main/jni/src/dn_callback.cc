@@ -52,7 +52,8 @@ static jobject HookNativeCallback(JNIEnv *env,
                                   jint argument_count,
                                   jobjectArray argument_types,
                                   jobjectArray arguments_array,
-                                  jstring return_type_str) {
+                                  jstring return_type_str,
+                                  jboolean is_function_handler) {
   auto callbacks = GetDartRegisterCallback(dart_object_address);
   if (callbacks.empty()) {
     DNError("Invoke dart function error, not register this dart object!");
@@ -102,6 +103,10 @@ static jobject HookNativeCallback(JNIEnv *env,
                          env,
                          async_callback);
 
+  if (is_function_handler) {
+    RemoveDartRegisterCallback(dart_object_address);
+  }
+
   return callback_result;
 }
 
@@ -142,7 +147,7 @@ void InitCallback(JNIEnv *env) {
   static const JNINativeMethod interface_jni_methods[] = {
       {
           .name = "hookCallback",
-          .signature = "(JLjava/lang/String;I[Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;",
+          .signature = "(JLjava/lang/String;I[Ljava/lang/String;[Ljava/lang/Object;Ljava/lang/String;Z)Ljava/lang/Object;",
           .fnPtr = (void *) HookNativeCallback
       }
   };
