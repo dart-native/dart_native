@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import com.dartnative.dart_native.DartNativeInterface;
+import com.dartnative.dart_native.Promise;
 import com.dartnative.dart_native.annotation.InterfaceEntry;
 import com.dartnative.dart_native.annotation.InterfaceMethod;
 
@@ -50,5 +51,10 @@ public class InterfaceDemo extends DartNativeInterface {
         byteBuffer.put(str.getBytes());
         byteBuffer.rewind();
         return byteBuffer;
+    }
+
+    @InterfaceMethod(name = "testCallback")
+    public void testCallback(Promise promise) {
+        promise.invoke(true, "callback from native");
     }
 }

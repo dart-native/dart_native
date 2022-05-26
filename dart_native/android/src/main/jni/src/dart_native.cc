@@ -185,7 +185,7 @@ void RegisterNativeCallback(void *dartObject,
   DoRegisterNativeCallback(dartObject, clsName, funName, callback, dartPort, env);
 }
 
-DN_EXTERN void UnregisterNativeCallback(void *dart_object) {
+void UnregisterNativeCallback(void *dart_object) {
   auto env = AttachCurrentThread();
   if (env == nullptr) {
     DNError("UnRegisterNativeCallback error, no JNIEnv provided!");

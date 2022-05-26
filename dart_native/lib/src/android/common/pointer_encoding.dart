@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:typed_data';
 
+import 'package:dart_native/src/android/common/callback_manager.dart';
 import 'package:dart_native/src/android/foundation/collection/jarray.dart';
 import 'package:dart_native/src/android/foundation/direct_byte_buffer.dart';
 import 'package:dart_native/src/android/foundation/native_type.dart';
@@ -21,6 +22,7 @@ enum ValueType {
   string,
   byteBuffer,
   cls,
+  function,
   unknown
 }
 
@@ -35,6 +37,7 @@ Map<ValueType, Pointer<Utf8>> _pointerForEncode = {
   ValueType.bool: 'Z'.toNativeUtf8(),
   ValueType.string: 'Ljava/lang/String;'.toNativeUtf8(),
   ValueType.byteBuffer: 'Ljava/nio/ByteBuffer;'.toNativeUtf8(),
+  ValueType.function: 'Lcom/dartnative/dart_native/Promise;'.toNativeUtf8(),
   ValueType.unknown: 'Lunknown;'.toNativeUtf8(),
 };
 
@@ -117,6 +120,15 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   if (object is Pointer) {
     ptr.value = object.cast();
     typePtr.value = argSignature ?? _pointerForEncode[ValueType.unknown]!;
+    return;
+  }
+
+  if (object is Function) {
+    final functionHandler = JObject(
+        className: 'com/dartnative/dart_native/Promise', isInterface: true);
+    registerCallback(functionHandler, object, 'invoke');
+    ptr.value = functionHandler.pointer;
+    typePtr.value = argSignature ?? _pointerForEncode[ValueType.function]!;
     return;
   }
 }

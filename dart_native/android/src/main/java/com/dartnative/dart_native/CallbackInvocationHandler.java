@@ -21,6 +21,8 @@ public class CallbackInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        boolean isDartFunctionHandler = proxy instanceof Promise;
+        args = (isDartFunctionHandler && args != null) ? (Object[]) args[0] : args;
         int argumentLength = args == null ? 0 : args.length;
         String[] paramsType = new String[argumentLength];
         for (int i = 0; i < argumentLength; i++) {
