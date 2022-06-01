@@ -1,8 +1,15 @@
+## 0.7.1
+
+* [Fix] Leaks on iOS.
 
 ## 0.7.0
 
 * [Feature] Support DartNative Interface.
 * [Feature] Support Finalizer.
+
+## 0.6.8
+
+* [Fix] Leaks on iOS.
 
 ## 0.6.7
 
