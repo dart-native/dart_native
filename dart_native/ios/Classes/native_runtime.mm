@@ -103,9 +103,9 @@ bool native_isValidReadableMemory(const void *pointer) {
     }
     
     // Read the memory
-    vm_offset_t data = 0;
-    mach_msg_type_number_t dataCnt = 0;
-    ret = vm_read(mach_task_self(), (vm_address_t)pointer, sizeof(uintptr_t), &data, &dataCnt);
+    char data[sizeof(uintptr_t)];
+    vm_size_t dataCnt = 0;
+    ret = vm_read_overwrite(mach_task_self(), (vm_address_t)pointer, sizeof(uintptr_t), (vm_address_t)data, &dataCnt);
     if (ret != KERN_SUCCESS) {
         // vm_read returned an error
         return false;
