@@ -310,11 +310,6 @@ NOTE: *If you use dart_native on macOS, you must use `use_frameworks!` in your P
 
 ## Documentation
 
-### Readme
-
-1. [dart_native README.md](/dart_native/README.md)
-2. [dart_native_gen README.md](/dart_native_gen/README.md)
-
 ### Further reading
 
 - [告别 Flutter Channel，调用 Native API 仅需一行代码！](http://yulingtianxia.com/blog/2020/06/25/Codegen-for-DartNative/)
