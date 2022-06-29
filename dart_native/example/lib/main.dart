@@ -60,6 +60,9 @@ class _DartNativeAppState extends State<DartNativeApp> {
     unitTest.addFinalizer(() {
       print('The instance of \'unitTest\' has been destroyed!');
     });
+
+    // example callback
+    testCallback();
   }
 
   String helloWorld() {
@@ -72,6 +75,16 @@ class _DartNativeAppState extends State<DartNativeApp> {
 
   NativeByte getUTF8Data(String str) {
     return interface.invokeMethodSync('getUTF8Data', args: [str]);
+  }
+
+  void testCallback() {
+    interface.invokeMethodSync('testCallback', args: [
+      (bool success, String result) {
+        if (success) {
+          print(result);
+        }
+      }
+    ]);
   }
 
   Future<void> calculate() async {

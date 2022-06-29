@@ -5,11 +5,11 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
 import com.dartnative.dart_native.DartNativeInterface;
+import com.dartnative.dart_native.FunctionHandler;
 import com.dartnative.dart_native.annotation.InterfaceEntry;
 import com.dartnative.dart_native.annotation.InterfaceMethod;
 
@@ -50,5 +50,10 @@ public class InterfaceDemo extends DartNativeInterface {
         byteBuffer.put(str.getBytes());
         byteBuffer.rewind();
         return byteBuffer;
+    }
+
+    @InterfaceMethod(name = "testCallback")
+    public void testCallback(FunctionHandler functionHandler) {
+        functionHandler.invoke(true, "callback from native");
     }
 }
