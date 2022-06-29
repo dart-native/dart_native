@@ -74,7 +74,7 @@ class JObject extends NativeObject {
           ' or use @nativeJavaClass annotation to specify the java class';
     }
     _ptr = newObject(_cls!, this, args: args, isInterface: isInterface);
-    if (isInterface) {
+    if (!isInterface) {
       bindLifeCycleWithJava(_ptr);
     }
   }
