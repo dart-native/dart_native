@@ -1,3 +1,7 @@
+## 0.7.2
+
+* [Fix] Support Promise on Android.
+
 ## 0.7.1
 
 * [Fix] Leaks on iOS.
