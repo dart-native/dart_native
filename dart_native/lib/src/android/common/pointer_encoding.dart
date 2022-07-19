@@ -223,7 +223,7 @@ String? fromUtf16(Pointer<Void> uint16Ptr) {
     length += uint16Ptr.cast<Uint16>().elementAt(i).value;
   }
   Uint16List list = uint16Ptr.cast<Uint16>().asTypedList(length + 3);
-  calloc.free(uint16Ptr);
   final codes = String.fromCharCodes(list.sublist(2, length + 2));
+  calloc.free(uint16Ptr);
   return codes;
 }
