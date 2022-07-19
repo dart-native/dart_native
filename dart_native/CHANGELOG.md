@@ -1,3 +1,7 @@
+## 0.7.3
+
+* [Fix] Garbage characters on Android.
+
 ## 0.7.2
 
 * [Fix] Support Promise on Android.
