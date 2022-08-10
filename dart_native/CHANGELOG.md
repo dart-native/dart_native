@@ -1,3 +1,7 @@
+## 0.7.4
+
+* [Fix] Errors and warnings.
+
 ## 0.7.3
 
 * [Fix] Garbage characters on Android.

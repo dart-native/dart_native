@@ -18,7 +18,7 @@ bool registerMethodCallback(
       .setCallbackForSelectorOnTarget(targetPtr, selectorPtr, function);
   List<String> dartTypes = dartTypeStringForFunction(function);
   List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
-  bool returnString = nativeTypes.first == 'String';
+  int returnString = nativeTypes.first == 'String' ? 1 : 0;
   int result = nativeAddMethod(
       targetPtr, selectorPtr, types, returnString, _callbackPtr, nativePort);
   return result != 0;

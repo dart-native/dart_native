@@ -21,14 +21,14 @@ typedef AddMethodC = Int32 Function(
     Pointer<Void> target,
     Pointer<Void> selector,
     Pointer<Utf8> types,
-    Bool returnString,
+    Int32 returnString,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback,
     Int64 dartPort);
 typedef AddMethodD = int Function(
     Pointer<Void> target,
     Pointer<Void> selector,
     Pointer<Utf8> types,
-    bool returnString,
+    int returnString,
     Pointer<NativeFunction<MethodIMPCallbackC>> callback,
     int dartPort);
 final AddMethodD nativeAddMethod =
@@ -107,12 +107,12 @@ typedef BlockCallbackC = Void Function(
 typedef BlockCreateC = Pointer<Void> Function(
     Pointer<Utf8> typeEncodings,
     Pointer<NativeFunction<BlockCallbackC>> callback,
-    Bool shouldReturnAsync,
+    Int32 shouldReturnAsync,
     Int64 dartPort);
 typedef BlockCreateD = Pointer<Void> Function(
     Pointer<Utf8> typeEncodings,
     Pointer<NativeFunction<BlockCallbackC>> callback,
-    bool shouldReturnAsync,
+    int shouldReturnAsync,
     int dartPort);
 final BlockCreateD blockCreate = nativeDylib
     .lookupFunction<BlockCreateC, BlockCreateD>('native_block_create');
