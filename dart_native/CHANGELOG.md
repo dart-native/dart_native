@@ -1,3 +1,8 @@
+## 0.7.4
+
+* [Fix] Errors and warnings.
+* [Fix] Dart exceptions on Android.
+
 ## 0.7.3
 
 * [Fix] Garbage characters on Android.

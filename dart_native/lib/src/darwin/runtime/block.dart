@@ -61,16 +61,15 @@ class Block extends id {
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
     Pointer<Void> blockPtr =
-        blockCreate(typeStringPtr, _callbackPtr, shouldReturnAsync, nativePort);
+        blockCreate(typeStringPtr, _callbackPtr, shouldReturnAsync ? 0 : 1, nativePort);
     assert(blockPtr != nullptr);
     if (blockPtr == nullptr) {
       return nilBlock;
     }
     int sequence = _blockSequence(blockPtr);
-    Block result = Block.fromPointer(blockPtr);
+    Block result = Block.fromPointer(blockPtr, function: function);
     calloc.free(typeStringPtr);
     result.types = dartTypes;
-    result.function = function;
     result.shouldReturnAsync = shouldReturnAsync;
     result.typeEncodingsPtrPtr = _blockTypeEncodings(blockPtr);
     result.sequence = sequence;
@@ -84,7 +83,7 @@ class Block extends id {
   /// Creating a [Block] from a [Pointer].
   ///
   /// [Block] created by this method do NOT have [function] property.
-  Block.fromPointer(Pointer<Void> ptr) : super(ptr);
+  Block.fromPointer(Pointer<Void> ptr, {this.function}) : super(ptr);
 
   /// This [isa] block in iOS, but it's meaningless for a block created
   /// by Dart function.
@@ -134,12 +133,8 @@ class Block extends id {
     if (newPtr == pointer) {
       return this;
     }
-    Block result = Block.fromPointer(newPtr);
-    // Block created by function.
-    if (function != null) {
-      result.function = function;
-      result.types = types;
-    }
+    Block result = Block.fromPointer(newPtr, function: function);
+    result.types = types;
     return result;
   }
 

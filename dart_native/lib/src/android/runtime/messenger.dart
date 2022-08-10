@@ -68,9 +68,7 @@ void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
   }
 
   /// remove assigned signature
-  _assignedSignatureMap[method]?.forEach((ptr) {
-    calloc.free(ptr);
-  });
+  _assignedSignatureMap[method]?.forEach(calloc.free);
   _assignedSignatureMap.remove(method);
 
   calloc.free(typePtrs);
@@ -122,7 +120,7 @@ dynamic _doInvoke(
       callbackPtr,
       nativePort,
       thread.index,
-      isInterface);
+      isInterface ? 1 : 0);
 
   dynamic result;
   if (callback == null) {
@@ -132,9 +130,7 @@ dynamic _doInvoke(
             .elementAt(args?.length ?? 0)
             .value
             .toDartString());
-    assignedSignaturePtr?.forEach((ptr) {
-      calloc.free(ptr);
-    });
+    assignedSignaturePtr?.forEach(calloc.free);
     calloc.free(nativeArguments.typePointers);
   }
   return result;

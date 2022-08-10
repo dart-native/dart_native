@@ -57,7 +57,7 @@ final Pointer<Void> Function(
         Pointer<NativeFunction<InvokeCallback>>,
         int dartPort,
         int thread,
-        bool isInterface) nativeInvoke =
+        int isInterface) nativeInvoke =
     nativeDylib
         .lookup<
             NativeFunction<
@@ -72,7 +72,7 @@ final Pointer<Void> Function(
                     Pointer<NativeFunction<InvokeCallback>>,
                     Int64 dartPort,
                     Int32 thread,
-                    Bool isInterface)>>('InvokeNativeMethod')
+                    Int32 isInterface)>>('InvokeNativeMethod')
         .asFunction();
 
 // bind dart object lifecycle with java object
