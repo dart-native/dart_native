@@ -1,7 +1,6 @@
 import 'dart:ffi';
 
 import 'package:dart_native/src/common/native_dylib.dart';
-import 'package:dart_native/src/darwin/common/callback_manager.dart';
 import 'package:ffi/ffi.dart';
 
 typedef DartFinalizerFunction = void Function();
