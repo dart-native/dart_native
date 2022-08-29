@@ -21,7 +21,7 @@ InterfaceMethod(hello, myHello:(NSString *)str) {
     [self invokeMethod:@"totalCost"
              arguments:@[@0.123456789, @10, @[@"testArray"]]
                 result:^(id _Nullable result, NSError * _Nullable error) {
-        NSLog(@"fuck %@ %@", result, error);
+        NSLog(@"result: %@, error: %@", result, error);
     }];
     return [NSString stringWithFormat:@"hello %@!", str];
 }
