@@ -268,7 +268,7 @@ API_AVAILABLE(ios(11.0)){
 
 - (void)fooDelegate:(id<SampleDelegate>)delegate {
     DDLogInfo(@"%s arg: %@", __FUNCTION__, delegate);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
         NSString *result = [delegate callback];
         DDLogInfo(@"%s callback result:%@", __FUNCTION__, result);
     });
