@@ -9,6 +9,7 @@ import UIKit
 #elseif os(macOS)
 import AppKit
 #endif
+import dart_native
 
 @objcMembers
 class SwiftStub: NSObject {
@@ -24,6 +25,9 @@ class SwiftStub: NSObject {
     }
     
     func fooString(_ str: String) -> String {
+        DNInterfaceDemo.invokeMethod("totalCost", arguments: [0.123456789, 10, ["testArray"]]) { result, error in
+            print("fuck \(result.debugDescription) \(error.debugDescription)")
+        }
         return "\(str) DartNative!"
     }
     

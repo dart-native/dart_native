@@ -759,7 +759,7 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
     }
     
     BlockFunctionPointer function = creator.function;
-    const Work work = [function, numberOfArguments, isVoid, shouldReturnAsync, &sema, &creator, &invocation]() {
+    const Work work = [function, numberOfArguments, isVoid, shouldReturnAsync, &sema, creator, invocation]() {
         function(invocation.realArgs,
                  invocation.realRetValue,
                  numberOfArguments,
@@ -795,7 +795,7 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
     NSSet<NSNumber *> *dartPorts = dealloc.dartPorts;
     for (NSNumber *port in dartPorts) {
         NativeMethodCallback callback = (NativeMethodCallback)callbackForDartPort[port].integerValue;
-        const Work work = [callback, numberOfArguments, types, &group, &methodIMP, &invocation]() {
+        const Work work = [callback, numberOfArguments, types, &group, methodIMP, invocation]() {
             callback(invocation.realArgs,
                      invocation.realRetValue,
                      numberOfArguments,
