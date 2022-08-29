@@ -1,3 +1,8 @@
+## 0.7.5
+
+* [Fix] Crash on iOS.
+* [Fix] https://github.com/dart-native/dart_native/issues/103
+
 ## 0.7.4
 
 * [Fix] Errors and warnings.
