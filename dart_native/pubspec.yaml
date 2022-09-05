@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   ffi: ^1.1.2
-  dart_native_gen: ^0.3.2
+  dart_native_gen: ^0.3.3
 
 dev_dependencies:
   flutter_test:

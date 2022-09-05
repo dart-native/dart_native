@@ -1,3 +1,5 @@
+## [0.3.3] - Dependency verison compatible.
+
 ## [0.3.2] - Dependency verison compatible.
 
 ## [0.3.1] - Fix the generated import code.
