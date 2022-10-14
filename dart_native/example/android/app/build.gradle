@@ -41,6 +41,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders += [appAuthRedirectScheme: "com.dartnative.dart_native_example"]
     }
 
     buildTypes {
