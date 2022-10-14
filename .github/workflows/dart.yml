@@ -18,14 +18,14 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           # same with pubspec.yaml
-          flutter-version: "2.2.0"
+          flutter-version: "2.8.1"
       - run: flutter pub get
         working-directory: dart_native/example
       - run: flutter test --no-pub test/
         working-directory: dart_native/example
       - run: flutter build apk
         working-directory: dart_native/example
-      - run: flutter build ios --release --no-codesign
+      - run: flutter build ios --release --no-codesign"
         working-directory: dart_native/example
       - run: flutter config --enable-macos-desktop
       - run: flutter build macos --release
