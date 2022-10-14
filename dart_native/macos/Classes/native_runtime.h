@@ -165,7 +165,7 @@ DN_EXTERN DNPassObjectResult BindObjcLifecycleToDart(Dart_Handle h, void *pointe
 
 DN_EXTERN void RegisterDartFinalizer(Dart_Handle h, void *callback, void *key, Dart_Port dartPort);
 
-DN_EXTERN bool NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
+DN_EXTERN void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
 
 DN_EXTERN void RegisterDeallocCallback(void (*callback)(intptr_t));
 
