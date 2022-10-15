@@ -19,6 +19,9 @@ jobs:
         with:
           # same with pubspec.yaml
           flutter-version: "2.8.1"
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - run: flutter pub get
         working-directory: dart_native/example
       - run: flutter test --no-pub test/
