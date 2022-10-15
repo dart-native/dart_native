@@ -25,7 +25,7 @@ jobs:
         working-directory: dart_native/example
       - run: flutter build apk
         working-directory: dart_native/example
-      - run: flutter build ios --release --no-codesign
+      - run: flutter build ios --release --no-codesign --verbose
         working-directory: dart_native/example
       - run: flutter config --enable-macos-desktop
       - run: flutter build macos --release
