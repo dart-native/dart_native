@@ -17,7 +17,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           # same with pubspec.yaml
-          flutter-version: "2.8.1"
+          flutter-version: "2.2.0"
       - run: flutter pub get
         working-directory: dart_native/example
       - run: flutter analyze --no-pub --no-current-package lib/ test/
