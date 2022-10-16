@@ -168,14 +168,14 @@ packages:
       path: "../../dart_native"
       relative: true
     source: path
-    version: "0.7.1"
+    version: "0.7.6"
   dart_native_gen:
     dependency: transitive
     description:
       name: dart_native_gen
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.2"
+    version: "0.3.3"
   dart_style:
     dependency: transitive
     description:

@@ -818,20 +818,33 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
 
 #pragma mark - Native Dealloc Callback
 
-void (*native_dealloc_callback)(intptr_t);
+static NSMutableDictionary<NSNumber *, NSNumber *> *deallocCallbackPtrForDartPort = [NSMutableDictionary dictionary];
+static dispatch_queue_t deallocCallbackPortsQueue = dispatch_queue_create("com.dartnative.deallocCallback", DISPATCH_QUEUE_CONCURRENT);;
 
-void RegisterDeallocCallback(void (*callback)(intptr_t)) {
-    native_dealloc_callback = callback;
+void RegisterDeallocCallback(void (*callback)(intptr_t), Dart_Port dartPort) {
+    dispatch_barrier_async(deallocCallbackPortsQueue, ^{
+        deallocCallbackPtrForDartPort[@(dartPort)] = @((intptr_t)callback);
+    });
 }
 
-bool NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
-    auto callback = native_dealloc_callback;
-    const Work work = [address, callback]() {
-        callback(address);
-    };
-
-    const Work *work_ptr = new Work(work);
-    return NotifyDart(dartPort, work_ptr);
+void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
+    dispatch_async(deallocCallbackPortsQueue, ^{
+        void (*callback)(intptr_t) = reinterpret_cast<void (*)(intptr_t)>(deallocCallbackPtrForDartPort[@(dartPort)].longValue);
+        if (callback) {
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+                const Work work = [address, callback]() {
+                    callback(address);
+                };
+                const Work *work_ptr = new Work(work);
+                bool success = NotifyDart(dartPort, work_ptr);
+                if (!success) {
+                    dispatch_barrier_async(deallocCallbackPortsQueue, ^{
+                        deallocCallbackPtrForDartPort[@(dartPort)] = nil;
+                    });
+                }
+            });
+        }
+    });
 }
 
 #pragma mark - Dart Finalizer
