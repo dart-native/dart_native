@@ -167,7 +167,7 @@ DN_EXTERN void RegisterDartFinalizer(Dart_Handle h, void *callback, void *key, D
 
 DN_EXTERN void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
 
-DN_EXTERN void RegisterDeallocCallback(void (*callback)(intptr_t));
+DN_EXTERN void RegisterDeallocCallback(void (*callback)(intptr_t), Dart_Port dartPort);
 
 typedef NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *DartNativeInterfaceMap;
 DN_EXTERN NSObject *DNInterfaceHostObjectWithName(char *name);

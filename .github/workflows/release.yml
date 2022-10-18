@@ -31,7 +31,7 @@ jobs:
       - run: flutter config --enable-macos-desktop
       - run: flutter build macos --release
         working-directory: dart_native/example
-      - uses: softprops/action-gh-release@v1.1.0
+      - uses: softprops/action-gh-release@v0.1.14
         with:
           files: |
             build/app/outputs/apk/release/app-release.apk
