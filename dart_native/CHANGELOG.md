@@ -1,3 +1,7 @@
+## 0.7.7
+
+* [Fix] https://github.com/dart-native/dart_native/issues/108
+
 ## 0.7.6
 
 * [Fix] https://github.com/dart-native/dart_native/issues/107
