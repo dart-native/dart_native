@@ -40,9 +40,9 @@ class CallbackManager {
 
 final registerDeallocCallback = nativeDylib.lookupFunction<
         Void Function(
-            Pointer<NativeFunction<Void Function(IntPtr)>> functionPointer),
+            Pointer<NativeFunction<Void Function(IntPtr)>> functionPointer, Int64 dartPort),
         void Function(
-            Pointer<NativeFunction<Void Function(IntPtr)>> functionPointer)>(
+            Pointer<NativeFunction<Void Function(IntPtr)>> functionPointer, int dartPort)>(
     'RegisterDeallocCallback');
 
 final interactiveCppRequests = ReceivePort()..listen(requestExecuteCallback);

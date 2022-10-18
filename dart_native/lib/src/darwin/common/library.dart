@@ -21,7 +21,7 @@ DynamicLibrary get nativeDylib {
       _nativeDylib = _processDylib;
     }
   }
-  registerDeallocCallback(nativeObjectDeallocPtr.cast());
+  registerDeallocCallback(nativeObjectDeallocPtr.cast(), nativePort);
   return _nativeDylib!;
 }
 
