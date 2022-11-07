@@ -22,7 +22,7 @@ Write native code using Dart. This package liberates you from undercompetent cha
   
   s.swift_version = '5.5'
   s.osx.dependency 'FlutterMacOS'
-  s.dependency 'ClassWrittenInSwift', '~> 0.0.4'
+  s.dependency 'ClassWrittenInSwift', '~> 0.0.5'
 
   s.osx.deployment_target = '10.11'
   s.libraries = 'c++'
