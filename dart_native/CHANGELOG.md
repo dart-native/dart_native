@@ -1,3 +1,8 @@
+## 0.7.8
+
+* [Fix] Build error on Xcode 12.
+* [Fix] The result for interface doesn't match it's type bool.
+
 ## 0.7.7
 
 * [Fix] https://github.com/dart-native/dart_native/issues/108
