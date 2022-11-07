@@ -5,6 +5,7 @@ import 'package:dart_native/dart_native.dart';
 import 'package:dart_native/src/common/interface_runtime.dart';
 import 'package:dart_native/src/darwin/common/callback_manager.dart';
 import 'package:dart_native/src/darwin/common/library.dart';
+import 'package:dart_native/src/darwin/common/pointer_encoding.dart';
 import 'package:dart_native/src/darwin/runtime/internal/functions.dart';
 import 'package:dart_native/src/darwin/runtime/internal/nssubclass.dart';
 import 'package:ffi/ffi.dart';
@@ -42,10 +43,10 @@ class InterfaceRuntimeObjC extends InterfaceRuntime {
   T _postprocessResult<T>(dynamic result) {
     if (result is NSObject) {
       // The type of result is NSObject, we should unbox it.
-      if (T == int || T == double) {
+      if (T == int || T == double || T == bool) {
         if (result.isKind(of: Class('NSNumber'))) {
           final number = NSNumber.fromPointer(result.pointer);
-          return number.raw;
+          return handleObjCBasicValue(T.toString(), number.raw);
         }
       } else if (T == String) {
         if (result.isKind(of: Class('NSString'))) {

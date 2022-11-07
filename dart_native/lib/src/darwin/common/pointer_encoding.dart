@@ -222,7 +222,7 @@ Map<Pointer<Utf8>, Function> _loadValueStrategyMap = {
   },
 };
 
-dynamic _handleObjCBasicValue(String type, dynamic value) {
+dynamic handleObjCBasicValue(String type, dynamic value) {
   if (type.toLowerCase() == '$bool') {
     if (value is num) {
       return value != 0;
@@ -287,7 +287,7 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, Pointer<Utf8> encoding,
   } while (false);
   // Post-processing
   if (dartType != null) {
-    result = _handleObjCBasicValue(dartType, result);
+    result = handleObjCBasicValue(dartType, result);
   }
   return result;
 }
