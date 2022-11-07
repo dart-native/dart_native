@@ -26,7 +26,7 @@ Write native code using Dart. This package liberates you from undercompetent cha
   
   s.swift_version = '5.5'
   s.ios.dependency 'Flutter'
-  s.dependency 'ClassWrittenInSwift', '~> 0.0.4'
+  s.dependency 'ClassWrittenInSwift', '~> 0.0.5'
 
   s.ios.deployment_target = '8.0'
   s.libraries = 'c++'
