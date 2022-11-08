@@ -44,10 +44,6 @@ NATIVE_TYPE_EXTERN const char *native_type_ptr;
 NATIVE_TYPE_EXTERN const char *native_type_bool;
 NATIVE_TYPE_EXTERN const char *native_type_string;
 
-DN_EXTERN void DartNativeSetThrowException(bool canThrow);
-
-DN_EXTERN bool DartNativeCanThrowException(void);
-
 /// Returens true if a pointer is a tagged pointer
 /// @param ptr is the pointer to check
 DN_EXTERN bool objc_isTaggedPointer(const void *ptr);

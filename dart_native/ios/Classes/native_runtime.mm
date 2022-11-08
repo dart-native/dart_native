@@ -24,6 +24,7 @@
 #import "NSObject+DartHandleExternalSize.h"
 #import "NSNumber+DNUnwrapValues.h"
 #import "DNError.h"
+#import "DNException.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -44,33 +45,6 @@
 #endif
 
 static Class DNInterfaceRegistryClass = NSClassFromString(@"DNInterfaceRegistry");
-
-#pragma mark - Config
-
-static NSString * const DNClassNotFoundExceptionReason = @"Class %@ not found.";
-static NSExceptionName const DNClassNotFoundException = @"ClassNotFoundException";
-
-void DartNativeSetThrowException(bool canThrow) {
-    Class target = DNInterfaceRegistryClass;
-    SEL selector = NSSelectorFromString(@"setExceptionEnabled:");
-    if (!target || !selector) {
-        if (canThrow) {
-            throw [NSException exceptionWithName:DNClassNotFoundException
-                                          reason:DNClassNotFoundExceptionReason
-                                        userInfo:nil];
-        }
-    }
-    ((void(*)(Class, SEL, BOOL))objc_msgSend)(target, selector, canThrow);
-}
-
-bool DartNativeCanThrowException() {
-    Class target = DNInterfaceRegistryClass;
-    SEL selector = NSSelectorFromString(@"isExceptionEnabled");
-    if (!target || !selector) {
-        return false;
-    }
-    return ((BOOL(*)(Class, SEL))objc_msgSend)(target, selector);
-}
 
 #pragma mark - Readable and valid memory
 
