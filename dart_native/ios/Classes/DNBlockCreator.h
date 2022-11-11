@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DNMacro.h"
+#import "DNExtern.h"
 #import "dart_api_dl.h"
 #import "native_runtime.h"
 

@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DNMacro.h"
+#import "DNExtern.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

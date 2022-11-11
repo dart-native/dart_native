@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DNMacro.h"
+#import "DNExtern.h"
 
 #define DN_ERROR(error, errorCode, desc, ...) \
 if (error) { \

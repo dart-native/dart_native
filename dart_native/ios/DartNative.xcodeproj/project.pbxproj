@@ -13,7 +13,7 @@
 		A4074AEC276F92FF009F0EFD /* DNPointerWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D75258B3E0A009C163D /* DNPointerWrapper.m */; };
 		A4074AED276F92FF009F0EFD /* native_runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D6F258B3E0A009C163D /* native_runtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A4074AEE276F92FF009F0EFD /* DNError.m in Sources */ = {isa = PBXBuildFile; fileRef = A45C1CAB262DB7B500FC10FE /* DNError.m */; };
-		A4074AEF276F92FF009F0EFD /* DNMacro.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNMacro.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A4074AEF276F92FF009F0EFD /* DNExtern.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNExtern.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A4074AF0276F92FF009F0EFD /* DNPointerWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D6C258B3E0A009C163D /* DNPointerWrapper.h */; };
 		A4074AF1276F92FF009F0EFD /* DNError.h in Headers */ = {isa = PBXBuildFile; fileRef = A45C1CAA262DB7B500FC10FE /* DNError.h */; };
 		A4074AF2276F92FF009F0EFD /* DNAssociatedDartObject.h in Headers */ = {isa = PBXBuildFile; fileRef = A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */; };
@@ -44,7 +44,7 @@
 		A45D1D7F258B3E0A009C163D /* dart_tools_api.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D55258B3E0A009C163D /* dart_tools_api.h */; };
 		A45D1D80258B3E0A009C163D /* dart_api_dl.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D56258B3E0A009C163D /* dart_api_dl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A45D1D8D258B3E0A009C163D /* DNInvocation.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D65258B3E0A009C163D /* DNInvocation.h */; };
-		A45D1D8E258B3E0A009C163D /* DNMacro.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNMacro.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A45D1D8E258B3E0A009C163D /* DNExtern.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNExtern.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A45D1D91258B3E0A009C163D /* DNObjectDealloc.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D69258B3E0A009C163D /* DNObjectDealloc.h */; };
 		A45D1D93258B3E0A009C163D /* DNFFIHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D6B258B3E0A009C163D /* DNFFIHelper.m */; };
 		A45D1D94258B3E0A009C163D /* DNPointerWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D6C258B3E0A009C163D /* DNPointerWrapper.h */; };
@@ -60,6 +60,10 @@
 		A4C27B01291A9D40002CCBA3 /* DNException.h in Headers */ = {isa = PBXBuildFile; fileRef = A4C27AFE291A9D40002CCBA3 /* DNException.h */; };
 		A4C27B02291A9D40002CCBA3 /* DNException.mm in Sources */ = {isa = PBXBuildFile; fileRef = A4C27AFF291A9D40002CCBA3 /* DNException.mm */; };
 		A4C27B03291A9D40002CCBA3 /* DNException.mm in Sources */ = {isa = PBXBuildFile; fileRef = A4C27AFF291A9D40002CCBA3 /* DNException.mm */; };
+		A4C27B06291B9E8B002CCBA3 /* DNMemoryValidation.h in Headers */ = {isa = PBXBuildFile; fileRef = A4C27B04291B9E8B002CCBA3 /* DNMemoryValidation.h */; };
+		A4C27B07291B9E8B002CCBA3 /* DNMemoryValidation.h in Headers */ = {isa = PBXBuildFile; fileRef = A4C27B04291B9E8B002CCBA3 /* DNMemoryValidation.h */; };
+		A4C27B08291B9E8B002CCBA3 /* DNMemoryValidation.mm in Sources */ = {isa = PBXBuildFile; fileRef = A4C27B05291B9E8B002CCBA3 /* DNMemoryValidation.mm */; };
+		A4C27B09291B9E8B002CCBA3 /* DNMemoryValidation.mm in Sources */ = {isa = PBXBuildFile; fileRef = A4C27B05291B9E8B002CCBA3 /* DNMemoryValidation.mm */; };
 		A4D8D22F2824297500569C2B /* DNBlockCreator.h in Headers */ = {isa = PBXBuildFile; fileRef = A4D8D22D2824297500569C2B /* DNBlockCreator.h */; };
 		A4D8D2302824297500569C2B /* DNBlockCreator.h in Headers */ = {isa = PBXBuildFile; fileRef = A4D8D22D2824297500569C2B /* DNBlockCreator.h */; };
 		A4D8D2312824297500569C2B /* DNBlockCreator.m in Sources */ = {isa = PBXBuildFile; fileRef = A4D8D22E2824297500569C2B /* DNBlockCreator.m */; };
@@ -99,7 +103,7 @@
 		A45D1D55258B3E0A009C163D /* dart_tools_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_tools_api.h; sourceTree = "<group>"; };
 		A45D1D56258B3E0A009C163D /* dart_api_dl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dart_api_dl.h; sourceTree = "<group>"; };
 		A45D1D65258B3E0A009C163D /* DNInvocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNInvocation.h; sourceTree = "<group>"; };
-		A45D1D66258B3E0A009C163D /* DNMacro.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNMacro.h; sourceTree = "<group>"; };
+		A45D1D66258B3E0A009C163D /* DNExtern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNExtern.h; sourceTree = "<group>"; };
 		A45D1D69258B3E0A009C163D /* DNObjectDealloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNObjectDealloc.h; sourceTree = "<group>"; };
 		A45D1D6B258B3E0A009C163D /* DNFFIHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNFFIHelper.m; sourceTree = "<group>"; };
 		A45D1D6C258B3E0A009C163D /* DNPointerWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNPointerWrapper.h; sourceTree = "<group>"; };
@@ -114,6 +118,8 @@
 		A49438DF25934C39004BF483 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A4C27AFE291A9D40002CCBA3 /* DNException.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNException.h; sourceTree = "<group>"; };
 		A4C27AFF291A9D40002CCBA3 /* DNException.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DNException.mm; sourceTree = "<group>"; };
+		A4C27B04291B9E8B002CCBA3 /* DNMemoryValidation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNMemoryValidation.h; sourceTree = "<group>"; };
+		A4C27B05291B9E8B002CCBA3 /* DNMemoryValidation.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DNMemoryValidation.mm; sourceTree = "<group>"; };
 		A4D8D22D2824297500569C2B /* DNBlockCreator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DNBlockCreator.h; sourceTree = "<group>"; };
 		A4D8D22E2824297500569C2B /* DNBlockCreator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DNBlockCreator.m; sourceTree = "<group>"; };
 		A4D8D23328256B5A00569C2B /* DNBlockHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNBlockHelper.h; sourceTree = "<group>"; };
@@ -223,7 +229,7 @@
 				A45D1D6B258B3E0A009C163D /* DNFFIHelper.m */,
 				A45D1D65258B3E0A009C163D /* DNInvocation.h */,
 				A45D1D6E258B3E0A009C163D /* DNInvocation.m */,
-				A45D1D66258B3E0A009C163D /* DNMacro.h */,
+				A45D1D66258B3E0A009C163D /* DNExtern.h */,
 				A45D1D74258B3E0A009C163D /* DNMethodIMP.h */,
 				A45D1D6D258B3E0A009C163D /* DNMethodIMP.m */,
 				A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */,
@@ -236,6 +242,8 @@
 				A4C27AFF291A9D40002CCBA3 /* DNException.mm */,
 				A45D1D6F258B3E0A009C163D /* native_runtime.h */,
 				A45D1D72258B3E0A009C163D /* native_runtime.mm */,
+				A4C27B04291B9E8B002CCBA3 /* DNMemoryValidation.h */,
+				A4C27B05291B9E8B002CCBA3 /* DNMemoryValidation.mm */,
 				A4F688BE278AEB250053A9B9 /* NSObject+DartHandleExternalSize.h */,
 				A4F688BF278AEB250053A9B9 /* NSObject+DartHandleExternalSize.m */,
 				A4ECB76F27C33AA80084A547 /* NSNumber+DNUnwrapValues.h */,
@@ -279,6 +287,7 @@
 				A4D8D2302824297500569C2B /* DNBlockCreator.h in Headers */,
 				A4ECB76927BBC1A20084A547 /* DartNative.h in Headers */,
 				A4074B01276F934E009F0EFD /* dart_tools_api.h in Headers */,
+				A4C27B07291B9E8B002CCBA3 /* DNMemoryValidation.h in Headers */,
 				A4F68913278B3B6F0053A9B9 /* NSObject+DartHandleExternalSize.h in Headers */,
 				A4074AF1276F92FF009F0EFD /* DNError.h in Headers */,
 				A4074AFC276F9339009F0EFD /* dart_api.h in Headers */,
@@ -286,7 +295,7 @@
 				A4074B03276F9359009F0EFD /* dart_api_dl_impl.h in Headers */,
 				A4074AF4276F92FF009F0EFD /* DNInvocation.h in Headers */,
 				A4D8D23628256B5A00569C2B /* DNBlockHelper.h in Headers */,
-				A4074AEF276F92FF009F0EFD /* DNMacro.h in Headers */,
+				A4074AEF276F92FF009F0EFD /* DNExtern.h in Headers */,
 				A4074AF0276F92FF009F0EFD /* DNPointerWrapper.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -303,6 +312,7 @@
 				A45D1D7C258B3E0A009C163D /* dart_embedder_api.h in Headers */,
 				A4EECFD026A479240025502E /* DNAssociatedDartObject.h in Headers */,
 				A45D1D9C258B3E0A009C163D /* DNMethodIMP.h in Headers */,
+				A4C27B06291B9E8B002CCBA3 /* DNMemoryValidation.h in Headers */,
 				A45D1D7F258B3E0A009C163D /* dart_tools_api.h in Headers */,
 				A4D8D23528256B5A00569C2B /* DNBlockHelper.h in Headers */,
 				A4ECB77227C33AA90084A547 /* NSNumber+DNUnwrapValues.h in Headers */,
@@ -314,7 +324,7 @@
 				A45D1D7D258B3E0A009C163D /* dart_native_api.h in Headers */,
 				A45D1D9E258B3E0A009C163D /* DNFFIHelper.h in Headers */,
 				A45D1D7B258B3E0A009C163D /* dart_io_api.h in Headers */,
-				A45D1D8E258B3E0A009C163D /* DNMacro.h in Headers */,
+				A45D1D8E258B3E0A009C163D /* DNExtern.h in Headers */,
 				A4F688C0278AEB260053A9B9 /* NSObject+DartHandleExternalSize.h in Headers */,
 				A45D1D91258B3E0A009C163D /* DNObjectDealloc.h in Headers */,
 				A45D1D7E258B3E0A009C163D /* dart_api_dl_impl.h in Headers */,
@@ -419,6 +429,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4C27B09291B9E8B002CCBA3 /* DNMemoryValidation.mm in Sources */,
 				A4074AEE276F92FF009F0EFD /* DNError.m in Sources */,
 				A4F688C3278AEB260053A9B9 /* NSObject+DartHandleExternalSize.m in Sources */,
 				A4D8D23828256B5A00569C2B /* DNBlockHelper.m in Sources */,
@@ -440,6 +451,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A4C27B08291B9E8B002CCBA3 /* DNMemoryValidation.mm in Sources */,
 				A45C1CAD262DB7B500FC10FE /* DNError.m in Sources */,
 				A4F688C2278AEB260053A9B9 /* NSObject+DartHandleExternalSize.m in Sources */,
 				A4D8D23728256B5A00569C2B /* DNBlockHelper.m in Sources */,

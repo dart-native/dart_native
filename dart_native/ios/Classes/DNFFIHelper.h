@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ffi.h"
-#import "DNMacro.h"
+#import "DNExtern.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

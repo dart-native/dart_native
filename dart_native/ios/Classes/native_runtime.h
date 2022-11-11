@@ -5,7 +5,7 @@
 //  Created by 杨萧玉 on 2019/10/24.
 //
 
-#import "DNMacro.h"
+#import "DNExtern.h"
 #import <Foundation/Foundation.h>
 
 @class DNBlockCreator;
@@ -43,18 +43,6 @@ NATIVE_TYPE_EXTERN const char *native_type_void;
 NATIVE_TYPE_EXTERN const char *native_type_ptr;
 NATIVE_TYPE_EXTERN const char *native_type_bool;
 NATIVE_TYPE_EXTERN const char *native_type_string;
-
-/// Returens true if a pointer is a tagged pointer
-/// @param ptr is the pointer to check
-DN_EXTERN bool objc_isTaggedPointer(const void *ptr);
-
-/// Returns true if the pointer points to readable and valid memory.
-/// @param pointer is the pointer to check
-DN_EXTERN bool native_isValidReadableMemory(const void *pointer);
-
-/// Returns true if a pointer is valid
-/// @param pointer is the pointer to check
-DN_EXTERN bool native_isValidPointer(const void *pointer);
 
 DN_EXTERN NSMethodSignature * _Nullable native_method_signature(Class cls, SEL selector);
 
