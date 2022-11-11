@@ -54,14 +54,6 @@ DN_EXTERN char * _Nullable native_protocol_method_types(Protocol *proto, SEL sel
 
 DN_EXTERN Class _Nullable native_get_class(const char *className, Class superclass);
 
-/// Return a NSString for utf-16 data
-/// @param data data format: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
-DN_EXTERN NSString *NSStringFromUTF16Data(const unichar *data);
-
-/// Return utf-16 data for NSString. format: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
-/// @param retVal origin return value
-DN_EXTERN uint16_t *UTF16DataFromNSString(NSString *retVal);
-
 /// Invoke Objective-C method.
 /// @param object instance or class object.
 /// @param selector selector of method.
@@ -110,8 +102,6 @@ DN_EXTERN void native_retain_object(id object);
 DN_EXTERN void native_release_object(id object);
 
 DN_EXTERN void native_autorelease_object(id object);
-
-DN_EXTERN const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t *length);
 
 #pragma mark - Dart VM API
 

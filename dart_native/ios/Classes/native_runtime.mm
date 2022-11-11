@@ -26,6 +26,7 @@
 #import "DNError.h"
 #import "DNException.h"
 #import "DNMemoryValidation.h"
+#import "NSString+DartNative.h"
 
 static Class DNInterfaceRegistryClass = NSClassFromString(@"DNInterfaceRegistry");
 
@@ -119,42 +120,6 @@ void *_mallocReturnStruct(NSMethodSignature *signature) {
     return result;
 }
 
-NSString *NSStringFromUTF16Data(const unichar *data) {
-    if (!data) {
-        return nil;
-    }
-    // First four uint16_t is for data length.
-    const NSUInteger lengthDataSize = 4;
-    uint64_t length = data[0];
-    for (int i = 1; i < lengthDataSize; i++) {
-        length <<= 16;
-        length |= data[i];
-    }
-    NSString *result = [NSString stringWithCharacters:data + lengthDataSize length:(NSUInteger)length];
-    free((void *)data); // Malloc data on dart side, need free here.
-    return result;
-}
-
-/// Return data for NSString: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
-/// @param retVal origin return value
-uint16_t *UTF16DataFromNSString(NSString *retVal) {
-    uint64_t length = 0;
-    const uint16_t *utf16BufferPtr = native_convert_nsstring_to_utf16(retVal, &length);
-    size_t size = sizeof(uint16_t) * (size_t)length;
-    const size_t lengthDataSize = 4;
-    // free memory on dart side.
-    uint16_t *dataPtr = (uint16_t *)malloc(size + sizeof(uint16_t) * lengthDataSize);
-    memcpy(dataPtr + lengthDataSize, utf16BufferPtr, size);
-    uint16_t lengthData[4] = {
-        static_cast<uint16_t>(length >> 48 & 0xffff),
-        static_cast<uint16_t>(length >> 32 & 0xffff),
-        static_cast<uint16_t>(length >> 16 & 0xffff),
-        static_cast<uint16_t>(length & 0xffff)
-    };
-    memcpy(dataPtr, lengthData, sizeof(uint16_t) * lengthDataSize);
-    return dataPtr;
-}
-
 void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
     if (!args) {
         return;
@@ -181,7 +146,7 @@ void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocati
         } else if (argType[0] == '@' &&
                    (stringTypeBitmask >> argsIndex & 0x1) == 1) {
             const unichar *data = ((const unichar **)args)[argsIndex];
-            NSString *realArg = NSStringFromUTF16Data(data);
+            NSString *realArg = [NSString dn_stringWithUTF16String:data];
             [stringTypeBucket addObject:realArg];
             [invocation setArgument:&realArg atIndex:i];
         } else {
@@ -221,7 +186,7 @@ void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signatu
                         if (retType) {
                             *retType = native_type_string;
                         }
-                        result = UTF16DataFromNSString((__bridge NSString *)result);
+                        result = (void *)[(__bridge NSString *)result dn_UTF16Data];
                     } else {
                         [DNObjectDealloc attachHost:(__bridge id)result
                                            dartPort:dartPort];
@@ -292,7 +257,7 @@ void *native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t 
                 if (retType) {
                     *retType = native_type_string;
                 }
-                result = UTF16DataFromNSString((__bridge NSString *)result);
+                result = (void *)[(__bridge NSString *)result dn_UTF16Data];
             } else {
                 [DNObjectDealloc attachHost:(__bridge id)result
                                    dartPort:dartPort];
@@ -574,18 +539,6 @@ void native_autorelease_object(id object) {
     #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     [object performSelector:selector];
     #pragma clang diagnostic pop
-}
-
-const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t *length) {
-    NSData *data = [string dataUsingEncoding:NSUTF16StringEncoding];
-    // UTF16, 2-byte per unit
-    *length = data.length / 2;
-    uint16_t *result = (uint16_t *)data.bytes;
-    if (*result == 0xFEFF || *result == 0xFFFE) { // skip BOM
-        result++;
-        *length = *length - 1;
-    }
-    return result;
 }
 
 #pragma mark Dart VM API Init

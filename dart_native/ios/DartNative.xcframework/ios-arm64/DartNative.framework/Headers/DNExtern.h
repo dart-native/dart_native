@@ -1,12 +1,12 @@
 //
-//  DNMacro.h
+//  DNExtern.h
 //  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/30.
 //
 
-#ifndef DNMacro_h
-#define DNMacro_h
+#ifndef DNExtern_h
+#define DNExtern_h
 
 #ifdef __cplusplus
 #define DN_EXTERN        extern "C" __attribute__((visibility("default"))) __attribute((used))
@@ -20,4 +20,4 @@
 #define NATIVE_TYPE_EXTERN extern
 #endif
 
-#endif /* DNMacro_h */
+#endif /* DNExtern_h */

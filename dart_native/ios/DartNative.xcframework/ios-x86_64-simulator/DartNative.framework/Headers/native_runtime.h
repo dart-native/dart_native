@@ -5,7 +5,7 @@
 //  Created by 杨萧玉 on 2019/10/24.
 //
 
-#import "DNMacro.h"
+#import "DNExtern.h"
 #import <Foundation/Foundation.h>
 
 @class DNBlockCreator;
@@ -44,22 +44,6 @@ NATIVE_TYPE_EXTERN const char *native_type_ptr;
 NATIVE_TYPE_EXTERN const char *native_type_bool;
 NATIVE_TYPE_EXTERN const char *native_type_string;
 
-DN_EXTERN void DartNativeSetThrowException(bool canThrow);
-
-DN_EXTERN bool DartNativeCanThrowException(void);
-
-/// Returens true if a pointer is a tagged pointer
-/// @param ptr is the pointer to check
-DN_EXTERN bool objc_isTaggedPointer(const void *ptr);
-
-/// Returns true if the pointer points to readable and valid memory.
-/// @param pointer is the pointer to check
-DN_EXTERN bool native_isValidReadableMemory(const void *pointer);
-
-/// Returns true if a pointer is valid
-/// @param pointer is the pointer to check
-DN_EXTERN bool native_isValidPointer(const void *pointer);
-
 DN_EXTERN NSMethodSignature * _Nullable native_method_signature(Class cls, SEL selector);
 
 DN_EXTERN void native_signature_encoding_list(NSMethodSignature *signature, const char * _Nonnull * _Nonnull typeEncodings, BOOL decodeRetVal);
@@ -69,14 +53,6 @@ DN_EXTERN BOOL native_add_method(id target, SEL selector, char *types, bool retu
 DN_EXTERN char * _Nullable native_protocol_method_types(Protocol *proto, SEL selector);
 
 DN_EXTERN Class _Nullable native_get_class(const char *className, Class superclass);
-
-/// Return a NSString for utf-16 data
-/// @param data data format: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
-DN_EXTERN NSString *NSStringFromUTF16Data(const unichar *data);
-
-/// Return utf-16 data for NSString. format: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
-/// @param retVal origin return value
-DN_EXTERN uint16_t *UTF16DataFromNSString(NSString *retVal);
 
 /// Invoke Objective-C method.
 /// @param object instance or class object.
@@ -126,8 +102,6 @@ DN_EXTERN void native_retain_object(id object);
 DN_EXTERN void native_release_object(id object);
 
 DN_EXTERN void native_autorelease_object(id object);
-
-DN_EXTERN const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t *length);
 
 #pragma mark - Dart VM API
 

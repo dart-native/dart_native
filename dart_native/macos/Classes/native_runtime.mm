@@ -8,7 +8,7 @@
 #import "native_runtime.h"
 #import <objc/runtime.h>
 #import <objc/message.h>
-#import <mach/mach.h>
+
 #import <os/lock.h>
 #import <Foundation/Foundation.h>
 #include <stdlib.h>
@@ -24,126 +24,11 @@
 #import "NSObject+DartHandleExternalSize.h"
 #import "NSNumber+DNUnwrapValues.h"
 #import "DNError.h"
-
-#if !__has_feature(objc_arc)
-#error
-#endif
-
-#if TARGET_OS_OSX && __x86_64__
-    // 64-bit Mac - tag bit is LSB
-#   define OBJC_MSB_TAGGED_POINTERS 0
-#else
-    // Everything else - tag bit is MSB
-#   define OBJC_MSB_TAGGED_POINTERS 1
-#endif
-
-#if OBJC_MSB_TAGGED_POINTERS
-#   define _OBJC_TAG_MASK (1ULL<<63)
-#else
-#   define _OBJC_TAG_MASK 1UL
-#endif
+#import "DNException.h"
+#import "DNMemoryValidation.h"
+#import "NSString+DartNative.h"
 
 static Class DNInterfaceRegistryClass = NSClassFromString(@"DNInterfaceRegistry");
-
-#pragma mark - Config
-
-static NSString * const DNClassNotFoundExceptionReason = @"Class %@ not found.";
-static NSExceptionName const DNClassNotFoundException = @"ClassNotFoundException";
-
-void DartNativeSetThrowException(bool canThrow) {
-    Class target = DNInterfaceRegistryClass;
-    SEL selector = NSSelectorFromString(@"setExceptionEnabled:");
-    if (!target || !selector) {
-        if (canThrow) {
-            throw [NSException exceptionWithName:DNClassNotFoundException
-                                          reason:DNClassNotFoundExceptionReason
-                                        userInfo:nil];
-        }
-    }
-    ((void(*)(Class, SEL, BOOL))objc_msgSend)(target, selector, canThrow);
-}
-
-bool DartNativeCanThrowException() {
-    Class target = DNInterfaceRegistryClass;
-    SEL selector = NSSelectorFromString(@"isExceptionEnabled");
-    if (!target || !selector) {
-        return false;
-    }
-    return ((BOOL(*)(Class, SEL))objc_msgSend)(target, selector);
-}
-
-#pragma mark - Readable and valid memory
-
-/// Returens true if a pointer is a tagged pointer
-/// @param ptr is the pointer to check
-bool objc_isTaggedPointer(const void *ptr) {
-    return ((uintptr_t)ptr & _OBJC_TAG_MASK) == _OBJC_TAG_MASK;
-}
-
-/// Returns true if the pointer points to readable and valid memory.
-/// NOTE: expensive function.
-/// @param pointer is the pointer to check
-bool native_isValidReadableMemory(const void *pointer) {
-    // Check for read permissions
-    vm_address_t address = (vm_address_t)pointer;
-    vm_size_t vmsize = 0;
-    mach_port_t object = 0;
-#if defined(__LP64__) && __LP64__
-    vm_region_basic_info_data_64_t info;
-    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
-    kern_return_t ret = vm_region_64(mach_task_self(), &address, &vmsize, VM_REGION_BASIC_INFO, (vm_region_info_t)&info, &infoCnt, &object);
-#else
-    vm_region_basic_info_data_t info;
-    mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT;
-    kern_return_t ret = vm_region(mach_task_self(), &address, &vmsize, VM_REGION_BASIC_INFO, (vm_region_info_t)&info, &infoCnt, &object);
-#endif
-    // vm_region/vm_region_64 returned an error or no read permission
-    if (ret != KERN_SUCCESS || (info.protection&VM_PROT_READ) == 0) {
-        return false;
-    }
-    
-    // Read the memory
-    char data[sizeof(uintptr_t)];
-    vm_size_t dataCnt = 0;
-    ret = vm_read_overwrite(mach_task_self(), (vm_address_t)pointer, sizeof(uintptr_t), (vm_address_t)data, &dataCnt);
-    if (ret != KERN_SUCCESS) {
-        // vm_read returned an error
-        return false;
-    }
-    return true;
-}
-
-/// Returns true if a pointer is valid
-/// @param pointer is the pointer to check
-bool native_isValidPointer(const void *pointer) {
-    if (pointer == nullptr) {
-        return false;
-    }
-    // Check for tagged pointers
-    if (objc_isTaggedPointer(pointer)) {
-        return true;
-    }
-    // Check if the pointer is aligned
-    if (((uintptr_t)pointer % sizeof(uintptr_t)) != 0) {
-        return false;
-    }
-    // Check if the pointer is not larger than VM_MAX_ADDRESS
-    if ((uintptr_t)pointer > MACH_VM_MAX_ADDRESS) {
-        return false;
-    }
-    if (DartNativeCanThrowException()) {
-        static NSString * const DNValidMemoryExceptionReason = @"Address(%p) is not readable.";
-        static NSExceptionName const DNValidMemoryException = @"ValidMemoryException";
-        // Check if the memory is valid and readable
-        if (!native_isValidReadableMemory(pointer)) {
-            @throw [NSException exceptionWithName:DNValidMemoryException
-                                           reason:[NSString stringWithFormat:DNValidMemoryExceptionReason, pointer]
-                                         userInfo:nil];
-            return false;
-        }
-    }
-    return true;
-}
 
 #pragma mark - Objective-C runtime functions
 
@@ -235,42 +120,6 @@ void *_mallocReturnStruct(NSMethodSignature *signature) {
     return result;
 }
 
-NSString *NSStringFromUTF16Data(const unichar *data) {
-    if (!data) {
-        return nil;
-    }
-    // First four uint16_t is for data length.
-    const NSUInteger lengthDataSize = 4;
-    uint64_t length = data[0];
-    for (int i = 1; i < lengthDataSize; i++) {
-        length <<= 16;
-        length |= data[i];
-    }
-    NSString *result = [NSString stringWithCharacters:data + lengthDataSize length:(NSUInteger)length];
-    free((void *)data); // Malloc data on dart side, need free here.
-    return result;
-}
-
-/// Return data for NSString: [--dataLength(64bit--)][--dataContent(utf16 without BOM)--]
-/// @param retVal origin return value
-uint16_t *UTF16DataFromNSString(NSString *retVal) {
-    uint64_t length = 0;
-    const uint16_t *utf16BufferPtr = native_convert_nsstring_to_utf16(retVal, &length);
-    size_t size = sizeof(uint16_t) * (size_t)length;
-    const size_t lengthDataSize = 4;
-    // free memory on dart side.
-    uint16_t *dataPtr = (uint16_t *)malloc(size + sizeof(uint16_t) * lengthDataSize);
-    memcpy(dataPtr + lengthDataSize, utf16BufferPtr, size);
-    uint16_t lengthData[4] = {
-        static_cast<uint16_t>(length >> 48 & 0xffff),
-        static_cast<uint16_t>(length >> 32 & 0xffff),
-        static_cast<uint16_t>(length >> 16 & 0xffff),
-        static_cast<uint16_t>(length & 0xffff)
-    };
-    memcpy(dataPtr, lengthData, sizeof(uint16_t) * lengthDataSize);
-    return dataPtr;
-}
-
 void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocation *invocation, NSUInteger offset, int64_t stringTypeBitmask, NSMutableArray<NSString *> *stringTypeBucket) {
     if (!args) {
         return;
@@ -297,7 +146,7 @@ void _fillArgsToInvocation(NSMethodSignature *signature, void **args, NSInvocati
         } else if (argType[0] == '@' &&
                    (stringTypeBitmask >> argsIndex & 0x1) == 1) {
             const unichar *data = ((const unichar **)args)[argsIndex];
-            NSString *realArg = NSStringFromUTF16Data(data);
+            NSString *realArg = [NSString dn_stringWithUTF16String:data];
             [stringTypeBucket addObject:realArg];
             [invocation setArgument:&realArg atIndex:i];
         } else {
@@ -337,7 +186,7 @@ void *native_instance_invoke(id object, SEL selector, NSMethodSignature *signatu
                         if (retType) {
                             *retType = native_type_string;
                         }
-                        result = UTF16DataFromNSString((__bridge NSString *)result);
+                        result = (void *)[(__bridge NSString *)result dn_UTF16Data];
                     } else {
                         [DNObjectDealloc attachHost:(__bridge id)result
                                            dartPort:dartPort];
@@ -408,7 +257,7 @@ void *native_block_invoke(void *block, void **args, Dart_Port dartPort, int64_t 
                 if (retType) {
                     *retType = native_type_string;
                 }
-                result = UTF16DataFromNSString((__bridge NSString *)result);
+                result = (void *)[(__bridge NSString *)result dn_UTF16Data];
             } else {
                 [DNObjectDealloc attachHost:(__bridge id)result
                                    dartPort:dartPort];
@@ -690,18 +539,6 @@ void native_autorelease_object(id object) {
     #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     [object performSelector:selector];
     #pragma clang diagnostic pop
-}
-
-const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t *length) {
-    NSData *data = [string dataUsingEncoding:NSUTF16StringEncoding];
-    // UTF16, 2-byte per unit
-    *length = data.length / 2;
-    uint16_t *result = (uint16_t *)data.bytes;
-    if (*result == 0xFEFF || *result == 0xFFFE) { // skip BOM
-        result++;
-        *length = *length - 1;
-    }
-    return result;
 }
 
 #pragma mark Dart VM API Init

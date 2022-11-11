@@ -12,6 +12,7 @@
 #import "DNPointerWrapper.h"
 #import "DNError.h"
 #import "DNObjectDealloc.h"
+#import "NSString+DartNative.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -142,7 +143,7 @@ static void DNHandleReturnValue(void *origRet, DNMethodIMP *methodIMP, DNInvocat
         return;
     } else if (methodIMP.isReturnString) {
         // type is native_type_object but result is a string
-        NSString *string = NSStringFromUTF16Data(*(const unichar **)ret);
+        NSString *string = [NSString dn_stringWithUTF16String:*(const unichar **)ret];
         native_retain_object(string);
         if (string) {
             [invocation setReturnValue:&string];

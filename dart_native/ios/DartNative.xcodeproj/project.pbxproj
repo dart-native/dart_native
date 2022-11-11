@@ -86,6 +86,10 @@
 		A4F688C2278AEB260053A9B9 /* NSObject+DartHandleExternalSize.m in Sources */ = {isa = PBXBuildFile; fileRef = A4F688BF278AEB250053A9B9 /* NSObject+DartHandleExternalSize.m */; };
 		A4F688C3278AEB260053A9B9 /* NSObject+DartHandleExternalSize.m in Sources */ = {isa = PBXBuildFile; fileRef = A4F688BF278AEB250053A9B9 /* NSObject+DartHandleExternalSize.m */; };
 		A4F68913278B3B6F0053A9B9 /* NSObject+DartHandleExternalSize.h in Headers */ = {isa = PBXBuildFile; fileRef = A4F688BE278AEB250053A9B9 /* NSObject+DartHandleExternalSize.h */; };
+		A4F97609291E713A0022382D /* NSString+DartNative.h in Headers */ = {isa = PBXBuildFile; fileRef = A4F97607291E713A0022382D /* NSString+DartNative.h */; };
+		A4F9760A291E713B0022382D /* NSString+DartNative.h in Headers */ = {isa = PBXBuildFile; fileRef = A4F97607291E713A0022382D /* NSString+DartNative.h */; };
+		A4F9760B291E713B0022382D /* NSString+DartNative.mm in Sources */ = {isa = PBXBuildFile; fileRef = A4F97608291E713A0022382D /* NSString+DartNative.mm */; };
+		A4F9760C291E713B0022382D /* NSString+DartNative.mm in Sources */ = {isa = PBXBuildFile; fileRef = A4F97608291E713A0022382D /* NSString+DartNative.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -132,6 +136,8 @@
 		A4F688BB27788CFA0053A9B9 /* libffi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = libffi.xcframework; sourceTree = "<group>"; };
 		A4F688BE278AEB250053A9B9 /* NSObject+DartHandleExternalSize.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSObject+DartHandleExternalSize.h"; sourceTree = "<group>"; };
 		A4F688BF278AEB250053A9B9 /* NSObject+DartHandleExternalSize.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSObject+DartHandleExternalSize.m"; sourceTree = "<group>"; };
+		A4F97607291E713A0022382D /* NSString+DartNative.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+DartNative.h"; sourceTree = "<group>"; };
+		A4F97608291E713A0022382D /* NSString+DartNative.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = "NSString+DartNative.mm"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -242,6 +248,8 @@
 				A4C27AFF291A9D40002CCBA3 /* DNException.mm */,
 				A45D1D6F258B3E0A009C163D /* native_runtime.h */,
 				A45D1D72258B3E0A009C163D /* native_runtime.mm */,
+				A4F97607291E713A0022382D /* NSString+DartNative.h */,
+				A4F97608291E713A0022382D /* NSString+DartNative.mm */,
 				A4C27B04291B9E8B002CCBA3 /* DNMemoryValidation.h */,
 				A4C27B05291B9E8B002CCBA3 /* DNMemoryValidation.mm */,
 				A4F688BE278AEB250053A9B9 /* NSObject+DartHandleExternalSize.h */,
@@ -290,6 +298,7 @@
 				A4C27B07291B9E8B002CCBA3 /* DNMemoryValidation.h in Headers */,
 				A4F68913278B3B6F0053A9B9 /* NSObject+DartHandleExternalSize.h in Headers */,
 				A4074AF1276F92FF009F0EFD /* DNError.h in Headers */,
+				A4F9760A291E713B0022382D /* NSString+DartNative.h in Headers */,
 				A4074AFC276F9339009F0EFD /* dart_api.h in Headers */,
 				A4C27B01291A9D40002CCBA3 /* DNException.h in Headers */,
 				A4074B03276F9359009F0EFD /* dart_api_dl_impl.h in Headers */,
@@ -320,6 +329,7 @@
 				A45D1D97258B3E0A009C163D /* native_runtime.h in Headers */,
 				A45C1CAC262DB7B500FC10FE /* DNError.h in Headers */,
 				A4D8D22F2824297500569C2B /* DNBlockCreator.h in Headers */,
+				A4F97609291E713A0022382D /* NSString+DartNative.h in Headers */,
 				A45D1D7A258B3E0A009C163D /* dart_version.h in Headers */,
 				A45D1D7D258B3E0A009C163D /* dart_native_api.h in Headers */,
 				A45D1D9E258B3E0A009C163D /* DNFFIHelper.h in Headers */,
@@ -434,6 +444,7 @@
 				A4F688C3278AEB260053A9B9 /* NSObject+DartHandleExternalSize.m in Sources */,
 				A4D8D23828256B5A00569C2B /* DNBlockHelper.m in Sources */,
 				A4D8D2322824297500569C2B /* DNBlockCreator.m in Sources */,
+				A4F9760C291E713B0022382D /* NSString+DartNative.mm in Sources */,
 				A4074AEC276F92FF009F0EFD /* DNPointerWrapper.m in Sources */,
 				A4074AF8276F92FF009F0EFD /* native_runtime.mm in Sources */,
 				A4074AFA276F92FF009F0EFD /* DNObjectDealloc.m in Sources */,
@@ -456,6 +467,7 @@
 				A4F688C2278AEB260053A9B9 /* NSObject+DartHandleExternalSize.m in Sources */,
 				A4D8D23728256B5A00569C2B /* DNBlockHelper.m in Sources */,
 				A4D8D2312824297500569C2B /* DNBlockCreator.m in Sources */,
+				A4F9760B291E713B0022382D /* NSString+DartNative.mm in Sources */,
 				A45D1D9A258B3E0A009C163D /* native_runtime.mm in Sources */,
 				A4EECFD126A479240025502E /* DNAssociatedDartObject.m in Sources */,
 				A45D1D9D258B3E0A009C163D /* DNPointerWrapper.m in Sources */,
