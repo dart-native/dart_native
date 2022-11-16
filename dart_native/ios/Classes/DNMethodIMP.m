@@ -13,6 +13,7 @@
 #import "DNError.h"
 #import "DNObjectDealloc.h"
 #import "NSString+DartNative.h"
+#import "DNObjCRuntime.h"
 
 #if !__has_feature(objc_arc)
 #error

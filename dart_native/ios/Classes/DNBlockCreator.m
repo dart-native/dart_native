@@ -6,15 +6,17 @@
 //
 
 #import "DNBlockCreator.h"
+#import <objc/runtime.h>
+#import <stdatomic.h>
+
 #import "ffi.h"
 #import "DNFFIHelper.h"
 #import "DNInvocation.h"
-#import <objc/runtime.h>
 #import "DNPointerWrapper.h"
 #import "DNError.h"
-#import <stdatomic.h>
-
 #import "NSString+DartNative.h"
+#import "DNObjCRuntime.h"
+#import "native_runtime.h"
 
 #if !__has_feature(objc_arc)
 #error
