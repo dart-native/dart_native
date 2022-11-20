@@ -1,35 +1,27 @@
 //
-//  native_runtime.mm
+//  DNDartBridge.m
 //  DartNative
 //
-//  Created by 杨萧玉 on 2019/10/24.
+//  Created by 杨萧玉 on 2022/11/21.
 //
 
-#import "native_runtime.h"
+#import "DNDartBridge.h"
+
 #import <objc/runtime.h>
-#import <objc/message.h>
-
-#import <os/lock.h>
-#import <Foundation/Foundation.h>
-#include <stdlib.h>
 #include <functional>
+#include <stdlib.h>
+#import <os/lock.h>
 
-#import "DNBlockHelper.h"
+#import "dart_api_dl.h"
+#import "DNException.h"
+#import "DNInvocation.h"
 #import "DNBlockCreator.h"
-#import "DNFFIHelper.h"
+#import "DNBlockHelper.h"
 #import "DNMethodIMP.h"
 #import "DNObjectDealloc.h"
-#import "DNPointerWrapper.h"
-#import "DNInvocation.h"
 #import "NSObject+DartHandleExternalSize.h"
-#import "NSNumber+DNUnwrapValues.h"
-#import "DNError.h"
-#import "DNException.h"
 #import "DNMemoryValidation.h"
-#import "NSString+DartNative.h"
 #import "DNObjCRuntime.h"
-
-static Class DNInterfaceRegistryClass = NSClassFromString(@"DNInterfaceRegistry");
 
 #pragma mark Dart VM API Init
 
@@ -283,154 +275,4 @@ static void RunDartFinalizer(void *isolate_callback_data, void *peer) {
 void RegisterDartFinalizer(Dart_Handle h, void *callback, void *key, Dart_Port dartPort) {
     Finalizer *finalizer = new Finalizer({callback, key, dartPort});
     Dart_NewWeakPersistentHandle_DL(h, finalizer, 8, RunDartFinalizer);
-}
-
-#pragma mark - Interface
-
-/// Each interface has an object on each thread. Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class, so we have to use objc runtime.
-/// @param name name of interface
-NSObject *DNInterfaceHostObjectWithName(char *name) {
-    Class target = DNInterfaceRegistryClass;
-    SEL selector = NSSelectorFromString(@"hostObjectWithName:");
-    if (!target || !selector) {
-        if (DartNativeCanThrowException()) {
-            @throw [NSException exceptionWithName:DNClassNotFoundException
-                                           reason:DNClassNotFoundExceptionReason
-                                         userInfo:nil];
-        }
-        return nil;
-    }
-    NSString *nameString = [NSString stringWithUTF8String:name];
-    return ((NSObject *(*)(Class, SEL, NSString *))objc_msgSend)(target, selector, nameString);
-}
-
-DartNativeInterfaceMap DNInterfaceAllMetaData(void) {
-    Class target = DNInterfaceRegistryClass;
-    SEL selector = NSSelectorFromString(@"allMetaData");
-    if (!target || !selector) {
-        if (DartNativeCanThrowException()) {
-            @throw [NSException exceptionWithName:DNClassNotFoundException
-                                           reason:DNClassNotFoundExceptionReason
-                                         userInfo:nil];
-        }
-        return nil;
-    }
-    return ((DartNativeInterfaceMap(*)(Class, SEL))objc_msgSend)(target, selector);
-}
-
-void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, Dart_Port port) {
-    Class target = DNInterfaceRegistryClass;
-    SEL selector = NSSelectorFromString(@"registerDartInterface:method:block:dartPort:");
-    if (!target || !selector) {
-        if (DartNativeCanThrowException()) {
-            @throw [NSException exceptionWithName:DNClassNotFoundException
-                                           reason:DNClassNotFoundExceptionReason
-                                         userInfo:nil];
-        }
-        return;
-    }
-    NSString *interfaceString = [NSString stringWithUTF8String:interface];
-    NSString *methodString = [NSString stringWithUTF8String:method];
-    ((void(*)(Class, SEL, NSString *, NSString *, NSString *, int64_t))objc_msgSend)(target, selector, interfaceString, methodString, block, port);
-}
-
-void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback resultCallback) {
-    const char *typeString = DNBlockTypeEncodeString((__bridge id)block);
-    int count = 0;
-    NSError *error = nil;
-    const char **types = native_types_encoding(typeString, &count, 0);
-    if (!types) {
-        DN_ERROR(&error, DNInterfaceError, @"Parse typeString failed: %s", typeString)
-        if (resultCallback) {
-            resultCallback(nil, error);
-        }
-        return;
-    }
-    DNBlock *blockLayout = (DNBlock *)block;
-    DNBlockCreator *creator = (__bridge DNBlockCreator *)blockLayout->creator;
-    // When block returns result asynchronously, the last argument of block is the callback.
-    // types/values list in block: [returnValue, block(self), arguments...(optional), callback(optional)]
-    NSUInteger diff = creator.shouldReturnAsync ? 3 : 2;
-    do {
-        if (count != arguments.count + diff) {
-            DN_ERROR(&error, DNInterfaceError, @"The number of arguments for methods dart and objc does not match!")
-            if (resultCallback) {
-                resultCallback(nil, error);
-            }
-            break;
-        }
-        
-        NSMethodSignature *signature = [NSMethodSignature signatureWithObjCTypes:typeString];
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-        NSUInteger realArgsCount = arguments.count;
-        if (creator.shouldReturnAsync) {
-            realArgsCount++;
-        }
-        void **argsPtrPtr = (void **)alloca(realArgsCount * sizeof(void *));
-        for (int i = 0; i < arguments.count; i++) {
-            const char *type = types[i + 2];
-            id arg = arguments[i];
-            if (type == native_type_object) {
-                argsPtrPtr[i] = (__bridge void *)arguments[i];
-            } else if (type[0] == '{') {
-                // Ignore, not support yet.
-                free((void *)type);
-                DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
-                if (resultCallback) {
-                    resultCallback(nil, error);
-                }
-                break;
-            } else if ([arg isKindOfClass:NSNumber.class]) {
-                NSNumber *number = (NSNumber *)arg;
-                // first argument is block itself, skip it.
-                const char *encoding = [signature getArgumentTypeAtIndex:i + 1];
-                BOOL success = [number dn_fillBuffer:argsPtrPtr + i encoding:encoding error:&error];
-                if (!success) {
-                    DN_ERROR(&error, DNInterfaceError, @"NSNumber convertion failed")
-                    if (resultCallback) {
-                        resultCallback(nil, error);
-                    }
-                    break;
-                }
-            }
-        }
-        // block receives results from dart function asynchronously by appending another block to arguments as its callback.
-        if (creator.shouldReturnAsync) {
-            // dartBlock is passed to dart, ignore `error`.
-            void(^dartBlock)(id result) = ^(id result) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    resultCallback(result, nil);
-                });
-            };
-            // `dartBlock` will release when invocation dead.
-            // So we should copy(retain) it and release after it's invoked on dart side.
-            argsPtrPtr[realArgsCount - 1] = Block_copy((__bridge void *)dartBlock);
-        }
-        fillArgsToInvocation(signature, argsPtrPtr, invocation, 1, 0, nil);
-        [invocation invokeWithTarget:(__bridge id)block];
-        if (resultCallback && !creator.shouldReturnAsync) {
-            if (signature.methodReturnLength == 0) {
-                DN_ERROR(&error, DNInterfaceError, @"signature.methodReturnLength of block is zero")
-                resultCallback(nil, error);
-                break;
-            }
-            void *result = NULL;
-            const char *returnType = signature.methodReturnType;
-            if (*returnType == '{') {
-                DN_ERROR(&error, DNInterfaceError, @"Structure types are not supported")
-                resultCallback(nil, error);
-                break;
-            }
-            if (*returnType == '@') {
-                [invocation getReturnValue:&result];
-                resultCallback((__bridge id)result, nil);
-            } else {
-                [invocation getReturnValue:&result];
-                // NSNumber
-                NSNumber *number = [NSNumber dn_numberWithBuffer:result encoding:returnType error:&error];
-                resultCallback(number, error);
-            }
-        }
-    } while (0);
-    free(types);
 }

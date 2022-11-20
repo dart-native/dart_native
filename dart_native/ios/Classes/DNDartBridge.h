@@ -1,22 +1,18 @@
 //
-//  native_runtime.h
+//  DNDartBridge.h
 //  DartNative
 //
-//  Created by 杨萧玉 on 2019/10/24.
+//  Created by 杨萧玉 on 2022/11/21.
 //
 
-#import "DNExtern.h"
 #import <Foundation/Foundation.h>
+
+#import "DNExtern.h"
 #import "DNTypeEncoding.h"
 
 @class DNBlockCreator;
 @class DNMethodIMP;
 @class DNInvocation;
-
-#ifndef native_runtime_h
-#define native_runtime_h
-
-typedef void (^BlockResultCallback)(id _Nullable result, NSError * _Nullable error);
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,12 +56,4 @@ DN_EXTERN void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort);
 
 DN_EXTERN void RegisterDeallocCallback(void (*callback)(intptr_t), Dart_Port dartPort);
 
-typedef NSDictionary<NSString *, NSDictionary<NSString *, NSString *> *> *DartNativeInterfaceMap;
-DN_EXTERN NSObject *DNInterfaceHostObjectWithName(char *name);
-DN_EXTERN DartNativeInterfaceMap DNInterfaceAllMetaData(void);
-DN_EXTERN void DNInterfaceRegisterDartInterface(char *interface, char *method, id block, Dart_Port port);
-DN_EXTERN void DNInterfaceBlockInvoke(void *block, NSArray *arguments, BlockResultCallback resultCallback);
-
 NS_ASSUME_NONNULL_END
-
-#endif /* native_runtime_h */

@@ -16,7 +16,7 @@
 #import "DNError.h"
 #import "NSString+DartNative.h"
 #import "DNObjCRuntime.h"
-#import "native_runtime.h"
+#import "DNDartBridge.h"
 
 #if !__has_feature(objc_arc)
 #error

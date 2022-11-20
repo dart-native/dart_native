@@ -7,13 +7,13 @@
 
 #import "DNMethodIMP.h"
 #import "DNFFIHelper.h"
-#import "native_runtime.h"
 #import "DNInvocation.h"
 #import "DNPointerWrapper.h"
 #import "DNError.h"
 #import "DNObjectDealloc.h"
 #import "NSString+DartNative.h"
 #import "DNObjCRuntime.h"
+#import "DNDartBridge.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -54,7 +54,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         _helper = [DNFFIHelper new];
         size_t length = strlen(typeEncoding) + 1;
         size_t size = sizeof(char) * length;
-        _typeEncoding = malloc(size);
+        _typeEncoding = (char *)malloc(size);
         if (_typeEncoding == NULL) {
             DN_ERROR(error, DNCreateTypeEncodingError, @"malloc for type encoding fail: %s", typeEncoding);
             return self;
@@ -81,14 +81,14 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         }
         self.numberOfArguments = numberOfArguments;
         
-        _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&_methodIMP);
+        _closure = (ffi_closure *)ffi_closure_alloc(sizeof(ffi_closure), (void **)&_methodIMP);
         ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DNFFIIMPClosureFunc, (__bridge void *)(self), _methodIMP);
         if (status != FFI_OK) {
             NSLog(@"ffi_prep_closure returned %d", (int)status);
             abort();
         }
     }
-    return _methodIMP;
+    return (IMP)_methodIMP;
 }
 
 - (NSDictionary<NSNumber *, NSNumber *> *)callbackForDartPort {
