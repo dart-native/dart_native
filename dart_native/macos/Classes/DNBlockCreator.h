@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "DNExtern.h"
 #import "dart_api_dl.h"
-#import "native_runtime.h"
+#import "DNTypeEncoding.h"
 
 #ifndef DNBlockCreator_h
 #define DNBlockCreator_h

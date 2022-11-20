@@ -35,7 +35,7 @@ bool objc_isTaggedPointer(const void *ptr) {
 }
 
 /// Returns true if the pointer points to readable and valid memory.
-/// NOTE: expensive function.
+/// NOTE: An expensive function.
 /// @param pointer is the pointer to check
 bool native_isValidReadableMemory(const void *pointer) {
     // Check for read permissions

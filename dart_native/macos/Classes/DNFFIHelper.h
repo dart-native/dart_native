@@ -7,21 +7,8 @@
 
 #import <Foundation/Foundation.h>
 #import "ffi.h"
-#import "DNExtern.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-DN_EXTERN
-const char *DNSizeAndAlignment(const char *str, NSUInteger * _Nullable sizep, NSUInteger * _Nullable alignp, long * _Nullable lenp);
-
-DN_EXTERN
-int DNTypeCount(const char *str);
-
-DN_EXTERN
-int DNTypeLengthWithTypeName(NSString *typeName);
-
-DN_EXTERN
-NSString * _Nullable DNTypeEncodeWithTypeName(NSString *typeName);
 
 @interface DNFFIHelper : NSObject
 

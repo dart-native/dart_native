@@ -8,6 +8,10 @@
 #import "NSString+DartNative.h"
 #include <stdlib.h>
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 /// Returns UTF16 data for NSString by skipping the BOM.
 /// - Parameters:
 ///   - string: An instance of NSString
@@ -23,7 +27,6 @@ const uint16_t *native_convert_nsstring_to_utf16(NSString *string, uint64_t * le
     }
     return result;
 }
-
 
 
 @implementation NSString (DartNative)

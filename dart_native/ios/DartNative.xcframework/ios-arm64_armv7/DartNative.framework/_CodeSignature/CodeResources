@@ -24,13 +24,9 @@
 		<data>
 		Df89Mm93LLzhRAs+dHTVV23TSZI=
 		</data>
-		<key>Headers/native_runtime.h</key>
-		<data>
-		D6NQ5U/jO9ZhhDT+fT6rAsWJgws=
-		</data>
 		<key>Info.plist</key>
 		<data>
-		f2IA7koKPbyVq9RRcbUb8q9LV0E=
+		TBj073AiMbOKUPjOQz5wbkXq1ck=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -92,17 +88,6 @@
 			<key>hash2</key>
 			<data>
 			7o94BmO52DKkFP9E8/WrLVf/Mjs6c80UsORYkfjlc38=
-			</data>
-		</dict>
-		<key>Headers/native_runtime.h</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			D6NQ5U/jO9ZhhDT+fT6rAsWJgws=
-			</data>
-			<key>hash2</key>
-			<data>
-			GgoHhX29eYHloU4cFRbS9QmaaCg9K+nfffAF36h8+I4=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

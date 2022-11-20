@@ -15,10 +15,10 @@
 
 NSString * const DNClassNotFoundExceptionReason = @"Class %@ not found.";
 NSExceptionName const DNClassNotFoundException = @"ClassNotFoundException";
-Class targetClass = objc_getClass("DNInterfaceRegistry");
 
 void DartNativeSetThrowException(bool canThrow) {
-    SEL selector = NSSelectorFromString(@"setExceptionEnabled:");
+    static Class targetClass = objc_getClass("DNInterfaceRegistry");
+    static SEL selector = NSSelectorFromString(@"setExceptionEnabled:");
     if (!targetClass || !selector) {
         if (canThrow) {
             throw [NSException exceptionWithName:DNClassNotFoundException
@@ -30,7 +30,8 @@ void DartNativeSetThrowException(bool canThrow) {
 }
 
 bool DartNativeCanThrowException() {
-    SEL selector = NSSelectorFromString(@"isExceptionEnabled");
+    static Class targetClass = objc_getClass("DNInterfaceRegistry");
+    static SEL selector = NSSelectorFromString(@"isExceptionEnabled");
     if (!targetClass || !selector) {
         return false;
     }
