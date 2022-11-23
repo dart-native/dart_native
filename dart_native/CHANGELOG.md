@@ -1,3 +1,10 @@
+## 0.8.0
+
+* Require `sdk: '>=2.17.0 <3.0.0'`
+* Require `ffi: ^2.0.1`
+* Require `flutter_lints: ^2.0.1`
+* Require `dart_native_gen: ^0.4.0`
+
 ## 0.7.8
 
 * [Fix] Build error on Xcode 12.

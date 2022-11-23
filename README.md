@@ -34,6 +34,7 @@ The design and vision of this package:
 
 | DartNative Version | Flutter Requirements | Codegen Version |
 | --- | --- | --- |
+| 0.8.x | Flutter 3.0.0 (Dart 2.17.0) | 2.x |
 | 0.4.x - 0.7.x | Flutter 2.2.0 (Dart 2.13.0) | 2.x |
 | 0.3.x | Flutter 1.20.0 (Dart 2.9.1) | 1.2.x |
 | 0.2.x | Flutter 1.12.13 (Dart 2.7) | 1.x |

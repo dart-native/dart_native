@@ -1,3 +1,10 @@
+## [0.4.0] - Dependency verison compatible.
+
+* Require `sdk: '>=2.17.0 <3.0.0'`
+* Require `analyzer: '>=4.2.0 <6.0.0'`
+* Require `source_gen: ^1.2.3`
+* Require `build: ^2.3.1`
+
 ## [0.3.3] - Dependency verison compatible.
 
 ## [0.3.2] - Dependency verison compatible.
