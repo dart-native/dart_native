@@ -12,7 +12,7 @@
 		A4074AEB276F92FF009F0EFD /* DNMethodIMP.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D74258B3E0A009C163D /* DNMethodIMP.h */; };
 		A4074AEC276F92FF009F0EFD /* DNPointerWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D75258B3E0A009C163D /* DNPointerWrapper.m */; };
 		A4074AEE276F92FF009F0EFD /* DNError.m in Sources */ = {isa = PBXBuildFile; fileRef = A45C1CAB262DB7B500FC10FE /* DNError.m */; };
-		A4074AEF276F92FF009F0EFD /* DNExtern.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNExtern.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A4074AEF276F92FF009F0EFD /* DNExtern.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNExtern.h */; };
 		A4074AF0276F92FF009F0EFD /* DNPointerWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D6C258B3E0A009C163D /* DNPointerWrapper.h */; };
 		A4074AF1276F92FF009F0EFD /* DNError.h in Headers */ = {isa = PBXBuildFile; fileRef = A45C1CAA262DB7B500FC10FE /* DNError.h */; };
 		A4074AF2276F92FF009F0EFD /* DNAssociatedDartObject.h in Headers */ = {isa = PBXBuildFile; fileRef = A4EECFCE26A479240025502E /* DNAssociatedDartObject.h */; };
@@ -50,7 +50,7 @@
 		A45D1D7F258B3E0A009C163D /* dart_tools_api.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D55258B3E0A009C163D /* dart_tools_api.h */; };
 		A45D1D80258B3E0A009C163D /* dart_api_dl.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D56258B3E0A009C163D /* dart_api_dl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A45D1D8D258B3E0A009C163D /* DNInvocation.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D65258B3E0A009C163D /* DNInvocation.h */; };
-		A45D1D8E258B3E0A009C163D /* DNExtern.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNExtern.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A45D1D8E258B3E0A009C163D /* DNExtern.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D66258B3E0A009C163D /* DNExtern.h */; };
 		A45D1D91258B3E0A009C163D /* DNObjectDealloc.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D69258B3E0A009C163D /* DNObjectDealloc.h */; };
 		A45D1D93258B3E0A009C163D /* DNFFIHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A45D1D6B258B3E0A009C163D /* DNFFIHelper.m */; };
 		A45D1D94258B3E0A009C163D /* DNPointerWrapper.h in Headers */ = {isa = PBXBuildFile; fileRef = A45D1D6C258B3E0A009C163D /* DNPointerWrapper.h */; };

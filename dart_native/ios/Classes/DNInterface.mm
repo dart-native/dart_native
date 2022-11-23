@@ -16,6 +16,10 @@
 #import "NSNumber+DNUnwrapValues.h"
 #import "DNObjCRuntime.h"
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 #pragma mark - Interface
 
 /// Each interface has an object on each thread. Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class, so we have to use objc runtime.

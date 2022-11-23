@@ -4,13 +4,9 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>Headers/DNExtern.h</key>
-		<data>
-		MlYzn06uTUBWaITkEw0vjfYq+Kw=
-		</data>
 		<key>Headers/DartNative.h</key>
 		<data>
-		eASkoA5cqaXqYHNCwLVPkcKXrsU=
+		RiMZdUpdJP03kCYbNQgBK0AVwcM=
 		</data>
 		<key>Headers/dart_api.h</key>
 		<data>
@@ -26,7 +22,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		TBj073AiMbOKUPjOQz5wbkXq1ck=
+		OPI93RbxCppEdG0lLwXRLO6MOvM=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -35,26 +31,15 @@
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Headers/DNExtern.h</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			MlYzn06uTUBWaITkEw0vjfYq+Kw=
-			</data>
-			<key>hash2</key>
-			<data>
-			Xv08mZIGaHwHB8AgBh+MDtli8cK9iy5wbXvTRVsqGbs=
-			</data>
-		</dict>
 		<key>Headers/DartNative.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			eASkoA5cqaXqYHNCwLVPkcKXrsU=
+			RiMZdUpdJP03kCYbNQgBK0AVwcM=
 			</data>
 			<key>hash2</key>
 			<data>
-			jg154Ulitbqbc8Wio2FTB/XieywQUrJrAiROAvNJm9w=
+			g4snT7PeAsCJStVmEOOXHs0omSsgdswZbCWOw3/YDmU=
 			</data>
 		</dict>
 		<key>Headers/dart_api.h</key>

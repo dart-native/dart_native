@@ -23,6 +23,10 @@
 #import "DNMemoryValidation.h"
 #import "DNObjCRuntime.h"
 
+#if !__has_feature(objc_arc)
+#error
+#endif
+
 #pragma mark Dart VM API Init
 
 intptr_t InitDartApiDL(void *data) {

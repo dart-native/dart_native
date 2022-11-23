@@ -14,5 +14,3 @@ FOUNDATION_EXPORT double DartNativeVersionNumber;
 FOUNDATION_EXPORT const unsigned char DartNativeVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <DartNative/PublicHeader.h>
-#import <DartNative/native_runtime.h>
-#import <DartNative/DNExtern.h>
