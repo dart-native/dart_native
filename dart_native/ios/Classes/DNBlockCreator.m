@@ -22,7 +22,7 @@
 #error
 #endif
 
-#pragma mark - Block Helper
+/// MARK: Block Helper
 
 enum {
     BLOCK_HAS_COPY_DISPOSE =  (1 << 25),
@@ -76,7 +76,7 @@ void dispose_helper(DNBlock *src) {
     CFRelease(src->creator);
 }
 
-#pragma mark - Block Wrapper
+/// MARK: Block Wrapper
 
 @interface DNBlockCreator () {
     ffi_cif _cif;
@@ -194,7 +194,7 @@ static atomic_uint_fast64_t _seq = 0;
     return block;
 }
 
-#pragma mark - Private Method
+/// MARK: Private Method
 
 - (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str flags:(int32_t)flags {
     int argCount;

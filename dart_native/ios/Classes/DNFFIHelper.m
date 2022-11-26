@@ -183,7 +183,7 @@
 }
 
 
-#pragma mark - Private Method
+/// MARK: Private Method
 
 - (void *)_allocate:(size_t)size {
     NSMutableData *data = [NSMutableData dataWithLength:size];

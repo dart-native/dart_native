@@ -20,7 +20,7 @@
 #error
 #endif
 
-#pragma mark - Interface
+/// MARK: Interface
 
 /// Each interface has an object on each thread. Cuz the DartNative.framework doesn't contain DNInterfaceRegistry class, so we have to use objc runtime.
 /// @param name name of interface

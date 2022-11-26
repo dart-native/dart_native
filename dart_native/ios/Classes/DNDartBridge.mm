@@ -17,7 +17,7 @@
 #import "DNInvocation.h"
 #import "DNBlockCreator.h"
 #import "DNBlockHelper.h"
-#import "DNMethodIMP.h"
+#import "DNMethod.h"
 #import "DNObjectDealloc.h"
 #import "NSObject+DartHandleExternalSize.h"
 #import "DNMemoryValidation.h"
@@ -33,7 +33,7 @@ intptr_t InitDartApiDL(void *data) {
     return Dart_InitializeApiDL(data);
 }
 
-#pragma mark - Async Callback Basic
+/// MARK: Async Callback Basic
 
 typedef std::function<void()> Work;
 
@@ -61,7 +61,7 @@ void ExecuteCallback(Work *work_ptr) {
     delete work_ptr;
 }
 
-#pragma mark - Async Block Callback
+/// MARK: Async Block Callback
 
 static NSString * const DNBlockingUIExceptionReason = @"Calling dart function from main thread will blocking the UI";
 static NSExceptionName const DNBlockingUIException = @"BlockingUIException";
@@ -99,10 +99,10 @@ void NotifyBlockInvokeToDart(DNInvocation *invocation,
     }
 }
 
-#pragma mark - Async Method Callback
+/// MARK: Async Method Callback
 
 void NotifyMethodPerformToDart(DNInvocation *invocation,
-                               DNMethodIMP *methodIMP,
+                               DNMethod *method,
                                int numberOfArguments,
                                const char **types) {
     if (NSThread.isMainThread && DartNativeCanThrowException()) {
@@ -111,19 +111,19 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
                                      userInfo:nil];
     }
     dispatch_group_t group = dispatch_group_create();
-    NSDictionary<NSNumber *, NSNumber *> *callbackForDartPort = methodIMP.callbackForDartPort;
+    NSDictionary<NSNumber *, NSNumber *> *callbackForDartPort = method.callbackForDartPort;
     // Each isolate has a ReceivePort for callbacks.
     // `invocation.args[0]` is delegate object, whose dealloc object records it's dart ports.
     DNObjectDealloc *dealloc = [DNObjectDealloc objectForHost:(__bridge id)(*(void **)invocation.args[0])];
     NSSet<NSNumber *> *dartPorts = dealloc.dartPorts;
     for (NSNumber *port in dartPorts) {
-        NativeMethodCallback callback = (NativeMethodCallback)callbackForDartPort[port].integerValue;
-        const Work work = [callback, numberOfArguments, types, &group, methodIMP, invocation]() {
-            callback(invocation.realArgs,
+        DartImplemetion imp = (DartImplemetion)callbackForDartPort[port].integerValue;
+        const Work work = [imp, numberOfArguments, types, &group, method, invocation]() {
+            imp(invocation.realArgs,
                      invocation.realRetValue,
                      numberOfArguments,
                      types,
-                     methodIMP.stret);
+                     method.stret);
             dispatch_group_leave(group);
         };
         const Work *work_ptr = new Work(work);
@@ -133,13 +133,13 @@ void NotifyMethodPerformToDart(DNInvocation *invocation,
             dispatch_group_enter(group);
         } else {
             // Remove port in died isolate
-            [methodIMP removeCallbackForDartPort:dartPort];
+            [method removeDartImplemetionForPort:dartPort];
         }
     }
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 }
 
-#pragma mark - Native Dealloc Callback
+/// MARK: Native Dealloc Callback
 
 static NSMutableDictionary<NSNumber *, NSNumber *> *deallocCallbackPtrForDartPort = [NSMutableDictionary dictionary];
 static dispatch_queue_t deallocCallbackPortsQueue = dispatch_queue_create("com.dartnative.deallocCallback", DISPATCH_QUEUE_CONCURRENT);;
@@ -170,7 +170,7 @@ void NotifyDeallocToDart(intptr_t address, Dart_Port dartPort) {
     });
 }
 
-#pragma mark - Dart Finalizer
+/// MARK: Dart Finalizer
 
 static NSMutableDictionary<NSNumber *, NSNumber *> *objectRefCount = [NSMutableDictionary dictionary];
 
@@ -190,7 +190,11 @@ static void _RunFinalizer(void *isolate_callback_data,
     objectRefCount[address] = nil;
 }
 
-/// RunFinalizer is a function that will be invoked sometime after the object is garbage collected, unless the handle has been deleted. It can be called by _BindObjcLifecycleToDart. See Dart_HandleFinalizer.
+/// @function RunFinalizer
+/// @abstract RunFinalizer is a function that will be invoked sometime after the object is garbage collected,
+/// unless the handle has been deleted. It can be called by _BindObjcLifecycleToDart.
+///
+/// @see Dart_HandleFinalizer.
 static void RunFinalizer(void *isolate_callback_data,
                          void *peer) {
     if (@available(iOS 10.0, macOS 10.12, *)) {

@@ -11,33 +11,33 @@
 #import "DNTypeEncoding.h"
 
 @class DNBlockCreator;
-@class DNMethodIMP;
+@class DNMethod;
 @class DNInvocation;
 
 NS_ASSUME_NONNULL_BEGIN
 
-#pragma mark - Dart VM API
+/// MARK: Dart VM API
 
 DN_EXTERN intptr_t InitDartApiDL(void *data);
 
-#pragma mark - Async Callback Basic
+/// MARK: Async Callback Basic
 
 DN_EXTERN BOOL TestNotifyDart(Dart_Port send_port);
 
-#pragma mark - Async Block Callback
+/// MARK: Async Block Callback
 
 DN_EXTERN void NotifyBlockInvokeToDart(DNInvocation *invocation,
                                        DNBlockCreator *wrapper,
                                        int numberOfArguments);
 
-#pragma mark - Async Method Callback
+/// MARK: Async Method Callback
 
 DN_EXTERN void NotifyMethodPerformToDart(DNInvocation *invocation,
-                                         DNMethodIMP *methodIMP,
+                                         DNMethod *method,
                                          int numberOfArguments,
                                          const char *_Nonnull *_Nonnull types);
 
-#pragma mark - Memory Management
+/// MARK: Memory Management
 
 typedef NS_CLOSED_ENUM(NSUInteger, DNPassObjectResult) {
     DNPassObjectResultFailed,
