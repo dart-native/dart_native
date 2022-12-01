@@ -1,5 +1,5 @@
 //
-//  DNMethodIMP.h
+//  DNMethod.h
 //  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/30.
@@ -10,13 +10,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (*NativeMethodCallback)(void *_Nullable *_Null_unspecified args,
+typedef void (*DartImplemetion)(void *_Nullable *_Null_unspecified args,
                                     void *ret,
                                     int numberOfArguments,
                                     const char *_Nonnull *_Nonnull types,
                                     BOOL stret);
 
-@interface DNMethodIMP : NSObject
+@interface DNMethod : NSObject
 
 @property (nonatomic, getter=hasStret, readonly) BOOL stret;
 @property (nonatomic, getter=isReturnString, readonly) BOOL returnString;
@@ -24,13 +24,13 @@ typedef void (*NativeMethodCallback)(void *_Nullable *_Null_unspecified args,
 @property (nonatomic, readonly) NSDictionary<NSNumber *, NSNumber *> *callbackForDartPort;
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncodings
-                            callback:(NativeMethodCallback)callback
+                       dartImpletion:(DartImplemetion)dartImpletion
                         returnString:(BOOL)returnString
                             dartPort:(Dart_Port)dartPort
                                error:(NSError **)error;
-- (void)addCallback:(NativeMethodCallback)callback forDartPort:(Dart_Port)port;
-- (void)removeCallbackForDartPort:(Dart_Port)port;
-- (nullable IMP)imp;
+- (void)addDartImplementation:(DartImplemetion)imp forPort:(Dart_Port)port;
+- (void)removeDartImplemetionForPort:(Dart_Port)port;
+- (nullable IMP)objcIMP;
 
 @end
 

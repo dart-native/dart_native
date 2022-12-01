@@ -42,7 +42,7 @@
     return self;
 }
 
-#pragma mark - getter&setter
+/// MARK: getter&setter
 
 - (BOOL)isArgumentsRetained {
     __block BOOL temp;
@@ -58,7 +58,7 @@
     });
 }
 
-#pragma mark - Public Method
+/// MARK: Public Method
 
 - (void)retainArguments {
     if (!self.isArgumentsRetained) {
@@ -140,7 +140,7 @@
     memcpy(arg, argumentLocation, argSize);
 }
 
-#pragma mark - Private Helper
+/// MARK: Private Helper
 
 - (void *)_copyPointer:(void **)pointer encode:(const char *)encode key:(NSNumber *)key {
     // Struct is already copied to heap. Transfer it's life time to Dart.

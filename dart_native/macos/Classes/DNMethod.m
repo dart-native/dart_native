@@ -1,17 +1,19 @@
 //
-//  DNMethodIMP.m
+//  DNMethod.m
 //  DartNative
 //
 //  Created by 杨萧玉 on 2019/10/30.
 //
 
-#import "DNMethodIMP.h"
+#import "DNMethod.h"
 #import "DNFFIHelper.h"
-#import "native_runtime.h"
 #import "DNInvocation.h"
 #import "DNPointerWrapper.h"
 #import "DNError.h"
 #import "DNObjectDealloc.h"
+#import "NSString+DartNative.h"
+#import "DNObjCRuntime.h"
+#import "DNDartBridge.h"
 
 #if !__has_feature(objc_arc)
 #error
@@ -19,11 +21,11 @@
 
 static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata);
 
-@interface DNMethodIMP ()
+@interface DNMethod ()
 {
     ffi_cif _cif;
     ffi_closure *_closure;
-    void *_methodIMP;
+    void *_objcIMP;
 }
 
 @property (nonatomic) NSUInteger numberOfArguments;
@@ -39,10 +41,10 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @end
 
-@implementation DNMethodIMP
+@implementation DNMethod
 
 - (instancetype)initWithTypeEncoding:(const char *)typeEncoding
-                            callback:(NativeMethodCallback)callback
+                       dartImpletion:(DartImplemetion)dartImpletion
                         returnString:(BOOL)returnString
                             dartPort:(Dart_Port)dartPort
                                error:(out NSError **)error {
@@ -52,15 +54,15 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         _helper = [DNFFIHelper new];
         size_t length = strlen(typeEncoding) + 1;
         size_t size = sizeof(char) * length;
-        _typeEncoding = malloc(size);
+        _typeEncoding = (char *)malloc(size);
         if (_typeEncoding == NULL) {
             DN_ERROR(error, DNCreateTypeEncodingError, @"malloc for type encoding fail: %s", typeEncoding);
             return self;
         }
         strlcpy(_typeEncoding, typeEncoding, length);
         _internalCallbackForDartPort = [NSMutableDictionary dictionary];
-        _portsQueue = dispatch_queue_create("com.dartnative.methodimp", DISPATCH_QUEUE_CONCURRENT);
-        [self addCallback:callback forDartPort:dartPort];
+        _portsQueue = dispatch_queue_create("com.dartnative.method", DISPATCH_QUEUE_CONCURRENT);
+        [self addDartImplementation:dartImpletion forPort:dartPort];
         _signature = [NSMethodSignature signatureWithObjCTypes:_typeEncoding];
     }
     return self;
@@ -71,22 +73,22 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     ffi_closure_free(_closure);
 }
 
-- (IMP)imp {
-    if (!_methodIMP) {
+- (IMP)objcIMP {
+    if (!_objcIMP) {
         NSUInteger numberOfArguments = [self prepCIF:&_cif withEncodeString:self.typeEncoding];
         if (numberOfArguments == -1) { // Unknown encode.
             return nil;
         }
         self.numberOfArguments = numberOfArguments;
         
-        _closure = ffi_closure_alloc(sizeof(ffi_closure), (void **)&_methodIMP);
-        ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DNFFIIMPClosureFunc, (__bridge void *)(self), _methodIMP);
+        _closure = (ffi_closure *)ffi_closure_alloc(sizeof(ffi_closure), (void **)&_objcIMP);
+        ffi_status status = ffi_prep_closure_loc(_closure, &_cif, DNFFIIMPClosureFunc, (__bridge void *)(self), _objcIMP);
         if (status != FFI_OK) {
             NSLog(@"ffi_prep_closure returned %d", (int)status);
             abort();
         }
     }
-    return _methodIMP;
+    return (IMP)_objcIMP;
 }
 
 - (NSDictionary<NSNumber *, NSNumber *> *)callbackForDartPort {
@@ -97,13 +99,13 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     return temp;
 }
 
-- (void)addCallback:(NativeMethodCallback)callback forDartPort:(Dart_Port)port {
+- (void)addDartImplementation:(DartImplemetion)imp forPort:(Dart_Port)port {
     dispatch_barrier_async(self.portsQueue, ^{
-        self.internalCallbackForDartPort[@(port)] = @((intptr_t)callback);
+        self.internalCallbackForDartPort[@(port)] = @((intptr_t)imp);
     });
 }
 
-- (void)removeCallbackForDartPort:(Dart_Port)port {
+- (void)removeDartImplemetionForPort:(Dart_Port)port {
     dispatch_barrier_async(self.portsQueue, ^{
         [self.internalCallbackForDartPort removeObjectForKey:@(port)];
     });
@@ -134,25 +136,25 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
 
 @end
 
-static void DNHandleReturnValue(void *origRet, DNMethodIMP *methodIMP, DNInvocation *invocation) {
+static void DNHandleReturnValue(void *origRet, DNMethod *method, DNInvocation *invocation) {
     void *ret = invocation.realRetValue;
-    if (methodIMP.hasStret) {
+    if (method.hasStret) {
         // synchronize stret value from first argument. `origRet` is not the target.
         [invocation setReturnValue:*(void **)invocation.realArgs[0]];
         return;
-    } else if (methodIMP.isReturnString) {
+    } else if (method.isReturnString) {
         // type is native_type_object but result is a string
-        NSString *string = NSStringFromUTF16Data(*(const unichar **)ret);
+        NSString *string = [NSString dn_stringWithUTF16String:*(const unichar **)ret];
         native_retain_object(string);
         if (string) {
             [invocation setReturnValue:&string];
         }
-    } else if (methodIMP.typeEncoding[0] == '{') {
+    } else if (method.typeEncoding[0] == '{') {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
             [invocation setReturnValue:pointerWrapper.pointer];
         }
-    } else if (methodIMP.typeEncoding[0] == '*') {
+    } else if (method.typeEncoding[0] == '*') {
         DNPointerWrapper *pointerWrapper = *(DNPointerWrapper *__strong *)ret;
         if (pointerWrapper) {
             const char *origCString = (const char *)pointerWrapper.pointer;
@@ -164,15 +166,15 @@ static void DNHandleReturnValue(void *origRet, DNMethodIMP *methodIMP, DNInvocat
 }
 
 static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *userdata) {
-    DNMethodIMP *methodIMP = (__bridge DNMethodIMP *)userdata;
-    if (methodIMP.callbackForDartPort.count == 0) {
+    DNMethod *method = (__bridge DNMethod *)userdata;
+    if (method.callbackForDartPort.count == 0) {
         return;
     }
     
     void *userRet = ret;
     void **userArgs = args;
     // handle struct return: should pass pointer to struct
-    if (methodIMP.hasStret) {
+    if (method.hasStret) {
         // The first arg contains address of a pointer of returned struct.
         userRet = *((void **)args[0]);
         // Other args move backwards.
@@ -181,11 +183,11 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     *(void **)userRet = NULL;
     __block int64_t retObjectAddr = 0;
     // Use (numberOfArguments - 2) exclude itself and _cmd.
-    int numberOfArguments = (int)methodIMP.numberOfArguments - 2;
+    int numberOfArguments = (int)method.numberOfArguments - 2;
     
-    NSUInteger indexOffset = methodIMP.hasStret ? 1 : 0;
-    for (NSUInteger i = 0; i < methodIMP.signature.numberOfArguments; i++) {
-        const char *type = [methodIMP.signature getArgumentTypeAtIndex:i];
+    NSUInteger indexOffset = method.hasStret ? 1 : 0;
+    for (NSUInteger i = 0; i < method.signature.numberOfArguments; i++) {
+        const char *type = [method.signature getArgumentTypeAtIndex:i];
         // Struct
         if (type[0] == '{') {
             NSUInteger size;
@@ -200,13 +202,13 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
         }
     }
     int typesCount = 0;
-    const char **types = native_types_encoding(methodIMP.typeEncoding, &typesCount, 0);
+    const char **types = native_types_encoding(method.typeEncoding, &typesCount, 0);
     if (!types) {
         return;
     }
     
-    DNInvocation *invocation = [[DNInvocation alloc] initWithSignature:methodIMP.signature
-                                                              hasStret:methodIMP.hasStret];
+    DNInvocation *invocation = [[DNInvocation alloc] initWithSignature:method.signature
+                                                              hasStret:method.hasStret];
     invocation.args = userArgs;
     invocation.retValue = userRet;
     invocation.realArgs = args;
@@ -214,7 +216,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     
     int64_t retAddr = (int64_t)(invocation.realRetValue);
     [invocation retainArguments];
-    NotifyMethodPerformToDart(invocation, methodIMP, numberOfArguments, types);
+    NotifyMethodPerformToDart(invocation, method, numberOfArguments, types);
     for (int i = 0; i < typesCount; i++) {
         if (*types[i] == '{') {
             free((void *)types[i]);
@@ -222,7 +224,7 @@ static void DNFFIIMPClosureFunc(ffi_cif *cif, void *ret, void **args, void *user
     }
     
     retObjectAddr = (int64_t)*(void **)retAddr;
-    DNHandleReturnValue(ret, methodIMP, invocation);
+    DNHandleReturnValue(ret, method, invocation);
     if (types[0] == native_type_object) {
         native_autorelease_object((__bridge id)*(void **)retAddr);
     }
