@@ -1,3 +1,9 @@
+## 0.7.9
+
+* Bump to ffi >=1.1.2
+* [Fix] Thread Performance Checker issue
+* [Fix] Flutter debug warning
+
 ## 0.7.8
 
 * [Fix] Build error on Xcode 12.
