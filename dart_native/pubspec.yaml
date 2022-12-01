@@ -1,6 +1,6 @@
 name: dart_native
 description: Write native code using Dart. This package liberates you from native code and low performance channel.
-version: 0.7.8
+version: 0.7.9
 homepage: https://github.com/dart-native/dart_native
 
 environment:
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ffi: ^1.1.2
+  ffi: ">=1.1.2 <3.0.0"
   dart_native_gen: ^0.3.3
 
 dev_dependencies:

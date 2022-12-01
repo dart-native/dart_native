@@ -7,7 +7,8 @@
 
 #import "DNAssociatedDartObject.h"
 #import <objc/runtime.h>
-#import "native_runtime.h"
+
+#import "DNMemoryValidation.h"
 
 #if !__has_feature(objc_arc)
 #error

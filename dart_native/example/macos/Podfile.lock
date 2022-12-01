@@ -1,10 +1,10 @@
 PODS:
-  - ClassWrittenInSwift (0.0.4)
+  - ClassWrittenInSwift (0.0.5)
   - CocoaLumberjack/Core (3.7.4)
   - CocoaLumberjack/Swift (3.7.4):
     - CocoaLumberjack/Core
   - dart_native (0.0.1):
-    - ClassWrittenInSwift (~> 0.0.4)
+    - ClassWrittenInSwift (~> 0.0.5)
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
 
@@ -25,11 +25,11 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
 
 SPEC CHECKSUMS:
-  ClassWrittenInSwift: de0543e7c1a836e190af74fddff84ad9b2f3d18c
+  ClassWrittenInSwift: 84b95c3ec2633b0a18ffdcabf8365a5833a2154c
   CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
-  dart_native: 1d89c58404bf2295b0725d24af16a907b1322fdd
+  dart_native: 82f498a2edc283e94eac2d8ca51d609bdc52e74f
   FlutterMacOS: 57701585bf7de1b3fc2bb61f6378d73bbdea8424
 
 PODFILE CHECKSUM: 6134e1091881200875eedf81c63588922d4384ec
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

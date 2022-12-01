@@ -6,19 +6,23 @@
 //
 
 #import "DNBlockCreator.h"
+#import <objc/runtime.h>
+#import <stdatomic.h>
+
 #import "ffi.h"
 #import "DNFFIHelper.h"
 #import "DNInvocation.h"
-#import <objc/runtime.h>
 #import "DNPointerWrapper.h"
 #import "DNError.h"
-#import <stdatomic.h>
+#import "NSString+DartNative.h"
+#import "DNObjCRuntime.h"
+#import "DNDartBridge.h"
 
 #if !__has_feature(objc_arc)
 #error
 #endif
 
-#pragma mark - Block Helper
+/// MARK: Block Helper
 
 enum {
     BLOCK_HAS_COPY_DISPOSE =  (1 << 25),
@@ -72,7 +76,7 @@ void dispose_helper(DNBlock *src) {
     CFRelease(src->creator);
 }
 
-#pragma mark - Block Wrapper
+/// MARK: Block Wrapper
 
 @interface DNBlockCreator () {
     ffi_cif _cif;
@@ -190,7 +194,7 @@ static atomic_uint_fast64_t _seq = 0;
     return block;
 }
 
-#pragma mark - Private Method
+/// MARK: Private Method
 
 - (int)_prepCIF:(ffi_cif *)cif withEncodeString:(const char *)str flags:(int32_t)flags {
     int argCount;
@@ -279,7 +283,7 @@ static void DNHandleReturnValue(void *origRet, DNBlockCreator *creator, DNInvoca
         return;
     } else if (creator.typeEncodings[0] == native_type_string) {
         // type is native_type_object but result is a string
-        NSString *string = NSStringFromUTF16Data(*(const unichar **)ret);
+        NSString *string = [NSString dn_stringWithUTF16String:*(const unichar **)ret];
         if (string) {
             native_retain_object(string);
             [invocation setReturnValue:&string];
