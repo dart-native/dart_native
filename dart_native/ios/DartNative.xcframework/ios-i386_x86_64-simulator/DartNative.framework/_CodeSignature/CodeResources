@@ -4,13 +4,9 @@
 <dict>
 	<key>files</key>
 	<dict>
-		<key>Headers/DNMacro.h</key>
-		<data>
-		GJnW4UhOEgNT/y0AEsYLfzdmrzs=
-		</data>
 		<key>Headers/DartNative.h</key>
 		<data>
-		HsSSY3tsEqwrSgmv6aP0DMB6Ayo=
+		RiMZdUpdJP03kCYbNQgBK0AVwcM=
 		</data>
 		<key>Headers/dart_api.h</key>
 		<data>
@@ -24,13 +20,9 @@
 		<data>
 		Df89Mm93LLzhRAs+dHTVV23TSZI=
 		</data>
-		<key>Headers/native_runtime.h</key>
-		<data>
-		ZYgBQozNPrM6V9Evuq8apYpqxuA=
-		</data>
 		<key>Info.plist</key>
 		<data>
-		0Kq+tqf/uvamzXqFXIHFNWazqQE=
+		92sZnyAJZGeSpxOFhinEoket1hg=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -39,26 +31,15 @@
 	</dict>
 	<key>files2</key>
 	<dict>
-		<key>Headers/DNMacro.h</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			GJnW4UhOEgNT/y0AEsYLfzdmrzs=
-			</data>
-			<key>hash2</key>
-			<data>
-			JBEFj6YSs9VvTZlZ74Q2yW9Skmb0W6jfMTyht84VAoM=
-			</data>
-		</dict>
 		<key>Headers/DartNative.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			HsSSY3tsEqwrSgmv6aP0DMB6Ayo=
+			RiMZdUpdJP03kCYbNQgBK0AVwcM=
 			</data>
 			<key>hash2</key>
 			<data>
-			hya/7ggY75hsKDAQJnXD8OWMwTCkFN7Z0flxmzzkRHU=
+			g4snT7PeAsCJStVmEOOXHs0omSsgdswZbCWOw3/YDmU=
 			</data>
 		</dict>
 		<key>Headers/dart_api.h</key>
@@ -92,17 +73,6 @@
 			<key>hash2</key>
 			<data>
 			7o94BmO52DKkFP9E8/WrLVf/Mjs6c80UsORYkfjlc38=
-			</data>
-		</dict>
-		<key>Headers/native_runtime.h</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			ZYgBQozNPrM6V9Evuq8apYpqxuA=
-			</data>
-			<key>hash2</key>
-			<data>
-			BzUY7yxbTuqL4GCzBqqljsdEIqwd2n4gB9BVdzIoFqA=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

@@ -6,16 +6,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DNMacro.h"
+#import "DNExtern.h"
 #import "dart_api_dl.h"
-#import "native_runtime.h"
+#import "DNTypeEncoding.h"
 
 #ifndef DNBlockCreator_h
 #define DNBlockCreator_h
 
 NS_ASSUME_NONNULL_BEGIN
 
-#pragma mark - Block Layout
+/// MARK: Block Layout
 
 typedef void(*DNBlockCopyFunction)(void *, const void *);
 typedef void(*DNBlockDisposeFunction)(const void *);
@@ -52,7 +52,7 @@ typedef struct DNBlock {
     void *creator;
 } DNBlock;
 
-#pragma mark - Block Creator
+/// MARK: Block Creator
 
 DN_EXTERN const char *DNBlockTypeEncodeString(id blockObj);
 DN_EXTERN const char *_Nonnull *_Nonnull DNBlockTypeEncodings(id blockObj);

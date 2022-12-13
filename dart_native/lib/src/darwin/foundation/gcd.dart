@@ -37,7 +37,7 @@ final Pointer<Void> Function(int, int) dispatch_get_global_queue = nativeDylib
 // ignore: non_constant_identifier_names
 final Pointer<Void> Function() dispatch_get_main_queue = nativeDylib
     .lookup<NativeFunction<Pointer<Void> Function()>>(
-        '_dispatch_get_main_queue')
+        'native_dispatch_get_main_queue')
     .asFunction();
 
 typedef DispatchWorkItem = void Function();

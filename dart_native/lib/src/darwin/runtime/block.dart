@@ -60,8 +60,8 @@ class Block extends id {
     }
     List<String> nativeTypes = nativeTypeStringForDartTypes(dartTypes);
     Pointer<Utf8> typeStringPtr = nativeTypes.join(', ').toNativeUtf8();
-    Pointer<Void> blockPtr =
-        blockCreate(typeStringPtr, _callbackPtr, shouldReturnAsync ? 1 : 0, nativePort);
+    Pointer<Void> blockPtr = blockCreate(
+        typeStringPtr, _callbackPtr, shouldReturnAsync ? 1 : 0, nativePort);
     assert(blockPtr != nullptr);
     if (blockPtr == nullptr) {
       return nilBlock;

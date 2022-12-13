@@ -6,159 +6,11 @@
 //
 
 #import "DNFFIHelper.h"
-#if TARGET_OS_OSX
-#import <AppKit/AppKit.h>
-#elif TARGET_OS_IOS
-#import <UIKit/UIKit.h>
-#endif
+#import "DNTypeEncoding.h"
 
 #if !__has_feature(objc_arc)
 #error
 #endif
-
-const char *DNSizeAndAlignment(const char *str, NSUInteger *sizep, NSUInteger *alignp, long *lenp) {
-    const char *out = NSGetSizeAndAlignment(str, sizep, alignp);
-    if (lenp) {
-        *lenp = out - str;
-    }
-    while(*out == '}') {
-        out++;
-    }
-    while(isdigit(*out)) {
-        out++;
-    }
-    return out;
-}
-
-int DNTypeCount(const char *str) {
-    int typeCount = 0;
-    while(str && *str)
-    {
-        str = DNSizeAndAlignment(str, NULL, NULL, NULL);
-        typeCount++;
-    }
-    return typeCount;
-}
-
-int DNTypeLengthWithTypeName(NSString *typeName) {
-    if (!typeName) {
-        return 0;
-    }
-    static NSMutableDictionary *_typeLengthDict;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _typeLengthDict = [[NSMutableDictionary alloc] init];
-        
-        #define DN_DEFINE_TYPE_LENGTH(_type) \
-        [_typeLengthDict setObject:@(sizeof(_type)) forKey:@#_type];\
-
-        DN_DEFINE_TYPE_LENGTH(id);
-        DN_DEFINE_TYPE_LENGTH(BOOL);
-        DN_DEFINE_TYPE_LENGTH(int);
-        DN_DEFINE_TYPE_LENGTH(void);
-        DN_DEFINE_TYPE_LENGTH(char);
-        DN_DEFINE_TYPE_LENGTH(short);
-        DN_DEFINE_TYPE_LENGTH(unsigned short);
-        DN_DEFINE_TYPE_LENGTH(unsigned int);
-        DN_DEFINE_TYPE_LENGTH(long);
-        DN_DEFINE_TYPE_LENGTH(unsigned long);
-        DN_DEFINE_TYPE_LENGTH(long long);
-        DN_DEFINE_TYPE_LENGTH(unsigned long long);
-        DN_DEFINE_TYPE_LENGTH(float);
-        DN_DEFINE_TYPE_LENGTH(double);
-        DN_DEFINE_TYPE_LENGTH(bool);
-        DN_DEFINE_TYPE_LENGTH(size_t);
-        DN_DEFINE_TYPE_LENGTH(CGFloat);
-        DN_DEFINE_TYPE_LENGTH(CGSize);
-        DN_DEFINE_TYPE_LENGTH(CGRect);
-        DN_DEFINE_TYPE_LENGTH(CGPoint);
-        DN_DEFINE_TYPE_LENGTH(CGVector);
-#if TARGET_OS_OSX
-        DN_DEFINE_TYPE_LENGTH(NSSize);
-        DN_DEFINE_TYPE_LENGTH(NSRect);
-        DN_DEFINE_TYPE_LENGTH(NSPoint);
-        DN_DEFINE_TYPE_LENGTH(NSEdgeInsets);
-#elif TARGET_OS_IOS
-        DN_DEFINE_TYPE_LENGTH(UIOffset);
-        DN_DEFINE_TYPE_LENGTH(UIEdgeInsets);
-#endif
-        if (@available(iOS 11.0, macOS 10.15, *)) {
-            DN_DEFINE_TYPE_LENGTH(NSDirectionalEdgeInsets);
-        }
-        DN_DEFINE_TYPE_LENGTH(CGAffineTransform);
-        DN_DEFINE_TYPE_LENGTH(NSRange);
-        DN_DEFINE_TYPE_LENGTH(NSInteger);
-        DN_DEFINE_TYPE_LENGTH(NSUInteger);
-        DN_DEFINE_TYPE_LENGTH(Class);
-        DN_DEFINE_TYPE_LENGTH(SEL);
-        [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"ptr"];
-        [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"block"];
-        [_typeLengthDict setObject:@(sizeof(void *)) forKey:@"NSObject*"];
-        [_typeLengthDict setObject:@(sizeof(NSObject *)) forKey:@"NSObject"];
-        [_typeLengthDict setObject:@(sizeof(char *)) forKey:@"CString"];
-    });
-    return [_typeLengthDict[typeName] intValue];
-}
-
-NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
-    if (!typeName) {
-        return nil;
-    }
-    static NSMutableDictionary *_typeEncodeDict;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _typeEncodeDict = [[NSMutableDictionary alloc] init];
-        #define DN_DEFINE_TYPE_ENCODE_CASE(_type) \
-        [_typeEncodeDict setObject:[NSString stringWithUTF8String:@encode(_type)] forKey:@#_type];\
-
-        DN_DEFINE_TYPE_ENCODE_CASE(id);
-        DN_DEFINE_TYPE_ENCODE_CASE(BOOL);
-        DN_DEFINE_TYPE_ENCODE_CASE(int);
-        DN_DEFINE_TYPE_ENCODE_CASE(void);
-        DN_DEFINE_TYPE_ENCODE_CASE(char);
-        DN_DEFINE_TYPE_ENCODE_CASE(short);
-        DN_DEFINE_TYPE_ENCODE_CASE(unsigned short);
-        DN_DEFINE_TYPE_ENCODE_CASE(unsigned int);
-        DN_DEFINE_TYPE_ENCODE_CASE(long);
-        DN_DEFINE_TYPE_ENCODE_CASE(unsigned long);
-        DN_DEFINE_TYPE_ENCODE_CASE(long long);
-        DN_DEFINE_TYPE_ENCODE_CASE(unsigned long long);
-        DN_DEFINE_TYPE_ENCODE_CASE(float);
-        DN_DEFINE_TYPE_ENCODE_CASE(double);
-        DN_DEFINE_TYPE_ENCODE_CASE(bool);
-        DN_DEFINE_TYPE_ENCODE_CASE(size_t);
-        DN_DEFINE_TYPE_ENCODE_CASE(CGFloat);
-        DN_DEFINE_TYPE_ENCODE_CASE(CGSize);
-        DN_DEFINE_TYPE_ENCODE_CASE(CGRect);
-        DN_DEFINE_TYPE_ENCODE_CASE(CGPoint);
-        DN_DEFINE_TYPE_ENCODE_CASE(CGVector);
-        DN_DEFINE_TYPE_ENCODE_CASE(NSRange);
-#if TARGET_OS_OSX
-        DN_DEFINE_TYPE_ENCODE_CASE(NSSize);
-        DN_DEFINE_TYPE_ENCODE_CASE(NSRect);
-        DN_DEFINE_TYPE_ENCODE_CASE(NSPoint);
-        DN_DEFINE_TYPE_ENCODE_CASE(NSEdgeInsets);
-#elif TARGET_OS_IOS
-        DN_DEFINE_TYPE_ENCODE_CASE(UIOffset);
-        DN_DEFINE_TYPE_ENCODE_CASE(UIEdgeInsets);
-#endif
-        if (@available(iOS 11.0, macOS 10.15, *)) {
-            DN_DEFINE_TYPE_ENCODE_CASE(NSDirectionalEdgeInsets);
-        }
-        DN_DEFINE_TYPE_ENCODE_CASE(CGAffineTransform);
-        DN_DEFINE_TYPE_ENCODE_CASE(NSInteger);
-        DN_DEFINE_TYPE_ENCODE_CASE(NSUInteger);
-        DN_DEFINE_TYPE_ENCODE_CASE(Class);
-        DN_DEFINE_TYPE_ENCODE_CASE(SEL);
-        [_typeEncodeDict setObject:@"^v" forKey:@"ptr"];
-        [_typeEncodeDict setObject:@"@?" forKey:@"block"];
-        [_typeEncodeDict setObject:@"^@" forKey:@"NSObject*"];
-        [_typeEncodeDict setObject:@"@" forKey:@"NSObject"];
-        [_typeEncodeDict setObject:@"@" forKey:@"String"];
-        [_typeEncodeDict setObject:@"*" forKey:@"CString"];
-    });
-    return _typeEncodeDict[typeName];
-}
 
 @interface DNFFIHelper ()
 
@@ -331,7 +183,7 @@ NSString *DNTypeEncodeWithTypeName(NSString *typeName) {
 }
 
 
-#pragma mark - Private Method
+/// MARK: Private Method
 
 - (void *)_allocate:(size_t)size {
     NSMutableData *data = [NSMutableData dataWithLength:size];

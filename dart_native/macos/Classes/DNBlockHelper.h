@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "native_runtime.h"
+#import "DNInterface.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
