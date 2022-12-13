@@ -4,7 +4,6 @@ import 'package:dart_native_example/android/runtimestub.dart';
 import 'package:dart_native_example/android/entity.dart';
 import 'package:dart_native_example/android/runtimestub_async.dart';
 
-import 'delegate_stub.dart';
 import 'package:dart_native_example/dn_unit_test.dart';
 import 'package:ffi/ffi.dart';
 
