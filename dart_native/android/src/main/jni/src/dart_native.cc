@@ -161,7 +161,7 @@ void *InvokeNativeMethod(void *objPtr,
   auto type = TaskThread(thread);
   auto invokeFunction = [=] {
     return DoInvokeNativeMethod(object, methodName, arguments, dataTypes, argumentCount, returnType,
-                                stringTypeBitmask, callback, dartPort, type);
+                                stringTypeBitmask, callback, dartPort, type, isInterface);
   };
   if (type == TaskThread::kFlutterUI) {
     return invokeFunction();

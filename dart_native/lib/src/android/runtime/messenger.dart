@@ -58,11 +58,12 @@ Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
     Pointer.fromFunction(_invokeCallback);
 
 void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
-    Pointer<Pointer<Utf8>> typePtrs, int argCount) {
+    Pointer<Pointer<Utf8>> typePtrs, int argCount, int isInterface) {
+  print('_invokeCallback isInterface $isInterface');
   final callback = _invokeCallbackMap[method];
   if (callback != null) {
     dynamic value = loadValueFromPointer(
-        result, typePtrs.elementAt(argCount).value.toDartString());
+        result, typePtrs.elementAt(argCount).value.toDartString(), decodeRetVal: isInterface == 1);
     callback(value);
     _invokeCallbackMap.remove(method);
   }
@@ -129,7 +130,8 @@ dynamic _doInvoke(
         nativeArguments.typePointers
             .elementAt(args?.length ?? 0)
             .value
-            .toDartString());
+            .toDartString(),
+        decodeRetVal: isInterface);
     assignedSignaturePtr?.forEach(calloc.free);
     calloc.free(nativeArguments.typePointers);
   }

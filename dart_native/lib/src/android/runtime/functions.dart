@@ -15,7 +15,7 @@ typedef MethodNativeCallback = Void Function(
 
 // use in dart async invoke native
 typedef InvokeCallback = Void Function(Pointer<Void> result,
-    Pointer<Utf8> method, Pointer<Pointer<Utf8>> typePointers, Int32 argCount);
+    Pointer<Utf8> method, Pointer<Pointer<Utf8>> typePointers, Int32 argCount, Int32 isInterface);
 
 // notify c++ async invoke result
 final void Function(

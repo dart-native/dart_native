@@ -14,8 +14,7 @@
 
 namespace dartnative {
 
-typedef void(*InvokeCallback)(void *result, char *method, char **typePointers, int argumentCount);
-
+typedef void(*InvokeCallback)(void *result, char *method, char **typePointers, int argumentCount, int isInterface);
 
 JavaLocalRef<jclass> FindClass(const char *name, JNIEnv *env = nullptr);
 
@@ -41,7 +40,8 @@ void *DoInvokeNativeMethod(jobject object,
                            uint32_t stringTypeBitmask,
                            void *callback,
                            Dart_Port dartPort,
-                           TaskThread thread);
+                           TaskThread thread,
+                           bool isInterface);
 
 jobject InvokeDartFunction(bool is_same_thread,
                            int return_async,
