@@ -151,8 +151,8 @@ uint16_t *JavaStringToDartString(JNIEnv *env, jstring nativeString) {
 
 /// Returns a malloc pointer to the result.
 char *GenerateSignature(char **argumentTypes, int argumentCount, char *returnType) {
-  /// include "(" ")" length
-  size_t signatureLength = strlen(returnType) + 2;
+  /// include "(" ")" and blank length
+  size_t signatureLength = strlen(returnType) + 3;
   /// all argument type length
   for (int i = 0; i < argumentCount; i++) {
     signatureLength += strlen(argumentTypes[i]);
@@ -166,6 +166,7 @@ char *GenerateSignature(char **argumentTypes, int argumentCount, char *returnTyp
   }
   strcpy(signature + offset, ")");
   strcpy(signature + offset + 1, returnType);
+  signature[signatureLength - 1] = '\0';
 
   return signature;
 }
