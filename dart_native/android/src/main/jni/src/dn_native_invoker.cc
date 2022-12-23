@@ -171,9 +171,6 @@ void *DoInvokeNativeMethod(jobject object,
                                         stringTypeBitmask,
                                         jObjBucket);
 
-  /// Save return type, dart will use this pointer.
-  typePointers[argumentCount] = returnType;
-
   switch (*returnType) {
     case 'C':nativeInvokeResult = (void *) env->CallCharMethodA(object, method, argValues);
       break;
