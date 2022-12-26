@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-
 import 'package:dart_native/src/common/native_dylib.dart';
 import 'package:ffi/ffi.dart';
 
