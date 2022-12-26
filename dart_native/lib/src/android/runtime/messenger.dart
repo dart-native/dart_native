@@ -59,7 +59,6 @@ Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
 
 void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
     Pointer<Pointer<Utf8>> typePtrs, int argCount, int isInterface) {
-  print('_invokeCallback isInterface $isInterface');
   final callback = _invokeCallbackMap[method];
   if (callback != null) {
     dynamic value = loadValueFromPointer(
