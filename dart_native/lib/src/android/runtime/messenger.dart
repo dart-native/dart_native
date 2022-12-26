@@ -14,7 +14,8 @@ Pointer<Void> _newNativeObject(String className, {List? args}) {
     objectPtr =
         nativeCreateObject(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
   } else {
-    NativeArguments nativeArguments = _parseNativeArguments(args);
+    NativeArguments nativeArguments =
+        _parseNativeArguments(args, 'java.lang.Object');
     objectPtr = nativeCreateObject(
         classNamePtr,
         nativeArguments.pointers,
@@ -58,11 +59,12 @@ Pointer<NativeFunction<InvokeCallback>> _invokeCallbackPtr =
     Pointer.fromFunction(_invokeCallback);
 
 void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
-    Pointer<Pointer<Utf8>> typePtrs, int argCount) {
+    Pointer<Pointer<Utf8>> typePtrs, int argCount, int isInterface) {
   final callback = _invokeCallbackMap[method];
   if (callback != null) {
     dynamic value = loadValueFromPointer(
-        result, typePtrs.elementAt(argCount).value.toDartString());
+        result, typePtrs.elementAt(argCount).value.toDartString(),
+        decodeRetVal: isInterface == 1);
     callback(value);
     _invokeCallbackMap.remove(method);
   }
@@ -106,8 +108,8 @@ dynamic _doInvoke(
     }
   }
 
-  NativeArguments nativeArguments =
-      _parseNativeArguments(args, argsSignature: assignedSignaturePtr);
+  NativeArguments nativeArguments = _parseNativeArguments(args, returnType,
+      argsSignature: assignedSignaturePtr);
 
   Pointer<Void> invokeMethodRet = nativeInvoke(
       objPtr,
@@ -129,7 +131,8 @@ dynamic _doInvoke(
         nativeArguments.typePointers
             .elementAt(args?.length ?? 0)
             .value
-            .toDartString());
+            .toDartString(),
+        decodeRetVal: isInterface);
     assignedSignaturePtr?.forEach(calloc.free);
     calloc.free(nativeArguments.typePointers);
   }
@@ -157,7 +160,7 @@ Future<dynamic> invoke(
   return completer.future;
 }
 
-NativeArguments _parseNativeArguments(List? args,
+NativeArguments _parseNativeArguments(List? args, String returnType,
     {List<Pointer<Utf8>>? argsSignature}) {
   Pointer<Pointer<Void>> pointers = nullptr.cast();
   Pointer<Pointer<Utf8>> typePointers =
@@ -205,7 +208,7 @@ NativeArguments _parseNativeArguments(List? args,
       }
     }
   }
-  typePointers.elementAt(args?.length ?? 0).value = '0'.toNativeUtf8();
+  typePointers.elementAt(args?.length ?? 0).value = returnType.toNativeUtf8();
   return NativeArguments(pointers, typePointers, stringTypeBitmask);
 }
 

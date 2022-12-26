@@ -68,7 +68,7 @@ ArrayType _getValueType(dynamic value) {
   } else if (value is bool) {
     return ArrayType('bool', '[Z');
   } else if (value is JObject) {
-    return ArrayType('object', '[L' + value.className! + ';');
+    return ArrayType('object', '[L${value.className!};');
   } else {
     throw 'Invalid type in JArray.';
   }
