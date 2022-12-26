@@ -9,6 +9,10 @@ import 'package:dart_native/src/android/runtime/jobject.dart';
 import 'package:dart_native/src/common/native_byte.dart';
 import 'package:ffi/ffi.dart';
 
+import 'package:dart_native/src/android/foundation/collection/jlist.dart';
+import 'package:dart_native/src/android/foundation/collection/jmap.dart';
+import 'package:dart_native/src/android/foundation/collection/jset.dart';
+
 enum ValueType {
   char,
   int,
@@ -135,7 +139,8 @@ dynamic storeValueToPointer(dynamic object, Pointer<Pointer<Void>> ptr,
   }
 }
 
-dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
+dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType,
+    {bool decodeRetVal = false}) {
   if (returnType == 'V') {
     return;
   }
@@ -146,6 +151,19 @@ dynamic loadValueFromPointer(Pointer<Void> ptr, String returnType) {
 
   if (returnType == 'java.nio.DirectByteBuffer') {
     return NativeByte.fromRaw(DirectByteBuffer.fromPointer(ptr));
+  }
+
+  // todo optimize
+  if (decodeRetVal && returnType == 'Ljava/util/Map;') {
+    return JHashMap.fromPointer(ptr).raw;
+  }
+
+  if (decodeRetVal && returnType == 'Ljava/util/List;') {
+    return JArrayList.fromPointer(ptr).raw;
+  }
+
+  if (decodeRetVal && returnType == 'Ljava/util/Set;') {
+    return JHashSet.fromPointer(ptr).raw;
   }
 
   dynamic result;

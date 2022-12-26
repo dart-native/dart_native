@@ -130,7 +130,8 @@ void *DoInvokeNativeMethod(jobject object,
                            uint32_t stringTypeBitmask,
                            void *callback,
                            Dart_Port dartPort,
-                           TaskThread thread) {
+                           TaskThread thread,
+                           bool isInterface) {
   void *nativeInvokeResult = nullptr;
   JNIEnv *env = AttachCurrentThread();
   if (env == nullptr) {
@@ -170,9 +171,6 @@ void *DoInvokeNativeMethod(jobject object,
                                         argumentCount,
                                         stringTypeBitmask,
                                         jObjBucket);
-
-  /// Save return type, dart will use this pointer.
-  typePointers[argumentCount] = returnType;
 
   switch (*returnType) {
     case 'C':nativeInvokeResult = (void *) env->CallCharMethodA(object, method, argValues);
@@ -219,7 +217,6 @@ void *DoInvokeNativeMethod(jobject object,
         typePointers[argumentCount] = (char *) "java.lang.String";
         nativeInvokeResult = JavaStringToDartString(env, (jstring) ret.Object());
       } else {
-        typePointers[argumentCount] = (char *) "java.lang.Object";
         if (ret.IsNull()) {
           nativeInvokeResult = nullptr;
           break;
@@ -245,16 +242,18 @@ void *DoInvokeNativeMethod(jobject object,
       ((InvokeCallback) callback)(nativeInvokeResult,
                                   methodName,
                                   typePointers,
-                                  argumentCount);
+                                  argumentCount,
+                                  isInterface);
     } else {
       sem_t sem;
       bool isSemInitSuccess = sem_init(&sem, 0, 0) == 0;
       const WorkFunction work =
-          [callback, nativeInvokeResult, methodName, typePointers, argumentCount, isSemInitSuccess, &sem] {
+          [callback, nativeInvokeResult, methodName, typePointers, argumentCount, isSemInitSuccess, isInterface, &sem] {
             ((InvokeCallback) callback)(nativeInvokeResult,
                                         methodName,
                                         typePointers,
-                                        argumentCount);
+                                        argumentCount,
+                                        isInterface);
             if (isSemInitSuccess) {
               sem_post(&sem);
             }
