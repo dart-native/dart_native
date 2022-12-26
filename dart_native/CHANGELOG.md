@@ -1,3 +1,9 @@
+## 0.7.10
+
+* [Fix] A dangling pointer on Android.
+* [Fix] DetachCurrentThread crash on Android.
+* [Feature] Collections support automatic type conversions on Android.
+
 ## 0.7.9
 
 * Bump to ffi >=1.1.2

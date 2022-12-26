@@ -14,7 +14,8 @@ Pointer<Void> _newNativeObject(String className, {List? args}) {
     objectPtr =
         nativeCreateObject(classNamePtr, nullptr.cast(), nullptr.cast(), 0, 0);
   } else {
-    NativeArguments nativeArguments = _parseNativeArguments(args, 'java.lang.Object');
+    NativeArguments nativeArguments =
+        _parseNativeArguments(args, 'java.lang.Object');
     objectPtr = nativeCreateObject(
         classNamePtr,
         nativeArguments.pointers,
@@ -62,7 +63,8 @@ void _invokeCallback(Pointer<Void> result, Pointer<Utf8> method,
   final callback = _invokeCallbackMap[method];
   if (callback != null) {
     dynamic value = loadValueFromPointer(
-        result, typePtrs.elementAt(argCount).value.toDartString(), decodeRetVal: isInterface == 1);
+        result, typePtrs.elementAt(argCount).value.toDartString(),
+        decodeRetVal: isInterface == 1);
     callback(value);
     _invokeCallbackMap.remove(method);
   }
@@ -106,8 +108,8 @@ dynamic _doInvoke(
     }
   }
 
-  NativeArguments nativeArguments =
-      _parseNativeArguments(args, returnType, argsSignature: assignedSignaturePtr);
+  NativeArguments nativeArguments = _parseNativeArguments(args, returnType,
+      argsSignature: assignedSignaturePtr);
 
   Pointer<Void> invokeMethodRet = nativeInvoke(
       objPtr,
@@ -158,8 +160,8 @@ Future<dynamic> invoke(
   return completer.future;
 }
 
-NativeArguments _parseNativeArguments(List? args,
-    String returnType, {List<Pointer<Utf8>>? argsSignature}) {
+NativeArguments _parseNativeArguments(List? args, String returnType,
+    {List<Pointer<Utf8>>? argsSignature}) {
   Pointer<Pointer<Void>> pointers = nullptr.cast();
   Pointer<Pointer<Utf8>> typePointers =
       calloc<Pointer<Utf8>>((args?.length ?? 0) + 1);
